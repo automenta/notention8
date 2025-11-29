@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import { useNotes } from '../../hooks/useNotes';
+import { useNotes } from '../../hooks/useNotesManager';
 import { useLocalForage } from '../../hooks/useLocalForage';
 import type { Note } from '../../types';
 

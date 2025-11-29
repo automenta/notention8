@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNotes } from '../../hooks/useNotesContext';
+import { useNotes } from '../../hooks/useNotes';
 import { useView } from '../../hooks/useViewContext';
 import { EditorManager } from '../EditorManager';
 import { CubeTransparentIcon } from '../icons';

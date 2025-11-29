@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { pool } from '../services/nostrService';
-import { DEFAULT_RELAYS } from '../utils/nostr';
+import { DEFAULT_RELAYS, pool } from '../utils/nostr';
 import type { NostrEvent, NostrProfile } from '../types';
 
 const profileCache = new Map<string, NostrProfile>();

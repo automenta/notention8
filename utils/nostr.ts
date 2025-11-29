@@ -1,3 +1,5 @@
+import { SimplePool } from 'nostr-tools';
+
 export const DEFAULT_RELAYS = [
   'wss://relay.damus.io',
   'wss://relay.snort.social',
@@ -5,6 +7,13 @@ export const DEFAULT_RELAYS = [
   'wss://nostr-pub.wellorder.net',
   'wss://nos.lol',
 ];
+
+/**
+ * A shared Nostr SimplePool instance to be used across the entire application.
+ * This prevents creating multiple WebSocket connections to the same relays and ensures
+ * connection state is managed centrally.
+ */
+export const pool = new SimplePool();
 
 export const bytesToHex = (bytes: Uint8Array): string =>
   Array.from(bytes)

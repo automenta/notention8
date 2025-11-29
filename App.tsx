@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { MainView } from './components/MainView';
-import { useNotes } from './hooks/useNotesContext';
+import { useNotes } from './hooks/useNotes';
 import { useView } from './hooks/useViewContext';
 import { sortNotesByDate } from './utils/notes';
 

@@ -2,8 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { finalizeEvent, nip04, nip19 } from 'nostr-tools';
 import type { Contact, NostrEvent } from '../../types';
 import { useNostrProfile } from '../../hooks/useNostrProfile';
-import { pool } from '../../services/nostrService';
-import { DEFAULT_RELAYS, formatNpub, hexToBytes } from '../../utils/nostr';
+import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
 import { ArrowLeftIcon, SendIcon } from '../icons';
 
 interface ChatWindowProps {

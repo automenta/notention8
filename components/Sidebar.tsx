@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search } from './sidebar/Search';
-import { useNotes } from '../hooks/useNotesContext';
+import { useNotes } from '../hooks/useNotes';
 import { useView } from '../hooks/useViewContext';
 import { NoteListItem } from './sidebar/NoteListItem';
 import type { SortOrder } from '../types';
