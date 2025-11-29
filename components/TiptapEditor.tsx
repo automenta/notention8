@@ -54,13 +54,6 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave }) => {
     }
   }, [note.content, editor]);
 
-  // Also sync when the note ID changes to load a new note
-  useEffect(() => {
-    if(editor) {
-      setLocalContent(note.content);
-      editor.commands.setContent(sanitizeHTML(note.content), false);
-    }
-  }, [note.id, editor]);
 
 
   const toggleViewMode = () => {

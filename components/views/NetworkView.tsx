@@ -6,8 +6,8 @@ import { DEFAULT_RELAYS, formatNpub, hexToBytes } from '../../utils/nostr';
 import { pool } from '../../services/nostrService';
 import { useNostrProfile } from '../../hooks/useNostrProfile';
 import { ProfileHeader } from '../network/ProfileHeader';
-import { useSettings } from '../contexts/SettingsContext';
-import { useView } from '../contexts/ViewContext';
+import { useView } from '../../hooks/useViewContext';
+import { useSettings } from '../../hooks/useSettingsContext';
 
 const NostrEventCard: React.FC<{
   event: NostrEvent;

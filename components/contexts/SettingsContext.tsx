@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useContext, useEffect } from 'react';
+import React, { createContext, ReactNode, useEffect } from 'react';
 import { useLocalForage } from '../../hooks/useLocalForage';
 import type { AppSettings } from '../../types';
 import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
@@ -47,10 +47,4 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
   );
 };
 
-export const useSettings = (): SettingsContextType => {
-  const context = useContext(SettingsContext);
-  if (context === undefined) {
-    throw new Error('useSettings must be used within a SettingsProvider');
-  }
-  return context;
-};
+export { SettingsContext };

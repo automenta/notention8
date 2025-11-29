@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useLocalForage } from './useLocalForage';
 import type { Note } from '../types';
 
@@ -7,7 +8,7 @@ export const useNotes = () => {
     []
   );
 
-  const addNote = () => {
+  const addNote = useCallback(() => {
     const newNote: Note = {
       id: crypto.randomUUID(),
       title: 'Untitled Note',
@@ -19,17 +20,23 @@ export const useNotes = () => {
     };
     setNotes((prev) => [newNote, ...prev]);
     return newNote;
-  };
+  }, [setNotes]);
 
-  const updateNote = (updatedNote: Note) => {
-    setNotes((prev) =>
-      prev.map((n) => (n.id === updatedNote.id ? updatedNote : n))
-    );
-  };
+  const updateNote = useCallback(
+    (updatedNote: Note) => {
+      setNotes((prev) =>
+        prev.map((n) => (n.id === updatedNote.id ? { ...updatedNote, updatedAt: new Date().toISOString() } : n))
+      );
+    },
+    [setNotes]
+  );
 
-  const deleteNote = (id: string) => {
-    setNotes((prev) => prev.filter((note) => note.id !== id));
-  };
+  const deleteNote = useCallback(
+    (id: string) => {
+      setNotes((prev) => prev.filter((note) => note.id !== id));
+    },
+    [setNotes]
+  );
 
   return {
     notes,

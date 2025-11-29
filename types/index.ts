@@ -172,5 +172,5 @@ export interface EditorPlugin {
 export interface AvailableEditor {
   id: string;
   name:string;
-  component: React.FC<any>;
+  component: React.ComponentType;
 }

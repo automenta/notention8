@@ -50,18 +50,16 @@ export function useLocalForage<T>(
 
   const setValue: Dispatch<SetStateAction<T>> = useCallback(
     (value) => {
-      try {
+      setStoredValue((prevStoredValue) => {
         const valueToStore =
-          value instanceof Function ? value(storedValue) : value;
-        setStoredValue(valueToStore);
+          value instanceof Function ? value(prevStoredValue) : value;
         localforage.setItem(key, valueToStore).catch((err) => {
           console.error(`Error writing to localForage key "${key}":`, err);
         });
-      } catch (err) {
-        console.error(err);
-      }
+        return valueToStore;
+      });
     },
-    [key, storedValue]
+    [key]
   );
 
   return [storedValue, setValue, loading];

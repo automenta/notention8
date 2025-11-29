@@ -1,7 +1,7 @@
 import React from 'react';
-import { useView } from './contexts/ViewContext';
-import { useSettings } from './contexts/SettingsContext';
-import { useNotes } from './contexts/NotesContext';
+import { useSettings } from '../hooks/useSettingsContext';
+import { useView } from '../hooks/useViewContext';
+import { useNotes } from '../hooks/useNotesContext';
 import { LoadingSpinner } from './icons';
 import { NotesView } from './views/NotesView';
 import { OntologyView } from './views/OntologyView';

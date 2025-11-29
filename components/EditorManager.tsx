@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import type { AppSettings, Note } from '../types';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import type { Note } from '../types';
 import { TiptapEditor } from './TiptapEditor';
 
 const SAVE_DEBOUNCE_MS = 1000;
@@ -8,26 +8,48 @@ interface EditorManagerProps {
   note: Note;
   onSave: (note: Note) => void;
   onDelete: (id: string) => void;
-  settings: AppSettings;
 }
 
 export const EditorManager: React.FC<EditorManagerProps> = ({
   note,
   onSave,
-  onDelete,
-  settings,
+  onDelete: _onDelete,
 }) => {
   const [dirtyNote, setDirtyNote] = useState<Note>(note);
+  const noteRef = useRef(note);
 
-  // When the selected note changes, reset the dirty state
+  // Keep noteRef synced with prop
   useEffect(() => {
-    setDirtyNote(note);
+    noteRef.current = note;
   }, [note]);
+
+  // When the selected note changes (ID change), or the note is updated from parent
+  // and matches our local content, we sync.
+  useEffect(() => {
+    // If ID changed, it's a new note selection. Reset completely.
+    if (note.id !== dirtyNote.id) {
+      setDirtyNote(note);
+      return;
+    }
+
+    // If ID is same, check if content is effectively equal.
+    // If so, update dirtyNote to use the new object reference (e.g. new updatedAt)
+    // to avoid unnecessary diffs later.
+    const isContentEqual =
+      note.title === dirtyNote.title &&
+      note.content === dirtyNote.content &&
+      JSON.stringify(note.tags) === JSON.stringify(dirtyNote.tags) &&
+      JSON.stringify(note.properties) === JSON.stringify(dirtyNote.properties);
+
+    if (isContentEqual) {
+      setDirtyNote(note);
+    }
+  }, [note, dirtyNote]);
 
   // Debounced save effect for the entire note
   useEffect(() => {
-    // Don't save if the content is unchanged from the source prop
-    if (dirtyNote === note) {
+    // Don't save if the content is unchanged from the source prop (at the time of last change)
+    if (dirtyNote === noteRef.current) {
       return;
     }
 
@@ -38,14 +60,14 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
     return () => {
       clearTimeout(handler);
     };
-  }, [dirtyNote, onSave, note]);
+  }, [dirtyNote, onSave]); // Removed 'note' from dependencies to prevent cancellation on external updates
 
-  const handleContentSave = (updatedContent: string) => {
+  const handleContentSave = useCallback((updatedContent: string) => {
     setDirtyNote((prevNote) => ({
       ...prevNote,
       content: updatedContent,
     }));
-  };
+  }, []);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDirtyNote((prevNote) => ({
