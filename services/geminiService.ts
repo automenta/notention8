@@ -1,8 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 
-export const isApiKeyAvailable = !!(
-  process.env.API_KEY && process.env.API_KEY !== 'YOUR_GEMINI_API_KEY'
-);
+const API_KEY = process.env.API_KEY;
+export const isApiKeyAvailable = !!(API_KEY && API_KEY !== 'YOUR_GEMINI_API_KEY');
 
 if (!isApiKeyAvailable) {
   console.warn(
@@ -10,27 +9,33 @@ if (!isApiKeyAvailable) {
   );
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+const ai = isApiKeyAvailable ? new GoogleGenAI({ apiKey: API_KEY || '' }) : null;
 
-export const summarizeText = async (
-  textToSummarize: string
-): Promise<string> => {
-  if (!isApiKeyAvailable) {
+const MODEL_NAME = 'gemini-2.5-flash';
+
+const createSummaryPrompt = (text: string) => `Summarize the following note content into a single, concise paragraph. Focus on the main narrative and key points. Ignore structured data like hashtags or key-value properties. Do not include any introductory phrases in your response.
+
+Note Content:
+${text}
+`;
+
+const createTagsPrompt = (text: string) => `Analyze the following note content and suggest up to 5 relevant tags.
+Return ONLY a valid JSON array of strings (e.g., ["tag1", "tag2"]).
+Tags should be lowercase, single words or short phrases, and relevant to the context.
+
+Note Content:
+${text}
+`;
+
+export const summarizeText = async (textToSummarize: string): Promise<string> => {
+  if (!ai) {
     throw new Error('Gemini API key not configured. Cannot summarize text.');
   }
 
   try {
-    const model = 'gemini-2.5-flash';
-
-    const prompt = `Summarize the following note content into a single, concise paragraph. Focus on the main narrative and key points. Ignore structured data like hashtags or key-value properties. Do not include any introductory phrases in your response.
-
-Note Content:
-${textToSummarize}
-        `;
-
     const response = await ai.models.generateContent({
-      model: model,
-      contents: prompt,
+      model: MODEL_NAME,
+      contents: createSummaryPrompt(textToSummarize),
       config: {
         temperature: 0.2,
         topP: 0.9,
@@ -38,17 +43,48 @@ ${textToSummarize}
       },
     });
 
-    const summary = response.text;
+    const summary = response.text?.trim();
     if (!summary) {
       throw new Error('Received an empty summary from the API.');
     }
 
-    return summary.trim();
+    return summary;
   } catch (error) {
-    console.error('Error summarizing text with Gemini API:', error);
+    console.error('Gemini API Error:', error);
     if (error instanceof Error) {
       throw new Error(`Failed to generate summary: ${error.message}`);
     }
     throw new Error('An unknown error occurred while generating the summary.');
+  }
+};
+
+export const suggestTags = async (text: string): Promise<string[]> => {
+  if (!ai) {
+    throw new Error('Gemini API key not configured.');
+  }
+
+  try {
+    const response = await ai.models.generateContent({
+      model: MODEL_NAME,
+      contents: createTagsPrompt(text),
+      config: {
+        temperature: 0.1,
+      },
+    });
+
+    const raw = response.text?.trim();
+    if (!raw) return [];
+
+    // Clean up markdown code blocks if present
+    const jsonStr = raw.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+
+    const tags = JSON.parse(jsonStr);
+    if (!Array.isArray(tags)) {
+      throw new Error('Response is not an array');
+    }
+    return tags.map((t: unknown) => String(t));
+  } catch (error) {
+    console.error('Gemini API Error (Tags):', error);
+    throw new Error('Failed to suggest tags.');
   }
 };
