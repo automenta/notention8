@@ -1,47 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getPublicKey, nip19 } from 'nostr-tools';
-import type { NostrEvent, NostrProfile } from '../../types';
+import { getPublicKey } from 'nostr-tools';
+import type { NostrEvent } from '../../types';
 import { KeyIcon, LoadingSpinner, SettingsIcon } from '../icons';
-import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
+import { DEFAULT_RELAYS, hexToBytes, pool } from '../../utils/nostr';
 import { useNostrProfile } from '../../hooks/useNostrProfile';
 import { ProfileHeader } from '../network/ProfileHeader';
+import { NostrEventCard } from '../network/NostrEventCard';
 import { useView } from '../../hooks/useViewContext';
 import { useSettings } from '../../hooks/useSettingsContext';
-
-const NostrEventCard: React.FC<{
-  event: NostrEvent;
-  profile: NostrProfile | undefined;
-}> = ({ event, profile }) => {
-  const eventDate = new Date(event.created_at * 1000).toLocaleString();
-  const authorNpub = useMemo(
-    () => nip19.npubEncode(event.pubkey),
-    [event.pubkey]
-  );
-
-  return (
-    <div className="bg-gray-800 p-4 rounded-lg border border-gray-700/80 animate-fade-in">
-      <div className="flex items-center text-sm text-gray-400 mb-2">
-        {profile?.picture && (
-          <img
-            src={profile.picture}
-            alt={profile.name || ''}
-            className="h-6 w-6 rounded-full mr-2"
-          />
-        )}
-        <span
-          className="font-semibold text-blue-400 hover:underline cursor-pointer"
-          title={authorNpub}
-        >
-          {profile?.name || formatNpub(authorNpub)}
-        </span>
-        <span className="ml-auto">{eventDate}</span>
-      </div>
-      <p className="text-gray-300 whitespace-pre-wrap break-words">
-        {event.content}
-      </p>
-    </div>
-  );
-};
 
 export const NetworkView: React.FC = () => {
   const { settings } = useSettings();

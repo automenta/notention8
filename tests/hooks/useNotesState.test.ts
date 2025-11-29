@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import { useNotes } from '../../hooks/useNotesManager';
+import { useNotesState } from '../../hooks/useNotesState';
 import { useLocalForage } from '../../hooks/useLocalForage';
 import type { Note } from '../../types';
 
@@ -21,7 +21,7 @@ describe('services/notes', () => {
   });
 
   it('should add a new note', () => {
-    const { result } = renderHook(() => useNotes());
+    const { result } = renderHook(() => useNotesState());
 
     act(() => {
       result.current.addNote();
@@ -57,7 +57,7 @@ describe('services/notes', () => {
     ];
     mockUseLocalForage.mockReturnValue([initialNotes, mockSetNotes, false]);
 
-    const { result } = renderHook(() => useNotes());
+    const { result } = renderHook(() => useNotesState());
     const updatedNote = { ...initialNotes[0], title: 'Updated Title' };
 
     act(() => {
@@ -93,7 +93,7 @@ describe('services/notes', () => {
     ];
     mockUseLocalForage.mockReturnValue([initialNotes, mockSetNotes, false]);
 
-    const { result } = renderHook(() => useNotes());
+    const { result } = renderHook(() => useNotesState());
 
     act(() => {
       result.current.deleteNote('1');
