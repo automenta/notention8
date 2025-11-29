@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Note } from '../types';
 import { TiptapEditor } from './TiptapEditor';
+import { areNotesEqual } from '../utils/notes';
 
 const SAVE_DEBOUNCE_MS = 1000;
 
@@ -30,15 +31,7 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
     }
 
     // If ID is same, check if content is effectively equal.
-    // If so, update dirtyNote to use the new object reference (e.g. new updatedAt)
-    // to avoid unnecessary diffs later.
-    const isContentEqual =
-      note.title === dirtyNote.title &&
-      note.content === dirtyNote.content &&
-      JSON.stringify(note.tags) === JSON.stringify(dirtyNote.tags) &&
-      JSON.stringify(note.properties) === JSON.stringify(dirtyNote.properties);
-
-    if (isContentEqual) {
+    if (areNotesEqual(note, dirtyNote)) {
       setDirtyNote(note);
     }
   }, [note, dirtyNote]);
@@ -66,12 +59,12 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
     }));
   }, []);
 
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setDirtyNote((prevNote) => ({
       ...prevNote,
       title: e.target.value,
     }));
-  };
+  }, []);
 
   return (
     <div className="flex flex-col h-full">

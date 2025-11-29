@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import localforage from 'localforage';
 
 export function useLocalForage<T>(
@@ -9,32 +9,42 @@ export function useLocalForage<T>(
   const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [loading, setLoading] = useState(true);
 
+  // Use a ref to access the latest initialValue inside useEffect without adding it to dependencies.
+  const initialValueRef = useRef(initialValue);
+
+  // Update ref if initialValue changes
+  useEffect(() => {
+    initialValueRef.current = initialValue;
+  }, [initialValue]);
+
   useEffect(() => {
     let isMounted = true;
+    setLoading(true);
+
     localforage
       .getItem<T>(key)
       .then((value) => {
-        if (isMounted) {
-          if (value !== null) {
-            // Check if it's a plain object for merging, to avoid breaking arrays or other types
-            if (
-              Object.prototype.toString.call(initialValue) ===
-                '[object Object]' &&
-              Object.prototype.toString.call(value) === '[object Object]'
-            ) {
-              setStoredValue({
-                ...(initialValue as object),
-                ...(value as object),
-              } as T);
-            } else {
-              setStoredValue(value);
-            }
+        if (!isMounted) return;
+
+        if (value !== null) {
+          // Check if it's a plain object for merging
+          const initVal = initialValueRef.current;
+          const isInitObject = Object.prototype.toString.call(initVal) === '[object Object]';
+          const isValueObject = Object.prototype.toString.call(value) === '[object Object]';
+
+          if (isInitObject && isValueObject) {
+            setStoredValue({
+              ...(initVal as object),
+              ...(value as object),
+            } as T);
           } else {
-            // If nothing is stored, use the initial value
-            setStoredValue(initialValue);
+            setStoredValue(value);
           }
-          setLoading(false);
+        } else {
+          // If nothing is stored, use the initial value
+          setStoredValue(initialValueRef.current);
         }
+        setLoading(false);
       })
       .catch((err) => {
         console.error(`Error reading from localForage key "${key}":`, err);
@@ -46,16 +56,18 @@ export function useLocalForage<T>(
     return () => {
       isMounted = false;
     };
-  }, [key, initialValue]);
+  }, [key]);
 
   const setValue: Dispatch<SetStateAction<T>> = useCallback(
     (value) => {
       setStoredValue((prevStoredValue) => {
         const valueToStore =
           value instanceof Function ? value(prevStoredValue) : value;
+
         localforage.setItem(key, valueToStore).catch((err) => {
           console.error(`Error writing to localForage key "${key}":`, err);
         });
+
         return valueToStore;
       });
     },
