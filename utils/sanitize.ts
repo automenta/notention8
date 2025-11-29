@@ -1,11 +1,11 @@
 // Define forbidden tags and attributes for clarity and reuse.
-const FORBIDDEN_TAGS = ['script', 'iframe', 'object', 'embed', 'style'];
-const FORBIDDEN_ATTR = [
+const FORBIDDEN_TAGS = new Set(['script', 'iframe', 'object', 'embed', 'style']);
+const FORBIDDEN_ATTR = new Set([
   'onclick', 'onerror', 'onload', 'onmouseover', 'onmouseout', 'onfocus',
   'onblur', 'onchange', 'onsubmit', 'onkeydown', 'onkeyup', 'onkeypress',
   'onmousedown', 'onmouseup', 'ondblclick', 'oncontextmenu', 'onwheel',
   'ondrag', 'ondrop', 'onscroll'
-];
+]);
 
 // Helper to escape HTML entities
 const escapeHTML = (str: string) => {
@@ -23,7 +23,7 @@ export const sanitizeHTML = (dirty: string): string => {
   const doc = parser.parseFromString(dirty, 'text/html');
 
   // 1. Quarantine forbidden tags
-  doc.querySelectorAll(FORBIDDEN_TAGS.join(',')).forEach(tagNode => {
+  doc.querySelectorAll(Array.from(FORBIDDEN_TAGS).join(',')).forEach(tagNode => {
     const originalHtml = tagNode.outerHTML;
     const pre = doc.createElement('pre');
     pre.className = 'quarantined-code';
@@ -34,11 +34,21 @@ export const sanitizeHTML = (dirty: string): string => {
   // 2. Quarantine forbidden attributes
   doc.querySelectorAll('*').forEach(element => {
     const attrs = Array.from(element.attributes);
-    attrs.forEach(attr => {
-      if (FORBIDDEN_ATTR.includes(attr.name.toLowerCase())) {
+    for (const attr of attrs) {
+      const name = attr.name.toLowerCase();
+      const value = attr.value;
+      let shouldQuarantine = false;
+
+      if (FORBIDDEN_ATTR.has(name)) {
+        shouldQuarantine = true;
+      } else if ((name === 'href' || name === 'src') && value.trim().toLowerCase().startsWith('javascript:')) {
+        shouldQuarantine = true;
+      }
+
+      if (shouldQuarantine) {
         const quarantinedAttr = doc.createElement('span');
         quarantinedAttr.className = 'quarantined-code';
-        quarantinedAttr.textContent = ` ${attr.name}="${escapeHTML(attr.value)}"`;
+        quarantinedAttr.textContent = ` ${attr.name}="${escapeHTML(value)}"`;
 
         // Insert the quarantined span as the first child of the element
         element.insertBefore(quarantinedAttr, element.firstChild);
@@ -46,18 +56,7 @@ export const sanitizeHTML = (dirty: string): string => {
         // Remove the dangerous attribute
         element.removeAttribute(attr.name);
       }
-
-      // 3. Sanitize 'href' and 'src' attributes for javascript: URLs
-      if (['href', 'src'].includes(attr.name.toLowerCase())) {
-        if (attr.value.trim().toLowerCase().startsWith('javascript:')) {
-          const quarantinedAttr = doc.createElement('span');
-          quarantinedAttr.className = 'quarantined-code';
-          quarantinedAttr.textContent = ` ${attr.name}="${escapeHTML(attr.value)}"`;
-          element.insertBefore(quarantinedAttr, element.firstChild);
-          element.removeAttribute(attr.name);
-        }
-      }
-    });
+    }
   });
 
   return doc.body.innerHTML;

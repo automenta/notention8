@@ -1,14 +1,19 @@
 import { useMemo } from 'react';
-import type { Note } from '../types';
+import type { Note, SortOrder } from '../types';
 import { getTextFromHtml } from '../utils/nostr';
 
-type SortOrder =
-  | 'updatedAt_desc'
-  | 'updatedAt_asc'
-  | 'createdAt_desc'
-  | 'createdAt_asc'
-  | 'title_asc'
-  | 'title_desc';
+const sortStrategies: Record<SortOrder, (a: Note, b: Note) => number> = {
+  updatedAt_desc: (a, b) =>
+    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+  updatedAt_asc: (a, b) =>
+    new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
+  createdAt_desc: (a, b) =>
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  createdAt_asc: (a, b) =>
+    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  title_asc: (a, b) => a.title.localeCompare(b.title),
+  title_desc: (a, b) => b.title.localeCompare(a.title),
+};
 
 export const useSortedFilteredNotes = (
   notes: Note[],
@@ -22,14 +27,18 @@ export const useSortedFilteredNotes = (
 
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
+    // Parse search terms
     const searchParts: string[] =
       lowerCaseSearchTerm.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
+
     const textQueries = searchParts
       .filter((p) => !p.startsWith('#') && !p.includes(':'))
       .map((p) => p.replace(/"/g, ''));
+
     const tagQueries = searchParts
       .filter((p) => p.startsWith('#'))
       .map((p) => p.substring(1));
+
     const propQueries = searchParts
       .filter((p) => p.includes(':'))
       .map((p) => {
@@ -61,34 +70,8 @@ export const useSortedFilteredNotes = (
     });
   }, [notes, searchTerm]);
 
-  const sortedNotes = useMemo(() => {
-    return [...filteredNotes].sort((a, b) => {
-      switch (sortOrder) {
-        case 'updatedAt_desc':
-          return (
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-          );
-        case 'updatedAt_asc':
-          return (
-            new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
-          );
-        case 'createdAt_desc':
-          return (
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-        case 'createdAt_asc':
-          return (
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-        case 'title_asc':
-          return a.title.localeCompare(b.title);
-        case 'title_desc':
-          return b.title.localeCompare(a.title);
-        default:
-          return 0;
-      }
-    });
+  return useMemo(() => {
+    const sorter = sortStrategies[sortOrder];
+    return [...filteredNotes].sort(sorter);
   }, [filteredNotes, sortOrder]);
-
-  return sortedNotes;
 };

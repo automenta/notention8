@@ -3,6 +3,14 @@ import type { Event as NostrToolsEvent } from 'nostr-tools';
 
 export type NostrEvent = NostrToolsEvent;
 
+export type SortOrder =
+  | 'updatedAt_desc'
+  | 'updatedAt_asc'
+  | 'createdAt_desc'
+  | 'createdAt_asc'
+  | 'title_asc'
+  | 'title_desc';
+
 export interface Property {
   key: string;
   operator: string;
