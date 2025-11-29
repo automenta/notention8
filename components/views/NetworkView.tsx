@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { getPublicKey } from 'nostr-tools';
 import type { NostrEvent } from '../../types';
 import { KeyIcon, LoadingSpinner, SettingsIcon } from '../icons';
@@ -23,21 +23,40 @@ export const NetworkView: React.FC = () => {
   const [events, setEvents] = useState<NostrEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Batching refs
+  const pendingEventsRef = useRef<NostrEvent[]>([]);
+  const seenEventIdsRef = useRef(new Set<string>());
+  const batchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     if (!pubkey) return;
 
     setEvents([]); // Clear previous events
     setIsLoading(true);
-    const seenEventIds = new Set<string>();
+    seenEventIdsRef.current = new Set();
+    pendingEventsRef.current = [];
+    if (batchTimeoutRef.current) clearTimeout(batchTimeoutRef.current);
+
+    const flushBatch = () => {
+      if (pendingEventsRef.current.length > 0) {
+        setEvents((prev) => [...prev, ...pendingEventsRef.current]);
+        pendingEventsRef.current = [];
+      }
+      batchTimeoutRef.current = null;
+    };
 
     const sub = pool.subscribeMany(
       DEFAULT_RELAYS,
       [{ kinds: [1], limit: 50 }],
       {
         onevent: (event) => {
-          if (!seenEventIds.has(event.id)) {
-            seenEventIds.add(event.id);
-            setEvents((prev) => [...prev, event]);
+          if (!seenEventIdsRef.current.has(event.id)) {
+            seenEventIdsRef.current.add(event.id);
+            pendingEventsRef.current.push(event);
+
+            if (!batchTimeoutRef.current) {
+              batchTimeoutRef.current = setTimeout(flushBatch, 500);
+            }
           }
         },
       }
@@ -47,12 +66,16 @@ export const NetworkView: React.FC = () => {
 
     return () => {
       clearTimeout(timer);
+      if (batchTimeoutRef.current) clearTimeout(batchTimeoutRef.current);
       sub.close();
     };
   }, [pubkey]);
 
   const sortedEvents = useMemo(() => {
-    return events.sort((a, b) => b.created_at - a.created_at).slice(0, 100);
+    // Clone before sort to avoid mutating state
+    return [...events]
+      .sort((a, b) => b.created_at - a.created_at)
+      .slice(0, 100);
   }, [events]);
 
   const authorPubkeys = useMemo(() => {
