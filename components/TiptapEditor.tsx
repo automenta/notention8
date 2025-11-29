@@ -4,13 +4,7 @@ import StarterKit from '@tiptap/starter-kit';
 import type { Note } from '../types';
 import { TiptapToolbar } from './TiptapToolbar';
 import { sanitizeHTML } from '../utils/sanitize';
-
-const formatHtmlForDisplay = (html: string) => {
-  if (!html) return '';
-  const blockTags = ['p', 'h1', 'h2', 'h3', 'hr', 'ul', 'ol', 'li', 'blockquote', 'pre'];
-  const regex = new RegExp(`(<(?:${blockTags.join('|')})[^>]*>)`, 'g');
-  return html.replace(regex, '\n$1').trim();
-};
+import { formatHtmlForDisplay } from '../utils/editor';
 
 interface TiptapEditorProps {
   note: Note;
