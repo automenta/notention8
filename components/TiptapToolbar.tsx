@@ -3,7 +3,6 @@ import type { Editor } from '@tiptap/react';
 import {
   BoldIcon,
   ItalicIcon,
-  UnderlineIcon,
   StrikethroughIcon,
   Heading1Icon,
   Heading2Icon,
@@ -73,13 +72,6 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
         isActive={editor.isActive('italic')}
         title="Italic"
         icon={ItalicIcon}
-      />
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-        disabled={!editor.can().chain().focus().toggleUnderline().run()}
-        isActive={editor.isActive('underline')}
-        title="Underline"
-        icon={UnderlineIcon}
       />
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleStrike().run()}

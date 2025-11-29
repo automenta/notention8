@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useLocalForage } from './useLocalForage';
 import type { Note } from '../types';
 
-export const useNotes = () => {
+export const useNotesState = () => {
   const [notes, setNotes, notesLoading] = useLocalForage<Note[]>(
     'notention-notes',
     []

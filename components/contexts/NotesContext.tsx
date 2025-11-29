@@ -1,5 +1,5 @@
 import React, { createContext, ReactNode } from 'react';
-import { useNotes as useNotesService } from '../../hooks/useNotesManager';
+import { useNotesState } from '../../hooks/useNotesState';
 import type { Note } from '../../types';
 
 interface NotesContextType {
@@ -16,7 +16,7 @@ export const NotesProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const { notes, addNote, updateNote, deleteNote, notesLoading } =
-    useNotesService();
+    useNotesState();
 
   return (
     <NotesContext.Provider
