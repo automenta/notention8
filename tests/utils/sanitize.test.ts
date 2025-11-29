@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { sanitizeHTML } from '@/utils/sanitize.ts';
 
 describe('sanitizeHTML', () => {
-  it('should remove script tags from the input string', () => {
+  it('should quarantine script tags from the input string', () => {
     const dirtyHTML = '<p>Hello <script>alert("xss");</script> World</p>';
     const sanitizedHTML = sanitizeHTML(dirtyHTML);
-    expect(sanitizedHTML).toBe('<p>Hello  World</p>');
+    expect(sanitizedHTML).toContain('<pre class="quarantined-code">&lt;script&gt;alert("xss");&lt;/script&gt;</pre>');
   });
 
   it('should keep safe tags like <p> and <b>', () => {
@@ -14,10 +14,13 @@ describe('sanitizeHTML', () => {
     expect(sanitizedHTML).toBe(safeHTML);
   });
 
-  it('should remove dangerous attributes like onclick', () => {
+  it('should quarantine dangerous attributes like onclick', () => {
     const dangerousHTML = '<p onclick="alert(\'xss\')">Click me</p>';
     const sanitizedHTML = sanitizeHTML(dangerousHTML);
-    expect(sanitizedHTML).toBe('<p>Click me</p>');
+    // The implementation adds a span with the quarantined attribute
+    expect(sanitizedHTML).toContain('<span class="quarantined-code"> onclick="alert(\'xss\')"</span>');
+    expect(sanitizedHTML).toContain('Click me');
+    expect(sanitizedHTML).not.toContain('<p onclick=');
   });
 
   it('should handle an empty string', () => {

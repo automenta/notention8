@@ -1,8 +1,7 @@
-import React, { useMemo, useState } from 'react';
-import type { Note } from '../types';
+import React, { useState } from 'react';
 import { Search } from './sidebar/Search';
-import { useNotes } from './contexts/NotesContext';
-import { useView } from './contexts/ViewContext';
+import { useNotes } from '../hooks/useNotesContext';
+import { useView } from '../hooks/useViewContext';
 import { NoteListItem } from './sidebar/NoteListItem';
 
 type SortOrder =

@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useContext } from 'react';
+import React, { createContext, ReactNode } from 'react';
 import { useNotes as useNotesService } from '../../hooks/useNotes';
 import type { Note } from '../../types';
 
@@ -27,10 +27,4 @@ export const NotesProvider: React.FC<{ children: ReactNode }> = ({
   );
 };
 
-export const useNotes = (): NotesContextType => {
-  const context = useContext(NotesContext);
-  if (context === undefined) {
-    throw new Error('useNotes must be used within a NotesProvider');
-  }
-  return context;
-};
+export { NotesContext };

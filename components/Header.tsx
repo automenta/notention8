@@ -9,7 +9,7 @@ import {
   PlusIcon,
   SettingsIcon,
 } from './icons';
-import { useView } from './contexts/ViewContext';
+import { useView } from '../hooks/useViewContext';
 
 interface HeaderProps {
   onNewNote: () => void;

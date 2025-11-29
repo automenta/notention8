@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useContext, useState } from 'react';
+import React, { createContext, ReactNode, useState } from 'react';
 import type { View } from '../../types';
 
 interface ViewContextType {
@@ -25,10 +25,4 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
   );
 };
 
-export const useView = (): ViewContextType => {
-  const context = useContext(ViewContext);
-  if (context === undefined) {
-    throw new Error('useView must be used within a ViewProvider');
-  }
-  return context;
-};
+export { ViewContext };
