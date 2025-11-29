@@ -13,7 +13,6 @@ interface TiptapEditorProps {
 
 export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave }) => {
   const [viewMode, setViewMode] = useState<'rich' | 'code'>('rich');
-  const [localContent, setLocalContent] = useState(note.content);
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -23,43 +22,25 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave }) => {
         class: 'prose prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none h-full',
       },
     },
-    onUpdate: ({ editor }) => {
-      setLocalContent(editor.getHTML());
-    },
+    onUpdate: ({ editor }) => onSave(editor.getHTML()),
   });
 
-  // Sync local changes to parent
+  // Sync content from parent
   useEffect(() => {
-    if (localContent !== note.content) {
-      onSave(localContent);
-    }
-  }, [localContent, note.content, onSave]);
-
-  // Sync content from parent, but only if the editor is not focused.
-  // This prevents the cursor from jumping during typing.
-  useEffect(() => {
-    if (editor && !editor.isFocused) {
-      const isDifferent = editor.getHTML() !== note.content;
-      if (isDifferent) {
-        editor.commands.setContent(sanitizeHTML(note.content), false);
-      }
+    if (editor && !editor.isFocused && editor.getHTML() !== note.content) {
+      editor.commands.setContent(sanitizeHTML(note.content), false);
     }
   }, [note.content, editor]);
 
-
-
   const toggleViewMode = () => {
-    if (viewMode === 'code') {
-      if (editor && editor.getHTML() !== localContent) {
-        editor.commands.setContent(sanitizeHTML(localContent), false);
-      }
+    if (viewMode === 'code' && editor && editor.getHTML() !== note.content) {
+      editor.commands.setContent(sanitizeHTML(note.content), false);
     }
-    setViewMode(viewMode === 'rich' ? 'code' : 'rich');
+    setViewMode((prev) => (prev === 'rich' ? 'code' : 'rich'));
   };
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const rawHtml = e.target.value.replace(/\n/g, '');
-    setLocalContent(rawHtml);
+    onSave(e.target.value.replace(/\n/g, ''));
   };
 
   return (
@@ -71,7 +52,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave }) => {
         ) : (
           <textarea
             className="w-full h-full p-4 bg-gray-900 text-gray-300 font-mono focus:outline-none resize-none"
-            value={formatHtmlForDisplay(localContent)}
+            value={formatHtmlForDisplay(note.content)}
             onChange={handleCodeChange}
             placeholder="Enter HTML..."
           />

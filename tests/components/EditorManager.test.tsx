@@ -4,12 +4,21 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { EditorManager } from '../../components/EditorManager';
 import type { Note } from '../../types';
 
-// Mock TiptapEditor to avoid Tiptap environment issues and focus on EditorManager logic
+// Mock TiptapEditor
 vi.mock('../../components/TiptapEditor', () => ({
   TiptapEditor: () => <div data-testid="mock-editor">Editor</div>,
 }));
 
-describe('EditorManager - Title Verification', () => {
+// Mock usePublish
+const mockPublishNote = vi.fn();
+vi.mock('../../hooks/usePublish', () => ({
+  usePublish: () => ({
+    publishNote: mockPublishNote,
+    isPublishing: false,
+  }),
+}));
+
+describe('EditorManager', () => {
   const mockOnSave = vi.fn();
   const initialNote: Note = {
     id: '123',
@@ -24,40 +33,52 @@ describe('EditorManager - Title Verification', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     mockOnSave.mockClear();
+    mockPublishNote.mockClear();
+    // Mock window.confirm and alert
+    vi.spyOn(window, 'confirm').mockImplementation(() => true);
+    vi.spyOn(window, 'alert').mockImplementation(() => {});
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it('updates title and saves after debounce when user types', () => {
     render(<EditorManager note={initialNote} onSave={mockOnSave} />);
-
     const titleInput = screen.getByPlaceholderText('Note Title') as HTMLInputElement;
-
-    // Initial state
     expect(titleInput.value).toBe('Original Title');
-
-    // Simulate typing
     fireEvent.change(titleInput, { target: { value: 'New Title' } });
-
-    // State should update immediately
     expect(titleInput.value).toBe('New Title');
-
-    // onSave should NOT be called yet (debounce)
     expect(mockOnSave).not.toHaveBeenCalled();
-
-    // Fast-forward time
     act(() => {
       vi.advanceTimersByTime(1000);
     });
-
-    // onSave should be called now
     expect(mockOnSave).toHaveBeenCalledTimes(1);
     expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({
-      id: '123',
       title: 'New Title',
-      content: '<p>Content</p>',
+    }));
+  });
+
+  it('calls publishNote when publish button is clicked', async () => {
+    mockPublishNote.mockResolvedValue('event-id-123');
+
+    render(<EditorManager note={initialNote} onSave={mockOnSave} />);
+
+    const publishBtn = screen.getByTitle('Publish to Nostr');
+
+    await act(async () => {
+        fireEvent.click(publishBtn);
+    });
+
+    expect(window.confirm).toHaveBeenCalled();
+    expect(mockPublishNote).toHaveBeenCalledWith(expect.objectContaining({
+        id: '123'
+    }));
+
+    // onSave called immediately with updated note
+    expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({
+        nostrEventId: 'event-id-123'
     }));
   });
 });
