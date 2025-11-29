@@ -125,7 +125,6 @@ export const NetworkView: React.FC = () => {
     <div className="h-full flex flex-col bg-gray-800/50 rounded-lg overflow-hidden">
       <ProfileHeader
         settings={settings}
-        setSettings={setSettings}
         pubkey={pubkey}
         profileCache={profiles}
       />

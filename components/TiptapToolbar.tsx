@@ -14,7 +14,7 @@ import {
   CodeBlockIcon,
   CodeBracketsIcon,
   HorizontalRuleIcon,
-} from './icons'; // Assuming icons are available
+} from './icons';
 
 interface TiptapToolbarProps {
   editor: Editor | null;
@@ -22,127 +22,134 @@ interface TiptapToolbarProps {
   toggleViewMode: () => void;
 }
 
+interface ToolbarButtonProps {
+  onClick: () => void;
+  isActive?: boolean;
+  disabled?: boolean;
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const ToolbarButton: React.FC<ToolbarButtonProps> = ({
+  onClick,
+  isActive,
+  disabled,
+  title,
+  icon: Icon,
+}) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`p-2 rounded-md transition-colors ${
+      isActive
+        ? 'bg-blue-500 text-white'
+        : 'hover:bg-gray-700/80 text-gray-400 hover:text-gray-200'
+    }`}
+    title={title}
+  >
+    <Icon className="h-5 w-5" />
+  </button>
+);
+
 export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
   editor,
   viewMode,
   toggleViewMode,
 }) => {
-  if (!editor) {
-    return null;
-  }
-
-  const buttonClass = (isActive: boolean) =>
-    `p-2 rounded-md transition-colors ${
-      isActive
-        ? 'bg-blue-500 text-white'
-        : 'hover:bg-gray-700/80 text-gray-400 hover:text-gray-200'
-    }`;
+  if (!editor) return null;
 
   return (
     <div className="flex-shrink-0 p-2 border-b border-gray-700/50 flex items-center flex-wrap gap-1">
-      <button
+      <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
-        className={buttonClass(editor.isActive('bold'))}
+        isActive={editor.isActive('bold')}
         title="Bold"
-      >
-        <BoldIcon className="h-5 w-5" />
-      </button>
-      <button
+        icon={BoldIcon}
+      />
+      <ToolbarButton
         onClick={() => editor.chain().focus().toggleItalic().run()}
         disabled={!editor.can().chain().focus().toggleItalic().run()}
-        className={buttonClass(editor.isActive('italic'))}
+        isActive={editor.isActive('italic')}
         title="Italic"
-      >
-        <ItalicIcon className="h-5 w-5" />
-      </button>
-      <button
+        icon={ItalicIcon}
+      />
+      <ToolbarButton
         onClick={() => editor.chain().focus().toggleUnderline().run()}
         disabled={!editor.can().chain().focus().toggleUnderline().run()}
-        className={buttonClass(editor.isActive('underline'))}
+        isActive={editor.isActive('underline')}
         title="Underline"
-      >
-        <UnderlineIcon className="h-5 w-5" />
-      </button>
-      <button
+        icon={UnderlineIcon}
+      />
+      <ToolbarButton
         onClick={() => editor.chain().focus().toggleStrike().run()}
         disabled={!editor.can().chain().focus().toggleStrike().run()}
-        className={buttonClass(editor.isActive('strike'))}
+        isActive={editor.isActive('strike')}
         title="Strikethrough"
-      >
-        <StrikethroughIcon className="h-5 w-5" />
-      </button>
+        icon={StrikethroughIcon}
+      />
 
       <div className="w-px h-6 bg-gray-700 mx-1"></div>
 
-      <button
+      <ToolbarButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className={buttonClass(editor.isActive('heading', { level: 1 }))}
+        isActive={editor.isActive('heading', { level: 1 })}
         title="Heading 1"
-      >
-        <Heading1Icon className="h-5 w-5" />
-      </button>
-      <button
+        icon={Heading1Icon}
+      />
+      <ToolbarButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={buttonClass(editor.isActive('heading', { level: 2 }))}
+        isActive={editor.isActive('heading', { level: 2 })}
         title="Heading 2"
-      >
-        <Heading2Icon className="h-5 w-5" />
-      </button>
-      <button
+        icon={Heading2Icon}
+      />
+      <ToolbarButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        className={buttonClass(editor.isActive('heading', { level: 3 }))}
+        isActive={editor.isActive('heading', { level: 3 })}
         title="Heading 3"
-      >
-        <Heading3Icon className="h-5 w-5" />
-      </button>
+        icon={Heading3Icon}
+      />
 
       <div className="w-px h-6 bg-gray-700 mx-1"></div>
 
-      <button
+      <ToolbarButton
         onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={buttonClass(editor.isActive('bulletList'))}
+        isActive={editor.isActive('bulletList')}
         title="Bullet List"
-      >
-        <ListUlIcon className="h-5 w-5" />
-      </button>
-      <button
+        icon={ListUlIcon}
+      />
+      <ToolbarButton
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={buttonClass(editor.isActive('orderedList'))}
+        isActive={editor.isActive('orderedList')}
         title="Numbered List"
-      >
-        <ListOlIcon className="h-5 w-5" />
-      </button>
-      <button
+        icon={ListOlIcon}
+      />
+      <ToolbarButton
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={buttonClass(editor.isActive('blockquote'))}
+        isActive={editor.isActive('blockquote')}
         title="Blockquote"
-      >
-        <QuoteIcon className="h-5 w-5" />
-      </button>
-      <button
+        icon={QuoteIcon}
+      />
+      <ToolbarButton
         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-        className={buttonClass(editor.isActive('codeBlock'))}
+        isActive={editor.isActive('codeBlock')}
         title="Code Block"
-      >
-        <CodeBlockIcon className="h-5 w-5" />
-      </button>
-      <button
+        icon={CodeBlockIcon}
+      />
+      <ToolbarButton
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
         title="Horizontal Rule"
-      >
-        <HorizontalRuleIcon className="h-5 w-5" />
-      </button>
+        icon={HorizontalRuleIcon}
+      />
 
       <div className="flex-grow"></div>
 
-      <button
+      <ToolbarButton
         onClick={toggleViewMode}
-        className={buttonClass(viewMode === 'code')}
+        isActive={viewMode === 'code'}
         title="Toggle Code View"
-      >
-        <CodeBracketsIcon className="h-5 w-5" />
-      </button>
+        icon={CodeBracketsIcon}
+      />
     </div>
   );
 };

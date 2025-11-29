@@ -40,8 +40,10 @@ export const ContactList: React.FC<ContactListProps> = ({
     if (!newContactNpub.trim()) return;
 
     try {
-      const { data: newPubkey } = nip19.decode(newContactNpub.trim());
-      //if (type !== 'npub' || typeof newPubkey !== 'string') throw new Error("Invalid npub format.");
+      const { type, data: newPubkey } = nip19.decode(newContactNpub.trim());
+      if (type !== 'npub' || typeof newPubkey !== 'string')
+        throw new Error('Invalid npub format.');
+
       if (contacts.some((c) => c.pubkey === newPubkey) || newPubkey === pubkey)
         throw new Error('Contact already exists or is yourself.');
 

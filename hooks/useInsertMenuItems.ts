@@ -18,44 +18,41 @@ export const useInsertMenuItems = (
   const { allTags, allTemplates, allProperties } = indexedOntology;
 
   return useMemo(() => {
-    let items: InsertMenuItem[] = [];
+    const tagItems: InsertMenuItem[] =
+      mode === 'all'
+        ? allTags.map((tag) => ({
+            id: `tag-${tag.id}`,
+            type: 'tag',
+            label: tag.label,
+            description: tag.description || 'Tag',
+          }))
+        : [];
 
-    if (mode === 'all') {
-      // Add tags
-      allTags.forEach((tag) => {
-        items.push({
-          id: `tag-${tag.id}`,
-          type: 'tag',
-          label: tag.label,
-          description: tag.description || 'Tag',
-        });
-      });
+    const templateItems: InsertMenuItem[] =
+      mode === 'all'
+        ? allTemplates.map((template) => ({
+            id: `template-${template.id}`,
+            type: 'template',
+            label: template.label,
+            description: template.description || 'Template',
+          }))
+        : [];
 
-      // Add templates
-      allTemplates.forEach((template) => {
-        items.push({
-          id: `template-${template.id}`,
-          type: 'template',
-          label: template.label,
-          description: template.description || 'Template',
-        });
-      });
-    }
+    const propertyItems: InsertMenuItem[] = allProperties.map((prop) => ({
+      id: `property-${prop.id}`,
+      type: 'property',
+      label: prop.label,
+      description: prop.description || 'Property',
+    }));
 
-    // Add property keys (in both modes)
-    allProperties.forEach((prop) => {
-      items.push({
-        id: `property-${prop.id}`,
-        type: 'property',
-        label: prop.label,
-        description: prop.description || 'Property',
-      });
-    });
+    let items = [...tagItems, ...templateItems, ...propertyItems];
 
     // If in 'all' mode, filter out properties that are part of templates already shown
     if (mode === 'all') {
       const templateProps = new Set(
-        allTemplates.flatMap((t) => (t.attributes ? Object.keys(t.attributes) : []))
+        allTemplates.flatMap((t) =>
+          t.attributes ? Object.keys(t.attributes) : []
+        )
       );
       items = items.filter(
         (item) => item.type !== 'property' || !templateProps.has(item.label)

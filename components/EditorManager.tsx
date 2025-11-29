@@ -7,13 +7,11 @@ const SAVE_DEBOUNCE_MS = 1000;
 interface EditorManagerProps {
   note: Note;
   onSave: (note: Note) => void;
-  onDelete: (id: string) => void;
 }
 
 export const EditorManager: React.FC<EditorManagerProps> = ({
   note,
   onSave,
-  onDelete: _onDelete,
 }) => {
   const [dirtyNote, setDirtyNote] = useState<Note>(note);
   const noteRef = useRef(note);
@@ -23,8 +21,7 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
     noteRef.current = note;
   }, [note]);
 
-  // When the selected note changes (ID change), or the note is updated from parent
-  // and matches our local content, we sync.
+  // Sync state when note prop changes
   useEffect(() => {
     // If ID changed, it's a new note selection. Reset completely.
     if (note.id !== dirtyNote.id) {
@@ -60,7 +57,7 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
     return () => {
       clearTimeout(handler);
     };
-  }, [dirtyNote, onSave]); // Removed 'note' from dependencies to prevent cancellation on external updates
+  }, [dirtyNote, onSave]);
 
   const handleContentSave = useCallback((updatedContent: string) => {
     setDirtyNote((prevNote) => ({
@@ -88,7 +85,7 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
         />
       </div>
       <TiptapEditor
-        key={note.id} // This is crucial to force a re-mount when the note changes
+        key={note.id} // Force re-mount when note changes
         note={dirtyNote}
         onSave={handleContentSave}
       />

@@ -26,24 +26,21 @@ export const MapView: React.FC = () => {
   );
 
   const geoPoints = useMemo<GeoPoint[]>(() => {
-    const points: GeoPoint[] = [];
-    notes.forEach((note) => {
-      note.properties.forEach((prop) => {
-        // This check is simplistic. A robust implementation might check the
-        // property type against the ontology.
-        if (
-          prop.key === 'location' &&
-          prop.values[0] &&
-          prop.values[0] !== '...'
-        ) {
+    return notes.flatMap((note) => {
+      return note.properties
+        .filter(
+          (prop) =>
+            prop.key === 'location' &&
+            prop.values[0] &&
+            prop.values[0] !== '...'
+        )
+        .map((prop) => {
           const [lat, lng] = prop.values[0].split(',').map(parseFloat);
-          if (!isNaN(lat) && !isNaN(lng)) {
-            points.push({ noteId: note.id, noteTitle: note.title, lat, lng });
-          }
-        }
-      });
+          if (isNaN(lat) || isNaN(lng)) return null;
+          return { noteId: note.id, noteTitle: note.title, lat, lng };
+        })
+        .filter((p): p is GeoPoint => p !== null);
     });
-    return points;
   }, [notes]);
 
   useEffect(() => {
