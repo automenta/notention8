@@ -48,7 +48,7 @@ export const ChatView: React.FC = () => {
             : event.pubkey;
         if (!peerPubkey) return;
 
-        const decryptedContent = nip04.decrypt(
+        const decryptedContent = await nip04.decrypt(
           privkey,
           peerPubkey,
           event.content

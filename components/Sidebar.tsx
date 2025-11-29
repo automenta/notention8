@@ -3,15 +3,7 @@ import { Search } from './sidebar/Search';
 import { useNotes } from '../hooks/useNotesContext';
 import { useView } from '../hooks/useViewContext';
 import { NoteListItem } from './sidebar/NoteListItem';
-
-type SortOrder =
-  | 'updatedAt_desc'
-  | 'updatedAt_asc'
-  | 'createdAt_desc'
-  | 'createdAt_asc'
-  | 'title_asc'
-  | 'title_desc';
-
+import type { SortOrder } from '../types';
 import { useSortedFilteredNotes } from '../hooks/useSortedFilteredNotes';
 
 export const Sidebar: React.FC = () => {

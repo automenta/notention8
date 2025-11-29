@@ -48,7 +48,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     if (!newMessage.trim() || !selectedContact) return;
 
     try {
-      const encryptedContent = nip04.encrypt(
+      const encryptedContent = await nip04.encrypt(
         privkey,
         selectedContact.pubkey,
         newMessage.trim()
