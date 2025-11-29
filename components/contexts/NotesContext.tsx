@@ -1,5 +1,5 @@
 import React, { createContext, ReactNode } from 'react';
-import { useNotes as useNotesService } from '../../hooks/useNotes';
+import { useNotes as useNotesService } from '../../hooks/useNotesManager';
 import type { Note } from '../../types';
 
 interface NotesContextType {

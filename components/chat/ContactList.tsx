@@ -1,9 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { finalizeEvent, nip19 } from 'nostr-tools';
 import { useNostrProfile } from '../../hooks/useNostrProfile';
-import { pool } from '../../services/nostrService';
 import type { Contact } from '../../types';
-import { DEFAULT_RELAYS, formatNpub, hexToBytes } from '../../utils/nostr';
+import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
 import { UserPlusIcon } from '../icons';
 
 interface ContactListProps {

@@ -28,13 +28,11 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave }) => {
     },
   });
 
-  // Debounced save effect
+  // Sync local changes to parent
   useEffect(() => {
-    if (localContent === note.content) return;
-    const handler = setTimeout(() => {
+    if (localContent !== note.content) {
       onSave(localContent);
-    }, 1000);
-    return () => clearTimeout(handler);
+    }
   }, [localContent, note.content, onSave]);
 
   // Sync content from parent, but only if the editor is not focused.

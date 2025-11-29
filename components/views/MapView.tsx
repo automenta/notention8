@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import L from 'leaflet';
-import { useNotes } from '../../hooks/useNotesContext';
+import { useNotes } from '../../hooks/useNotes';
 import { useView } from '../../hooks/useViewContext';
 
 interface GeoPoint {

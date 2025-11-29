@@ -6,7 +6,7 @@ import { SettingsProvider } from '../components/contexts/SettingsContext';
 import { ViewProvider } from '../components/contexts/ViewContext';
 
 // Mock the hooks
-vi.mock('../hooks/useNotesContext', () => ({
+vi.mock('../hooks/useNotes', () => ({
   useNotes: () => ({
     notes: [],
     addNote: vi.fn(),

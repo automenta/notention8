@@ -2,8 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { getPublicKey, nip19 } from 'nostr-tools';
 import type { NostrEvent, NostrProfile } from '../../types';
 import { KeyIcon, LoadingSpinner, SettingsIcon } from '../icons';
-import { DEFAULT_RELAYS, formatNpub, hexToBytes } from '../../utils/nostr';
-import { pool } from '../../services/nostrService';
+import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
 import { useNostrProfile } from '../../hooks/useNostrProfile';
 import { ProfileHeader } from '../network/ProfileHeader';
 import { useView } from '../../hooks/useViewContext';
@@ -45,7 +44,7 @@ const NostrEventCard: React.FC<{
 };
 
 export const NetworkView: React.FC = () => {
-  const { settings, setSettings } = useSettings();
+  const { settings } = useSettings();
   const { setActiveView } = useView();
   const onNavigateToSettings = () => setActiveView('settings');
   const pubkey = useMemo(
