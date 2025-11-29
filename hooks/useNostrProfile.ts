@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { DEFAULT_RELAYS, pool } from '../utils/nostr';
 import type { NostrEvent, NostrProfile } from '../types';
 
@@ -8,6 +8,15 @@ const requestedPubkeys = new Set<string>();
 export const useNostrProfile = (
   pubkeys: string[]
 ): Record<string, NostrProfile> => {
+  // Use a stable key for dependency tracking to avoid loops if pubkeys is a new array literal with same content
+  const pubkeysKey = useMemo(() => pubkeys.slice().sort().join(','), [pubkeys]);
+
+  // Ref to access the latest pubkeys array inside useEffect without triggering re-runs on reference change
+  const pubkeysRef = useRef(pubkeys);
+  useEffect(() => {
+    pubkeysRef.current = pubkeys;
+  }, [pubkeys]);
+
   const [profiles, setProfiles] = useState<Record<string, NostrProfile>>(() => {
     const initialProfiles: Record<string, NostrProfile> = {};
     pubkeys.forEach((pk) => {
@@ -19,16 +28,19 @@ export const useNostrProfile = (
   });
 
   useEffect(() => {
-    const pubkeysToFetch = pubkeys.filter(
+    const currentPubkeys = pubkeysRef.current;
+
+    const pubkeysToFetch = currentPubkeys.filter(
       (pk) => !profileCache.has(pk) && !requestedPubkeys.has(pk)
     );
 
+    // If nothing to fetch, just ensure we have latest from cache (in case cache updated elsewhere)
     if (pubkeysToFetch.length === 0) {
-      // Ensure local state is up-to-date with global cache even if not fetching
       setProfiles((currentProfiles) => {
         const newProfiles: Record<string, NostrProfile> = {};
         let hasChanged = false;
-        pubkeys.forEach((pk) => {
+
+        currentPubkeys.forEach((pk) => {
           if (profileCache.has(pk)) {
             newProfiles[pk] = profileCache.get(pk)!;
             if (currentProfiles[pk] !== newProfiles[pk]) {
@@ -36,10 +48,10 @@ export const useNostrProfile = (
             }
           }
         });
+
         if (
           hasChanged ||
-          Object.keys(newProfiles).length !==
-            Object.keys(currentProfiles).length
+          Object.keys(newProfiles).length !== Object.keys(currentProfiles).length
         ) {
           return newProfiles;
         }
@@ -55,7 +67,9 @@ export const useNostrProfile = (
         const profile = JSON.parse(event.content) as NostrProfile;
         profileCache.set(event.pubkey, profile);
         setProfiles((prev) => ({ ...prev, [event.pubkey]: profile }));
-      } catch {}
+      } catch (e) {
+        console.warn('Failed to parse Nostr profile', e);
+      }
     };
 
     const sub = pool.subscribeMany(
@@ -66,11 +80,10 @@ export const useNostrProfile = (
       }
     );
 
-    // Cleanup subscription on unmount or when pubkeys change
     return () => {
       sub.close();
     };
-  }, [pubkeys]);
+  }, [pubkeysKey]);
 
   return profiles;
 };

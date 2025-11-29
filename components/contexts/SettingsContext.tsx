@@ -1,11 +1,12 @@
 import React, { createContext, ReactNode, useEffect } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { useLocalForage } from '../../hooks/useLocalForage';
 import type { AppSettings } from '../../types';
 import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
 
 interface SettingsContextType {
   settings: AppSettings;
-  setSettings: (updater: (settings: AppSettings) => AppSettings) => void;
+  setSettings: Dispatch<SetStateAction<AppSettings>>;
   settingsLoading: boolean;
 }
 
