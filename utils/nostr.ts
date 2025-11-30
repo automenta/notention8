@@ -50,9 +50,8 @@ export function getTextFromHtml(content: string): string {
   div
     .querySelectorAll('p, h1, h2, h3, li, blockquote, pre, div')
     .forEach((el) => {
-      const br = document.createElement('br');
-      el.appendChild(br);
+      el.appendChild(document.createTextNode('\n'));
     });
 
-  return div.innerText || '';
+  return div.textContent || '';
 }

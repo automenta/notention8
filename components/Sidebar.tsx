@@ -6,12 +6,16 @@ import { NoteListItem } from './sidebar/NoteListItem';
 import type { SortOrder } from '../types';
 import { useSortedFilteredNotes } from '../hooks/useSortedFilteredNotes';
 import { useLocalForage } from '../hooks/useLocalForage';
+import { SortSelector } from './sidebar/SortSelector';
 
 export const Sidebar: React.FC = () => {
   const { notes, deleteNote } = useNotes();
   const { selectedNoteId, setSelectedNoteId } = useView();
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useLocalForage<SortOrder>('notention-sort-order', 'updatedAt_desc');
+  const [sortOrder, setSortOrder] = useLocalForage<SortOrder>(
+    'notention-sort-order',
+    'updatedAt_desc'
+  );
 
   const sortedNotes = useSortedFilteredNotes(notes, searchTerm, sortOrder);
 
@@ -21,8 +25,11 @@ export const Sidebar: React.FC = () => {
     }
 
     if (selectedNoteId === noteIdToDelete) {
-      const currentIndex = sortedNotes.findIndex((n) => n.id === noteIdToDelete);
-      const nextNote = sortedNotes[currentIndex + 1] || sortedNotes[currentIndex - 1] || null;
+      const currentIndex = sortedNotes.findIndex(
+        (n) => n.id === noteIdToDelete
+      );
+      const nextNote =
+        sortedNotes[currentIndex + 1] || sortedNotes[currentIndex - 1] || null;
       setSelectedNoteId(nextNote ? nextNote.id : null);
     }
     deleteNote(noteIdToDelete);
@@ -34,20 +41,7 @@ export const Sidebar: React.FC = () => {
         <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       </div>
 
-      <div className="p-2 flex-shrink-0 border-b border-gray-700/50">
-        <select
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-          className="w-full bg-gray-800 border border-gray-700 rounded-md py-1.5 px-2 text-sm text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <option value="updatedAt_desc">Sort: Modified (Newest)</option>
-          <option value="updatedAt_asc">Sort: Modified (Oldest)</option>
-          <option value="createdAt_desc">Sort: Created (Newest)</option>
-          <option value="createdAt_asc">Sort: Created (Oldest)</option>
-          <option value="title_asc">Sort: Title (A-Z)</option>
-          <option value="title_desc">Sort: Title (Z-A)</option>
-        </select>
-      </div>
+      <SortSelector sortOrder={sortOrder} onSortChange={setSortOrder} />
 
       <div className="flex-grow p-2 space-y-1 overflow-y-auto">
         {sortedNotes.length > 0 ? (
