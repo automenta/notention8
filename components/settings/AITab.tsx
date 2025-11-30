@@ -2,6 +2,7 @@ import React from 'react';
 import { SparklesIcon } from '../icons';
 import { isApiKeyAvailable } from '@/services/geminiService.ts';
 import type { AppSettings } from '@/types';
+import { Toggle } from '../common/Toggle';
 
 interface AITabProps {
   settings: AppSettings;
@@ -37,27 +38,13 @@ export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
               : ''
           }
         >
-          <button
+          <Toggle
             id="ai-toggle"
-            onClick={handleToggleAI}
+            checked={settings.aiEnabled}
+            onChange={handleToggleAI}
             disabled={!isApiKeyAvailable}
-            className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500 ${
-              isApiKeyAvailable
-                ? settings.aiEnabled
-                  ? 'bg-blue-600'
-                  : 'bg-gray-600'
-                : 'bg-gray-700 cursor-not-allowed'
-            }`}
-          >
-            <span
-              aria-hidden="true"
-              className={`inline-block h-5 w-5 rounded-full bg-white shadow-lg transform ring-0 transition ease-in-out duration-200 ${
-                settings.aiEnabled && isApiKeyAvailable
-                  ? 'translate-x-5'
-                  : 'translate-x-0'
-              }`}
-            />
-          </button>
+            ariaLabel="Enable AI Features"
+          />
         </div>
       </div>
       {!isApiKeyAvailable && (
