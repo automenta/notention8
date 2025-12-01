@@ -5,16 +5,21 @@ import { useView } from '../hooks/useViewContext';
 import { NoteListItem } from './sidebar/NoteListItem';
 import type { SortOrder } from '../types';
 import { useSortedFilteredNotes } from '../hooks/useSortedFilteredNotes';
+import { useLocalForage } from '../hooks/useLocalForage';
 
 export const Sidebar: React.FC = () => {
   const { notes, deleteNote } = useNotes();
   const { selectedNoteId, setSelectedNoteId } = useView();
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('updatedAt_desc');
+  const [sortOrder, setSortOrder] = useLocalForage<SortOrder>('notention-sort-order', 'updatedAt_desc');
 
   const sortedNotes = useSortedFilteredNotes(notes, searchTerm, sortOrder);
 
   const handleDeleteNote = (noteIdToDelete: string) => {
+    if (!window.confirm('Are you sure you want to delete this note?')) {
+      return;
+    }
+
     if (selectedNoteId === noteIdToDelete) {
       const currentIndex = sortedNotes.findIndex((n) => n.id === noteIdToDelete);
       const nextNote = sortedNotes[currentIndex + 1] || sortedNotes[currentIndex - 1] || null;
