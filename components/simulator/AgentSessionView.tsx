@@ -10,6 +10,7 @@ interface Props {
   onDraftChange: (text: string) => void;
   status: string;
   onPublish: (note: Note) => void;
+  notifications: string[];
 }
 
 export const AgentSessionView: React.FC<Props> = ({
@@ -17,7 +18,8 @@ export const AgentSessionView: React.FC<Props> = ({
     currentDraft,
     onDraftChange,
     status,
-    onPublish
+    onPublish,
+    notifications
 }) => {
   const { notes, addNote, updateNote } = useNotes();
   const [activeNote, setActiveNote] = useState<Note | null>(null);
@@ -41,21 +43,26 @@ export const AgentSessionView: React.FC<Props> = ({
         // Notify Network
         onPublish(finalNote);
     }
-  }, [status]); // Dependencies intentionally limited to trigger once on status change?
-                // Actually status might stay "Published" for a while.
-                // We need to ensure we don't double publish.
-                // The Director resets status to Idle eventually.
-                // We should probably rely on a separate trigger or check if content changed?
-                // For now, assuming Director manages status transition cleanly.
+  }, [status]); // Dependencies intentionally limited
 
   // The note to display. If typing (currentDraft exists and matches activeNote), use draft.
-  // Wait, currentDraft is global for the agent. We assume the agent is typing in the *active* note.
   const displayNote = activeNote
     ? { ...activeNote, content: (currentDraft && status !== 'Idle' && status !== 'Published') ? currentDraft : activeNote.content }
     : null;
 
   return (
-    <div className="flex flex-col h-full bg-gray-900 border border-gray-700 rounded-lg overflow-hidden shadow-lg">
+    <div className="flex flex-col h-full bg-gray-900 border border-gray-700 rounded-lg overflow-hidden shadow-lg relative">
+      {/* Notifications Overlay */}
+      {notifications.length > 0 && (
+          <div className="absolute top-10 right-4 z-50 flex flex-col gap-2">
+              {notifications.map((msg, i) => (
+                  <div key={i} className="bg-blue-600 text-white text-xs px-3 py-2 rounded shadow-lg animate-bounce">
+                      🔔 {msg}
+                  </div>
+              ))}
+          </div>
+      )}
+
       {/* Header */}
       <div className="bg-gray-800 px-3 py-2 flex justify-between items-center border-b border-gray-700">
         <div className="flex items-center gap-2">

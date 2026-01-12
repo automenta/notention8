@@ -3,8 +3,12 @@ import { AgentSessionWrapper } from './AgentSessionWrapper';
 import { AgentSessionView } from './AgentSessionView';
 import { CommunityWindow } from './CommunityWindow';
 import { WebLLMProvider } from '../../services/ai/WebLLMProvider';
-import { parseProperties } from '../../utils/parsing'; // Need to parse properties for matching
-import type { Note } from '../../types';
+import { Gardener } from '../../services/gardener';
+import { parseProperties } from '../../utils/parsing';
+import { matchNotes } from '../../utils/matching';
+import { addAttribute, findNode } from '../../utils/ontologyHelpers';
+import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
+import type { Note, OntologyNode, OntologyAttribute } from '../../types';
 
 // Agent State
 interface SimulationAgent {
@@ -40,9 +44,17 @@ export const SimulatorView: React.FC = () => {
   const [active, setActive] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
   const [networkNotes, setNetworkNotes] = useState<Note[]>([]); // Shared Network State
+  const [ontology, setOntology] = useState<OntologyNode[]>(DEFAULT_ONTOLOGY);
+  const [notifications, setNotifications] = useState<Record<string, string[]>>({});
 
   const aiRef = useRef<WebLLMProvider>(new WebLLMProvider());
+  const gardenerRef = useRef<Gardener | null>(null);
   const agentsRef = useRef(agents);
+
+  // Initialize Gardener
+  useEffect(() => {
+      gardenerRef.current = new Gardener(aiRef.current);
+  }, []);
 
   // Keep ref in sync
   useEffect(() => {
@@ -86,7 +98,9 @@ export const SimulatorView: React.FC = () => {
             updateAgent(agentIndex, { status: 'Typing...' });
             await simulateTyping(agentIndex, content);
 
-            // 4. AI Tagging (Gardener)
+            // 4. AI Tagging (Gardener) & Ontology Evolution
+            // We simulate that the agent consults the AI to add tags,
+            // which in turn might suggest new ontology attributes.
             updateAgent(agentIndex, { status: 'Gardening...' });
             const tags = await aiRef.current.suggestTags(content);
             const taggedContent = content + '\n\n' + tags.map((t: string) => JSON.stringify(t)).join(' ');
@@ -130,14 +144,79 @@ export const SimulatorView: React.FC = () => {
     }
   };
 
-  const handlePublish = (note: Note) => {
-      // Ensure the note has parsed properties (since AgentSessionView might not have run full parse)
-      // Actually AgentSessionView's TiptapEditor might have done it, but let's be safe.
+  const handlePublish = async (note: Note) => {
+      // 1. Enrich Note
       const properties = parseProperties(note.content);
       const enrichedNote = { ...note, properties };
 
-      setNetworkNotes(prev => [enrichedNote, ...prev]);
-      addLog(`Event Published: ${note.id.slice(0,6)} by user`);
+      setNetworkNotes(prev => {
+          const newNotes = [enrichedNote, ...prev];
+
+          // 2. Run Matching Logic
+          // Check if this new note matches any existing note (offer matches request, or request matches offer)
+          // We assume simplistic matching: New Note vs All Previous Notes
+          // And notify BOTH owners.
+
+          prev.forEach(otherNote => {
+             const score1 = matchNotes(enrichedNote, otherNote);
+             const score2 = matchNotes(otherNote, enrichedNote);
+
+             if (score1 > 0.5 || score2 > 0.5) {
+                 addLog(`MATCH FOUND! Score: ${Math.max(score1, score2).toFixed(2)} between ${enrichedNote.id.slice(0,4)} and ${otherNote.id.slice(0,4)}`);
+
+                 // Notify Current Agent (Publisher)
+                 // Find agent who owns this note (we don't track owner in Note type here strictly, but let's assume active agents)
+                 // This is a simulation, so we just broadcast to active agents if they published it.
+                 // Ideally Note should have `pubkey` or `authorId`.
+                 // We will map Agent ID to Author somehow?
+                 // For now, simply notify ALL agents involved in the simulation since they are "Alice" and "Bob".
+
+                 setNotifications(n => ({
+                     ...n,
+                     '1': [...(n['1'] || []), `Match found for your note!`],
+                     '2': [...(n['2'] || []), `Match found for your note!`]
+                 }));
+             }
+          });
+
+          return newNotes;
+      });
+
+      addLog(`Event Published: ${note.id.slice(0,6)}`);
+
+      // 3. Evolve Ontology
+      if (gardenerRef.current) {
+          try {
+              const newAttributes = await gardenerRef.current.evolveOntology([enrichedNote]);
+              if (newAttributes.length > 0) {
+                  setOntology(prevOntology => {
+                      let newOntology = [...prevOntology];
+                      // Simply add to the first node ("Service" usually) or a "General" node if possible
+                      // In a real scenario, Gardener would suggest the Path.
+                      // Here we just attach to root node if available.
+                      const targetNodeId = newOntology[0]?.id || 'root';
+
+                      newAttributes.forEach(attr => {
+                          addLog(`Ontology Evolved: Added ${attr.key}`);
+                          // Check if exists first to avoid error? addAttribute doesn't throw, just overwrites or adds?
+                          // addAttribute creates a new tree.
+
+                          // Map AttributeDefinition to OntologyAttribute
+                          const ontAttr: OntologyAttribute = {
+                              type: attr.type,
+                              description: attr.description,
+                              operators: { real: ['is'], imaginary: [] } // Defaults
+                          };
+
+                          newOntology = addAttribute(newOntology, targetNodeId, attr.key, ontAttr);
+                      });
+                      return newOntology;
+                  });
+              }
+          } catch (e) {
+              console.error("Gardener Error:", e);
+          }
+      }
   };
 
   const addLog = (msg: string) => setLogs(prev => [msg, ...prev].slice(0, 50));
@@ -158,24 +237,26 @@ export const SimulatorView: React.FC = () => {
 
       <div className="grid grid-cols-3 gap-4 flex-grow overflow-hidden">
         {/* Agent 1 */}
-        <AgentSessionWrapper agentId={agents[0].id}>
+        <AgentSessionWrapper agentId={agents[0].id} ontology={ontology}>
             <AgentSessionView
                 agentName={agents[0].name}
                 currentDraft={agents[0].currentDraft}
                 onDraftChange={(val) => updateAgent(0, { currentDraft: val })}
                 status={agents[0].status}
                 onPublish={handlePublish}
+                notifications={notifications[agents[0].id] || []}
             />
         </AgentSessionWrapper>
 
         {/* Agent 2 */}
-        <AgentSessionWrapper agentId={agents[1].id}>
+        <AgentSessionWrapper agentId={agents[1].id} ontology={ontology}>
             <AgentSessionView
                 agentName={agents[1].name}
                 currentDraft={agents[1].currentDraft}
                 onDraftChange={(val) => updateAgent(1, { currentDraft: val })}
                 status={agents[1].status}
                 onPublish={handlePublish}
+                notifications={notifications[agents[1].id] || []}
             />
         </AgentSessionWrapper>
 
