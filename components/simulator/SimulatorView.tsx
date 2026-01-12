@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AgentSessionWrapper } from './AgentSessionWrapper';
 import { AgentSessionView } from './AgentSessionView';
+import { CommunityWindow } from './CommunityWindow';
 import { WebLLMProvider } from '../../services/ai/WebLLMProvider';
+import { parseProperties } from '../../utils/parsing'; // Need to parse properties for matching
 import type { Note } from '../../types';
 
 // Agent State
@@ -37,6 +39,8 @@ export const SimulatorView: React.FC = () => {
   const [agents, setAgents] = useState<SimulationAgent[]>(INITIAL_AGENTS);
   const [active, setActive] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
+  const [networkNotes, setNetworkNotes] = useState<Note[]>([]); // Shared Network State
+
   const aiRef = useRef<WebLLMProvider>(new WebLLMProvider());
   const agentsRef = useRef(agents);
 
@@ -88,9 +92,9 @@ export const SimulatorView: React.FC = () => {
             const taggedContent = content + '\n\n' + tags.map((t: string) => JSON.stringify(t)).join(' ');
             updateAgent(agentIndex, { currentDraft: taggedContent });
 
-            // 5. Done
+            // 5. Done - Publish Trigger
             updateAgent(agentIndex, { status: 'Published', goal: 'Wait for matches' });
-            addLog(`${agent.name} published: "${content.slice(0, 20)}..."`);
+            addLog(`${agent.name} is publishing...`);
 
             // Wait a bit before next loop
             await new Promise(r => setTimeout(r, 2000));
@@ -126,6 +130,16 @@ export const SimulatorView: React.FC = () => {
     }
   };
 
+  const handlePublish = (note: Note) => {
+      // Ensure the note has parsed properties (since AgentSessionView might not have run full parse)
+      // Actually AgentSessionView's TiptapEditor might have done it, but let's be safe.
+      const properties = parseProperties(note.content);
+      const enrichedNote = { ...note, properties };
+
+      setNetworkNotes(prev => [enrichedNote, ...prev]);
+      addLog(`Event Published: ${note.id.slice(0,6)} by user`);
+  };
+
   const addLog = (msg: string) => setLogs(prev => [msg, ...prev].slice(0, 50));
 
   return (
@@ -142,7 +156,7 @@ export const SimulatorView: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 flex-grow overflow-hidden">
+      <div className="grid grid-cols-3 gap-4 flex-grow overflow-hidden">
         {/* Agent 1 */}
         <AgentSessionWrapper agentId={agents[0].id}>
             <AgentSessionView
@@ -150,6 +164,7 @@ export const SimulatorView: React.FC = () => {
                 currentDraft={agents[0].currentDraft}
                 onDraftChange={(val) => updateAgent(0, { currentDraft: val })}
                 status={agents[0].status}
+                onPublish={handlePublish}
             />
         </AgentSessionWrapper>
 
@@ -160,13 +175,17 @@ export const SimulatorView: React.FC = () => {
                 currentDraft={agents[1].currentDraft}
                 onDraftChange={(val) => updateAgent(1, { currentDraft: val })}
                 status={agents[1].status}
+                onPublish={handlePublish}
             />
         </AgentSessionWrapper>
+
+        {/* Community Window */}
+        <CommunityWindow networkNotes={networkNotes} />
       </div>
 
-      {/* Logs / Community Feed */}
-      <div className="h-48 mt-4 bg-gray-900 border border-gray-700 rounded p-4 overflow-y-auto font-mono text-xs">
-        <h3 className="font-bold text-gray-500 mb-2 sticky top-0 bg-gray-900">Network Events</h3>
+      {/* Logs (Condensed) */}
+      <div className="h-32 mt-4 bg-gray-900 border border-gray-700 rounded p-4 overflow-y-auto font-mono text-xs">
+        <h3 className="font-bold text-gray-500 mb-2 sticky top-0 bg-gray-900">System Logs</h3>
         {logs.map((log, i) => (
             <div key={i} className="mb-1 border-l-2 border-blue-500 pl-2">
                 <span className="text-gray-400">[{new Date().toLocaleTimeString()}]</span> {log}
