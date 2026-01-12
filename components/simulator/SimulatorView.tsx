@@ -3,12 +3,14 @@ import { AgentSessionWrapper } from './AgentSessionWrapper';
 import { AgentSessionView } from './AgentSessionView';
 import { CommunityWindow } from './CommunityWindow';
 import { WebLLMProvider } from '../../services/ai/WebLLMProvider';
+import { MockLLMProvider } from '../../services/ai/MockLLMProvider';
 import { Gardener } from '../../services/gardener';
 import { parseProperties } from '../../utils/parsing';
 import { matchNotes } from '../../utils/matching';
 import { addAttribute } from '../../utils/ontologyHelpers';
 import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
 import type { Note, OntologyNode, OntologyAttribute } from '../../types';
+import type { AIProvider } from '../../services/ai/types';
 
 // Agent State
 interface SimulationAgent {
@@ -47,15 +49,50 @@ export const SimulatorView: React.FC = () => {
   const [ontology, setOntology] = useState<OntologyNode[]>(DEFAULT_ONTOLOGY);
   const [notifications, setNotifications] = useState<Record<string, string[]>>({});
   const [newAttributes, setNewAttributes] = useState<{key: string; type: string}[]>([]);
+  const [aiProviderName, setAiProviderName] = useState<string>("Initializing...");
 
-  const aiRef = useRef<WebLLMProvider>(new WebLLMProvider());
+  // AI & Gardener Refs
+  const aiRef = useRef<AIProvider | null>(null);
   const gardenerRef = useRef<Gardener | null>(null);
-  const agentsRef = useRef(agents);
-  const ontologyRef = useRef(ontology); // Ref for loop access
 
-  // Initialize Gardener
+  // State Refs for loop access
+  const agentsRef = useRef(agents);
+  const ontologyRef = useRef(ontology);
+
+  // Initialize AI Provider
   useEffect(() => {
-      gardenerRef.current = new Gardener(aiRef.current);
+    const initAI = async () => {
+        try {
+            // Attempt to load WebLLM
+            const provider = new WebLLMProvider();
+            // Trigger an init check (e.g. by generating something small or just checking GPU)
+            // But WebLLMProvider constructor is lazy. We need to force a check or just assume it works until first call.
+            // However, our requirement is to fallback if "WebLLMProvider fails".
+            // Let's rely on checking `navigator.gpu` explicitly here as a proxy,
+            // since WebLLMProvider throws if it's missing.
+
+            if (!navigator.gpu) {
+                throw new Error("WebGPU not supported");
+            }
+
+            // We could also try to await provider.getEngine() if exposed, but it's private.
+            // Let's assume if GPU exists, we try. If it fails later, we might need robust error handling in the loop.
+            // For now, let's stick to the plan: explicit fallback on initialization.
+
+            aiRef.current = provider;
+            setAiProviderName(provider.name);
+        } catch (e) {
+            console.warn("WebLLM failed to initialize, falling back to Mock:", e);
+            aiRef.current = new MockLLMProvider();
+            setAiProviderName(aiRef.current.name);
+        }
+
+        if (aiRef.current) {
+            gardenerRef.current = new Gardener(aiRef.current);
+        }
+    };
+
+    initAI();
   }, []);
 
   // Keep refs in sync
@@ -66,11 +103,6 @@ export const SimulatorView: React.FC = () => {
   useEffect(() => {
     ontologyRef.current = ontology;
   }, [ontology]);
-
-  // Use a ref for simulateTyping to be stable or just define it outside the effect
-  // But it uses updateAgent, so it needs to be careful.
-  // Actually, we can just define it inside, but we need to handle the warning.
-  // Or move logic to a reducer. For now, suppress warning or include it.
 
   // Simulation Loop
   useEffect(() => {
@@ -86,6 +118,8 @@ export const SimulatorView: React.FC = () => {
     };
 
     const loop = async () => {
+        if (!aiRef.current) return; // Wait for AI init
+
         // Use ref to get latest state inside async loop
         const currentAgents = agentsRef.current;
         const currentOntology = ontologyRef.current;
@@ -100,7 +134,6 @@ export const SimulatorView: React.FC = () => {
 
         // 1. Update Status: Thinking
         updateAgent(agentIndex, { status: 'Thinking...' });
-        // addLog(`${agent.name} is thinking about goal: "${agent.goal}"`, 'info');
 
         // 2. AI Generation
         try {
@@ -111,7 +144,24 @@ export const SimulatorView: React.FC = () => {
                 Keep it under 20 words.
                 Do not include tags yet.
             `;
-            const content = await aiRef.current.generateCompletion(prompt);
+
+            // Fallback handling inside the loop in case runtime error occurs
+            let content = "";
+            try {
+                content = await aiRef.current.generateCompletion(prompt);
+            } catch (e) {
+                console.error("AI Generation failed:", e);
+                // Last ditch fallback if main provider crashes mid-loop
+                if (aiRef.current instanceof WebLLMProvider) {
+                   addLog("WebLLM crashed, switching to Mock", 'info');
+                   aiRef.current = new MockLLMProvider();
+                   setAiProviderName(aiRef.current.name);
+                   gardenerRef.current = new Gardener(aiRef.current);
+                   content = await aiRef.current.generateCompletion(prompt);
+                } else {
+                   throw e;
+                }
+            }
 
             // 3. Typing Animation
             updateAgent(agentIndex, { status: 'Typing...' });
@@ -255,7 +305,16 @@ export const SimulatorView: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-black text-gray-200 p-2 overflow-hidden">
       <div className="flex justify-between items-center mb-2 px-2">
-        <h1 className="text-lg font-bold">🧪 Community Simulator</h1>
+        <div className="flex items-center gap-3">
+            <h1 className="text-lg font-bold">🧪 Community Simulator</h1>
+            <span className={`text-[10px] px-2 py-0.5 rounded border ${
+                aiProviderName.includes("Mock")
+                ? "bg-yellow-900/50 border-yellow-700 text-yellow-500"
+                : "bg-green-900/50 border-green-700 text-green-400"
+            }`}>
+                AI: {aiProviderName}
+            </span>
+        </div>
         <div className="flex gap-2">
             <button
                 onClick={() => setActive(!active)}
