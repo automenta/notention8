@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { EditorManager } from '../../components/EditorManager';
+import { ViewContext } from '../../components/contexts/ViewContext';
 import type { Note } from '../../types';
 
 // Mock TiptapEditor
@@ -52,8 +53,23 @@ describe('EditorManager', () => {
     vi.restoreAllMocks();
   });
 
+  const renderWithContext = (ui: React.ReactElement) => {
+    return render(
+      <ViewContext.Provider value={{
+        activeView: 'notes',
+        setActiveView: vi.fn(),
+        selectedNoteId: null,
+        setSelectedNoteId: vi.fn(),
+        matchingNoteId: null,
+        setMatchingNoteId: vi.fn()
+      }}>
+        {ui}
+      </ViewContext.Provider>
+    );
+  };
+
   it('updates title and saves after debounce when user types', () => {
-    render(<EditorManager note={initialNote} onSave={mockOnSave} />);
+    renderWithContext(<EditorManager note={initialNote} onSave={mockOnSave} />);
     const titleInput = screen.getByPlaceholderText('Note Title') as HTMLInputElement;
     expect(titleInput.value).toBe('Original Title');
     fireEvent.change(titleInput, { target: { value: 'New Title' } });
@@ -71,7 +87,7 @@ describe('EditorManager', () => {
   it('calls publishNote when publish button is clicked', async () => {
     mockPublishNote.mockResolvedValue('event-id-123');
 
-    render(<EditorManager note={initialNote} onSave={mockOnSave} />);
+    renderWithContext(<EditorManager note={initialNote} onSave={mockOnSave} />);
 
     const publishBtn = screen.getByTitle('Publish to Nostr');
 
@@ -92,7 +108,7 @@ describe('EditorManager', () => {
   it('calls suggestTags when auto-tag button is clicked', async () => {
      mockSuggestTags.mockResolvedValue(['tag1', 'tag2']);
 
-     render(<EditorManager note={initialNote} onSave={mockOnSave} />);
+     renderWithContext(<EditorManager note={initialNote} onSave={mockOnSave} />);
      const autoTagBtn = screen.getByTitle('Auto-suggest tags with AI');
 
      await act(async () => {

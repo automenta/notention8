@@ -3,6 +3,8 @@ import type { OntologyNode } from '../../types';
 import { ChevronDownIcon } from '../icons';
 import { useSettings } from '../../hooks/useSettingsContext';
 import { SimulatorView } from '../simulator/SimulatorView';
+import { useGardener } from '../../hooks/useGardener';
+import { useNotes } from '../../hooks/useNotes';
 
 interface OntologyNodeProps {
   node: OntologyNode;
@@ -47,11 +49,17 @@ const OntologyNodeItem: React.FC<OntologyNodeProps> = ({ node, level }) => {
 export const OntologyView: React.FC = () => {
   const { settings } = useSettings();
   const ontology = settings.ontology;
+  const { notes } = useNotes();
+  const { evolveOntology } = useGardener();
   const [activeTab, setActiveTab] = useState<'graph' | 'simulator'>('graph');
+  const [isEvolving, setIsEvolving] = useState(false);
 
-  // If developer mode is off, show message or redirect?
-  // But this view is likely only accessible if user clicks "Ontology" which we might hide?
-  // Let's assume we show standard ontology for all users, but Simulator only for devs.
+  const handleEvolve = async () => {
+    setIsEvolving(true);
+    await evolveOntology(notes);
+    setIsEvolving(false);
+    alert('Ontology updated based on local notes!');
+  };
 
   return (
     <div className="p-4 md:p-8 h-full overflow-y-auto bg-gray-800/50 rounded-lg">
@@ -59,7 +67,15 @@ export const OntologyView: React.FC = () => {
         <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-white">Ontology</h1>
             {settings.developerMode && (
-                <div className="flex bg-gray-900 rounded-lg p-1">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={handleEvolve}
+                        disabled={isEvolving}
+                        className="text-sm bg-green-700 hover:bg-green-600 text-white px-3 py-1 rounded disabled:opacity-50"
+                    >
+                        {isEvolving ? 'Gardening...' : 'Run Gardener'}
+                    </button>
+                    <div className="flex bg-gray-900 rounded-lg p-1">
                     <button
                         onClick={() => setActiveTab('graph')}
                         className={`px-3 py-1 text-sm rounded-md transition-colors ${activeTab === 'graph' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'}`}
@@ -72,6 +88,7 @@ export const OntologyView: React.FC = () => {
                     >
                         Simulator
                     </button>
+                </div>
                 </div>
             )}
         </div>

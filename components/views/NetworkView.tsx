@@ -5,13 +5,18 @@ import { KeyIcon, LoadingSpinner, SettingsIcon } from '../icons';
 import { DEFAULT_RELAYS, hexToBytes, pool } from '../../utils/nostr';
 import { matchNotes } from '../../utils/matching';
 import type { Note } from '../../types';
+import { parseProperties } from '../../utils/parsing'; // Need to parse events to notes for matching
 import { useNostrProfile } from '../../hooks/useNostrProfile';
 import { ProfileHeader } from '../network/ProfileHeader';
 import { NostrEventCard } from '../network/NostrEventCard';
 import { useView } from '../../hooks/useViewContext';
 import { useSettings } from '../../hooks/useSettingsContext';
 
-export const NetworkView: React.FC = () => {
+interface NetworkViewProps {
+    matchAgainst?: Note | null;
+}
+
+export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
   const { settings } = useSettings();
   const { setActiveView } = useView();
   const onNavigateToSettings = () => setActiveView('settings');
@@ -83,10 +88,40 @@ export const NetworkView: React.FC = () => {
         filtered = filtered.filter(e => e.content.toLowerCase().includes(filter.toLowerCase()));
     }
 
+    // If matching mode, sort by match score
+    if (matchAgainst) {
+        // We need to convert NostrEvent to Note for matching logic
+        // This is a bit expensive to do on render, but fine for prototype.
+        // Also note properties are in tags.
+        return filtered.map(event => {
+            // Extract props from tags
+            const props = event.tags
+                .filter(t => t[0] === 'property')
+                .map(t => ({ key: t[1], operator: t[2], values: [t[3]] }));
+
+            // Construct temp note
+            const offerNote: Note = {
+                id: event.id,
+                title: '',
+                content: event.content,
+                tags: event.tags.filter(t => t[0] === 't').map(t => t[1]),
+                properties: props,
+                createdAt: '',
+                updatedAt: ''
+            };
+
+            const score = matchNotes(matchAgainst, offerNote);
+            return { event, score };
+        })
+        .sort((a, b) => b.score - a.score) // Sort by score desc
+        .map(item => item.event)
+        .slice(0, 100);
+    }
+
     return filtered
       .sort((a, b) => b.created_at - a.created_at)
       .slice(0, 100);
-  }, [events, filter]);
+  }, [events, filter, matchAgainst]);
 
   const authorPubkeys = useMemo(() => {
     const pubkeys = new Set(sortedEvents.map((e) => e.pubkey));
@@ -128,7 +163,9 @@ export const NetworkView: React.FC = () => {
       />
       <div className="p-4 md:p-6 flex-grow overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-white">⚡️ Public Feed</h1>
+            <h1 className="text-2xl font-bold text-white">
+                {matchAgainst ? `🎯 Matches for "${matchAgainst.title}"` : '⚡️ Public Feed'}
+            </h1>
             <input
                 type="text"
                 placeholder="Search notes..."
