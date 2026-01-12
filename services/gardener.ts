@@ -13,11 +13,8 @@ export class Gardener {
   async evolveOntology(notes: Note[]): Promise<AttributeDefinition[]> {
     if (notes.length === 0) return [];
 
-    console.log(`Gardener: Analyzing ${notes.length} notes using ${this.provider.name}...`);
-
     try {
       const attributes = await this.provider.analyzeOntology(notes);
-      console.log('Gardener: Inferred attributes:', attributes);
 
       // Convert to AttributeDefinition (if strictly different, but types look compatible)
       // Our AppSettings uses OntologyNode[], but here we return flat list of attributes to be merged?
