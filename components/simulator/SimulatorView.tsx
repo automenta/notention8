@@ -6,7 +6,7 @@ import { WebLLMProvider } from '../../services/ai/WebLLMProvider';
 import { Gardener } from '../../services/gardener';
 import { parseProperties } from '../../utils/parsing';
 import { matchNotes } from '../../utils/matching';
-import { addAttribute, findNode } from '../../utils/ontologyHelpers';
+import { addAttribute } from '../../utils/ontologyHelpers';
 import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
 import type { Note, OntologyNode, OntologyAttribute } from '../../types';
 
@@ -42,11 +42,11 @@ const INITIAL_AGENTS: SimulationAgent[] = [
 export const SimulatorView: React.FC = () => {
   const [agents, setAgents] = useState<SimulationAgent[]>(INITIAL_AGENTS);
   const [active, setActive] = useState(false);
-  const [logs, setLogs] = useState<{msg: string; type: 'info' | 'match' | 'ontology'}[]>([]);
+  const [logs, setLogs] = useState<{msg: string; type: 'info' | 'match' | 'ontology' | 'reuse'}[]>([]);
   const [networkNotes, setNetworkNotes] = useState<Note[]>([]); // Shared Network State
   const [ontology, setOntology] = useState<OntologyNode[]>(DEFAULT_ONTOLOGY);
   const [notifications, setNotifications] = useState<Record<string, string[]>>({});
-  const [newAttributes, setNewAttributes] = useState<string[]>([]);
+  const [newAttributes, setNewAttributes] = useState<{key: string; type: string}[]>([]);
 
   const aiRef = useRef<WebLLMProvider>(new WebLLMProvider());
   const gardenerRef = useRef<Gardener | null>(null);
@@ -67,11 +67,23 @@ export const SimulatorView: React.FC = () => {
     ontologyRef.current = ontology;
   }, [ontology]);
 
+  // Use a ref for simulateTyping to be stable or just define it outside the effect
+  // But it uses updateAgent, so it needs to be careful.
+  // Actually, we can just define it inside, but we need to handle the warning.
+  // Or move logic to a reducer. For now, suppress warning or include it.
+
   // Simulation Loop
   useEffect(() => {
     if (!active) return;
 
     let timeoutId: NodeJS.Timeout;
+
+    const simulateTyping = async (index: number, fullText: string) => {
+        for (let i = 0; i <= fullText.length; i++) {
+            updateAgent(index, { currentDraft: fullText.slice(0, i) });
+            await new Promise(r => setTimeout(r, 50));
+        }
+    };
 
     const loop = async () => {
         // Use ref to get latest state inside async loop
@@ -110,6 +122,27 @@ export const SimulatorView: React.FC = () => {
             updateAgent(agentIndex, { status: 'Gardening...' });
             const tags = await aiRef.current.suggestTags(content, currentOntology);
 
+            // Visualize Tag Reuse
+            const existingKeys = new Set<string>();
+            const traverse = (nodes: OntologyNode[]) => {
+                nodes.forEach(n => {
+                    if (n.attributes) Object.keys(n.attributes).forEach(k => existingKeys.add(k));
+                    if (n.children) traverse(n.children);
+                });
+            };
+            traverse(currentOntology);
+
+            tags.forEach(t => {
+                // Parse tag: [key:op:val]
+                const match = t.match(/^\[([a-zA-Z0-9_]+)/);
+                if (match) {
+                    const key = match[1];
+                    if (existingKeys.has(key)) {
+                        addLog(`♻️ Reused schema: ${key}`, 'reuse');
+                    }
+                }
+            });
+
             const taggedContent = content + '\n\n' + tags.map((t: string) => JSON.stringify(t)).join(' ');
             updateAgent(agentIndex, { currentDraft: taggedContent });
 
@@ -142,13 +175,6 @@ export const SimulatorView: React.FC = () => {
         next[index] = { ...next[index], ...updates };
         return next;
     });
-  };
-
-  const simulateTyping = async (index: number, fullText: string) => {
-    for (let i = 0; i <= fullText.length; i++) {
-        updateAgent(index, { currentDraft: fullText.slice(0, i) });
-        await new Promise(r => setTimeout(r, 50));
-    }
   };
 
   const handlePublish = async (note: Note) => {
@@ -185,14 +211,28 @@ export const SimulatorView: React.FC = () => {
       if (gardenerRef.current) {
           try {
               const newAttrs = await gardenerRef.current.evolveOntology([enrichedNote]);
-              if (newAttrs.length > 0) {
+
+              // Only add if not exists
+              const currentOntology = ontologyRef.current;
+              const existingKeys = new Set<string>();
+              const traverse = (nodes: OntologyNode[]) => {
+                  nodes.forEach(n => {
+                      if (n.attributes) Object.keys(n.attributes).forEach(k => existingKeys.add(k));
+                      if (n.children) traverse(n.children);
+                  });
+              };
+              traverse(currentOntology);
+
+              const novelAttrs = newAttrs.filter(a => !existingKeys.has(a.key));
+
+              if (novelAttrs.length > 0) {
                   setOntology(prevOntology => {
                       let newOntology = [...prevOntology];
                       const targetNodeId = newOntology[0]?.id || 'root';
 
-                      newAttrs.forEach(attr => {
+                      novelAttrs.forEach(attr => {
                           addLog(`Ontology + ${attr.key}`, 'ontology');
-                          setNewAttributes(prev => [attr.key, ...prev].slice(0, 10));
+                          setNewAttributes(prev => [{key: attr.key, type: attr.type}, ...prev].slice(0, 10));
 
                           const ontAttr: OntologyAttribute = {
                               type: attr.type,
@@ -210,7 +250,7 @@ export const SimulatorView: React.FC = () => {
       }
   };
 
-  const addLog = (msg: string, type: 'info' | 'match' | 'ontology') => setLogs(prev => [{msg, type}, ...prev].slice(0, 20));
+  const addLog = (msg: string, type: 'info' | 'match' | 'ontology' | 'reuse') => setLogs(prev => [{msg, type}, ...prev].slice(0, 20));
 
   return (
     <div className="flex flex-col h-full bg-black text-gray-200 p-2 overflow-hidden">
@@ -272,7 +312,8 @@ export const SimulatorView: React.FC = () => {
                      <div key={i} className={`p-1 border-l-2 pl-2 ${
                          log.type === 'match' ? 'border-yellow-500 text-yellow-200' :
                          log.type === 'ontology' ? 'border-green-500 text-green-300' :
-                         'border-blue-500 text-gray-400'
+                         log.type === 'reuse' ? 'border-blue-400 text-blue-300' :
+                         'border-gray-500 text-gray-400'
                      }`}>
                          {log.msg}
                      </div>
@@ -286,7 +327,7 @@ export const SimulatorView: React.FC = () => {
                  {newAttributes.length === 0 && <span className="text-gray-600">No new attributes yet.</span>}
                  {newAttributes.map((attr, i) => (
                      <div key={i} className="text-green-400 flex items-center gap-1">
-                         <span>🌱</span> {attr}
+                         <span>🌱</span> {attr.key} <span className='text-gray-500'>({attr.type})</span>
                      </div>
                  ))}
              </div>

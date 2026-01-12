@@ -66,11 +66,15 @@ export const CommunityWindow: React.FC<Props> = ({ networkNotes }) => {
 
                         {/* Semantic Properties */}
                         <div className="flex flex-wrap gap-1 mb-1">
-                            {note.properties.map((p, i) => (
-                                <span key={i} className="text-[9px] bg-gray-950/50 border border-green-500/30 px-1 rounded text-green-400 font-mono">
-                                    [{p.key}]
-                                </span>
-                            ))}
+                            {note.properties.map((p, i) => {
+                                // Highlight property if it's involved in a match?
+                                // For now, just styling.
+                                return (
+                                    <span key={i} className={`text-[9px] px-1 rounded font-mono border ${isMatch ? 'bg-indigo-950 border-indigo-400 text-indigo-300' : 'bg-gray-950/50 border-green-500/30 text-green-400'}`}>
+                                        [{p.key}:{p.operator === 'is' ? 'is' : p.operator}:{p.value}]
+                                    </span>
+                                );
+                            })}
                         </div>
 
                         {/* Tags */}
@@ -83,7 +87,12 @@ export const CommunityWindow: React.FC<Props> = ({ networkNotes }) => {
                         {/* Match Details */}
                         {relatedMatches.length > 0 && (
                              <div className="mt-1 pt-1 border-t border-white/10 text-[9px] text-indigo-300">
-                                 &lt;-&gt; {relatedMatches[0].source.id === note.id ? relatedMatches[0].target.id.slice(0,4) : relatedMatches[0].source.id.slice(0,4)}
+                                 {relatedMatches.map((m, idx) => (
+                                     <div key={idx}>
+                                         &lt;-&gt; {m.source.id === note.id ? m.target.id.slice(0,4) : m.source.id.slice(0,4)}
+                                         <span className="ml-1 opacity-75">({Math.round(m.score * 100)}%)</span>
+                                     </div>
+                                 ))}
                              </div>
                         )}
                     </div>

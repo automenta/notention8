@@ -50,10 +50,18 @@ export class WebLLMProvider implements AIProvider {
     const engine = await this.getEngine();
     if (this.useMock || !engine) {
         // Mock Response based on prompt keywords?
-        // Simulating Agent Goals
-        if (prompt.includes("Client")) return "I need a React developer for a landing page. Budget $500.";
-        if (prompt.includes("Freelancer")) return "Expert React developer available for gigs. $50/hr.";
-        return "Simulated content response.";
+        // Simulating Agent Goals with more variance
+        const variations = [
+            "Need a quick turnaround.",
+            "Looking for long-term collaboration.",
+            "Must be available immediately.",
+            "Remote work preferred."
+        ];
+        const suffix = variations[Math.floor(Math.random() * variations.length)];
+
+        if (prompt.includes("Client")) return `I need a React developer for a landing page. Budget $500. ${suffix}`;
+        if (prompt.includes("Freelancer")) return `Expert React developer available for gigs. $50/hr. ${suffix}`;
+        return `Simulated content response. ${suffix}`;
     }
 
     const response = await engine.chat.completions.create({
@@ -65,26 +73,47 @@ export class WebLLMProvider implements AIProvider {
 
   async suggestTags(text: string, ontology?: OntologyNode[]): Promise<string[]> {
     const engine = await this.getEngine();
-    if (this.useMock || !engine) {
-        // Mock Tags
-        if (text.toLowerCase().includes("react")) return ["[skill:is:React]", "[role:is:Developer]"];
-        return ["[category:is:General]"];
-    }
 
-    let ontologyContext = "";
-    if (ontology && ontology.length > 0) {
-        // Flatten ontology to a list of keys for context
-        const keys: string[] = [];
+    // Extract ontology keys for reuse in both mock and real scenarios
+    const ontologyKeys = new Set<string>();
+    if (ontology) {
         const traverse = (nodes: OntologyNode[]) => {
             nodes.forEach(n => {
-                if (n.attributes) keys.push(...Object.keys(n.attributes));
+                if (n.attributes) Object.keys(n.attributes).forEach(k => ontologyKeys.add(k));
                 if (n.children) traverse(n.children);
             });
         };
         traverse(ontology);
-        if (keys.length > 0) {
-            ontologyContext = `\nExisting Ontology Keys (Reuse these if relevant): ${keys.join(', ')}`;
+    }
+
+    if (this.useMock || !engine) {
+        // Mock Tags with Ontology Reuse Logic
+        const tags: string[] = [];
+        const lowerText = text.toLowerCase();
+
+        // 1. Try to reuse existing keys
+        ontologyKeys.forEach(key => {
+            if (lowerText.includes(key.toLowerCase())) {
+                // Determine operator/value heuristically
+                if (key === 'budget') tags.push(`[budget < 500]`);
+                else if (key === 'rate') tags.push(`[rate:is:50]`);
+                else tags.push(`[${key}:is:true]`); // Generic boolean
+            }
+        });
+
+        // 2. If no existing keys found, invent some (to drive evolution)
+        if (tags.length === 0) {
+            if (lowerText.includes("react")) tags.push("[skill:is:React]");
+            if (lowerText.includes("developer")) tags.push("[role:is:Developer]");
+            if (lowerText.includes("budget") && !ontologyKeys.has('budget')) tags.push("[budget < 500]");
         }
+
+        return tags;
+    }
+
+    let ontologyContext = "";
+    if (ontologyKeys.size > 0) {
+        ontologyContext = `\nExisting Ontology Keys (Reuse these if relevant): ${Array.from(ontologyKeys).join(', ')}`;
     }
 
     const prompt = `
@@ -118,8 +147,11 @@ export class WebLLMProvider implements AIProvider {
         const candidates = [
             { key: "availability", type: "string", description: "Project availability" },
             { key: "experience", type: "number", description: "Years of experience" },
-            { key: "location", type: "string", description: "Remote or On-site" }
+            { key: "location", type: "string", description: "Remote or On-site" },
+            { key: "timeline", type: "string", description: "Project timeline" }
         ] as const;
+
+        // Pick one that isn't commonly used yet
         const pick = candidates[Math.floor(Math.random() * candidates.length)];
 
         return [{
@@ -127,7 +159,7 @@ export class WebLLMProvider implements AIProvider {
             type: pick.type,
             description: pick.description,
             usageCount: 1,
-            sampleValues: ["Remote", "5 years"]
+            sampleValues: ["Remote", "5 years", "Immediate"]
         }];
     }
 
