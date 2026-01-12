@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { OntologyNode } from '../../types';
 import { ChevronDownIcon } from '../icons';
 import { useSettings } from '../../hooks/useSettingsContext';
+import { SimulatorView } from '../simulator/SimulatorView';
 
 interface OntologyNodeProps {
   node: OntologyNode;
@@ -46,21 +47,51 @@ const OntologyNodeItem: React.FC<OntologyNodeProps> = ({ node, level }) => {
 export const OntologyView: React.FC = () => {
   const { settings } = useSettings();
   const ontology = settings.ontology;
+  const [activeTab, setActiveTab] = useState<'graph' | 'simulator'>('graph');
+
+  // If developer mode is off, show message or redirect?
+  // But this view is likely only accessible if user clicks "Ontology" which we might hide?
+  // Let's assume we show standard ontology for all users, but Simulator only for devs.
 
   return (
-    <div className="p-8 h-full overflow-y-auto bg-gray-800/50 rounded-lg">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-white mb-2">Ontology</h1>
-        <p className="text-gray-400 mb-8">
-          This is the semantic structure that powers your notes. Use these
-          concepts as `#tags` to create machine-readable, interconnected
-          knowledge.
-        </p>
-        <div className="bg-gray-900/70 p-6 rounded-lg">
-          {ontology.map((rootNode) => (
-            <OntologyNodeItem key={rootNode.id} node={rootNode} level={0} />
-          ))}
+    <div className="p-4 md:p-8 h-full overflow-y-auto bg-gray-800/50 rounded-lg">
+      <div className="max-w-4xl mx-auto h-full flex flex-col">
+        <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold text-white">Ontology</h1>
+            {settings.developerMode && (
+                <div className="flex bg-gray-900 rounded-lg p-1">
+                    <button
+                        onClick={() => setActiveTab('graph')}
+                        className={`px-3 py-1 text-sm rounded-md transition-colors ${activeTab === 'graph' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                    >
+                        Graph
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('simulator')}
+                        className={`px-3 py-1 text-sm rounded-md transition-colors ${activeTab === 'simulator' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                    >
+                        Simulator
+                    </button>
+                </div>
+            )}
         </div>
+
+        {activeTab === 'simulator' && settings.developerMode ? (
+            <SimulatorView />
+        ) : (
+            <>
+                <p className="text-gray-400 mb-8">
+                  This is the semantic structure that powers your notes. Use these
+                  concepts as `#tags` to create machine-readable, interconnected
+                  knowledge.
+                </p>
+                <div className="bg-gray-900/70 p-6 rounded-lg">
+                  {ontology.map((rootNode) => (
+                    <OntologyNodeItem key={rootNode.id} node={rootNode} level={0} />
+                  ))}
+                </div>
+            </>
+        )}
       </div>
     </div>
   );

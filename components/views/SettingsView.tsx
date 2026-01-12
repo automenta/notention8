@@ -21,13 +21,25 @@ const TabButton: React.FC<{
   </button>
 );
 
+import { Toggle } from '../common/Toggle';
+
 export const SettingsView: React.FC = () => {
   const { settings, setSettings } = useSettings();
   const [activeTab, setActiveTab] = useState<'ai' | 'nostr' | 'data'>('ai');
 
   return (
     <div className="p-8 h-full overflow-y-auto bg-gray-800/50 rounded-lg">
-      <h1 className="text-3xl font-bold text-white mb-2">⚙️ Settings</h1>
+      <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-white">⚙️ Settings</h1>
+          <div className="flex items-center gap-3">
+              <span className="text-gray-400 text-sm">Developer Mode</span>
+              <Toggle
+                  checked={settings.developerMode}
+                  onChange={() => setSettings(prev => ({ ...prev, developerMode: !prev.developerMode }))}
+                  ariaLabel="Toggle Developer Mode"
+              />
+          </div>
+      </div>
       <div className="border-b border-gray-700 mb-6">
         <nav className="-mb-px flex space-x-4" aria-label="Tabs">
           <TabButton

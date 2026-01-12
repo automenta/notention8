@@ -4,6 +4,7 @@ import { TiptapEditor } from './TiptapEditor';
 import { usePublish } from '../hooks/usePublish';
 import { suggestTags, isApiKeyAvailable } from '../services/geminiService';
 import { getTextFromHtml } from '../utils/nostr';
+import { parseProperties } from '../utils/parsing';
 import { useDebouncedSave } from '../hooks/useDebouncedSave';
 import { EditorHeader } from './EditorHeader';
 
@@ -34,7 +35,14 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
   );
 
   const handleContentSave = useCallback(
-    (content: string) => setDirtyNote((prev) => ({ ...prev, content })),
+    (content: string) => {
+      // Parse properties from content and update note
+      // We use getTextFromHtml to get clean text for regex parsing
+      const text = getTextFromHtml(content);
+      const properties = parseProperties(text);
+
+      setDirtyNote((prev) => ({ ...prev, content, properties }));
+    },
     [setDirtyNote]
   );
 
