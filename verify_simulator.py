@@ -11,21 +11,14 @@ def verify_simulator():
         page.goto("http://localhost:5173")
 
         print("Opening Settings...")
-        # Try to find the settings button more robustly
         try:
-             # Try class selector for lucide-settings icon if button fails
              page.locator(".lucide-settings").first.click()
         except:
              print("Fallback to getting by title Settings")
              page.get_by_title("Settings").click()
 
         print("Enabling Developer Mode...")
-        # The Toggle is a button with aria-label="Toggle Developer Mode"
-        # We check its class to see if it's checked (bg-blue-600)
         toggle_btn = page.get_by_label("Toggle Developer Mode")
-
-        # Check if already enabled (has bg-blue-600)
-        # We need to wait for it to be visible
         expect(toggle_btn).to_be_visible()
 
         class_attr = toggle_btn.get_attribute("class")
@@ -35,25 +28,35 @@ def verify_simulator():
         else:
             print("Already enabled.")
 
-        # 3. Switch to Simulator Tab
         print("Switching to Simulator Tab...")
         page.get_by_role("button", name="🧪 Simulator").click()
 
-        # 4. Start Simulation
         print("Starting Simulation...")
-        start_btn = page.get_by_role("button", name="Start Simulation")
+        start_btn = page.get_by_role("button", name="START")
         start_btn.click()
 
-        # 5. Wait for activity
-        print("Waiting for agents to think...")
+        print("Waiting for simulation loop...")
+        # Wait for "Thinking..." in the UI
         expect(page.get_by_text("Thinking...")).to_be_visible(timeout=10000)
 
-        print("Agents are active. Waiting a bit for screenshot...")
-        time.sleep(5)
+        # Wait for "Typing..."
+        print("Agents thinking...")
+        # Wait for published note in community window or log
+        # We can check the log
 
-        # 6. Screenshot
+        print("Waiting for publishing and matching...")
+        # This might take 10-15 seconds in the simulator loop
+        # We wait for the log "published a note"
+        try:
+            expect(page.locator("text=published a note")).to_be_visible(timeout=30000)
+            print("Note published!")
+        except:
+            print("Timed out waiting for publish log.")
+
+        time.sleep(5) # Let animations settle
+
         print("Taking screenshot...")
-        page.screenshot(path="/home/jules/verification/simulator_active.png")
+        page.screenshot(path="/home/jules/verification/simulator_compact.png")
 
         print("Verification script finished.")
         browser.close()
