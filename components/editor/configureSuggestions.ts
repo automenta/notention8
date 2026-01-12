@@ -9,10 +9,7 @@ export const configureSuggestions = (
   return {
     char,
     items: ({ query }: { query: string }) => {
-      console.log(`[Suggestion] Querying for char '${char}' with:`, query);
-      const items = getItems(query);
-      console.log(`[Suggestion] Found ${items.length} items.`);
-      return items;
+      return getItems(query);
     },
     render: () => {
       let component: ReactRenderer;
@@ -20,14 +17,12 @@ export const configureSuggestions = (
 
       return {
         onStart: (props: any) => {
-          console.log(`[Suggestion] onStart`, props);
           component = new ReactRenderer(SuggestionList, {
             props,
             editor: props.editor,
           });
 
           if (!props.clientRect) {
-            console.log('[Suggestion] No clientRect');
             return;
           }
 
@@ -43,7 +38,6 @@ export const configureSuggestions = (
         },
 
         onUpdate: (props: any) => {
-          console.log(`[Suggestion] onUpdate`);
           component.updateProps(props);
 
           if (!props.clientRect) {
@@ -65,7 +59,6 @@ export const configureSuggestions = (
         },
 
         onExit: () => {
-          console.log(`[Suggestion] onExit`);
           popup[0].destroy();
           component.destroy();
         },

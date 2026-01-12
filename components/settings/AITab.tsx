@@ -1,6 +1,6 @@
 import React from 'react';
 import { SparklesIcon } from '../icons';
-import { isApiKeyAvailable } from '@/services/geminiService.ts';
+import { isGeminiApiKeyAvailable } from '@/services/ai/RemoteProvider';
 import type { AppSettings } from '@/types';
 import { Toggle } from '../common/Toggle';
 
@@ -10,8 +10,10 @@ interface AITabProps {
 }
 
 export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
+  const apiKeyAvailable = isGeminiApiKeyAvailable();
+
   const handleToggleAI = () => {
-    if (!isApiKeyAvailable) return;
+    if (!apiKeyAvailable) return;
     setSettings((prev) => ({ ...prev, aiEnabled: !prev.aiEnabled }));
   };
 
@@ -33,7 +35,7 @@ export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
         <div
           className="relative"
           title={
-            !isApiKeyAvailable
+            !apiKeyAvailable
               ? 'A valid Gemini API key must be configured to enable this feature.'
               : ''
           }
@@ -42,12 +44,12 @@ export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
             id="ai-toggle"
             checked={settings.aiEnabled}
             onChange={handleToggleAI}
-            disabled={!isApiKeyAvailable}
+            disabled={!apiKeyAvailable}
             ariaLabel="Enable AI Features"
           />
         </div>
       </div>
-      {!isApiKeyAvailable && (
+      {!apiKeyAvailable && (
         <div className="mt-4 p-3 bg-yellow-900/50 border border-yellow-700 text-yellow-300 text-sm rounded-md">
           <strong>Action Required:</strong> A Google Gemini API key is not
           configured. AI features are disabled. Please set the{' '}

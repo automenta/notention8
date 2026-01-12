@@ -1,14 +1,14 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import type { Note } from '../types';
 import { TiptapEditor } from './TiptapEditor';
 import { usePublish } from '../hooks/usePublish';
-import { suggestTags, isApiKeyAvailable } from '../services/geminiService';
 import { getTextFromHtml } from '../utils/nostr';
 import { parseProperties } from '../utils/parsing';
 import { useDebouncedSave } from '../hooks/useDebouncedSave';
 import { EditorHeader } from './EditorHeader';
 import { useView } from '../hooks/useViewContext';
 import { useSettings } from '../hooks/useSettingsContext';
+import { useAutoTagging } from '../hooks/useAutoTagging';
 
 interface EditorManagerProps {
   note: Note;
@@ -23,7 +23,6 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
   const { publishNote, isPublishing } = usePublish();
   const { setActiveView, setMatchingNoteId } = useView();
   const { settings } = useSettings();
-  const [isAutoTagging, setIsAutoTagging] = useState(false);
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -37,6 +36,12 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
     },
     [setDirtyNote]
   );
+
+  const { isAutoTagging, handleAutoTag, isApiKeyAvailable } = useAutoTagging({
+      content: dirtyNote.content,
+      tags: dirtyNote.tags,
+      onTagsChange: handleTagsChange
+  });
 
   const handleContentSave = useCallback(
     (content: string) => {
@@ -74,25 +79,6 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
             (e instanceof Error ? e.message : String(e))
         );
       }
-    }
-  };
-
-  const handleAutoTag = async () => {
-    if (!dirtyNote.content) return;
-    setIsAutoTagging(true);
-    try {
-      const text = getTextFromHtml(dirtyNote.content);
-      const suggestions = await suggestTags(text);
-      const uniqueTags = Array.from(
-        new Set([...dirtyNote.tags, ...suggestions])
-      );
-      handleTagsChange(uniqueTags);
-    } catch (e) {
-      alert(
-        'Failed to auto-tag: ' + (e instanceof Error ? e.message : String(e))
-      );
-    } finally {
-      setIsAutoTagging(false);
     }
   };
 

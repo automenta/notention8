@@ -20,11 +20,18 @@ vi.mock('../../hooks/usePublish', () => ({
   }),
 }));
 
-// Mock geminiService
-const mockSuggestTags = vi.fn();
-vi.mock('../../services/geminiService', () => ({
-  isApiKeyAvailable: true,
-  suggestTags: (...args: any[]) => mockSuggestTags(...args),
+// Mock useAutoTagging
+const mockHandleAutoTag = vi.fn();
+vi.mock('../../hooks/useAutoTagging', () => ({
+  useAutoTagging: ({ onTagsChange }: any) => ({
+    isAutoTagging: false,
+    handleAutoTag: () => {
+        mockHandleAutoTag();
+        // Simulate tag change
+        onTagsChange(['tag1', 'tag2']);
+    },
+    isApiKeyAvailable: true,
+  }),
 }));
 
 describe('EditorManager', () => {
@@ -43,7 +50,7 @@ describe('EditorManager', () => {
     vi.useFakeTimers();
     mockOnSave.mockClear();
     mockPublishNote.mockClear();
-    mockSuggestTags.mockClear();
+    mockHandleAutoTag.mockClear();
     // Mock window.confirm and alert
     vi.spyOn(window, 'confirm').mockImplementation(() => true);
     vi.spyOn(window, 'alert').mockImplementation(() => {});
@@ -120,17 +127,16 @@ describe('EditorManager', () => {
     }));
   });
 
-  it('calls suggestTags when auto-tag button is clicked', async () => {
-     mockSuggestTags.mockResolvedValue(['tag1', 'tag2']);
-
-     renderWithContext(<EditorManager note={initialNote} onSave={mockOnSave} />);
+  it('calls handleAutoTag when auto-tag button is clicked', async () => {
+     renderWithContext(<EditorManager note={{...initialNote, content: '<p>Some content</p>'}} onSave={mockOnSave} />);
      const autoTagBtn = screen.getByTitle('Auto-suggest tags with AI');
 
      await act(async () => {
          fireEvent.click(autoTagBtn);
      });
 
-     expect(mockSuggestTags).toHaveBeenCalled();
+     expect(mockHandleAutoTag).toHaveBeenCalled();
+     // Since our mock immediately calls onTagsChange
      expect(screen.getByText('tag1')).toBeInTheDocument();
      expect(screen.getByText('tag2')).toBeInTheDocument();
   });

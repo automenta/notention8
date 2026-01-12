@@ -18,7 +18,6 @@ export class WebLLMProvider implements AIProvider {
 
     if (!this.initPromise) {
       this.initPromise = (async () => {
-        console.log('Initializing WebLLM...');
         try {
             // Check if WebGPU is available (basic check)
             if (!navigator.gpu) {
@@ -28,8 +27,8 @@ export class WebLLMProvider implements AIProvider {
             this.engine = await CreateMLCEngine(
                 this.modelId,
                 {
-                    initProgressCallback: (report) => {
-                        console.log('WebLLM Loading:', report.text);
+                    initProgressCallback: (_report) => {
+                        // Suppress logs
                     }
                 }
             );
