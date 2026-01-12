@@ -157,10 +157,13 @@ export const SimulatorView: React.FC = () => {
       const enrichedNote = { ...note, properties };
 
       setNetworkNotes(prev => {
-          const newNotes = [enrichedNote, ...prev];
+          // Prevent duplicates
+          const filtered = prev.filter(n => n.id !== enrichedNote.id);
+          const newNotes = [enrichedNote, ...filtered];
 
           // 2. Run Matching Logic
-          prev.forEach(otherNote => {
+          // Only match against OTHER notes
+          filtered.forEach(otherNote => {
              const score1 = matchNotes(enrichedNote, otherNote);
              const score2 = matchNotes(otherNote, enrichedNote);
 

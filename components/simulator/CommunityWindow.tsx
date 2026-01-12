@@ -17,6 +17,10 @@ export const CommunityWindow: React.FC<Props> = ({ networkNotes }) => {
             if (i === j) continue;
             const source = networkNotes[i];
             const target = networkNotes[j];
+
+            // Explicitly prevent self-matching if ID check failed (though unlikely with proper state management)
+            if (source.id === target.id) continue;
+
             const score = matchNotes(source, target);
             if (score > 0.5) {
                 found.push({ source, target, score });
