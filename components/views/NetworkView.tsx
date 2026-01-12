@@ -11,6 +11,7 @@ import { ProfileHeader } from '../network/ProfileHeader';
 import { NostrEventCard } from '../network/NostrEventCard';
 import { useView } from '../../hooks/useViewContext';
 import { useSettings } from '../../hooks/useSettingsContext';
+import { useGardener } from '../../hooks/useGardener';
 import type { Property } from '../../types';
 
 interface NetworkViewProps {
@@ -20,6 +21,8 @@ interface NetworkViewProps {
 export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
   const { settings } = useSettings();
   const { setActiveView } = useView();
+  const { learnFromProperties } = useGardener();
+
   const onNavigateToSettings = () => setActiveView('settings');
   const pubkey = useMemo(
     () =>
@@ -48,7 +51,28 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
 
     const flushBatch = () => {
       if (pendingEventsRef.current.length > 0) {
-        setEvents((prev) => [...prev, ...pendingEventsRef.current]);
+        const newEvents = pendingEventsRef.current;
+        setEvents((prev) => [...prev, ...newEvents]);
+
+        // Passive Learning: Extract properties from new events
+        const allProps: Property[] = [];
+        newEvents.forEach(evt => {
+            evt.tags.forEach(t => {
+                if (t[0] === 'property') {
+                    // t = ['property', key, op, val]
+                    allProps.push({
+                        key: t[1],
+                        operator: t[2],
+                        values: [t[3]]
+                    });
+                }
+            });
+        });
+
+        if (allProps.length > 0) {
+            learnFromProperties(allProps);
+        }
+
         pendingEventsRef.current = [];
       }
       batchTimeoutRef.current = null;
@@ -78,7 +102,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
       if (batchTimeoutRef.current) clearTimeout(batchTimeoutRef.current);
       sub.close();
     };
-  }, [pubkey]);
+  }, [pubkey, learnFromProperties]);
 
   const sortedEvents = useMemo(() => {
     // Clone before sort to avoid mutating state
@@ -98,13 +122,6 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
             // Extract props from tags
             // Our usePublish puts tags as ['property', key, op, value]
             // We need to reconstruct Property[]
-            // Note: A key might appear multiple times if it has multiple values?
-            // Or usePublish puts multiple values in one tag?
-            // usePublish implementation:
-            // prop.values.forEach(val => tags.push(['property', prop.key, prop.operator, val]))
-            // So we get multiple tags for multi-valued property.
-
-            // We need to aggregate them back.
 
             const propsMap = new Map<string, Property>();
 
@@ -140,13 +157,6 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
                 updatedAt: ''
             };
 
-            // Calculate match score using our improved matchNotes
-            // matchNotes expects 'request' (matchAgainst) and 'offer' (offerNote)
-            // matchAgainst = Request (Constraints)
-            // offerNote = Offer (Facts)
-
-            // Wait, matchNotes returns number (0-1) or percentage (0-100)?
-            // matchNotes returns matches / constraints.length. So 0.0 to 1.0.
             const score = matchNotes(matchAgainst, offerNote) * 100;
             return { event, score };
         })

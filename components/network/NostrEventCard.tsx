@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { nip19 } from 'nostr-tools';
 import type { NostrEvent, NostrProfile } from '../../types';
 import { formatNpub } from '../../utils/nostr';
+import { ChatIcon } from '../icons';
+import { useView } from '../../hooks/useViewContext';
 
 // Extend NostrEvent to include score if available
 export type ScoredNostrEvent = NostrEvent & { score?: number };
@@ -10,6 +12,8 @@ export const NostrEventCard: React.FC<{
   event: ScoredNostrEvent;
   profile: NostrProfile | undefined;
 }> = ({ event, profile }) => {
+  const { setActiveView, setSelectedChatPubkey } = useView();
+
   const eventDate = new Date(event.created_at * 1000).toLocaleString();
   const authorNpub = useMemo(
     () => nip19.npubEncode(event.pubkey),
@@ -18,8 +22,13 @@ export const NostrEventCard: React.FC<{
 
   const matchScore = event.score;
 
+  const handleChat = () => {
+      setSelectedChatPubkey(event.pubkey);
+      setActiveView('chat');
+  };
+
   return (
-    <div className="bg-gray-800 p-4 rounded-lg border border-gray-700/80 animate-fade-in relative overflow-hidden">
+    <div className="bg-gray-800 p-4 rounded-lg border border-gray-700/80 animate-fade-in relative overflow-hidden group">
       {matchScore !== undefined && (
           <div className={`absolute top-0 right-0 px-2 py-1 text-xs font-bold rounded-bl-lg ${
               matchScore > 80 ? 'bg-green-900/80 text-green-400' :
@@ -45,9 +54,19 @@ export const NostrEventCard: React.FC<{
         </span>
         <span className="ml-auto">{eventDate}</span>
       </div>
-      <p className="text-gray-300 whitespace-pre-wrap break-words">
+      <p className="text-gray-300 whitespace-pre-wrap break-words mb-2">
         {event.content}
       </p>
+
+      <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={handleChat}
+            className="flex items-center gap-1 text-xs px-2 py-1 bg-gray-700 hover:bg-blue-600 text-gray-300 hover:text-white rounded transition-colors"
+          >
+              <ChatIcon className="w-3 h-3" />
+              Chat
+          </button>
+      </div>
     </div>
   );
 };
