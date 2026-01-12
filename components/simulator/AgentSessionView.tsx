@@ -112,7 +112,7 @@ export const AgentSessionView: React.FC<Props> = ({
                 <div className={`min-h-full ${minimal ? 'p-1' : 'p-4'}`}>
                     <TiptapEditor
                         note={displayNote}
-                        onChange={(content) => {
+                        onSave={(content) => {
                             onDraftChange(content);
                         }}
                         ontology={settings.ontology}
