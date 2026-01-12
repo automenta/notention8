@@ -3,13 +3,14 @@ import type { Note } from '../types';
 import { TiptapEditor } from './TiptapEditor';
 import { usePublish } from '../hooks/usePublish';
 import { getTextFromHtml } from '../utils/nostr';
-import { parseProperties } from '../utils/parsing';
+import { parseProperties, replacePropertyInString } from '../utils/parsing';
 import { useDebouncedSave } from '../hooks/useDebouncedSave';
 import { EditorHeader } from './EditorHeader';
 import { PropertyInspector } from './editor/PropertyInspector';
 import { useView } from '../hooks/useViewContext';
 import { useSettings } from '../hooks/useSettingsContext';
 import { useAutoTagging } from '../hooks/useAutoTagging';
+import { useGardener } from '../hooks/useGardener';
 import type { Property } from '../types';
 
 interface EditorManagerProps {
@@ -25,6 +26,7 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
   const { publishNote, isPublishing } = usePublish();
   const { setActiveView, setMatchingNoteId } = useView();
   const { settings } = useSettings();
+  const { evolveOntology } = useGardener();
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -52,9 +54,23 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
       const text = getTextFromHtml(content);
       const properties = parseProperties(text);
 
-      setDirtyNote((prev) => ({ ...prev, content, properties }));
+      setDirtyNote((prev) => {
+          const updated = { ...prev, content, properties };
+          // Evolve ontology occasionally?
+          // Doing it on every keystroke/save might be too much if it calls AI.
+          // But useGardener uses LocalAIProvider by default which is fast heuristic.
+          // If Remote, it's costly.
+          // Let's rely on explicit save or periodic check?
+          // For now, let's trigger it on save (which is debounced).
+          if (settings.developerMode) {
+              // Only in dev mode or if explicitly enabled?
+              // The Gardener service checks settings inside.
+              evolveOntology([updated]);
+          }
+          return updated;
+      });
     },
-    [setDirtyNote]
+    [setDirtyNote, evolveOntology, settings.developerMode]
   );
 
   const handlePublish = async () => {
@@ -65,6 +81,9 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
       )
     ) {
       try {
+        // Evolve ontology before publishing to ensure we capture semantics
+        await evolveOntology([dirtyNote]);
+
         const eventId = await publishNote(dirtyNote);
         const now = new Date().toISOString();
         const updatedNote = {
@@ -89,23 +108,17 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
       setActiveView('network');
   };
 
-  const handleUpdateTextFromInspector = useCallback((_oldProp: Property | null, newProp: Property) => {
-      // Append new property to content
-      // Format: [key:op:value]
-      // We map op back to symbol or word? Standard parser prefers [key:op:value]
-      // If op is 'is', we can use [key:value] or [key:is:value]
+  const handleUpdateTextFromInspector = useCallback((oldProp: Property | null, newProp: Property | null) => {
+      // We assume dirtyNote.content contains HTML.
+      // We use replacePropertyInString which works on the string level.
+      // Since our property tags are usually text nodes or wrapped in <p>,
+      // simple string replacement usually works IF the user didn't format the tag weirdly (e.g. bolding half of it).
 
-      let opStr = newProp.operator;
-      // Simple mapping for display friendliness if needed, but parser handles words too.
-      // Ideally we use standard format [key:op:value]
+      const newContent = replacePropertyInString(dirtyNote.content, oldProp, newProp);
 
-      const newTag = `<p>[${newProp.key}:${opStr}:${newProp.values.join(',')}]</p>`;
-
-      // We need to update content.
-      // Ideally we insert at cursor, but here we just append to end for MVP
-      const newContent = dirtyNote.content + newTag;
-
-      handleContentSave(newContent);
+      if (newContent !== dirtyNote.content) {
+          handleContentSave(newContent);
+      }
   }, [dirtyNote.content, handleContentSave]);
 
   return (

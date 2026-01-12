@@ -11,6 +11,7 @@ import { ProfileHeader } from '../network/ProfileHeader';
 import { NostrEventCard } from '../network/NostrEventCard';
 import { useView } from '../../hooks/useViewContext';
 import { useSettings } from '../../hooks/useSettingsContext';
+import type { Property } from '../../types';
 
 interface NetworkViewProps {
     matchAgainst?: Note | null;
@@ -95,13 +96,37 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
         // Also note properties are in tags.
         return filtered.map(event => {
             // Extract props from tags
-            const props: Property[] = event.tags
-                .filter(t => t[0] === 'property')
-                .map(t => ({
-                    key: t[1],
-                    operator: t[2],
-                    values: [t[3]]
-                }));
+            // Our usePublish puts tags as ['property', key, op, value]
+            // We need to reconstruct Property[]
+            // Note: A key might appear multiple times if it has multiple values?
+            // Or usePublish puts multiple values in one tag?
+            // usePublish implementation:
+            // prop.values.forEach(val => tags.push(['property', prop.key, prop.operator, val]))
+            // So we get multiple tags for multi-valued property.
+
+            // We need to aggregate them back.
+
+            const propsMap = new Map<string, Property>();
+
+            event.tags.forEach(t => {
+                if (t[0] === 'property') {
+                    const key = t[1];
+                    const op = t[2];
+                    const val = t[3];
+
+                    if (propsMap.has(key)) {
+                        propsMap.get(key)!.values.push(val);
+                    } else {
+                        propsMap.set(key, {
+                            key,
+                            operator: op,
+                            values: [val]
+                        });
+                    }
+                }
+            });
+
+            const props = Array.from(propsMap.values());
 
             // Construct temp note
             const offerNote: Note = {
@@ -115,11 +140,21 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
                 updatedAt: ''
             };
 
-            const score = matchNotes(matchAgainst, offerNote);
+            // Calculate match score using our improved matchNotes
+            // matchNotes expects 'request' (matchAgainst) and 'offer' (offerNote)
+            // matchAgainst = Request (Constraints)
+            // offerNote = Offer (Facts)
+
+            // Wait, matchNotes returns number (0-1) or percentage (0-100)?
+            // matchNotes returns matches / constraints.length. So 0.0 to 1.0.
+            const score = matchNotes(matchAgainst, offerNote) * 100;
             return { event, score };
         })
         .sort((a, b) => b.score - a.score) // Sort by score desc
-        .map(item => item.event)
+        .map(item => {
+             // Inject score into event object for Card to read
+             return { ...item.event, score: item.score };
+        })
         .slice(0, 100);
     }
 

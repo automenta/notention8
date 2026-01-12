@@ -21,81 +21,44 @@ const SYMBOL_TO_OP: Record<string, string> = {
 export const parseProperties = (text: string): Property[] => {
   const properties: Property[] = [];
 
-  // 1. Standard Format: [key:op:value]
-  // Captures: key, op, value
-  // Example: [client:is:Acme] -> key=client, op=is, value=Acme
-  // We need to be careful not to match symbolic ones incorrectly if they look similar.
-  // Standard format strictly uses colons as separators.
-  // Regex: \[([^:\]]+):([^:\]]+):([^\]]*)\]
-  const standardRegex = /\[([^:\]]+):([^:\]]+):([^\]]*)\]/g;
-
-  let match;
-  while ((match = standardRegex.exec(text)) !== null) {
-    const key = match[1].trim();
-    const operator = match[2].trim();
-    const valueStr = match[3].trim();
-
-    // Split values by comma if list (simple convention)
-    // For now, we assume simple string, but type definition allows string[]
-    // Let's support comma separation for consistency with existing code
-    const values = valueStr ? valueStr.split(',').map(v => v.trim()) : [];
-
-    properties.push({
-      key,
-      operator,
-      values
-    });
-  }
-
-  // 2. Symbolic Format: [key op value]
-  // Example: [budget < 500]
-  // Operators: <, >, =, !=, <=, >=
-  // We need a regex that looks for specific symbols between key and value.
-  // Allowed symbols: <, >, =, !=, :, ≈, ∋
-  // Regex: \[([^:\]\s]+)\s*([<>=!≈∋]+)\s*([^\]]*)\]
-  // Note: We exclude colon from key to avoid overlap with standard format,
-  // but standard format has *two* colons. Symbolic usually has one operator.
-  // Let's refine.
-
-  // We want to catch [budget < 500] but NOT [client:is:Acme] (already caught).
-  // Strategy: Replace already found standard properties with whitespace or placeholders to avoid double counting?
-  // Or just use a smarter regex.
-
-  // Actually, simpler approach: Iterate all [...] blocks and parse content.
+  // Iterate all [...] blocks and parse content.
   const bracketRegex = /\[([^\]]+)\]/g;
+  let match;
 
-  const properties2: Property[] = [];
   while ((match = bracketRegex.exec(text)) !== null) {
     const content = match[1];
+    const parsed = parsePropertyBlock(content);
+    if (parsed) {
+      properties.push(parsed);
+    }
+  }
 
-    // Check if it matches standard format (two colons)
+  return properties;
+};
+
+/**
+ * Helper to parse the content inside brackets [content]
+ */
+const parsePropertyBlock = (content: string): Property | null => {
+   // Check if it matches standard format (two colons)
     // heuristic: count colons
     const colons = content.split(':');
     if (colons.length >= 3) {
-      // It's likely standard [key:op:value] or [key:op:val1,val2]
-      // We already handled this above?
-      // Actually, doing it in one pass is cleaner.
       const key = colons[0].trim();
       const op = colons[1].trim();
-      const val = colons.slice(2).join(':').trim(); // Re-join rest in case value has colons?
+      const val = colons.slice(2).join(':').trim();
 
-      properties2.push({
+      return {
         key,
         operator: op,
         values: val.split(',').map(v => v.trim())
-      });
-      continue;
+      };
     }
 
     // Check for symbolic operators
-    // Sort symbols by length desc to match <= before <
     const symbols = Object.keys(SYMBOL_TO_OP).sort((a, b) => b.length - a.length);
 
-    let foundSymbol = false;
     for (const sym of symbols) {
-      // Look for symbol surrounded by optional spaces, but ensure it's not part of a word?
-      // Simple split might be enough for now.
-      // Need to escape regex special chars
       const escapedSym = sym.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const symRegex = new RegExp(`^(.+?)\\s*(${escapedSym})\\s*(.*)$`);
 
@@ -105,23 +68,96 @@ export const parseProperties = (text: string): Property[] => {
         const opSymbol = symMatch[2];
         const val = symMatch[3].trim();
 
-        properties2.push({
+        return {
           key,
-          operator: SYMBOL_TO_OP[opSymbol], // Map to canonical 'less than', etc.
+          operator: SYMBOL_TO_OP[opSymbol],
           values: val.split(',').map(v => v.trim())
-        });
-        foundSymbol = true;
-        break;
+        };
       }
     }
+    return null;
+}
 
-    if (!foundSymbol) {
-      // Fallback: If no operator found, is it a tag? Tag is #tag.
-      // If it is [word], maybe it's a property with implicit 'is'?
-      // [Active] -> key=Active, value=true?
-      // For now, ignore if no clear operator structure.
-    }
+/**
+ * Replaces a property in a text string (or HTML string) with a new one.
+ * If oldProp is provided, it attempts to find and replace it.
+ * If newProp is null, it removes the found property.
+ * If oldProp is null, it appends newProp to the end.
+ */
+export const replacePropertyInString = (
+  text: string,
+  oldProp: Property | null,
+  newProp: Property | null
+): string => {
+  if (!oldProp && !newProp) return text;
+
+  // Format new tag
+  let newTag = '';
+  if (newProp) {
+    const vals = newProp.values.join(',');
+    // Prefer standard format
+    newTag = `[${newProp.key}:${newProp.operator}:${vals}]`;
   }
 
-  return properties2;
+  if (!oldProp) {
+    // Append
+    return text + (text.trim().endsWith('</p>') ? `<p>${newTag}</p>` : ` ${newTag}`);
+  }
+
+  // Find and replace
+  const bracketRegex = /\[([^\]]+)\]/g;
+  let match;
+  let result = text;
+
+  // We need to find the specific instance of oldProp.
+  // We iterate matches. If a match parses to match oldProp, we replace it.
+  // To handle multiple matches, we might need to be careful.
+  // For now, replace the FIRST match that corresponds to oldProp.
+
+  // We need to re-run regex because replacing invalidates indices if we did it in loop?
+  // Actually, we can just find the match index first.
+
+  let matchIndex = -1;
+  let matchLength = 0;
+
+  while ((match = bracketRegex.exec(text)) !== null) {
+      const content = match[1];
+      const parsed = parsePropertyBlock(content);
+
+      if (parsed && arePropertiesEqual(parsed, oldProp)) {
+          matchIndex = match.index;
+          matchLength = match[0].length;
+          break;
+      }
+  }
+
+  if (matchIndex !== -1) {
+      const prefix = text.substring(0, matchIndex);
+      const suffix = text.substring(matchIndex + matchLength);
+
+      // If deleting (newProp is null), we might want to clean up surrounding whitespace/tags?
+      // E.g. <p>[prop]</p> -> <p></p> or remove <p>?
+      // For now, simple replacement.
+      return prefix + newTag + suffix;
+  }
+
+  // If not found, append if newProp exists?
+  // Or do nothing?
+  // Let's append if it was a "replace" attempt but we couldn't find the old one (maybe it was modified textually).
+  if (newProp) {
+      return text + (text.trim().endsWith('</p>') ? `<p>${newTag}</p>` : ` ${newTag}`);
+  }
+
+  return text;
+};
+
+const arePropertiesEqual = (p1: Property, p2: Property) => {
+    if (p1.key !== p2.key) return false;
+    // Operator comparison might need normalization (symbol vs word)
+    // But parsePropertyBlock normalizes to words.
+    if (p1.operator !== p2.operator) return false;
+    if (p1.values.length !== p2.values.length) return false;
+    // Compare values (order matters?)
+    // Let's assume order matters for now
+    return p1.values.every((v, i) => v === p2.values[i]);
 };
