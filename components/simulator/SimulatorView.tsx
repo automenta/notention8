@@ -50,16 +50,21 @@ export const SimulatorView: React.FC = () => {
   const aiRef = useRef<WebLLMProvider>(new WebLLMProvider());
   const gardenerRef = useRef<Gardener | null>(null);
   const agentsRef = useRef(agents);
+  const ontologyRef = useRef(ontology); // Ref for loop access
 
   // Initialize Gardener
   useEffect(() => {
       gardenerRef.current = new Gardener(aiRef.current);
   }, []);
 
-  // Keep ref in sync
+  // Keep refs in sync
   useEffect(() => {
     agentsRef.current = agents;
   }, [agents]);
+
+  useEffect(() => {
+    ontologyRef.current = ontology;
+  }, [ontology]);
 
   // Simulation Loop
   useEffect(() => {
@@ -70,6 +75,7 @@ export const SimulatorView: React.FC = () => {
     const loop = async () => {
         // Use ref to get latest state inside async loop
         const currentAgents = agentsRef.current;
+        const currentOntology = ontologyRef.current;
         const agentIndex = currentAgents.findIndex(a => a.status === 'Idle');
 
         if (agentIndex === -1) {
@@ -99,10 +105,10 @@ export const SimulatorView: React.FC = () => {
             await simulateTyping(agentIndex, content);
 
             // 4. AI Tagging (Gardener) & Ontology Evolution
-            // We simulate that the agent consults the AI to add tags,
-            // which in turn might suggest new ontology attributes.
+            // Pass the CURRENT ontology to the AI so it knows what terms to reuse!
             updateAgent(agentIndex, { status: 'Gardening...' });
-            const tags = await aiRef.current.suggestTags(content);
+            const tags = await aiRef.current.suggestTags(content, currentOntology);
+
             const taggedContent = content + '\n\n' + tags.map((t: string) => JSON.stringify(t)).join(' ');
             updateAgent(agentIndex, { currentDraft: taggedContent });
 
@@ -153,23 +159,12 @@ export const SimulatorView: React.FC = () => {
           const newNotes = [enrichedNote, ...prev];
 
           // 2. Run Matching Logic
-          // Check if this new note matches any existing note (offer matches request, or request matches offer)
-          // We assume simplistic matching: New Note vs All Previous Notes
-          // And notify BOTH owners.
-
           prev.forEach(otherNote => {
              const score1 = matchNotes(enrichedNote, otherNote);
              const score2 = matchNotes(otherNote, enrichedNote);
 
              if (score1 > 0.5 || score2 > 0.5) {
                  addLog(`MATCH FOUND! Score: ${Math.max(score1, score2).toFixed(2)} between ${enrichedNote.id.slice(0,4)} and ${otherNote.id.slice(0,4)}`);
-
-                 // Notify Current Agent (Publisher)
-                 // Find agent who owns this note (we don't track owner in Note type here strictly, but let's assume active agents)
-                 // This is a simulation, so we just broadcast to active agents if they published it.
-                 // Ideally Note should have `pubkey` or `authorId`.
-                 // We will map Agent ID to Author somehow?
-                 // For now, simply notify ALL agents involved in the simulation since they are "Alice" and "Bob".
 
                  setNotifications(n => ({
                      ...n,
@@ -191,23 +186,17 @@ export const SimulatorView: React.FC = () => {
               if (newAttributes.length > 0) {
                   setOntology(prevOntology => {
                       let newOntology = [...prevOntology];
-                      // Simply add to the first node ("Service" usually) or a "General" node if possible
-                      // In a real scenario, Gardener would suggest the Path.
-                      // Here we just attach to root node if available.
                       const targetNodeId = newOntology[0]?.id || 'root';
 
                       newAttributes.forEach(attr => {
+                          // Check if attribute already exists in some form to avoid spam?
+                          // For now, simple additive.
                           addLog(`Ontology Evolved: Added ${attr.key}`);
-                          // Check if exists first to avoid error? addAttribute doesn't throw, just overwrites or adds?
-                          // addAttribute creates a new tree.
-
-                          // Map AttributeDefinition to OntologyAttribute
                           const ontAttr: OntologyAttribute = {
                               type: attr.type,
                               description: attr.description,
-                              operators: { real: ['is'], imaginary: [] } // Defaults
+                              operators: { real: ['is'], imaginary: [] }
                           };
-
                           newOntology = addAttribute(newOntology, targetNodeId, attr.key, ontAttr);
                       });
                       return newOntology;

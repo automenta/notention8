@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNotes } from '../../hooks/useNotes';
+import { useSettings } from '../../hooks/useSettingsContext';
 import { TiptapEditor } from '../TiptapEditor';
-import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
 import type { Note } from '../../types';
 
 interface Props {
@@ -22,6 +22,7 @@ export const AgentSessionView: React.FC<Props> = ({
     notifications
 }) => {
   const { notes, addNote, updateNote } = useNotes();
+  const { settings } = useSettings();
   const [activeNote, setActiveNote] = useState<Note | null>(null);
 
   // Initialize or Select Default Note
@@ -43,7 +44,7 @@ export const AgentSessionView: React.FC<Props> = ({
         // Notify Network
         onPublish(finalNote);
     }
-  }, [status]); // Dependencies intentionally limited
+  }, [status]);
 
   // The note to display. If typing (currentDraft exists and matches activeNote), use draft.
   const displayNote = activeNote
@@ -51,12 +52,13 @@ export const AgentSessionView: React.FC<Props> = ({
     : null;
 
   return (
-    <div className="flex flex-col h-full bg-gray-900 border border-gray-700 rounded-lg overflow-hidden shadow-lg relative">
+    <div className="flex flex-col h-full bg-gray-900 border border-gray-700 rounded-lg overflow-hidden shadow-lg relative transition-colors duration-500">
+
       {/* Notifications Overlay */}
       {notifications.length > 0 && (
-          <div className="absolute top-10 right-4 z-50 flex flex-col gap-2">
+          <div className="absolute top-10 right-4 z-50 flex flex-col gap-2 pointer-events-none">
               {notifications.map((msg, i) => (
-                  <div key={i} className="bg-blue-600 text-white text-xs px-3 py-2 rounded shadow-lg animate-bounce">
+                  <div key={i} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs px-3 py-2 rounded shadow-lg animate-bounce border border-white/20">
                       🔔 {msg}
                   </div>
               ))}
@@ -84,7 +86,7 @@ export const AgentSessionView: React.FC<Props> = ({
                         const n = addNote();
                         setActiveNote(n);
                     }}
-                    className="w-full text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 py-1 rounded"
+                    className="w-full text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 py-1 rounded transition-colors"
                 >
                     + New Note
                 </button>
@@ -94,7 +96,7 @@ export const AgentSessionView: React.FC<Props> = ({
                     <div
                         key={note.id}
                         onClick={() => setActiveNote(note)}
-                        className={`p-2 cursor-pointer border-b border-gray-900 truncate text-xs ${activeNote?.id === note.id ? 'bg-blue-900/30 text-blue-200' : 'text-gray-500 hover:text-gray-300'}`}
+                        className={`p-2 cursor-pointer border-b border-gray-900 truncate text-xs transition-colors ${activeNote?.id === note.id ? 'bg-blue-900/30 text-blue-200' : 'text-gray-500 hover:text-gray-300'}`}
                     >
                         {note.title || "Untitled"}
                     </div>
@@ -109,10 +111,9 @@ export const AgentSessionView: React.FC<Props> = ({
                     <TiptapEditor
                         note={displayNote}
                         onChange={(content) => {
-                            // When user manually types (if we allowed it) or when simulated typing updates
                             onDraftChange(content);
                         }}
-                        ontology={DEFAULT_ONTOLOGY}
+                        ontology={settings.ontology}
                     />
                 </div>
             ) : (

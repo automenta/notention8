@@ -9,21 +9,16 @@ interface Props {
 export const CommunityWindow: React.FC<Props> = ({ networkNotes }) => {
 
   // Simple matching visualization
-  // Find pairs of notes that match (score > 0)
   const matches = useMemo(() => {
     const found: { source: Note; target: Note; score: number }[] = [];
 
-    // Naive O(n^2) check - fine for simulation with few notes
     for (let i = 0; i < networkNotes.length; i++) {
         for (let j = 0; j < networkNotes.length; j++) {
             if (i === j) continue;
             const source = networkNotes[i];
             const target = networkNotes[j];
-
-            // Only check if source is a Request?
-            // The matching engine is directional: source (constraints) -> target (facts)
             const score = matchNotes(source, target);
-            if (score > 0) {
+            if (score > 0.5) {
                 found.push({ source, target, score });
             }
         }
@@ -38,55 +33,59 @@ export const CommunityWindow: React.FC<Props> = ({ networkNotes }) => {
         <span className="text-xs text-purple-400">{networkNotes.length} Events</span>
       </div>
 
-      <div className="flex-grow p-4 overflow-y-auto space-y-4">
+      <div className="flex-grow p-4 overflow-y-auto relative">
         {networkNotes.length === 0 && (
             <div className="text-center text-gray-600 text-sm mt-10">
                 Waiting for network activity...
             </div>
         )}
 
-        {/* Render Notes as "Cards" in a feed */}
-        {networkNotes.map((note) => {
-             // Check if this note is involved in a match
-             const relatedMatches = matches.filter(m => m.source.id === note.id || m.target.id === note.id);
+        <div className="space-y-4">
+            {networkNotes.map((note) => {
+                const relatedMatches = matches.filter(m => m.source.id === note.id || m.target.id === note.id);
+                const isMatch = relatedMatches.length > 0;
 
-             return (
-                <div key={note.id} className="bg-gray-800 p-3 rounded border border-gray-700 relative">
-                    <div className="text-xs text-gray-400 mb-1">{note.updatedAt ? new Date(note.updatedAt).toLocaleTimeString() : 'Just now'}</div>
-                    <div className="text-sm text-gray-200 font-medium mb-2">{note.content.split('\n')[0].slice(0, 50)}...</div>
+                return (
+                    <div
+                        key={note.id}
+                        className={`p-3 rounded border transition-all duration-500 ${isMatch ? 'bg-indigo-900/40 border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.3)]' : 'bg-gray-800 border-gray-700'}`}
+                    >
+                        <div className="flex justify-between items-start mb-1">
+                             <div className="text-xs text-gray-400">{note.updatedAt ? new Date(note.updatedAt).toLocaleTimeString() : 'Just now'}</div>
+                             {isMatch && <span className="text-[10px] bg-indigo-600 text-white px-1.5 rounded animate-pulse">MATCH</span>}
+                        </div>
 
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1 mb-2">
-                        {note.tags.map(tag => (
-                            <span key={tag} className="text-[10px] bg-gray-700 px-1 rounded text-blue-300">#{tag}</span>
-                        ))}
-                    </div>
+                        <div className="text-sm text-gray-200 font-medium mb-2 break-words">
+                            {note.content.split('\n')[0].slice(0, 80)}
+                            {note.content.length > 80 && "..."}
+                        </div>
 
-                    {/* Semantic Properties (rendered roughly) */}
-                    <div className="flex flex-wrap gap-1">
-                        {note.properties.map((p, i) => (
-                             <span key={i} className="text-[10px] bg-gray-900 border border-gray-600 px-1 rounded text-green-400 font-mono">
-                                [{p.key} {p.operator} {p.value}]
-                             </span>
-                        ))}
-                    </div>
-
-                    {/* Match Badges */}
-                    {relatedMatches.length > 0 && (
-                        <div className="mt-2 pt-2 border-t border-gray-700">
-                            {relatedMatches.map((m, k) => (
-                                <div key={k} className="text-xs text-yellow-400 flex items-center gap-1">
-                                    <span>⚡ Matched with</span>
-                                    <span className="italic text-gray-400">
-                                        {m.source.id === note.id ? "an offer" : "a request"}
-                                    </span>
-                                </div>
+                        {/* Semantic Properties */}
+                        <div className="flex flex-wrap gap-1 mb-2">
+                            {note.properties.map((p, i) => (
+                                <span key={i} className="text-[10px] bg-gray-950/50 border border-green-500/30 px-1 rounded text-green-400 font-mono">
+                                    [{p.key} {p.operator} {p.value}]
+                                </span>
                             ))}
                         </div>
-                    )}
-                </div>
-             );
-        })}
+
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-1">
+                            {note.tags.map(tag => (
+                                <span key={tag} className="text-[10px] text-blue-400/80">#{tag}</span>
+                            ))}
+                        </div>
+
+                        {/* Match Details */}
+                        {relatedMatches.length > 0 && (
+                             <div className="mt-2 pt-2 border-t border-white/10 text-[10px] text-indigo-300">
+                                 Matched with {relatedMatches[0].source.id === note.id ? relatedMatches[0].target.id.slice(0,4) : relatedMatches[0].source.id.slice(0,4)}
+                             </div>
+                        )}
+                    </div>
+                );
+            })}
+        </div>
       </div>
     </div>
   );

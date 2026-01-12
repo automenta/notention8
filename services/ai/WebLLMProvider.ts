@@ -1,6 +1,6 @@
 import { CreateMLCEngine, MLCEngine } from "@mlc-ai/web-llm";
 import type { AIProvider, InferredAttribute } from './types';
-import type { Note, OntologyAttribute } from '../../types';
+import type { Note, OntologyAttribute, OntologyNode } from '../../types';
 
 export class WebLLMProvider implements AIProvider {
   name = 'WebLLM (In-Browser)';
@@ -49,11 +49,29 @@ export class WebLLMProvider implements AIProvider {
     return response.choices[0]?.message?.content || "";
   }
 
-  async suggestTags(text: string): Promise<string[]> {
+  async suggestTags(text: string, ontology?: OntologyNode[]): Promise<string[]> {
     const engine = await this.getEngine();
+
+    let ontologyContext = "";
+    if (ontology && ontology.length > 0) {
+        // Flatten ontology to a list of keys for context
+        const keys: string[] = [];
+        const traverse = (nodes: OntologyNode[]) => {
+            nodes.forEach(n => {
+                if (n.attributes) keys.push(...Object.keys(n.attributes));
+                if (n.children) traverse(n.children);
+            });
+        };
+        traverse(ontology);
+        if (keys.length > 0) {
+            ontologyContext = `\nExisting Ontology Keys (Reuse these if relevant): ${keys.join(', ')}`;
+        }
+    }
+
     const prompt = `
       Analyze the following text and suggest semantic tags in the format [key:op:value] or [key < value].
       Return ONLY a JSON array of strings. Do not include markdown formatting or explanations.
+      ${ontologyContext}
 
       Text: "${text}"
     `;
