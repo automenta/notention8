@@ -4,7 +4,8 @@ import localforage from 'localforage';
 
 export function useLocalForage<T>(
   key: string,
-  initialValue: T
+  initialValue: T,
+  driver?: LocalForage // Optional custom driver/instance
 ): [T, Dispatch<SetStateAction<T>>, boolean] {
   const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [loading, setLoading] = useState(true);
@@ -21,7 +22,9 @@ export function useLocalForage<T>(
     let isMounted = true;
     setLoading(true);
 
-    localforage
+    const storage = driver || localforage;
+
+    storage
       .getItem<T>(key)
       .then((value) => {
         if (!isMounted) return;
@@ -56,7 +59,7 @@ export function useLocalForage<T>(
     return () => {
       isMounted = false;
     };
-  }, [key]);
+  }, [key, driver]); // Add driver to dependencies
 
   const setValue: Dispatch<SetStateAction<T>> = useCallback(
     (value) => {
@@ -64,14 +67,15 @@ export function useLocalForage<T>(
         const valueToStore =
           value instanceof Function ? value(prevStoredValue) : value;
 
-        localforage.setItem(key, valueToStore).catch((err) => {
+        const storage = driver || localforage;
+        storage.setItem(key, valueToStore).catch((err) => {
           console.error(`Error writing to localForage key "${key}":`, err);
         });
 
         return valueToStore;
       });
     },
-    [key]
+    [key, driver]
   );
 
   return [storedValue, setValue, loading];

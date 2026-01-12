@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../hooks/useSettingsContext';
 import { AITab } from '../settings/AITab';
 import { NostrTab } from '../settings/NostrTab';
@@ -23,10 +23,11 @@ const TabButton: React.FC<{
 );
 
 import { Toggle } from '../common/Toggle';
+import { SimulatorView } from '../simulator/SimulatorView';
 
 export const SettingsView: React.FC = () => {
   const { settings, setSettings } = useSettings();
-  const [activeTab, setActiveTab] = useState<'ai' | 'nostr' | 'data' | 'ontology'>('ai');
+  const [activeTab, setActiveTab] = useState<'ai' | 'nostr' | 'data' | 'ontology' | 'simulator'>('ai');
 
   return (
     <div className="p-8 h-full overflow-y-auto bg-gray-800/50 rounded-lg">
@@ -59,16 +60,23 @@ export const SettingsView: React.FC = () => {
             onClick={() => setActiveTab('data')}
           />
           {settings.developerMode && (
-            <TabButton
-              label="🧬 Ontology"
-              isActive={activeTab === 'ontology'}
-              onClick={() => setActiveTab('ontology')}
-            />
+            <>
+                <TabButton
+                  label="🧬 Ontology"
+                  isActive={activeTab === 'ontology'}
+                  onClick={() => setActiveTab('ontology')}
+                />
+                <TabButton
+                  label="🧪 Simulator"
+                  isActive={activeTab === 'simulator'}
+                  onClick={() => setActiveTab('simulator')}
+                />
+            </>
           )}
         </nav>
       </div>
 
-      <div>
+      <div className="h-[calc(100%-120px)]">
         {activeTab === 'ai' && (
           <AITab settings={settings} setSettings={setSettings} />
         )}
@@ -77,6 +85,7 @@ export const SettingsView: React.FC = () => {
         )}
         {activeTab === 'data' && <DataTab />}
         {activeTab === 'ontology' && settings.developerMode && <OntologyTab />}
+        {activeTab === 'simulator' && settings.developerMode && <SimulatorView />}
       </div>
     </div>
   );

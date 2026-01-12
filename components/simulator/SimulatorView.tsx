@@ -1,113 +1,178 @@
-import React, { useState } from 'react';
-import type { Note, Property } from '../../types';
-import { parseProperties } from '../../utils/parsing';
-import { matchNotes } from '../../utils/matching';
+import React, { useState, useEffect, useRef } from 'react';
+import { AgentSessionWrapper } from './AgentSessionWrapper';
+import { AgentSessionView } from './AgentSessionView';
+import { WebLLMProvider } from '../../services/ai/WebLLMProvider';
+import type { Note } from '../../types';
+
+// Agent State
+interface SimulationAgent {
+    id: string;
+    name: string;
+    persona: string;
+    currentDraft: string;
+    status: string; // "Thinking", "Typing", "Idle"
+    goal: string;
+}
+
+const INITIAL_AGENTS: SimulationAgent[] = [
+    {
+        id: '1',
+        name: 'Alice (Client)',
+        persona: 'You are Alice, a startup founder looking for a React developer to build a landing page. Budget is around $500.',
+        goal: 'Create a Request Note for a React Developer.',
+        currentDraft: '',
+        status: 'Idle'
+    },
+    {
+        id: '2',
+        name: 'Bob (Freelancer)',
+        persona: 'You are Bob, an experienced React and Node.js developer looking for gigs. Your rate is $50/hr.',
+        goal: 'Create an Offer Note listing your services.',
+        currentDraft: '',
+        status: 'Idle'
+    }
+];
 
 export const SimulatorView: React.FC = () => {
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const [agents, setAgents] = useState<SimulationAgent[]>(INITIAL_AGENTS);
+  const [active, setActive] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
+  const aiRef = useRef<WebLLMProvider>(new WebLLMProvider());
+  const agentsRef = useRef(agents);
 
-  const spawnAgent = (role: string) => {
-    const newAgent: Agent = {
-      id: crypto.randomUUID(),
-      role,
-      notes: generateNotesForRole(role)
+  // Keep ref in sync
+  useEffect(() => {
+    agentsRef.current = agents;
+  }, [agents]);
+
+  // Simulation Loop
+  useEffect(() => {
+    if (!active) return;
+
+    let timeoutId: NodeJS.Timeout;
+
+    const loop = async () => {
+        // Use ref to get latest state inside async loop
+        const currentAgents = agentsRef.current;
+        const agentIndex = currentAgents.findIndex(a => a.status === 'Idle');
+
+        if (agentIndex === -1) {
+            timeoutId = setTimeout(loop, 1000);
+            return;
+        }
+
+        const agent = currentAgents[agentIndex];
+
+        // 1. Update Status: Thinking
+        updateAgent(agentIndex, { status: 'Thinking...' });
+        addLog(`${agent.name} is thinking about goal: "${agent.goal}"`);
+
+        // 2. AI Generation
+        try {
+            const prompt = `
+                ${agent.persona}
+                Your current goal is: ${agent.goal}
+                Write a short note content that achieves this goal.
+                Keep it under 20 words.
+                Do not include tags yet.
+            `;
+            const content = await aiRef.current.generateCompletion(prompt);
+
+            // 3. Typing Animation
+            updateAgent(agentIndex, { status: 'Typing...' });
+            await simulateTyping(agentIndex, content);
+
+            // 4. AI Tagging (Gardener)
+            updateAgent(agentIndex, { status: 'Gardening...' });
+            const tags = await aiRef.current.suggestTags(content);
+            const taggedContent = content + '\n\n' + tags.map((t: string) => JSON.stringify(t)).join(' ');
+            updateAgent(agentIndex, { currentDraft: taggedContent });
+
+            // 5. Done
+            updateAgent(agentIndex, { status: 'Published', goal: 'Wait for matches' });
+            addLog(`${agent.name} published: "${content.slice(0, 20)}..."`);
+
+            // Wait a bit before next loop
+            await new Promise(r => setTimeout(r, 2000));
+            updateAgent(agentIndex, { status: 'Idle' });
+
+        } catch (e) {
+            console.error(e);
+            updateAgent(agentIndex, { status: 'Error' });
+            // Add slight delay on error to avoid rapid looping
+            await new Promise(r => setTimeout(r, 2000));
+        }
+
+        timeoutId = setTimeout(loop, 1000);
     };
-    setAgents(prev => [...prev, newAgent]);
-    addLog(`Spawned Agent ${newAgent.id.slice(0,4)} (${role})`);
-  };
 
-  const runCycle = () => {
-    addLog('--- Running Cycle ---');
-    // For each agent, try to match their requests against others' offers
+    loop();
 
-    agents.forEach(agent => {
-        agent.notes.forEach(note => {
-            const isRequest = note.tags.includes('request');
-            if (!isRequest) return;
+    return () => clearTimeout(timeoutId);
+  }, [active]);
 
-            addLog(`Agent ${agent.id.slice(0,4)} looking for: ${note.title}`);
-
-            agents.forEach(otherAgent => {
-                if (agent.id === otherAgent.id) return;
-
-                otherAgent.notes.forEach(offer => {
-                    const isOffer = offer.tags.includes('offer');
-                    if (!isOffer) return;
-
-                    const score = matchNotes(note, offer);
-                    if (score > 0) {
-                        addLog(`  MATCH FOUND! Score: ${score.toFixed(2)} with Agent ${otherAgent.id.slice(0,4)}'s "${offer.title}"`);
-                    }
-                });
-            });
-        });
+  const updateAgent = (index: number, updates: Partial<SimulationAgent>) => {
+    setAgents(prev => {
+        const next = [...prev];
+        next[index] = { ...next[index], ...updates };
+        return next;
     });
   };
 
-  const addLog = (msg: string) => setLogs(prev => [...prev, msg]);
+  const simulateTyping = async (index: number, fullText: string) => {
+    for (let i = 0; i <= fullText.length; i++) {
+        updateAgent(index, { currentDraft: fullText.slice(0, i) });
+        await new Promise(r => setTimeout(r, 50));
+    }
+  };
+
+  const addLog = (msg: string) => setLogs(prev => [msg, ...prev].slice(0, 50));
 
   return (
-    <div className="p-6 text-gray-200 h-full flex flex-col">
-      <h1 className="text-2xl font-bold mb-4">🧪 Simulator Lab</h1>
-
-      <div className="flex gap-4 mb-6">
-        <button onClick={() => spawnAgent('Freelancer')} className="bg-blue-600 px-4 py-2 rounded">Spawn Freelancer</button>
-        <button onClick={() => spawnAgent('Client')} className="bg-green-600 px-4 py-2 rounded">Spawn Client</button>
-        <button onClick={runCycle} className="bg-purple-600 px-4 py-2 rounded">Run Cycle</button>
-        <button onClick={() => { setAgents([]); setLogs([]); }} className="bg-red-600 px-4 py-2 rounded">Reset</button>
+    <div className="flex flex-col h-full bg-black text-gray-200 p-4 overflow-hidden">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-bold">🧪 Community Simulator</h1>
+        <div className="flex gap-2">
+            <button
+                onClick={() => setActive(!active)}
+                className={`px-4 py-2 rounded font-bold ${active ? 'bg-red-600' : 'bg-green-600'}`}
+            >
+                {active ? 'Stop Simulation' : 'Start Simulation'}
+            </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 flex-grow overflow-hidden">
-        <div className="bg-gray-900 p-4 rounded overflow-y-auto">
-            <h2 className="font-bold mb-2">Active Agents ({agents.length})</h2>
-            {agents.map(a => (
-                <div key={a.id} className="mb-2 p-2 bg-gray-800 rounded">
-                    <div className="font-bold text-sm text-blue-300">{a.role} <span className="text-gray-500">#{a.id.slice(0,4)}</span></div>
-                    <ul className="text-xs text-gray-400 pl-2">
-                        {a.notes.map(n => (
-                            <li key={n.id}>- {n.title}</li>
-                        ))}
-                    </ul>
-                </div>
-            ))}
-        </div>
+      <div className="grid grid-cols-2 gap-4 flex-grow overflow-hidden">
+        {/* Agent 1 */}
+        <AgentSessionWrapper agentId={agents[0].id}>
+            <AgentSessionView
+                agentName={agents[0].name}
+                currentDraft={agents[0].currentDraft}
+                onDraftChange={(val) => updateAgent(0, { currentDraft: val })}
+                status={agents[0].status}
+            />
+        </AgentSessionWrapper>
 
-        <div className="bg-black p-4 rounded font-mono text-sm overflow-y-auto border border-gray-700">
-            {logs.map((log, i) => (
-                <div key={i} className="mb-1">{log}</div>
-            ))}
-        </div>
+        {/* Agent 2 */}
+        <AgentSessionWrapper agentId={agents[1].id}>
+            <AgentSessionView
+                agentName={agents[1].name}
+                currentDraft={agents[1].currentDraft}
+                onDraftChange={(val) => updateAgent(1, { currentDraft: val })}
+                status={agents[1].status}
+            />
+        </AgentSessionWrapper>
+      </div>
+
+      {/* Logs / Community Feed */}
+      <div className="h-48 mt-4 bg-gray-900 border border-gray-700 rounded p-4 overflow-y-auto font-mono text-xs">
+        <h3 className="font-bold text-gray-500 mb-2 sticky top-0 bg-gray-900">Network Events</h3>
+        {logs.map((log, i) => (
+            <div key={i} className="mb-1 border-l-2 border-blue-500 pl-2">
+                <span className="text-gray-400">[{new Date().toLocaleTimeString()}]</span> {log}
+            </div>
+        ))}
       </div>
     </div>
   );
-};
-
-interface Agent {
-    id: string;
-    role: string;
-    notes: Note[];
-}
-
-// Helpers to generate mock notes
-const generateNotesForRole = (role: string): Note[] => {
-    const notes: Note[] = [];
-    if (role === 'Freelancer') {
-        notes.push(mockNote('My Services', 'offer', '[service:is:Web Dev] [rate:is:50]'));
-    } else if (role === 'Client') {
-        notes.push(mockNote('Need Website', 'request', '[service:is:Web Dev] [rate < 100]'));
-    }
-    return notes;
-};
-
-const mockNote = (title: string, type: 'offer' | 'request', content: string): Note => {
-    return {
-        id: crypto.randomUUID(),
-        title,
-        content,
-        tags: [type],
-        properties: parseProperties(content),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-    };
 };

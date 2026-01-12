@@ -3,10 +3,11 @@ import { useLocalForage } from './useLocalForage';
 import { createNote } from '../utils/notes';
 import type { Note } from '../types';
 
-export const useNotesState = () => {
+export const useNotesState = (driver?: LocalForage) => {
   const [notes, setNotes, notesLoading] = useLocalForage<Note[]>(
     'notention-notes',
-    []
+    [],
+    driver
   );
 
   const addNote = useCallback(() => {
