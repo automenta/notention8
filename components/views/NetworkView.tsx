@@ -95,9 +95,17 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
         // Also note properties are in tags.
         return filtered.map(event => {
             // Extract props from tags
-            const props = event.tags
+            const props: Record<string, any> = {};
+            event.tags
                 .filter(t => t[0] === 'property')
-                .map(t => ({ key: t[1], operator: t[2], values: [t[3]] }));
+                .forEach(t => {
+                   // t: ['property', key, op, value]
+                   // Note structure expects prop key -> { operator, values } (Wait, Note type check needed)
+                   // Checking types/index.ts...
+                   // Actually matchNotes expects Note interface which has properties: Record<string, { operator: string; values: any[] }>;
+                   props[t[1]] = { operator: t[2], values: [t[3]] };
+                });
+
 
             // Construct temp note
             const offerNote: Note = {
@@ -105,6 +113,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
                 title: '',
                 content: event.content,
                 tags: event.tags.filter(t => t[0] === 't').map(t => t[1]),
+                published: true, // It's from Nostr
                 properties: props,
                 createdAt: '',
                 updatedAt: ''

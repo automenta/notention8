@@ -11,6 +11,7 @@ import {
   mergeAttributes
 } from '../../utils/ontologyHelpers';
 import { TrashIcon, EditIcon, PlusIcon, FolderIcon, TagIcon, MergeIcon } from '../icons';
+import { Modal } from '../common/Modal';
 
 export const OntologyTab: React.FC = () => {
   const { settings, setSettings } = useSettings();
@@ -20,6 +21,7 @@ export const OntologyTab: React.FC = () => {
 
   // Merge state
   const [mergingAttr, setMergingAttr] = useState<{ nodeId: string, sourceKey: string } | null>(null);
+  const [targetMergeKey, setTargetMergeKey] = useState<string>('');
 
   const toggleExpand = (id: string) => {
     const newSet = new Set(expandedNodes);
@@ -106,15 +108,24 @@ export const OntologyTab: React.FC = () => {
   };
 
   const handleMergeAttribute = (nodeId: string, sourceKey: string) => {
-    const targetKey = prompt(`Merge '${sourceKey}' into which attribute? (Enter target key)`);
-    if (!targetKey) return;
-    if (sourceKey === targetKey) return;
+    setMergingAttr({ nodeId, sourceKey });
+    setTargetMergeKey('');
+  };
+
+  const executeMerge = () => {
+    if (!mergingAttr || !targetMergeKey) return;
+    if (mergingAttr.sourceKey === targetMergeKey) {
+        alert("Source and target keys must be different.");
+        return;
+    }
 
     try {
         setSettings(prev => ({
             ...prev,
-            ontology: mergeAttributes(prev.ontology, nodeId, sourceKey, targetKey)
+            ontology: mergeAttributes(prev.ontology, mergingAttr.nodeId, mergingAttr.sourceKey, targetMergeKey)
         }));
+        setMergingAttr(null);
+        setTargetMergeKey('');
     } catch (e: any) {
         alert(e.message);
     }
@@ -211,6 +222,52 @@ export const OntologyTab: React.FC = () => {
       <ul>
         {settings.ontology.map(node => renderNode(node))}
       </ul>
+
+      {mergingAttr && (
+        <Modal
+            isOpen={true}
+            onClose={() => setMergingAttr(null)}
+            title={`Merge Attribute '${mergingAttr.sourceKey}'`}
+        >
+            <div className="space-y-4">
+                <p className="text-gray-300">
+                    Select the target attribute to merge <b>{mergingAttr.sourceKey}</b> into.
+                    This will delete <b>{mergingAttr.sourceKey}</b> and alias it to the target.
+                </p>
+                <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">Target Attribute Key</label>
+                    <input
+                        type="text"
+                        value={targetMergeKey}
+                        onChange={(e) => setTargetMergeKey(e.target.value)}
+                        className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:border-blue-500 outline-none"
+                        placeholder="e.g. 'price'"
+                    />
+                </div>
+                <div className="flex justify-end gap-3 mt-6">
+                    <button
+                        onClick={() => setMergingAttr(null)}
+                        className="px-4 py-2 text-gray-400 hover:text-white"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={executeMerge}
+                        disabled={!targetMergeKey}
+                        className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded"
+                    >
+                        Merge Attributes
+                    </button>
+                </div>
+                <div className="mt-4 p-3 bg-gray-900/50 rounded border border-gray-700/50">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Upcoming Feature: Voting</h4>
+                    <p className="text-xs text-gray-400">
+                        In a future update, you will be able to propose this merge to the network and vote on shared definitions.
+                    </p>
+                </div>
+            </div>
+        </Modal>
+      )}
     </div>
   );
 };
