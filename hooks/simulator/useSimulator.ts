@@ -1,61 +1,34 @@
 import { useState, useRef, useEffect } from 'react';
-import type { Note, OntologyNode, OntologyAttribute } from '../../types';
+import type { OntologyNode } from '../../types';
 import type { AIProvider } from '../../services/ai/types';
 import { Gardener } from '../../services/gardener';
-import { parseProperties } from '../../utils/parsing';
-import { matchNotes } from '../../utils/matching';
-import { addAttribute } from '../../utils/ontologyHelpers';
 import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
 import { WebLLMProvider } from '../../services/ai/WebLLMProvider';
 import { MockLLMProvider } from '../../services/ai/MockLLMProvider';
-
-export interface SimulationAgent {
-    id: string;
-    name: string;
-    persona: string;
-    currentDraft: string;
-    status: string; // "Thinking", "Typing", "Idle", "Contacting"
-    goal: string;
-}
-
-const INITIAL_AGENTS: SimulationAgent[] = [
-    {
-        id: '1',
-        name: 'Alice (Client)',
-        persona: 'You are Alice, a startup founder looking for a React developer to build a landing page. Budget is around $500.',
-        goal: 'Create a Request Note for a React Developer.',
-        currentDraft: '',
-        status: 'Idle'
-    },
-    {
-        id: '2',
-        name: 'Bob (Freelancer)',
-        persona: 'You are Bob, an experienced React and Node.js developer looking for gigs. Your rate is $50/hr.',
-        goal: 'Create an Offer Note listing your services.',
-        currentDraft: '',
-        status: 'Idle'
-    }
-];
+import { useSimulationAgents } from './useSimulationAgents';
+import { useSimulationNetwork } from './useSimulationNetwork';
 
 export const useSimulator = () => {
-  const [agents, setAgents] = useState<SimulationAgent[]>(INITIAL_AGENTS);
+  const { agents, agentsRef, updateAgent } = useSimulationAgents();
   const [active, setActive] = useState(false);
-  const [logs, setLogs] = useState<{msg: string; type: 'info' | 'match' | 'ontology' | 'reuse'}[]>([]);
-  const [networkNotes, setNetworkNotes] = useState<Note[]>([]); // Shared Network State
+
   const [ontology, setOntology] = useState<OntologyNode[]>(DEFAULT_ONTOLOGY);
-  const [notifications, setNotifications] = useState<Record<string, string[]>>({});
-  const [newAttributes, setNewAttributes] = useState<{key: string; type: string}[]>([]);
+  const ontologyRef = useRef(ontology);
+
   const [aiProviderName, setAiProviderName] = useState<string>("Initializing...");
 
   // AI & Gardener Refs
   const aiRef = useRef<AIProvider | null>(null);
   const gardenerRef = useRef<Gardener | null>(null);
 
-  // State Refs for loop access
-  const agentsRef = useRef(agents);
-  const ontologyRef = useRef(ontology);
-
-  const addLog = (msg: string, type: 'info' | 'match' | 'ontology' | 'reuse') => setLogs(prev => [{msg, type}, ...prev].slice(0, 20));
+  const {
+      networkNotes,
+      logs,
+      notifications,
+      newAttributes,
+      handlePublish,
+      addLog
+  } = useSimulationNetwork(ontologyRef, setOntology, gardenerRef);
 
   // Initialize AI Provider
   useEffect(() => {
@@ -86,20 +59,8 @@ export const useSimulator = () => {
 
   // Keep refs in sync
   useEffect(() => {
-    agentsRef.current = agents;
-  }, [agents]);
-
-  useEffect(() => {
     ontologyRef.current = ontology;
   }, [ontology]);
-
-  const updateAgent = (index: number, updates: Partial<SimulationAgent>) => {
-    setAgents(prev => {
-        const next = [...prev];
-        next[index] = { ...next[index], ...updates };
-        return next;
-    });
-  };
 
   // Simulation Loop
   useEffect(() => {
@@ -214,92 +175,7 @@ export const useSimulator = () => {
     loop();
 
     return () => clearTimeout(timeoutId);
-  }, [active]);
-
-
-  const handlePublish = async (note: Note) => {
-      // 1. Enrich Note
-      const properties = parseProperties(note.content);
-      const enrichedNote = { ...note, properties };
-
-      setNetworkNotes(prev => {
-          // Prevent duplicates
-          const filtered = prev.filter(n => n.id !== enrichedNote.id);
-          const newNotes = [enrichedNote, ...filtered];
-
-          // 2. Run Matching Logic
-          // Only match against OTHER notes
-          filtered.forEach(otherNote => {
-             const score1 = matchNotes(enrichedNote, otherNote);
-             const score2 = matchNotes(otherNote, enrichedNote);
-
-             if (score1 > 0.5 || score2 > 0.5) {
-                 addLog(`MATCH: ${enrichedNote.id.slice(0,4)} <-> ${otherNote.id.slice(0,4)}`, 'match');
-
-                 // Update Agent Goals to simulate interaction
-                 // Find agent that owns enrichedNote or otherNote
-                 // Note: simulation agents don't own the 'otherNote' if it's from history, but here we assume only 2 agents active.
-                 // Ideally we map note.id back to agent.
-                 // For now, simple notification.
-
-                 // Simulate "Contact" action
-                 setTimeout(() => {
-                      addLog(`💬 Agent contacting peer...`, 'info');
-                 }, 1000);
-
-                 setNotifications(n => ({
-                     ...n,
-                     '1': [...(n['1'] || []), `Match found!`],
-                     '2': [...(n['2'] || []), `Match found!`]
-                 }));
-             }
-          });
-
-          return newNotes;
-      });
-
-      // 3. Evolve Ontology
-      if (gardenerRef.current) {
-          try {
-              const newAttrs = await gardenerRef.current.evolveOntology([enrichedNote]);
-
-              // Only add if not exists
-              const currentOntology = ontologyRef.current;
-              const existingKeys = new Set<string>();
-              const traverse = (nodes: OntologyNode[]) => {
-                  nodes.forEach(n => {
-                      if (n.attributes) Object.keys(n.attributes).forEach(k => existingKeys.add(k));
-                      if (n.children) traverse(n.children);
-                  });
-              };
-              traverse(currentOntology);
-
-              const novelAttrs = newAttrs.filter(a => !existingKeys.has(a.key));
-
-              if (novelAttrs.length > 0) {
-                  setOntology(prevOntology => {
-                      let newOntology = [...prevOntology];
-                      const targetNodeId = newOntology[0]?.id || 'root';
-
-                      novelAttrs.forEach(attr => {
-                          addLog(`Ontology + ${attr.key}`, 'ontology');
-                          setNewAttributes(prev => [{key: attr.key, type: attr.type}, ...prev].slice(0, 10));
-
-                          const ontAttr: OntologyAttribute = {
-                              type: attr.type,
-                              description: attr.description,
-                              operators: { real: ['is'], imaginary: [] }
-                          };
-                          newOntology = addAttribute(newOntology, targetNodeId, attr.key, ontAttr);
-                      });
-                      return newOntology;
-                  });
-              }
-          } catch (e) {
-              console.error("Gardener Error:", e);
-          }
-      }
-  };
+  }, [active, agentsRef, updateAgent, addLog]); // dependencies
 
   return {
     agents,
