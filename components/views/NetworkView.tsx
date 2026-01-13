@@ -2,10 +2,9 @@ import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { getPublicKey } from 'nostr-tools';
 import type { NostrEvent } from '../../types';
 import { KeyIcon, LoadingSpinner, SettingsIcon, ArrowLeftIcon } from '../icons';
-import { DEFAULT_RELAYS, hexToBytes, pool } from '../../utils/nostr';
+import { DEFAULT_RELAYS, hexToBytes, pool, extractPropertiesFromTags, convertEventToNote } from '../../utils/nostr';
 import { matchNotes } from '../../utils/matching';
 import type { Note } from '../../types';
-import { parseProperties } from '../../utils/parsing'; // Need to parse events to notes for matching
 import { useNostrProfile } from '../../hooks/useNostrProfile';
 import { ProfileHeader } from '../network/ProfileHeader';
 import { NostrEventCard } from '../network/NostrEventCard';
@@ -55,19 +54,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
         setEvents((prev) => [...prev, ...newEvents]);
 
         // Passive Learning: Extract properties from new events
-        const allProps: Property[] = [];
-        newEvents.forEach(evt => {
-            evt.tags.forEach(t => {
-                if (t[0] === 'property') {
-                    // t = ['property', key, op, val]
-                    allProps.push({
-                        key: t[1],
-                        operator: t[2],
-                        values: [t[3]]
-                    });
-                }
-            });
-        });
+        const allProps: Property[] = newEvents.flatMap(evt => extractPropertiesFromTags(evt.tags));
 
         if (allProps.length > 0) {
             learnFromProperties(allProps);
@@ -115,48 +102,8 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
 
     // If matching mode, sort by match score
     if (matchAgainst) {
-        // We need to convert NostrEvent to Note for matching logic
-        // This is a bit expensive to do on render, but fine for prototype.
-        // Also note properties are in tags.
         return filtered.map(event => {
-            // Extract props from tags
-            // Our usePublish puts tags as ['property', key, op, value]
-            // We need to reconstruct Property[]
-
-            const propsMap = new Map<string, Property>();
-
-            event.tags.forEach(t => {
-                if (t[0] === 'property') {
-                    const key = t[1];
-                    const op = t[2];
-                    const val = t[3];
-
-                    if (propsMap.has(key)) {
-                        propsMap.get(key)!.values.push(val);
-                    } else {
-                        propsMap.set(key, {
-                            key,
-                            operator: op,
-                            values: [val]
-                        });
-                    }
-                }
-            });
-
-            const props = Array.from(propsMap.values());
-
-            // Construct temp note
-            const offerNote: Note = {
-                id: event.id,
-                title: '',
-                content: event.content,
-                tags: event.tags.filter(t => t[0] === 't').map(t => t[1]),
-                published: true, // It's from Nostr
-                properties: props,
-                createdAt: '',
-                updatedAt: ''
-            };
-
+            const offerNote: Note = convertEventToNote(event);
             const score = matchNotes(matchAgainst, offerNote) * 100;
             return { event, score };
         })
