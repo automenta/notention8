@@ -58,7 +58,7 @@ describe('utils/nostr', () => {
             expect(note.tags).toEqual(['tag1']);
             expect(note.properties).toHaveLength(1);
             expect(note.properties[0].key).toBe('prop1');
-            expect(note.published).toBe(true);
+            expect(note.nostrEventId).toBe('123');
             expect(note.createdAt).toBe(new Date(1672531200 * 1000).toISOString());
         });
     });
