@@ -5,6 +5,7 @@ import { MainView } from './components/MainView';
 import { useNotes } from './hooks/useNotes';
 import { useView } from './hooks/useViewContext';
 import { sortNotesByDate } from './utils/notes';
+import { useAutoSelectNote } from './hooks/useAutoSelectNote';
 
 const App: React.FC = () => {
   const { notes, addNote, notesLoading } = useNotes();
@@ -13,23 +14,13 @@ const App: React.FC = () => {
 
   const sortedNotes = useMemo(() => sortNotesByDate(notes), [notes]);
 
-  // Auto-select the most recent note on load or when switching to 'notes' view
-  useEffect(() => {
-    if (
-      activeView === 'notes' &&
-      !notesLoading &&
-      selectedNoteId === null &&
-      sortedNotes.length > 0
-    ) {
-      setSelectedNoteId(sortedNotes[0].id);
-    }
-  }, [
-    notesLoading,
-    sortedNotes,
-    selectedNoteId,
+  useAutoSelectNote({
     activeView,
+    notesLoading,
+    selectedNoteId,
+    sortedNotes,
     setSelectedNoteId,
-  ]);
+  });
 
   const handleNewNote = () => {
     const newNote = addNote();
