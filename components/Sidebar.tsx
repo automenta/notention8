@@ -1,40 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Search } from './sidebar/Search';
-import { useNotes } from '../hooks/useNotes';
-import { useView } from '../hooks/useViewContext';
 import { NoteListItem } from './sidebar/NoteListItem';
-import type { SortOrder } from '../types';
-import { useSortedFilteredNotes } from '../hooks/useSortedFilteredNotes';
-import { useLocalForage } from '../hooks/useLocalForage';
 import { SortSelector } from './sidebar/SortSelector';
 import { TemplateList } from './sidebar/TemplateList';
+import { useSidebarLogic } from '../hooks/useSidebarLogic';
 
 export const Sidebar: React.FC = () => {
-  const { notes, deleteNote } = useNotes();
-  const { selectedNoteId, setSelectedNoteId } = useView();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useLocalForage<SortOrder>(
-    'notention-sort-order',
-    'updatedAt_desc'
-  );
-
-  const sortedNotes = useSortedFilteredNotes(notes, searchTerm, sortOrder);
-
-  const handleDeleteNote = (noteIdToDelete: string) => {
-    if (!window.confirm('Are you sure you want to delete this note?')) {
-      return;
-    }
-
-    if (selectedNoteId === noteIdToDelete) {
-      const currentIndex = sortedNotes.findIndex(
-        (n) => n.id === noteIdToDelete
-      );
-      const nextNote =
-        sortedNotes[currentIndex + 1] || sortedNotes[currentIndex - 1] || null;
-      setSelectedNoteId(nextNote ? nextNote.id : null);
-    }
-    deleteNote(noteIdToDelete);
-  };
+  const {
+    searchTerm,
+    setSearchTerm,
+    sortOrder,
+    setSortOrder,
+    sortedNotes,
+    handleDeleteNote,
+    selectedNoteId,
+    setSelectedNoteId,
+  } = useSidebarLogic();
 
   return (
     <div className="bg-gray-900 flex flex-col h-full">
