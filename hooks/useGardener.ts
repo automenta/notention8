@@ -11,12 +11,11 @@ export const useGardener = () => {
   const gardener = useMemo(() => {
     // Instantiate provider based on settings
     const provider = settings.aiEnabled
-      ? new RemoteAIProvider() // This will use process.env.API_KEY internally for now, or we should pass it from settings if we stored it there.
-      // Actually settings doesn't store API key securely, it's env var.
+      ? new RemoteAIProvider(settings.googleGeminiApiKey) // Pass user key
       : new LocalAIProvider();
 
     return new Gardener(provider);
-  }, [settings.aiEnabled]);
+  }, [settings.aiEnabled, settings.googleGeminiApiKey]);
 
   const evolveOntology = useCallback(async (notes: Note[]) => {
     const newAttributes = await gardener.evolveOntology(notes);

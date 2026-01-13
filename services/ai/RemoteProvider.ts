@@ -2,8 +2,8 @@ import type { AIProvider, InferredAttribute } from './types';
 import type { Note } from '../../types';
 import { GoogleGenAI } from '@google/genai';
 
-export const isGeminiApiKeyAvailable = (): boolean => {
-  const key = process.env.API_KEY;
+export const isGeminiApiKeyAvailable = (userKey?: string): boolean => {
+  const key = userKey || process.env.API_KEY;
   return !!(key && key !== 'YOUR_GEMINI_API_KEY');
 };
 
