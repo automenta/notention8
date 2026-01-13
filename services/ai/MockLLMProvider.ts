@@ -1,5 +1,5 @@
 import type { AIProvider, InferredAttribute } from './types';
-import type { Note, OntologyAttribute, OntologyNode } from '../../types';
+import type { OntologyNode } from '../../types';
 
 export class MockLLMProvider implements AIProvider {
   name = 'Mock AI (Fallback)';
@@ -60,7 +60,7 @@ export class MockLLMProvider implements AIProvider {
     return tags;
   }
 
-  async analyzeOntology(notes: Note[]): Promise<InferredAttribute[]> {
+  async analyzeOntology(): Promise<InferredAttribute[]> {
     // Mock Ontology Evolution
     // Randomly suggest a new attribute to demonstrate the loop
     const candidates = [

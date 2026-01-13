@@ -1,5 +1,4 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
-import { OntologyAttribute } from '../../types';
 
 export interface SuggestionItem {
   id: string; // The text to insert

@@ -3,10 +3,9 @@ import { TrashIcon, DocumentDuplicateIcon } from '../icons';
 import { useNotes } from '../../hooks/useNotes';
 import { useSettings } from '../../hooks/useSettingsContext';
 import localforage from 'localforage';
-import type { Note, AppSettings } from '../../types';
 
 export const DataTab: React.FC = () => {
-  const { notes, notesLoading } = useNotes(); // We need raw data access, useNotes gives notes from state which is synced with localforage on load.
+  const { notes } = useNotes(); // We need raw data access, useNotes gives notes from state which is synced with localforage on load.
   const { settings } = useSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,8 +51,9 @@ export const DataTab: React.FC = () => {
                   alert("Import successful! Reloading...");
                   window.location.reload();
               }
-          } catch (err: any) {
-              alert("Import failed: " + err.message);
+          } catch (err: unknown) {
+              const message = err instanceof Error ? err.message : String(err);
+              alert("Import failed: " + message);
           }
       };
       reader.readAsText(file);

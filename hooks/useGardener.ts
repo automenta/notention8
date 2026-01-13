@@ -1,9 +1,9 @@
 import { useMemo, useCallback } from 'react';
 import { useSettings } from './useSettingsContext';
-import { Gardener, type AttributeDefinition } from '../services/gardener';
+import { Gardener } from '../services/gardener';
 import { LocalAIProvider } from '../services/ai/LocalProvider';
 import { RemoteAIProvider } from '../services/ai/RemoteProvider';
-import type { Note, OntologyNode, Property } from '../types';
+import type { Note, Property } from '../types';
 
 export const useGardener = () => {
   const { settings, setSettings } = useSettings();

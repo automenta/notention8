@@ -1,5 +1,5 @@
 import type { AIProvider, InferredAttribute } from './types';
-import type { Note, Property } from '../../types';
+import type { Note } from '../../types';
 import { parseProperties } from '../../utils/parsing';
 import { getTextFromHtml } from '../../utils/nostr';
 
@@ -7,11 +7,11 @@ export class LocalAIProvider implements AIProvider {
   name = 'Local (Heuristic)';
   isAvailable = true;
 
-  async generateCompletion(prompt: string): Promise<string> {
+  async generateCompletion(): Promise<string> {
     return 'Local AI provider does not support generic text generation yet.';
   }
 
-  async suggestTags(text: string): Promise<string[]> {
+  async suggestTags(): Promise<string[]> {
     // Simple heuristic: extract capitalized words that appear frequently?
     // Or simpler: just return nothing for now as "AI" auto-tagging.
     // Real implementation could use TF-IDF if we wanted.

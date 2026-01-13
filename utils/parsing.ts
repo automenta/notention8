@@ -107,7 +107,6 @@ export const replacePropertyInString = (
   // Find and replace
   const bracketRegex = /\[([^\]]+)\]/g;
   let match;
-  let result = text;
 
   // We need to find the specific instance of oldProp.
   // We iterate matches. If a match parses to match oldProp, we replace it.
