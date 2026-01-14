@@ -17,7 +17,7 @@ interface UseEditorLogicProps {
 export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
   const { publishNote, isPublishing } = usePublish();
   const { setActiveView, setMatchingNoteId, showToast } = useView();
-  const { settings } = useSettings();
+  const { settings, setSettings } = useSettings();
   const { evolveOntology, alignToOntology } = useGardener();
 
   const handlePersist = useCallback((n: Note) => {
@@ -124,6 +124,22 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       }
   }, [dirtyNote.content, alignToOntology, settings.ontology, handleContentSave]);
 
+  const handleSaveTemplate = useCallback((name: string) => {
+      const template = {
+          id: crypto.randomUUID(),
+          label: name,
+          content: dirtyNote.content,
+          icon: '📄' // Default icon
+      };
+
+      setSettings(prev => ({
+          ...prev,
+          customTemplates: [...prev.customTemplates, template]
+      }));
+
+      showToast(`Saved as template: ${name}`);
+  }, [dirtyNote.content, setSettings, showToast]);
+
   return {
     dirtyNote,
     isPublishing,
@@ -135,6 +151,7 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     handleUpdateTextFromInspector,
     handleAutoTag,
     handleMagic,
+    handleSaveTemplate,
     isAutoTagging,
     isApiKeyAvailable,
     settings, // needed for ontology

@@ -1,57 +1,59 @@
 from playwright.sync_api import sync_playwright, expect
+import os
 import time
 
 def run(playwright):
     browser = playwright.chromium.launch(headless=True)
     page = browser.new_page()
-
-    # Capture console logs
-    page.on("console", lambda msg: print(f"Browser Console: {msg.text}"))
-    page.on("pageerror", lambda err: print(f"Browser Error: {err}"))
-
     try:
-        print("Navigating...")
         page.goto("http://localhost:5173")
+        page.wait_for_selector("button[title='New Note']")
 
-        print("Waiting for 'Notes'...")
-        page.wait_for_selector("text=Notes", timeout=20000)
-
-        print("Clicking New Note...")
+        # 1. Click New Note to ensure we have a note selected
         page.get_by_title("New Note").click()
 
-        print("Waiting for editor...")
-        page.wait_for_selector(".ProseMirror", timeout=10000)
+        # Check for EditorHeader
+        expect(page.get_by_placeholder("Note Title")).to_be_visible()
 
-        print("Clicking Template Button...")
-        # Check title "Insert Template"
-        tmpl_btn = page.get_by_title("Insert Template")
-        tmpl_btn.click()
+        # Type something
+        page.get_by_placeholder("Note Title").fill("My Template Note")
 
-        print("Waiting for selector...")
-        page.wait_for_selector("text=Templates")
+        # 2. Click Save as Template button
+        # title="Save as Template"
+        page.get_by_title("Save as Template").click()
 
-        print("Selecting 'Meeting Note'...")
-        # Assuming DEFAULT_ONTOLOGY has "Meeting Note"
-        page.get_by_text("Meeting Note").click()
+        # 3. Check Modal
+        # "Save as Template" might be title in Modal too.
+        # Use get_by_role heading
+        expect(page.get_by_role("heading", name="Save as Template")).to_be_visible()
 
-        # Wait a bit
-        page.wait_for_timeout(1000)
+        # Fill name
+        page.get_by_placeholder("e.g., Daily Standup").fill("My Custom Template")
 
-        content = page.locator(".ProseMirror").text_content()
-        print("Final Content:", content)
+        # Save
+        page.get_by_role("button", name="Save Template").click()
 
-        if "Meeting Note" in content and "startDateTime" in content:
-            print("SUCCESS: Template inserted.")
-        else:
-            print("FAILURE: Template content not found.")
+        # 4. Verify it appears in Sidebar
+        # Sidebar has "Templates:" header
+        # Check for button with title="My Custom Template"
+        time.sleep(1) # Wait for state update
+        tmpl_btn = page.get_by_title("My Custom Template")
+        expect(tmpl_btn).to_be_visible()
 
-        page.screenshot(path="verification/template_result.png")
+        if not os.path.exists("verification"):
+            os.makedirs("verification")
+
+        page.screenshot(path="verification/custom_templates.png")
+        print("Verification successful!")
 
     except Exception as e:
-        print(f"Error: {e}")
-        page.screenshot(path="verification/error_debug.png")
+        print(f"Verification failed: {e}")
+        if not os.path.exists("verification"):
+            os.makedirs("verification")
+        page.screenshot(path="verification/error_templates.png")
     finally:
         browser.close()
 
-with sync_playwright() as playwright:
-    run(playwright)
+if __name__ == "__main__":
+    with sync_playwright() as playwright:
+        run(playwright)

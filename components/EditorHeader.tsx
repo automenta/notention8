@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SendIcon, LoadingSpinner, ArrowLeftIcon, CubeTransparentIcon } from './icons';
+import { SendIcon, LoadingSpinner, ArrowLeftIcon, CubeTransparentIcon, PlusCircleIcon } from './icons';
 import { TagInput } from './TagInput';
 import { HelpModal } from './common/HelpModal';
 
@@ -18,6 +18,7 @@ interface EditorHeaderProps {
   isApiKeyAvailable: boolean;
   isInspectorOpen?: boolean;
   onToggleInspector?: () => void;
+  onSaveTemplate?: () => void;
 }
 
 export const EditorHeader: React.FC<EditorHeaderProps> = ({
@@ -35,6 +36,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   onBack,
   isInspectorOpen,
   onToggleInspector,
+  onSaveTemplate,
 }) => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
@@ -58,6 +60,17 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
           placeholder="Note Title"
           className="flex-grow bg-transparent text-white text-lg font-bold focus:outline-none placeholder-gray-500 min-w-0"
         />
+
+        {/* Save Template Button */}
+        {onSaveTemplate && (
+            <button
+                onClick={onSaveTemplate}
+                title="Save as Template"
+                className="p-2 text-gray-400 hover:text-white transition-colors"
+            >
+                <PlusCircleIcon className="h-5 w-5" />
+            </button>
+        )}
 
         {/* Help Button */}
         <button

@@ -7,6 +7,7 @@ import { EditorHeader } from './EditorHeader';
 import { TiptapEditor } from './TiptapEditor';
 import { PropertyInspector } from './editor/PropertyInspector';
 import { TemplateSelector } from './editor/TemplateSelector';
+import { SaveTemplateModal } from './editor/SaveTemplateModal';
 import { OntologyNode } from '../types';
 
 interface EditorManagerProps {
@@ -26,6 +27,7 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
     handleUpdateTextFromInspector,
     handleAutoTag,
     handleMagic,
+    handleSaveTemplate,
     isAutoTagging,
     isApiKeyAvailable,
     settings,
@@ -35,6 +37,7 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
   const { setSelectedNoteId } = useView();
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
+  const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
 
   const handleInsertTemplate = (template: OntologyNode) => {
       // Create empty semantic tags for each attribute in the template
@@ -66,6 +69,7 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
         isApiKeyAvailable={isApiKeyAvailable}
         isInspectorOpen={isInspectorOpen}
         onToggleInspector={() => setIsInspectorOpen(!isInspectorOpen)}
+        onSaveTemplate={() => setIsSaveTemplateModalOpen(true)}
       />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col relative">
@@ -97,6 +101,11 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
           />
         )}
       </div>
+      <SaveTemplateModal
+          isOpen={isSaveTemplateModalOpen}
+          onClose={() => setIsSaveTemplateModalOpen(false)}
+          onSave={handleSaveTemplate}
+      />
     </div>
   );
 }
