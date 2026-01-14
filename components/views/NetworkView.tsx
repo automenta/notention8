@@ -1,15 +1,16 @@
 import React from 'react';
-import type { Note } from '../../types';
-import { KeyIcon, LoadingSpinner, SettingsIcon, ArrowLeftIcon } from '../icons';
-import { ProfileHeader } from '../network/ProfileHeader';
-import { NostrEventCard } from '../network/NostrEventCard';
+
 import { useNetworkView } from '../../hooks/useNetworkView';
+import type { Note } from '../../types';
+import { ArrowLeftIcon, KeyIcon, LoadingSpinner, SettingsIcon } from '../icons';
+import { NostrEventCard } from '../network/NostrEventCard';
+import { ProfileHeader } from '../network/ProfileHeader';
 
 interface NetworkViewProps {
-    matchAgainst?: Note | null;
+  matchAgainst?: Note | null;
 }
 
-export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
+export function NetworkView({ matchAgainst }: NetworkViewProps) {
   const {
     settings,
     pubkey,
@@ -52,28 +53,30 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
       />
       <div className="p-4 md:p-6 flex-grow overflow-y-auto">
         <div className="flex justify-between items-center mb-6 gap-4">
-            <div className="flex items-center gap-3 overflow-hidden">
-                {matchAgainst && (
-                    <button
-                        onClick={() => setMatchingNoteId(null)}
-                        className="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors flex-shrink-0"
-                        title="Back to Feed"
-                    >
-                        <ArrowLeftIcon className="w-6 h-6" />
-                    </button>
-                )}
-                <h1 className="text-xl font-bold text-white truncate">
-                    {matchAgainst ? `Matches for "${matchAgainst.title}"` : '⚡️ Public Feed'}
-                </h1>
-            </div>
+          <div className="flex items-center gap-3 overflow-hidden">
+            {matchAgainst && (
+              <button
+                onClick={() => setMatchingNoteId(null)}
+                className="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors flex-shrink-0"
+                title="Back to Feed"
+              >
+                <ArrowLeftIcon className="w-6 h-6" />
+              </button>
+            )}
+            <h1 className="text-xl font-bold text-white truncate">
+              {matchAgainst
+                ? `Matches for "${matchAgainst.title}"`
+                : '⚡️ Public Feed'}
+            </h1>
+          </div>
 
-            <input
-                type="text"
-                placeholder="Search notes..."
-                className="bg-gray-900 border border-gray-700 rounded px-3 py-1 text-sm text-gray-200 w-48 flex-shrink-0"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-            />
+          <input
+            type="text"
+            placeholder="Search notes..."
+            className="bg-gray-900 border border-gray-700 rounded px-3 py-1 text-sm text-gray-200 w-48 flex-shrink-0"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          />
         </div>
         {isLoading ? (
           <div className="flex justify-center items-center h-48">
@@ -100,4 +103,4 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
       </div>
     </div>
   );
-};
+}

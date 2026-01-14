@@ -1,30 +1,35 @@
 import React from 'react';
-import { AITab } from '../settings/AITab';
-import { NostrTab } from '../settings/NostrTab';
-import { DataTab } from '../settings/DataTab';
-import { OntologyTab } from '../settings/OntologyTab';
-import { Toggle } from '../common/Toggle';
-import { SimulatorView } from '../simulator/SimulatorView';
-import { useSettingsView } from '../../hooks/useSettingsView';
 
-const TabButton: React.FC<{
+import { useSettingsView } from '../../hooks/useSettingsView';
+import { Toggle } from '../common/Toggle';
+import { AITab } from '../settings/AITab';
+import { DataTab } from '../settings/DataTab';
+import { NostrTab } from '../settings/NostrTab';
+import { OntologyTab } from '../settings/OntologyTab';
+import { SimulatorView } from '../simulator/SimulatorView';
+
+interface TabButtonProps {
   label: string;
   isActive: boolean;
   onClick: () => void;
-}> = ({ label, isActive, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
-      isActive
-        ? 'border-blue-500 text-white'
-        : 'border-transparent text-gray-400 hover:text-white hover:border-gray-500'
-    }`}
-  >
-    {label}
-  </button>
-);
+}
 
-export const SettingsView: React.FC = () => {
+function TabButton({ label, isActive, onClick }: TabButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+        isActive
+          ? 'border-blue-500 text-white'
+          : 'border-transparent text-gray-400 hover:text-white hover:border-gray-500'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+export function SettingsView() {
   const {
     settings,
     setSettings,
@@ -54,27 +59,29 @@ export const SettingsView: React.FC = () => {
           />
           {settings.developerMode && (
             <>
-                <TabButton
-                  label="🧬 Ontology"
-                  isActive={activeTab === 'ontology'}
-                  onClick={() => setActiveTab('ontology')}
-                />
-                <TabButton
-                  label="🧪 Simulator"
-                  isActive={activeTab === 'simulator'}
-                  onClick={() => setActiveTab('simulator')}
-                />
+              <TabButton
+                label="🧬 Ontology"
+                isActive={activeTab === 'ontology'}
+                onClick={() => setActiveTab('ontology')}
+              />
+              <TabButton
+                label="🧪 Simulator"
+                isActive={activeTab === 'simulator'}
+                onClick={() => setActiveTab('simulator')}
+              />
             </>
           )}
         </nav>
 
         <div className="flex items-center gap-3 pb-2">
-            <span className="text-gray-400 text-xs uppercase tracking-wider font-semibold">Dev Mode</span>
-            <Toggle
-                checked={settings.developerMode}
-                onChange={toggleDeveloperMode}
-                ariaLabel="Toggle Developer Mode"
-            />
+          <span className="text-gray-400 text-xs uppercase tracking-wider font-semibold">
+            Dev Mode
+          </span>
+          <Toggle
+            checked={settings.developerMode}
+            onChange={toggleDeveloperMode}
+            ariaLabel="Toggle Developer Mode"
+          />
         </div>
       </div>
 
@@ -87,8 +94,9 @@ export const SettingsView: React.FC = () => {
         )}
         {activeTab === 'data' && <DataTab />}
         {activeTab === 'ontology' && settings.developerMode && <OntologyTab />}
-        {activeTab === 'simulator' && settings.developerMode && <SimulatorView />}
+        {activeTab === 'simulator' &&
+          settings.developerMode && <SimulatorView />}
       </div>
     </div>
   );
-};
+}

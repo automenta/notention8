@@ -1,4 +1,5 @@
-import { SimplePool } from 'nostr-tools';
+import { SimplePool, utils } from 'nostr-tools';
+
 import type { NostrEvent, Note, Property } from '../types';
 
 export const DEFAULT_RELAYS = [
@@ -16,22 +17,7 @@ export const DEFAULT_RELAYS = [
  */
 export const pool = new SimplePool();
 
-export const bytesToHex = (bytes: Uint8Array): string =>
-  Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-
-export const hexToBytes = (hex: string): Uint8Array => {
-  if (hex.length % 2 !== 0) {
-    // To prevent errors on odd-length strings (e.g., from user input)
-    hex = '0' + hex;
-  }
-  const bytes = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < hex.length; i += 2) {
-    bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
-  }
-  return bytes;
-};
+export const { bytesToHex, hexToBytes } = utils;
 
 export const formatNpub = (npub: string) =>
   `${npub.slice(0, 10)}...${npub.slice(-4)}`;

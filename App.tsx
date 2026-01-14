@@ -1,13 +1,14 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
+
 import { Header } from './components/Header';
-import { Sidebar } from './components/Sidebar';
 import { MainView } from './components/MainView';
+import { Sidebar } from './components/sidebar';
+import { useAutoSelectNote } from './hooks/useAutoSelectNote';
 import { useNotes } from './hooks/useNotes';
 import { useView } from './hooks/useViewContext';
 import { sortNotesByDate } from './utils/notes';
-import { useAutoSelectNote } from './hooks/useAutoSelectNote';
 
-const App: React.FC = () => {
+function App() {
   const { notes, addNote, notesLoading } = useNotes();
   const { activeView, setActiveView, selectedNoteId, setSelectedNoteId } =
     useView();
@@ -28,10 +29,6 @@ const App: React.FC = () => {
     setActiveView('notes');
   };
 
-  const isMobile = window.innerWidth < 768; // Simple check, or use media query hook
-  // Better to use CSS classes for responsiveness, but logic might need to know.
-  // Actually, we can use CSS `hidden md:block` classes.
-
   return (
     <div className="flex flex-col h-screen bg-gray-800 text-gray-200">
       <Header onNewNote={handleNewNote} />
@@ -48,7 +45,7 @@ const App: React.FC = () => {
         )}
 
         <main
-            className={`
+          className={`
                 flex-1 p-3 overflow-hidden
                 ${activeView === 'notes' && !selectedNoteId ? 'hidden md:block' : 'block'}
             `}
@@ -58,6 +55,6 @@ const App: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default App;

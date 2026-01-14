@@ -1,17 +1,18 @@
 import React from 'react';
+
+import { useSettings } from '../hooks/useSettingsContext';
+import { useView } from '../hooks/useViewContext';
 import type { View } from '../types';
 import {
   ChatIcon,
+  CubeTransparentIcon,
   MapIcon,
   NetworkIcon,
   NoteIcon,
   OntologyIcon,
   PlusIcon,
   SettingsIcon,
-  CubeTransparentIcon,
 } from './icons';
-import { useView } from '../hooks/useViewContext';
-import { useSettings } from '../hooks/useSettingsContext';
 
 interface HeaderProps {
   onNewNote: () => void;
@@ -24,26 +25,23 @@ interface NavButtonProps {
   onClick: () => void;
 }
 
-const NavButton: React.FC<NavButtonProps> = ({
-  icon,
-  label,
-  isActive,
-  onClick,
-}) => (
-  <button
-    onClick={onClick}
-    title={label}
-    className={`p-2 rounded-md transition-colors ${
-      isActive
-        ? 'bg-blue-600/30 text-white'
-        : 'text-gray-400 hover:bg-gray-700/50 hover:text-gray-200'
-    }`}
-  >
-    {React.cloneElement(icon, { className: 'h-6 w-6' })}
-  </button>
-);
+function NavButton({ icon, label, isActive, onClick }: NavButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      title={label}
+      className={`p-2 rounded-md transition-colors ${
+        isActive
+          ? 'bg-blue-600/30 text-white'
+          : 'text-gray-400 hover:bg-gray-700/50 hover:text-gray-200'
+      }`}
+    >
+      {React.cloneElement(icon, { className: 'h-6 w-6' })}
+    </button>
+  );
+}
 
-export const Header: React.FC<HeaderProps> = ({ onNewNote }) => {
+export function Header({ onNewNote }: HeaderProps) {
   const { activeView, setActiveView } = useView();
   const { settings } = useSettings();
 
@@ -100,4 +98,4 @@ export const Header: React.FC<HeaderProps> = ({ onNewNote }) => {
       </div>
     </header>
   );
-};
+}
