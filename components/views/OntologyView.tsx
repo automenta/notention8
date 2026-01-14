@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import type { OntologyNode } from '../../types';
 import { ChevronDownIcon } from '../icons';
-import { useSettings } from '../../hooks/useSettingsContext';
 import { SimulatorView } from '../simulator/SimulatorView';
-import { useGardener } from '../../hooks/useGardener';
-import { useNotes } from '../../hooks/useNotes';
+import { useOntologyView } from '../../hooks/useOntologyView';
 
 interface OntologyNodeProps {
   node: OntologyNode;
@@ -47,19 +45,14 @@ const OntologyNodeItem: React.FC<OntologyNodeProps> = ({ node, level }) => {
 };
 
 export const OntologyView: React.FC = () => {
-  const { settings } = useSettings();
-  const ontology = settings.ontology;
-  const { notes } = useNotes();
-  const { evolveOntology } = useGardener();
-  const [activeTab, setActiveTab] = useState<'graph' | 'simulator'>('graph');
-  const [isEvolving, setIsEvolving] = useState(false);
-
-  const handleEvolve = async () => {
-    setIsEvolving(true);
-    await evolveOntology(notes);
-    setIsEvolving(false);
-    alert('Ontology updated based on local notes!');
-  };
+  const {
+    settings,
+    ontology,
+    activeTab,
+    setActiveTab,
+    isEvolving,
+    handleEvolve,
+  } = useOntologyView();
 
   return (
     <div className="p-4 md:p-8 h-full overflow-y-auto bg-gray-800/50 rounded-lg">
