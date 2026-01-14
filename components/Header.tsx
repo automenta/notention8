@@ -23,32 +23,54 @@ interface NavButtonProps {
   label: string;
   isActive: boolean;
   onClick: () => void;
+  badgeCount?: number;
 }
 
-function NavButton({ icon, label, isActive, onClick }: NavButtonProps) {
+function NavButton({
+  icon,
+  label,
+  isActive,
+  onClick,
+  badgeCount,
+}: NavButtonProps) {
   return (
     <button
       onClick={onClick}
       title={label}
-      className={`p-2 rounded-md transition-colors ${
+      className={`relative p-2 rounded-md transition-colors ${
         isActive
           ? 'bg-blue-600/30 text-white'
           : 'text-gray-400 hover:bg-gray-700/50 hover:text-gray-200'
       }`}
     >
       {React.cloneElement(icon, { className: 'h-6 w-6' })}
+      {badgeCount !== undefined && badgeCount > 0 && (
+        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-gray-900">
+          {badgeCount > 99 ? '99+' : badgeCount}
+        </span>
+      )}
     </button>
   );
 }
 
 export function Header({ onNewNote }: HeaderProps) {
-  const { activeView, setActiveView } = useView();
+  const { activeView, setActiveView, notificationCount } = useView();
   const { settings } = useSettings();
 
-  const navItems: { view: View; label: string; icon: React.ReactElement }[] = [
+  const navItems: {
+    view: View;
+    label: string;
+    icon: React.ReactElement;
+    badgeCount?: number;
+  }[] = [
     { view: 'notes', label: 'Notes', icon: <NoteIcon /> },
     { view: 'map', label: 'Map', icon: <MapIcon /> },
-    { view: 'network', label: 'Network', icon: <NetworkIcon /> },
+    {
+      view: 'network',
+      label: 'Network',
+      icon: <NetworkIcon />,
+      badgeCount: notificationCount,
+    },
     { view: 'chat', label: 'Chat', icon: <ChatIcon /> },
     { view: 'ontology', label: 'Ontology', icon: <OntologyIcon /> },
   ];
@@ -83,6 +105,7 @@ export function Header({ onNewNote }: HeaderProps) {
             label={item.label}
             isActive={activeView === item.view}
             onClick={() => setActiveView(item.view)}
+            badgeCount={item.badgeCount}
           />
         ))}
       </div>
