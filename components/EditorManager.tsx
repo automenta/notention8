@@ -4,6 +4,7 @@ import { TiptapEditor } from './TiptapEditor';
 import { EditorHeader } from './EditorHeader';
 import { PropertyInspector } from './editor/PropertyInspector';
 import { useEditorLogic } from '../hooks/useEditorLogic';
+import { useView } from '../hooks/useViewContext';
 
 interface EditorManagerProps {
   note: Note;
@@ -30,6 +31,8 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
     isPublished
   } = useEditorLogic({ note, onSave });
 
+  const { setSelectedNoteId } = useView();
+
   return (
     <div className="flex flex-col h-full">
       <EditorHeader
@@ -37,6 +40,7 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
         onTitleChange={handleTitleChange}
         onPublish={handlePublish}
         onFindMatches={handleFindMatches}
+        onBack={() => setSelectedNoteId(null)}
         isPublishing={isPublishing}
         isPublished={isPublished}
         tags={dirtyNote.tags}

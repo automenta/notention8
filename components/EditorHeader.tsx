@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SendIcon, LoadingSpinner } from './icons';
+import { SendIcon, LoadingSpinner, ArrowLeftIcon } from './icons';
 import { TagInput } from './TagInput';
 import { HelpModal } from './common/HelpModal';
 
@@ -8,6 +8,7 @@ interface EditorHeaderProps {
   onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onPublish: () => void;
   onFindMatches?: () => void;
+  onBack?: () => void;
   isPublishing: boolean;
   isPublished: boolean;
   tags: string[];
@@ -29,18 +30,29 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   isAutoTagging,
   isApiKeyAvailable,
   onFindMatches,
+  onBack,
 }) => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   return (
     <div className="flex-shrink-0 bg-gray-900/30">
       <div className="p-2 flex items-center gap-2">
+        {onBack && (
+             <button
+                onClick={onBack}
+                className="md:hidden p-2 text-gray-400 hover:text-white transition-colors"
+                title="Back to List"
+            >
+                <ArrowLeftIcon className="h-5 w-5" />
+            </button>
+        )}
+
         <input
           type="text"
           value={title || ''}
           onChange={onTitleChange}
           placeholder="Note Title"
-          className="flex-grow bg-transparent text-white text-lg font-bold focus:outline-none placeholder-gray-500"
+          className="flex-grow bg-transparent text-white text-lg font-bold focus:outline-none placeholder-gray-500 min-w-0"
         />
 
         {/* Help Button */}
