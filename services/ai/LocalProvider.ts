@@ -1,5 +1,5 @@
 import type { AIProvider, InferredAttribute } from './types';
-import type { Note } from '../../types';
+import type { Note, OntologyNode } from '../../types';
 import { parseProperties } from '../../utils/parsing';
 import { getTextFromHtml } from '../../utils/nostr';
 
@@ -81,13 +81,13 @@ export class LocalAIProvider implements AIProvider {
     return 'string';
   }
 
-  async alignToOntology(text: string, ontology: any[]): Promise<string[]> {
+  async alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]> {
       // Heuristic: Check for known ontology keys in the text
       // This is a very basic "alignment" for local/offline mode.
       const properties: string[] = [];
       const lowerText = text.toLowerCase();
 
-      const traverse = (nodes: any[]) => {
+      const traverse = (nodes: OntologyNode[]) => {
           nodes.forEach(n => {
               if (n.attributes) {
                   Object.keys(n.attributes).forEach(key => {

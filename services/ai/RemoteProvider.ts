@@ -1,5 +1,5 @@
 import type { AIProvider, InferredAttribute } from './types';
-import type { Note } from '../../types';
+import type { Note, OntologyNode } from '../../types';
 import { GoogleGenAI } from '@google/genai';
 
 export const isGeminiApiKeyAvailable = (userKey?: string): boolean => {
@@ -91,12 +91,12 @@ ${propertySummary}`;
     }
   }
 
-  async alignToOntology(text: string, ontology: any[]): Promise<string[]> {
+  async alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]> {
       if (!this.client) throw new Error('AI Provider not configured');
 
       // Flatten ontology for prompt
       const knownKeys = new Set<string>();
-      const traverse = (nodes: any[]) => {
+      const traverse = (nodes: OntologyNode[]) => {
           nodes.forEach(n => {
               if (n.attributes) Object.keys(n.attributes).forEach(k => knownKeys.add(k));
               if (n.children) traverse(n.children);

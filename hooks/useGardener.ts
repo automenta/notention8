@@ -4,7 +4,31 @@ import { useView } from './useViewContext';
 import { Gardener } from '../services/gardener';
 import { LocalAIProvider } from '../services/ai/LocalProvider';
 import { RemoteAIProvider } from '../services/ai/RemoteProvider';
-import type { Note, Property } from '../types';
+import type { Note, Property, OntologyNode } from '../types';
+
+// Helper to merge attributes into the "Emergent" node
+const mergeAttributesToEmergent = (ontology: OntologyNode[], newAttributes: Record<string, any>): OntologyNode[] => {
+    const updatedOntology = [...ontology];
+    let emergentNode = updatedOntology.find(n => n.id === 'emergent');
+
+    if (!emergentNode) {
+        emergentNode = {
+            id: 'emergent',
+            label: 'Emergent',
+            description: 'Automatically inferred properties',
+            attributes: {},
+            children: []
+        };
+        updatedOntology.push(emergentNode);
+    }
+
+    emergentNode.attributes = {
+        ...(emergentNode.attributes || {}),
+        ...newAttributes
+    };
+
+    return updatedOntology;
+};
 
 export const useGardener = () => {
   const { settings, setSettings } = useSettings();
@@ -22,40 +46,17 @@ export const useGardener = () => {
   const evolveOntology = useCallback(async (notes: Note[]) => {
     const newAttributes = await gardener.evolveOntology(notes);
 
-    if (newAttributes.length === 0) return;
-
-    // Merge logic:
-    // We need to convert AttributeDefinition[] -> OntologyNode[]
-    // For V1, we can just add them to a root node called "Emergent" or "Inferred".
-    // Or merge into existing nodes if keys match.
+    if (newAttributes.length === 0) return [];
 
     setSettings(prev => {
         const currentOntology = [...prev.ontology];
-
-        // Find or create "Emergent" category
-        let emergentNode = currentOntology.find(n => n.id === 'emergent');
-        if (!emergentNode) {
-            emergentNode = {
-                id: 'emergent',
-                label: 'Emergent',
-                description: 'Automatically inferred properties',
-                attributes: {},
-                children: []
-            };
-            currentOntology.push(emergentNode);
-        }
-
-        // Merge attributes
-        const updatedAttributes = { ...(emergentNode.attributes || {}) };
+        const newAttrsMap: Record<string, any> = {};
 
         newAttributes.forEach(attr => {
-            // Only add if not exists, or update stats?
-            // Simple: Overwrite/Add
-            updatedAttributes[attr.key] = {
+            newAttrsMap[attr.key] = {
                 type: attr.type,
                 description: attr.description,
                 operators: {
-                    // Default operators based on type
                     real: ['is', 'is not'],
                     imaginary: attr.type === 'number' || attr.type === 'date'
                         ? ['greater than', 'less than']
@@ -64,11 +65,9 @@ export const useGardener = () => {
             };
         });
 
-        emergentNode.attributes = updatedAttributes;
-
         return {
             ...prev,
-            ontology: currentOntology
+            ontology: mergeAttributesToEmergent(currentOntology, newAttrsMap)
         };
     });
 
@@ -84,20 +83,7 @@ export const useGardener = () => {
 
       setSettings(prev => {
           const currentOntology = [...prev.ontology];
-          let emergentNode = currentOntology.find(n => n.id === 'emergent');
-
-          if (!emergentNode) {
-              emergentNode = {
-                  id: 'emergent',
-                  label: 'Emergent',
-                  description: 'Automatically inferred properties',
-                  attributes: {},
-                  children: []
-              };
-              currentOntology.push(emergentNode);
-          }
-
-          const updatedAttributes = { ...(emergentNode.attributes || {}) };
+          const newAttrsMap: Record<string, any> = {};
           let hasChanges = false;
 
           properties.forEach(prop => {
@@ -106,16 +92,15 @@ export const useGardener = () => {
                   node.attributes && Object.keys(node.attributes).includes(prop.key)
               );
 
-              if (!keyExists && !updatedAttributes[prop.key]) {
-                  // Infer type from value
-                  // Heuristic: Check first value
+              // Also check if we already added it to newAttrsMap in this batch (though usually duplicates are filtered upstream or just overwritten)
+              if (!keyExists && !newAttrsMap[prop.key]) {
                   const val = prop.values[0];
                   let type: 'string' | 'number' | 'date' = 'string';
 
                   if (!isNaN(parseFloat(val))) type = 'number';
                   else if (!isNaN(Date.parse(val))) type = 'date';
 
-                  updatedAttributes[prop.key] = {
+                  newAttrsMap[prop.key] = {
                       type,
                       description: 'Inferred from network',
                       operators: {
@@ -132,8 +117,7 @@ export const useGardener = () => {
 
           if (!hasChanges) return prev;
 
-          emergentNode.attributes = updatedAttributes;
-          return { ...prev, ontology: currentOntology };
+          return { ...prev, ontology: mergeAttributesToEmergent(currentOntology, newAttrsMap) };
       });
   }, [setSettings, showToast]);
 
