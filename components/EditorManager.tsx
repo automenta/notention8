@@ -8,6 +8,7 @@ import { TiptapEditor } from './TiptapEditor';
 import { PropertyInspector } from './editor/PropertyInspector';
 import { TemplateSelector } from './editor/TemplateSelector';
 import { SaveTemplateModal } from './editor/SaveTemplateModal';
+import { MapPickerModal } from './map/MapPickerModal';
 import { OntologyNode } from '../types';
 
 interface EditorManagerProps {
@@ -28,6 +29,7 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
     handleAutoTag,
     handleMagic,
     handleSaveTemplate,
+    handleUpdateLocation,
     isAutoTagging,
     isApiKeyAvailable,
     settings,
@@ -38,6 +40,7 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
   const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
+  const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
 
   const handleInsertTemplate = (template: OntologyNode) => {
       // Create empty semantic tags for each attribute in the template
@@ -98,6 +101,7 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
             }
             onUpdateText={handleUpdateTextFromInspector}
             onPropertyChange={() => {}} // Read only for now (updates text)
+            onPickLocation={() => setIsMapPickerOpen(true)}
           />
         )}
       </div>
@@ -105,6 +109,11 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
           isOpen={isSaveTemplateModalOpen}
           onClose={() => setIsSaveTemplateModalOpen(false)}
           onSave={handleSaveTemplate}
+      />
+      <MapPickerModal
+        isOpen={isMapPickerOpen}
+        onClose={() => setIsMapPickerOpen(false)}
+        onLocationSelect={handleUpdateLocation}
       />
     </div>
   );
