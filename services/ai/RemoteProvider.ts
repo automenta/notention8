@@ -90,4 +90,40 @@ ${propertySummary}`;
         return [];
     }
   }
+
+  async alignToOntology(text: string, ontology: any[]): Promise<string[]> {
+      if (!this.client) throw new Error('AI Provider not configured');
+
+      // Flatten ontology for prompt
+      const knownKeys = new Set<string>();
+      const traverse = (nodes: any[]) => {
+          nodes.forEach(n => {
+              if (n.attributes) Object.keys(n.attributes).forEach(k => knownKeys.add(k));
+              if (n.children) traverse(n.children);
+          });
+      };
+      traverse(ontology);
+      const knownKeysStr = Array.from(knownKeys).join(', ');
+
+      const prompt = `Analyze the text below and extract semantic properties in the format "[key:operator:value]".
+Use the following known keys if applicable to encourage schema reuse: ${knownKeysStr}.
+If a new key is needed, create one that is concise and descriptive.
+
+Valid operators: "is", "is not", "contains", "greater than", "less than".
+Example output: ["[skill:is:React]", "[location:is:New York]", "[experience:greater than:5]"]
+
+Return ONLY a valid JSON array of strings.
+
+Text:
+${text}`;
+
+      try {
+          const result = await this.generateCompletion(prompt);
+          const jsonStr = result.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+          return JSON.parse(jsonStr);
+      } catch (e) {
+          console.error('Alignment Error:', e);
+          return [];
+      }
+  }
 }

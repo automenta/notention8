@@ -23,6 +23,7 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
     handleContentSave,
     handleUpdateTextFromInspector,
     handleAutoTag,
+    handleMagic,
     isAutoTagging,
     isApiKeyAvailable,
     settings,
@@ -57,6 +58,7 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
             note={dirtyNote}
             onSave={handleContentSave}
             ontology={settings.ontology}
+            onMagic={handleMagic}
           />
         </div>
         {isInspectorOpen && (

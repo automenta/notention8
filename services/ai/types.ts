@@ -20,6 +20,12 @@ export interface AIProvider {
    * Optionally takes the current ontology to encourage reuse of terms.
    */
   suggestTags(text: string, ontology?: OntologyNode[]): Promise<string[]>;
+
+  /**
+   * Analyzes text and extracts semantic properties based on the ontology.
+   * Returns an array of formatted strings like "[key:operator:value]".
+   */
+  alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]>;
 }
 
 export interface InferredAttribute {

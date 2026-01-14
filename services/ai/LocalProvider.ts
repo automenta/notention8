@@ -80,4 +80,45 @@ export class LocalAIProvider implements AIProvider {
 
     return 'string';
   }
+
+  async alignToOntology(text: string, ontology: any[]): Promise<string[]> {
+      // Heuristic: Check for known ontology keys in the text
+      // This is a very basic "alignment" for local/offline mode.
+      const properties: string[] = [];
+      const lowerText = text.toLowerCase();
+
+      const traverse = (nodes: any[]) => {
+          nodes.forEach(n => {
+              if (n.attributes) {
+                  Object.keys(n.attributes).forEach(key => {
+                      // If the key appears in the text, assume it's relevant
+                      // e.g. "I am an expert in React" -> "expert" is not a key usually.
+                      // But if key is "skill" and text contains "React", how do we map?
+                      // Heuristic: If key is present as a word, maybe suggest it?
+                      // Better: If we have values in ontology (enums), check for those values.
+
+                      // For now, simple keyword match: if "skill" is in text, suggest [skill:is:?]
+                      // This is too weak.
+
+                      // Better heuristic:
+                      // Look for patterns like "Key: Value" or "Key is Value"
+                      // Regex: /key\s*(?:is|:)\s*(\w+)/
+                      const regex = new RegExp(`${key}\\s*(?:is|:|contains)\\s*([\\w\\s]+)`, 'i');
+                      const match = lowerText.match(regex);
+                      if (match) {
+                          // Clean value
+                          const val = match[1].trim().split(/\s|\.|,/)[0]; // take first word/token
+                          if (val) {
+                              properties.push(`[${key}:is:${val}]`);
+                          }
+                      }
+                  });
+              }
+              if (n.children) traverse(n.children);
+          });
+      };
+      traverse(ontology);
+
+      return properties;
+  }
 }

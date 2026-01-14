@@ -1,8 +1,9 @@
 import React from 'react';
 
 import { useNetworkView } from '../../hooks/useNetworkView';
+import { useView } from '../../hooks/useViewContext'; // Import useView
 import type { Note } from '../../types';
-import { ArrowLeftIcon, KeyIcon, LoadingSpinner, SettingsIcon } from '../icons';
+import { ArrowLeftIcon, KeyIcon, LoadingSpinner, SettingsIcon, SparklesIcon } from '../icons';
 import { NostrEventCard } from '../network/NostrEventCard';
 import { ProfileHeader } from '../network/ProfileHeader';
 
@@ -11,6 +12,7 @@ interface NetworkViewProps {
 }
 
 export function NetworkView({ matchAgainst }: NetworkViewProps) {
+  const { matches } = useView(); // Get matches
   const {
     settings,
     pubkey,
@@ -78,6 +80,40 @@ export function NetworkView({ matchAgainst }: NetworkViewProps) {
             onChange={(e) => setFilter(e.target.value)}
           />
         </div>
+
+        {/* Suggested Matches Section */}
+        {!matchAgainst && matches.length > 0 && !filter && (
+            <div className="mb-8">
+                <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <SparklesIcon className="w-4 h-4 text-blue-400" />
+                    Suggested Opportunities
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {matches.slice(0, 4).map(match => (
+                        <div
+                            key={`${match.localNoteId}-${match.event.id}`}
+                            className="bg-gray-700/50 p-3 rounded-lg border border-gray-600/50 hover:bg-gray-700 transition cursor-pointer"
+                            onClick={() => {
+                                // For now, set matching note id so we drill down into that specific note's matches?
+                                // Actually, if we set matchingNoteId, we see matches for that note.
+                                // Since this match IS for that note, it works.
+                                setMatchingNoteId(match.localNoteId);
+                            }}
+                        >
+                            <div className="flex justify-between items-start mb-1">
+                                <span className="text-xs font-mono text-blue-400">Match Score: {Math.round(match.score * 100)}%</span>
+                                <span className="text-xs text-gray-500">Your note: {match.localNoteId.slice(0,6)}...</span>
+                            </div>
+                            <div className="text-white font-medium text-sm mb-1 line-clamp-1">
+                                {match.event.content.slice(0, 50)}...
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div className="h-px bg-gray-700 my-6"></div>
+            </div>
+        )}
+
         {isLoading ? (
           <div className="flex justify-center items-center h-48">
             <LoadingSpinner className="h-8 w-8 text-gray-400" />

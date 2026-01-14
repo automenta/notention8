@@ -134,5 +134,9 @@ export const useGardener = () => {
       });
   }, [setSettings]);
 
-  return { evolveOntology, learnFromProperties };
+  const alignToOntology = useCallback(async (text: string, ontology: any[]) => {
+      return await gardener.alignToOntology(text, ontology);
+  }, [gardener]);
+
+  return { evolveOntology, learnFromProperties, alignToOntology };
 };

@@ -15,11 +15,24 @@ interface UseEditorLogicProps {
 }
 
 export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
-  const { dirtyNote, setDirtyNote } = useDebouncedSave(note, onSave);
   const { publishNote, isPublishing } = usePublish();
-  const { setActiveView, setMatchingNoteId } = useView();
+  const { setActiveView, setMatchingNoteId, showToast } = useView();
   const { settings } = useSettings();
-  const { evolveOntology } = useGardener();
+  const { evolveOntology, alignToOntology } = useGardener();
+
+  const handlePersist = useCallback((n: Note) => {
+    onSave(n);
+    if (settings.developerMode) {
+      evolveOntology([n]).then(attrs => {
+        if (attrs.length > 0) {
+          const keys = attrs.map(a => a.key).join(', ');
+          showToast(`Ontology evolved! You introduced: ${keys}`);
+        }
+      });
+    }
+  }, [onSave, settings.developerMode, evolveOntology, showToast]);
+
+  const { dirtyNote, setDirtyNote } = useDebouncedSave(note, handlePersist);
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -49,13 +62,10 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
 
       setDirtyNote((prev) => {
           const updated = { ...prev, content, properties };
-          if (settings.developerMode) {
-              evolveOntology([updated]);
-          }
           return updated;
       });
     },
-    [setDirtyNote, evolveOntology, settings.developerMode]
+    [setDirtyNote]
   );
 
   const handlePublish = async () => {
@@ -101,6 +111,19 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       }
   }, [dirtyNote.content, handleContentSave]);
 
+  const handleMagic = useCallback(async () => {
+      const cleanText = getTextFromHtml(dirtyNote.content);
+      const suggestions = await alignToOntology(cleanText, settings.ontology);
+
+      if (suggestions.length > 0) {
+          const newContent = dirtyNote.content + '\n\n' + suggestions.map(t => `<p>${t}</p>`).join('');
+          handleContentSave(newContent);
+          alert(`Magic Align: Added ${suggestions.length} semantic properties.`);
+      } else {
+          alert('Magic Align: No semantic properties found.');
+      }
+  }, [dirtyNote.content, alignToOntology, settings.ontology, handleContentSave]);
+
   return {
     dirtyNote,
     isPublishing,
@@ -111,6 +134,7 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     handleContentSave,
     handleUpdateTextFromInspector,
     handleAutoTag,
+    handleMagic,
     isAutoTagging,
     isApiKeyAvailable,
     settings, // needed for ontology
