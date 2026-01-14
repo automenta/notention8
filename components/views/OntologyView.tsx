@@ -42,6 +42,12 @@ export function OntologyView() {
                 >
                   Simulator
                 </button>
+                <button
+                  onClick={() => setActiveTab('conflicts')}
+                  className={`px-3 py-1 text-sm rounded-md transition-colors ${activeTab === 'conflicts' ? 'bg-red-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                >
+                  Conflicts
+                </button>
               </div>
             </div>
           )}
@@ -49,6 +55,18 @@ export function OntologyView() {
 
         {activeTab === 'simulator' && settings.developerMode ? (
           <SimulatorView />
+        ) : activeTab === 'conflicts' ? (
+             <div className="flex flex-col items-center justify-center h-64 text-center text-gray-400">
+                <div className="text-red-500 mb-4 text-4xl">⚠️</div>
+                <h3 className="text-xl font-bold text-white mb-2">Conflict Resolution</h3>
+                <p className="max-w-md mb-6">
+                    As the ontology evolves, different peers may define the same concept differently.
+                    This tool will allow you to vote on shared definitions to reach consensus.
+                </p>
+                <div className="text-sm bg-gray-900 px-4 py-2 rounded text-gray-500">
+                    No conflicts detected.
+                </div>
+            </div>
         ) : (
           <>
             <p className="text-gray-400 mb-8">
