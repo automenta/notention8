@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { EditorContent } from '@tiptap/react';
 import type { Note, OntologyNode, Template } from '../types';
 import { TiptapToolbar } from './TiptapToolbar';
 import { sanitizeHTML } from '../utils/sanitize';
 import { formatHtmlForDisplay } from '../utils/editor';
 import { useTiptapConfig } from './editor/useTiptapConfig';
+import { useView } from '../hooks/useViewContext';
 
 interface TiptapEditorProps {
   note: Note;
@@ -18,6 +19,7 @@ interface TiptapEditorProps {
 
 export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontology, templates, minimal = false, onMagic, onTemplates }) => {
   const [viewMode, setViewMode] = useState<'rich' | 'code'>('rich');
+  const { setSearchTerm, setActiveView, showToast } = useView();
 
   const editor = useTiptapConfig({
       content: note.content,
@@ -45,6 +47,24 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontolo
     onSave(e.target.value.replace(/\n/g, ''));
   };
 
+  const handleEditorClick = useCallback((e: React.MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Handle both tags and properties (which are also searchable)
+      if (target.classList.contains('suggestion-tag') || target.classList.contains('suggestion-item')) {
+          e.preventDefault();
+          const text = target.innerText;
+
+          // For tags, ensure '#' prefix. For properties, use as is.
+          const searchTerm = target.classList.contains('suggestion-tag') && !text.startsWith('#')
+            ? `#${text}`
+            : text;
+
+          setSearchTerm(searchTerm);
+          setActiveView('notes');
+          showToast(`Filtered by ${searchTerm}`);
+      }
+  }, [setSearchTerm, setActiveView, showToast]);
+
   return (
     <div className="flex flex-col h-full">
       {!minimal && (
@@ -56,7 +76,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontolo
           onTemplates={onTemplates}
         />
       )}
-      <div className="flex-grow overflow-y-auto">
+      <div className="flex-grow overflow-y-auto" onClick={handleEditorClick}>
         {viewMode === 'rich' ? (
           <EditorContent editor={editor} />
         ) : (

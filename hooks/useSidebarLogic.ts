@@ -7,8 +7,13 @@ import { useLocalForage } from './useLocalForage';
 
 export const useSidebarLogic = () => {
   const { notes, deleteNote } = useNotes();
-  const { selectedNoteId, setSelectedNoteId } = useView();
-  const [searchTerm, setSearchTerm] = useState('');
+  const {
+    selectedNoteId,
+    setSelectedNoteId,
+    searchTerm,
+    setSearchTerm,
+  } = useView();
+
   const [sortOrder, setSortOrder] = useLocalForage<SortOrder>(
     'notention-sort-order',
     'updatedAt_desc'
