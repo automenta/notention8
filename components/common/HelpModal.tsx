@@ -65,6 +65,28 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                         <li>Enable <strong>Developer Mode</strong> in Settings for advanced tools.</li>
                     </ul>
                 </div>
+
+                <div className="border-t border-gray-700 pt-4">
+                    <h3 className="font-bold text-white mb-2">Keyboard Shortcuts</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                        <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Command Palette</span>
+                            <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Ctrl+K</code>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-gray-400">New Note</span>
+                            <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Ctrl+N</code>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Search Sidebar</span>
+                            <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Ctrl+/</code>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Save Note</span>
+                            <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Ctrl+S</code>
+                        </div>
+                    </div>
+                </div>
             </div>
         </Modal>
     );

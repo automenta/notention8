@@ -12,10 +12,12 @@ import {
   OntologyIcon,
   PlusIcon,
   SettingsIcon,
+  SearchIcon,
 } from './icons';
 
 interface HeaderProps {
   onNewNote: () => void;
+  onOpenPalette?: () => void;
 }
 
 interface NavButtonProps {
@@ -53,7 +55,7 @@ function NavButton({
   );
 }
 
-export function Header({ onNewNote }: HeaderProps) {
+export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
   const { activeView, setActiveView, notificationCount } = useView();
   const { settings } = useSettings();
 
@@ -93,6 +95,13 @@ export function Header({ onNewNote }: HeaderProps) {
           className="flex items-center gap-2 px-3 py-1.5 transition-colors rounded-lg bg-blue-600 text-white hover:bg-blue-700 ml-4"
         >
           <PlusIcon className="h-5 w-5" />
+        </button>
+        <button
+          onClick={onOpenPalette}
+          title="Search & Commands (Ctrl+K)"
+          className="p-2 text-gray-400 hover:text-white transition-colors hover:bg-gray-800 rounded-md"
+        >
+          <SearchIcon className="h-6 w-6" />
         </button>
       </div>
 

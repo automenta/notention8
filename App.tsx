@@ -9,6 +9,7 @@ import { useView } from './hooks/useViewContext';
 import { useSettings } from './hooks/useSettingsContext';
 import { sortNotesByDate } from './utils/notes';
 import { CommandPalette } from './components/common/CommandPalette';
+import { HelpModal } from './components/common/HelpModal';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 import {
     PlusIcon,
@@ -17,16 +18,19 @@ import {
     NetworkIcon,
     OntologyIcon,
     CubeIcon,
-    ChatIcon
+    ChatIcon,
+    CodeBracketsIcon,
+    HelpIcon
 } from './components/icons';
 
 function App() {
   const { notes, addNote, notesLoading } = useNotes();
   const { activeView, setActiveView, selectedNoteId, setSelectedNoteId } =
     useView();
-  const { settings } = useSettings();
+  const { settings, setSettings } = useSettings();
 
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   const sortedNotes = useMemo(() => sortNotesByDate(notes), [notes]);
 
@@ -80,6 +84,16 @@ function App() {
           icon: <SettingsIcon className="h-5 w-5" />,
           action: () => setActiveView('settings')
       },
+      {
+          label: 'Open Help & Shortcuts',
+          icon: <HelpIcon className="h-5 w-5" />,
+          action: () => setIsHelpOpen(true)
+      },
+      {
+          label: settings.developerMode ? 'Disable Developer Mode' : 'Enable Developer Mode',
+          icon: <CodeBracketsIcon className="h-5 w-5" />,
+          action: () => setSettings((s) => ({ ...s, developerMode: !s.developerMode }))
+      },
   ];
 
   if (settings.developerMode) {
@@ -106,7 +120,7 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-800 text-gray-200">
-      <Header onNewNote={handleNewNote} />
+      <Header onNewNote={handleNewNote} onOpenPalette={() => setIsPaletteOpen(true)} />
       <div className="flex flex-1 overflow-hidden">
         {activeView === 'notes' && (
           <div
@@ -138,6 +152,7 @@ function App() {
           }}
           commands={commands}
       />
+      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
     </div>
   );
 }
