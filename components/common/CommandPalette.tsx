@@ -1,0 +1,165 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Note } from '../../types';
+import {
+  SearchIcon,
+  NoteIcon,
+} from '../icons';
+
+interface CommandItem {
+  id: string;
+  type: 'command' | 'note';
+  label: string;
+  description?: string;
+  icon?: React.ReactElement;
+  action: () => void;
+}
+
+interface CommandPaletteProps {
+  isOpen: boolean;
+  onClose: () => void;
+  notes: Note[];
+  onSelectNote: (noteId: string) => void;
+  commands: {
+    label: string;
+    icon: React.ReactElement;
+    action: () => void;
+  }[];
+}
+
+export const CommandPalette: React.FC<CommandPaletteProps> = ({
+  isOpen,
+  onClose,
+  notes,
+  onSelectNote,
+  commands,
+}) => {
+  const [query, setQuery] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+        setQuery('');
+        setSelectedIndex(0);
+        // Small timeout to ensure render
+        setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const filteredNotes = notes
+    .filter(
+      (note) =>
+        note.title.toLowerCase().includes(query.toLowerCase()) ||
+        note.content.toLowerCase().includes(query.toLowerCase())
+    )
+    .slice(0, 10); // Limit results
+
+  const filteredCommands = query
+    ? commands.filter((cmd) =>
+        cmd.label.toLowerCase().includes(query.toLowerCase())
+      )
+    : commands;
+
+  const allItems: CommandItem[] = [
+    ...filteredCommands.map((cmd) => ({
+      id: `cmd-${cmd.label}`,
+      type: 'command' as const,
+      label: cmd.label,
+      icon: cmd.icon,
+      action: cmd.action,
+    })),
+    ...filteredNotes.map((note) => ({
+      id: note.id,
+      type: 'note' as const,
+      label: note.title || 'Untitled',
+      description: note.content.slice(0, 50).replace(/<[^>]*>/g, ''), // Strip HTML
+      icon: <NoteIcon className="h-5 w-5" />,
+      action: () => onSelectNote(note.id),
+    })),
+  ];
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev + 1) % allItems.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex(
+        (prev) => (prev - 1 + allItems.length) % allItems.length
+      );
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (allItems[selectedIndex]) {
+        allItems[selectedIndex].action();
+        onClose();
+      }
+    } else if (e.key === 'Escape') {
+      onClose();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[20vh] bg-black/50 backdrop-blur-sm">
+      <div className="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 w-full max-w-2xl overflow-hidden flex flex-col max-h-[60vh]">
+        <div className="flex items-center p-4 border-b border-gray-700">
+          <SearchIcon className="h-6 w-6 text-gray-400 mr-3" />
+          <input
+            ref={inputRef}
+            type="text"
+            className="flex-1 bg-transparent text-xl text-white placeholder-gray-500 focus:outline-none"
+            placeholder="Type a command or search..."
+            value={query}
+            onChange={(e) => {
+                setQuery(e.target.value);
+                setSelectedIndex(0);
+            }}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
+        <div className="overflow-y-auto flex-1 p-2">
+            {allItems.length === 0 && (
+                <div className="p-4 text-center text-gray-500">No results found.</div>
+            )}
+            {allItems.map((item, index) => (
+                <div
+                    key={item.id}
+                    className={`
+                        flex items-center p-3 rounded-lg cursor-pointer
+                        ${index === selectedIndex ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700'}
+                    `}
+                    onClick={() => {
+                        item.action();
+                        onClose();
+                    }}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                >
+                    <div className={`mr-3 ${index === selectedIndex ? 'text-white' : 'text-gray-400'}`}>
+                        {item.icon}
+                    </div>
+                    <div className="flex-1">
+                        <div className="font-medium">{item.label}</div>
+                        {item.description && (
+                            <div className={`text-sm ${index === selectedIndex ? 'text-blue-200' : 'text-gray-500'}`}>
+                                {item.description}
+                            </div>
+                        )}
+                    </div>
+                    {item.type === 'command' && (
+                        <div className={`text-xs px-2 py-1 rounded border ${index === selectedIndex ? 'border-blue-400 text-blue-100' : 'border-gray-600 text-gray-500'}`}>
+                            Cmd
+                        </div>
+                    )}
+                </div>
+            ))}
+        </div>
+        <div className="p-2 border-t border-gray-700 text-xs text-gray-500 flex justify-end px-4 py-2 bg-gray-900/50">
+            <span className="mr-4">↑↓ to navigate</span>
+            <span className="mr-4">↵ to select</span>
+            <span>Esc to close</span>
+        </div>
+      </div>
+    </div>
+  );
+};

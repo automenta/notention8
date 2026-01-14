@@ -16,6 +16,7 @@ export const Search: React.FC<SearchProps> = ({
         <SearchIcon className="h-5 w-5 text-gray-400" />
       </div>
       <input
+        id="sidebar-search-input"
         type="text"
         placeholder="Search notes..."
         value={searchTerm}
