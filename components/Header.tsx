@@ -8,8 +8,10 @@ import {
   OntologyIcon,
   PlusIcon,
   SettingsIcon,
+  CubeTransparentIcon,
 } from './icons';
 import { useView } from '../hooks/useViewContext';
+import { useSettings } from '../hooks/useSettingsContext';
 
 interface HeaderProps {
   onNewNote: () => void;
@@ -43,6 +45,8 @@ const NavButton: React.FC<NavButtonProps> = ({
 
 export const Header: React.FC<HeaderProps> = ({ onNewNote }) => {
   const { activeView, setActiveView } = useView();
+  const { settings } = useSettings();
+
   const navItems: { view: View; label: string; icon: React.ReactElement }[] = [
     { view: 'notes', label: 'Notes', icon: <NoteIcon /> },
     { view: 'map', label: 'Map', icon: <MapIcon /> },
@@ -50,6 +54,14 @@ export const Header: React.FC<HeaderProps> = ({ onNewNote }) => {
     { view: 'chat', label: 'Chat', icon: <ChatIcon /> },
     { view: 'ontology', label: 'Ontology', icon: <OntologyIcon /> },
   ];
+
+  if (settings.developerMode) {
+    navItems.push({
+      view: 'simulator',
+      label: 'Simulator',
+      icon: <CubeTransparentIcon />,
+    });
+  }
 
   return (
     <header className="flex-shrink-0 bg-gray-900 h-16 px-4 flex items-center justify-between border-b border-gray-700/50">
