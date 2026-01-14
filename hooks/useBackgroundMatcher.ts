@@ -46,7 +46,8 @@ export const useBackgroundMatcher = () => {
                  });
                  // Optional: Toast for high relevance
                  if (score > 0.8) {
-                    showToast(`New match found for "${localNote.title}"!`);
+                    // Only toast if it's REALLY good, and the throttle in ViewContext handles spam
+                    showToast(`New match found for "${localNote.title || 'Note'}"!`);
                  }
              }
           });

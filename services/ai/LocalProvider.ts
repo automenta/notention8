@@ -103,12 +103,21 @@ export class LocalAIProvider implements AIProvider {
                       // Better heuristic:
                       // Look for patterns like "Key: Value" or "Key is Value"
                       // Regex: /key\s*(?:is|:)\s*(\w+)/
-                      const regex = new RegExp(`${key}\\s*(?:is|:|contains)\\s*([\\w\\s]+)`, 'i');
+                      // Capture everything until a newline or punctuation (.,!?) but allow @ and . inside emails/urls
+                      // Logic: Capture alphanumeric, spaces, @, ., /, : (for urls)
+
+                      const regex = new RegExp(`${key}\\s*(?:is|:|contains)\\s*([\\w\\s@.:/\\-]+)`, 'i');
                       const match = lowerText.match(regex);
                       if (match) {
-                          // Clean value
-                          const val = match[1].trim().split(/\s|\.|,/)[0]; // take first word/token
+                          // Clean value: trim and remove trailing punctuation
+                          let val = match[1].trim();
+                          // Remove trailing dots or commas if they were captured at the end of a sentence
+                          val = val.replace(/[.,!?;:]$/, '');
+
                           if (val) {
+                              // Basic type check heuristic
+                              // If ontology expects 'number' but val is not number, skip?
+                              // For now, let's just align.
                               properties.push(`[${key}:is:${val}]`);
                           }
                       }

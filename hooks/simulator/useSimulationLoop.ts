@@ -93,7 +93,14 @@ export const useSimulationLoop = ({
             // 4. AI Tagging (Gardener) & Ontology Evolution
             // Pass the CURRENT ontology to the AI so it knows what terms to reuse!
             updateAgent(agentIndex, { status: 'Gardening...' });
-            const tags = await aiRef.current.suggestTags(content, currentOntology);
+
+            // Use alignToOntology if available to ensure semantic format
+            let tags: string[] = [];
+            if (aiRef.current.alignToOntology) {
+                 tags = await aiRef.current.alignToOntology(content, currentOntology);
+            } else {
+                 tags = await aiRef.current.suggestTags(content, currentOntology);
+            }
 
             // Visualize Tag Reuse
             const existingKeys = new Set<string>();

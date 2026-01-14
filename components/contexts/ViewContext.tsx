@@ -36,10 +36,16 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
   const [selectedChatPubkey, setSelectedChatPubkey] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [matches, setMatches] = useState<MatchResult[]>([]);
+  const lastToastTimeRef = React.useRef(0);
 
   const notificationCount = matches.length;
 
   const showToast = (msg: string) => {
+      const now = Date.now();
+      // Simple debounce/throttle: only one toast every 3 seconds
+      if (now - lastToastTimeRef.current < 3000) return;
+
+      lastToastTimeRef.current = now;
       setToast(msg);
       setTimeout(() => setToast(null), 3000);
   };
