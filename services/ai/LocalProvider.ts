@@ -84,7 +84,7 @@ export class LocalAIProvider implements AIProvider {
   async alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]> {
       // Heuristic: Check for known ontology keys in the text
       // This is a very basic "alignment" for local/offline mode.
-      const properties: string[] = [];
+      const properties = new Set<string>();
       const lowerText = text.toLowerCase();
 
       const traverse = (nodes: OntologyNode[]) => {
@@ -118,7 +118,7 @@ export class LocalAIProvider implements AIProvider {
                               // Basic type check heuristic
                               // If ontology expects 'number' but val is not number, skip?
                               // For now, let's just align.
-                              properties.push(`[${key}:is:${val}]`);
+                              properties.add(`[${key}:is:${val}]`);
                           }
                       }
                   });
@@ -128,6 +128,6 @@ export class LocalAIProvider implements AIProvider {
       };
       traverse(ontology);
 
-      return properties;
+      return Array.from(properties);
   }
 }
