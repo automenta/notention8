@@ -1,5 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import { useSettings } from './useSettingsContext';
+import { useView } from './useViewContext';
 import { Gardener } from '../services/gardener';
 import { LocalAIProvider } from '../services/ai/LocalProvider';
 import { RemoteAIProvider } from '../services/ai/RemoteProvider';
@@ -7,6 +8,7 @@ import type { Note, Property } from '../types';
 
 export const useGardener = () => {
   const { settings, setSettings } = useSettings();
+  const { showToast } = useView();
 
   const gardener = useMemo(() => {
     // Instantiate provider based on settings
@@ -124,6 +126,7 @@ export const useGardener = () => {
                       }
                   };
                   hasChanges = true;
+                  showToast(`New concept discovered: ${prop.key}`);
               }
           });
 
@@ -132,7 +135,7 @@ export const useGardener = () => {
           emergentNode.attributes = updatedAttributes;
           return { ...prev, ontology: currentOntology };
       });
-  }, [setSettings]);
+  }, [setSettings, showToast]);
 
   const alignToOntology = useCallback(async (text: string, ontology: any[]) => {
       return await gardener.alignToOntology(text, ontology);

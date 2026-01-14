@@ -1,7 +1,9 @@
 import React from 'react';
 
 import { useNetworkView } from '../../hooks/useNetworkView';
-import { useView } from '../../hooks/useViewContext'; // Import useView
+import { useView } from '../../hooks/useViewContext';
+import { useNotes } from '../../hooks/useNotes';
+import { extractPropertiesFromTags } from '../../utils/nostr';
 import type { Note } from '../../types';
 import { ArrowLeftIcon, KeyIcon, LoadingSpinner, SettingsIcon, SparklesIcon } from '../icons';
 import { NostrEventCard } from '../network/NostrEventCard';
@@ -12,7 +14,8 @@ interface NetworkViewProps {
 }
 
 export function NetworkView({ matchAgainst }: NetworkViewProps) {
-  const { matches } = useView(); // Get matches
+  const { matches, showToast } = useView();
+  const { updateNote } = useNotes();
   const {
     settings,
     pubkey,
@@ -24,6 +27,34 @@ export function NetworkView({ matchAgainst }: NetworkViewProps) {
     sortedEvents,
     profiles,
   } = useNetworkView({ matchAgainst });
+
+  const handleApplyMatch = (event: any) => {
+      if (!matchAgainst) return;
+
+      const props = extractPropertiesFromTags(event.tags);
+      if (props.length === 0) {
+          showToast("No semantic properties found in this note.");
+          return;
+      }
+
+      const tagsToAdd = props.map(p => {
+          // Flatten simple values
+          return p.values.map(v => `[${p.key}:${p.operator}:${v}]`).join('');
+      }).join('\n');
+
+      const newContent = matchAgainst.content + '\n\n' + tagsToAdd;
+
+      updateNote({
+          ...matchAgainst,
+          content: newContent,
+          // We let the editor parsing logic update the properties later or we update them now?
+          // updateNote in useNotesState just updates the state.
+          // The parsing happens usually in Editor.
+          // But since we are modifying content, next time we load it, it parses.
+      });
+
+      showToast(`Applied ${props.length} properties from match!`);
+  };
 
   if (!pubkey) {
     return (
@@ -125,6 +156,7 @@ export function NetworkView({ matchAgainst }: NetworkViewProps) {
                 key={event.id}
                 event={event}
                 profile={profiles[event.pubkey]}
+                onApplyMatch={matchAgainst ? handleApplyMatch : undefined}
               />
             ))}
           </div>
