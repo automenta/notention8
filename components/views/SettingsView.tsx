@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { useSettings } from '../../hooks/useSettingsContext';
+import React from 'react';
 import { AITab } from '../settings/AITab';
 import { NostrTab } from '../settings/NostrTab';
 import { DataTab } from '../settings/DataTab';
 import { OntologyTab } from '../settings/OntologyTab';
+import { Toggle } from '../common/Toggle';
+import { SimulatorView } from '../simulator/SimulatorView';
+import { useSettingsView } from '../../hooks/useSettingsView';
 
 const TabButton: React.FC<{
   label: string;
@@ -22,12 +24,14 @@ const TabButton: React.FC<{
   </button>
 );
 
-import { Toggle } from '../common/Toggle';
-import { SimulatorView } from '../simulator/SimulatorView';
-
 export const SettingsView: React.FC = () => {
-  const { settings, setSettings } = useSettings();
-  const [activeTab, setActiveTab] = useState<'ai' | 'nostr' | 'data' | 'ontology' | 'simulator'>('ai');
+  const {
+    settings,
+    setSettings,
+    activeTab,
+    setActiveTab,
+    toggleDeveloperMode,
+  } = useSettingsView();
 
   return (
     <div className="p-8 h-full overflow-y-auto bg-gray-800/50 rounded-lg">
@@ -37,7 +41,7 @@ export const SettingsView: React.FC = () => {
               <span className="text-gray-400 text-sm">Developer Mode</span>
               <Toggle
                   checked={settings.developerMode}
-                  onChange={() => setSettings(prev => ({ ...prev, developerMode: !prev.developerMode }))}
+                  onChange={toggleDeveloperMode}
                   ariaLabel="Toggle Developer Mode"
               />
           </div>
