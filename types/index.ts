@@ -56,6 +56,7 @@ export interface AppSettings {
   theme: 'light' | 'dark';
   nostr: {
     privkey: string | null;
+    relays?: string[];
   };
   ontology: OntologyNode[];
 }
