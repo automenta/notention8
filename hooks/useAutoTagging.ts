@@ -1,7 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { RemoteAIProvider, isGeminiApiKeyAvailable } from '../services/ai/RemoteProvider';
+import { LocalAIProvider } from '../services/ai/LocalProvider';
 import { getTextFromHtml } from '../utils/nostr';
 import { useSettings } from './useSettingsContext';
+import type { AIProvider } from '../services/ai/types';
 
 interface UseAutoTaggingProps {
   content: string;
@@ -13,14 +15,19 @@ export const useAutoTagging = ({ content, tags, onTagsChange }: UseAutoTaggingPr
   const { settings } = useSettings();
   const [isAutoTagging, setIsAutoTagging] = useState(false);
 
+  const provider: AIProvider = useMemo(() => {
+     if (settings.aiEnabled && isGeminiApiKeyAvailable(settings.googleGeminiApiKey)) {
+         return new RemoteAIProvider(settings.googleGeminiApiKey);
+     }
+     return new LocalAIProvider();
+  }, [settings.aiEnabled, settings.googleGeminiApiKey]);
+
   const handleAutoTag = useCallback(async () => {
     if (!content) return;
-    if (!isGeminiApiKeyAvailable(settings.googleGeminiApiKey)) return;
 
     setIsAutoTagging(true);
     try {
       const text = getTextFromHtml(content);
-      const provider = new RemoteAIProvider(settings.googleGeminiApiKey);
       const suggestions = await provider.suggestTags(text);
       const uniqueTags = Array.from(
         new Set([...tags, ...suggestions])
@@ -33,11 +40,11 @@ export const useAutoTagging = ({ content, tags, onTagsChange }: UseAutoTaggingPr
     } finally {
       setIsAutoTagging(false);
     }
-  }, [content, tags, onTagsChange, settings.googleGeminiApiKey]);
+  }, [content, tags, onTagsChange, provider]);
 
   return {
     isAutoTagging,
     handleAutoTag,
-    isApiKeyAvailable: isGeminiApiKeyAvailable(settings.googleGeminiApiKey)
+    isApiKeyAvailable: true // Always true now since we have Local fallback
   };
 };
