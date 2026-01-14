@@ -15,18 +15,20 @@ interface TiptapEditorProps {
   minimal?: boolean;
   onMagic?: () => void;
   onTemplates?: () => void;
+  notes?: Note[];
 }
 
-export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontology, templates, minimal = false, onMagic, onTemplates }) => {
+export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontology, templates, minimal = false, onMagic, onTemplates, notes = [] }) => {
   const [viewMode, setViewMode] = useState<'rich' | 'code'>('rich');
-  const { setSearchTerm, setActiveView, showToast } = useView();
+  const { setSearchTerm, setActiveView, showToast, setSelectedNoteId } = useView();
 
   const editor = useTiptapConfig({
       content: note.content,
       onUpdate: onSave,
       ontology,
       templates,
-      minimal
+      minimal,
+      notes
   });
 
   // Sync content from parent
@@ -63,7 +65,17 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontolo
           setActiveView('notes');
           showToast(`Filtered by ${searchTerm}`);
       }
-  }, [setSearchTerm, setActiveView, showToast]);
+
+      // Handle Note Links
+      if (target.classList.contains('suggestion-note')) {
+          e.preventDefault();
+          const noteId = target.getAttribute('data-id');
+          if (noteId) {
+              setSelectedNoteId(noteId);
+              setActiveView('notes');
+          }
+      }
+  }, [setSearchTerm, setActiveView, showToast, setSelectedNoteId]);
 
   return (
     <div className="flex flex-col h-full">

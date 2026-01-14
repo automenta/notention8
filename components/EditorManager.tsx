@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import { useEditorLogic } from '../hooks/useEditorLogic';
 import { useView } from '../hooks/useViewContext';
+import { useNotes } from '../hooks/useNotes';
 import type { Note } from '../types';
 import { EditorHeader } from './EditorHeader';
 import { TiptapEditor } from './TiptapEditor';
@@ -17,6 +18,7 @@ interface EditorManagerProps {
 }
 
 export function EditorManager({ note, onSave }: EditorManagerProps) {
+  const { notes } = useNotes();
   const {
     dirtyNote,
     isPublishing,
@@ -101,6 +103,7 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
             templates={allTemplates}
             onMagic={handleMagic}
             onTemplates={() => setIsTemplateSelectorOpen(!isTemplateSelectorOpen)}
+            notes={notes}
           />
           {isTemplateSelectorOpen && (
               <TemplateSelector
