@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { EditorContent } from '@tiptap/react';
-import type { Note, OntologyNode } from '../types';
+import type { Note, OntologyNode, Template } from '../types';
 import { TiptapToolbar } from './TiptapToolbar';
 import { sanitizeHTML } from '../utils/sanitize';
 import { formatHtmlForDisplay } from '../utils/editor';
@@ -10,18 +10,20 @@ interface TiptapEditorProps {
   note: Note;
   onSave: (updatedContent: string) => void;
   ontology: OntologyNode[];
+  templates?: Template[];
   minimal?: boolean;
   onMagic?: () => void;
   onTemplates?: () => void;
 }
 
-export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontology, minimal = false, onMagic, onTemplates }) => {
+export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontology, templates, minimal = false, onMagic, onTemplates }) => {
   const [viewMode, setViewMode] = useState<'rich' | 'code'>('rich');
 
   const editor = useTiptapConfig({
       content: note.content,
       onUpdate: onSave,
       ontology,
+      templates,
       minimal
   });
 

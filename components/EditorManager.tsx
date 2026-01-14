@@ -42,6 +42,11 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
   const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
 
+  const allTemplates = [
+      ...settings.customTemplates,
+      // We could add default templates here too if we want them in slash commands
+  ];
+
   const handleInsertTemplate = (template: OntologyNode) => {
       // Create empty semantic tags for each attribute in the template
       const attributes = template.attributes || {};
@@ -81,6 +86,7 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
             note={dirtyNote}
             onSave={handleContentSave}
             ontology={settings.ontology}
+            templates={allTemplates}
             onMagic={handleMagic}
             onTemplates={() => setIsTemplateSelectorOpen(!isTemplateSelectorOpen)}
           />
