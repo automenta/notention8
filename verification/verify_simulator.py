@@ -10,8 +10,8 @@ def test_simulator(page):
     page.get_by_label("Toggle Developer Mode").click()
 
     # 3. Navigate to Simulator
-    # Depending on tab button implementation
-    page.get_by_role("button", name="Simulator").click()
+    # Use exact match to distinguish from Settings tab "🧪 Simulator"
+    page.get_by_role("button", name="Simulator", exact=True).click()
 
     # 4. Start Simulator
     page.get_by_role("button", name="START").click()

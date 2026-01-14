@@ -11,11 +11,13 @@ export class LocalAIProvider implements AIProvider {
     return 'Local AI provider does not support generic text generation yet.';
   }
 
-  async suggestTags(): Promise<string[]> {
-    // Simple heuristic: extract capitalized words that appear frequently?
-    // Or simpler: just return nothing for now as "AI" auto-tagging.
-    // Real implementation could use TF-IDF if we wanted.
-    return [];
+  async suggestTags(text: string): Promise<string[]> {
+    // Simple heuristic: extract hashtags from text
+    const matches = text.match(/#[\w-]+/g);
+    if (!matches) return [];
+
+    // Remove # prefix and return unique
+    return Array.from(new Set(matches.map((t) => t.slice(1))));
   }
 
   async analyzeOntology(notes: Note[]): Promise<InferredAttribute[]> {
