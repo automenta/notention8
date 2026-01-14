@@ -127,7 +127,10 @@ export function PropertyInspector({
               placeholder="Value (comma separated)"
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+              onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSave();
+                  if (e.key === 'Escape') cancelEdit();
+              }}
             />
             <div className="flex justify-end gap-2 pt-1">
               <button
