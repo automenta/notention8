@@ -22,9 +22,42 @@ export const NostrTab: React.FC<NostrTabProps> = ({
   const [about, setAbout] = useState('');
   const [picture, setPicture] = useState('');
 
+  // Local state for import
+  const [importKey, setImportKey] = useState('');
+  const [importError, setImportError] = useState<string | null>(null);
+
   const handleGenerateKeys = () => {
     const newPrivKeyHex = bytesToHex(generateSecretKey());
     setSettings((prev) => ({ ...prev, nostr: { privkey: newPrivKeyHex } }));
+  };
+
+  const handleImportKey = () => {
+      setImportError(null);
+      const key = importKey.trim();
+      if (!key) return;
+
+      try {
+          if (key.startsWith('nsec')) {
+              const { type, data } = nip19.decode(key);
+              if (type !== 'nsec') {
+                  setImportError('Invalid key type. Must be an nsec.');
+                  return;
+              }
+              const hex = bytesToHex(data as Uint8Array);
+              setSettings((prev) => ({ ...prev, nostr: { privkey: hex } }));
+          } else {
+              // Assume Hex
+              if (!/^[0-9a-fA-F]{64}$/.test(key)) {
+                  setImportError('Invalid hex private key. Must be 64 characters.');
+                  return;
+              }
+              setSettings((prev) => ({ ...prev, nostr: { privkey: key.toLowerCase() } }));
+          }
+          setImportKey('');
+      } catch (e) {
+          setImportError('Invalid key format.');
+          console.error(e);
+      }
   };
 
   const handleLogout = () => {
@@ -85,16 +118,44 @@ export const NostrTab: React.FC<NostrTabProps> = ({
             </button>
             </div>
         ) : (
-            <div className="text-center py-6">
-            <p className="text-gray-400 mb-4">
-                You don&apos;t have a Nostr identity set up on this device yet.
-            </p>
-            <button
-                onClick={handleGenerateKeys}
-                className="flex items-center justify-center gap-3 mx-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-            >
-                <KeyIcon className="h-5 w-5" /> Generate New Keys
-            </button>
+            <div className="text-center py-6 space-y-6">
+                <div className="space-y-2">
+                    <p className="text-gray-400">
+                        New to Nostr? Generate a fresh identity.
+                    </p>
+                    <button
+                        onClick={handleGenerateKeys}
+                        className="flex items-center justify-center gap-3 mx-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        <KeyIcon className="h-5 w-5" /> Generate New Keys
+                    </button>
+                </div>
+
+                <div className="border-t border-gray-700/50 w-1/2 mx-auto"></div>
+
+                <div className="max-w-md mx-auto space-y-2">
+                     <p className="text-gray-400 text-sm">
+                        Already have an account? Import your private key.
+                    </p>
+                    <div className="flex gap-2">
+                        <input
+                            type="password"
+                            value={importKey}
+                            onChange={(e) => setImportKey(e.target.value)}
+                            placeholder="nsec1... or hex key"
+                            className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none text-sm"
+                        />
+                        <button
+                            onClick={handleImportKey}
+                            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm font-medium"
+                        >
+                            Import
+                        </button>
+                    </div>
+                    {importError && (
+                        <p className="text-red-400 text-xs text-left">{importError}</p>
+                    )}
+                </div>
             </div>
         )}
       </div>

@@ -17,10 +17,10 @@ export const OntologyView: React.FC = () => {
   return (
     <div className="p-4 md:p-8 h-full overflow-y-auto bg-gray-800/50 rounded-lg">
       <div className="max-w-4xl mx-auto h-full flex flex-col">
-        <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-white">Ontology</h1>
+        <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-2">
+            {/* Removed Header */}
             {settings.developerMode && (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 ml-auto">
                     <button
                         onClick={handleEvolve}
                         disabled={isEvolving}

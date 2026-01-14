@@ -34,19 +34,8 @@ export const SettingsView: React.FC = () => {
   } = useSettingsView();
 
   return (
-    <div className="p-8 h-full overflow-y-auto bg-gray-800/50 rounded-lg">
-      <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-white">⚙️ Settings</h1>
-          <div className="flex items-center gap-3">
-              <span className="text-gray-400 text-sm">Developer Mode</span>
-              <Toggle
-                  checked={settings.developerMode}
-                  onChange={toggleDeveloperMode}
-                  ariaLabel="Toggle Developer Mode"
-              />
-          </div>
-      </div>
-      <div className="border-b border-gray-700 mb-6">
+    <div className="p-4 md:p-8 h-full overflow-y-auto bg-gray-800/50 rounded-lg flex flex-col">
+      <div className="border-b border-gray-700 mb-6 flex justify-between items-center">
         <nav className="-mb-px flex space-x-4" aria-label="Tabs">
           <TabButton
             label="🤖 AI"
@@ -78,9 +67,18 @@ export const SettingsView: React.FC = () => {
             </>
           )}
         </nav>
+
+        <div className="flex items-center gap-3 pb-2">
+            <span className="text-gray-400 text-xs uppercase tracking-wider font-semibold">Dev Mode</span>
+            <Toggle
+                checked={settings.developerMode}
+                onChange={toggleDeveloperMode}
+                ariaLabel="Toggle Developer Mode"
+            />
+        </div>
       </div>
 
-      <div className="h-[calc(100%-120px)]">
+      <div className="flex-grow">
         {activeTab === 'ai' && (
           <AITab settings={settings} setSettings={setSettings} />
         )}
