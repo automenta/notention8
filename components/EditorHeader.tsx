@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SendIcon, LoadingSpinner, ArrowLeftIcon } from './icons';
+import { SendIcon, LoadingSpinner, ArrowLeftIcon, CubeTransparentIcon } from './icons';
 import { TagInput } from './TagInput';
 import { HelpModal } from './common/HelpModal';
 
@@ -16,6 +16,8 @@ interface EditorHeaderProps {
   onAutoTag?: () => void;
   isAutoTagging: boolean;
   isApiKeyAvailable: boolean;
+  isInspectorOpen?: boolean;
+  onToggleInspector?: () => void;
 }
 
 export const EditorHeader: React.FC<EditorHeaderProps> = ({
@@ -31,6 +33,8 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   isApiKeyAvailable,
   onFindMatches,
   onBack,
+  isInspectorOpen,
+  onToggleInspector,
 }) => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
@@ -66,6 +70,16 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
         </button>
+
+        {onToggleInspector && (
+            <button
+                onClick={onToggleInspector}
+                title={isInspectorOpen ? "Hide Properties" : "Show Properties"}
+                className={`p-2 transition-colors ${isInspectorOpen ? 'text-green-400 hover:text-green-300' : 'text-gray-400 hover:text-white'}`}
+            >
+                <CubeTransparentIcon className="h-5 w-5" />
+            </button>
+        )}
 
         {onFindMatches && (
             <button
