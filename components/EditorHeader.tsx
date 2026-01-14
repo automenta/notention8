@@ -54,10 +54,12 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
         )}
 
         <input
+          id="note-title-input"
           type="text"
           value={title || ''}
           onChange={onTitleChange}
           placeholder="Note Title"
+          autoFocus={!title}
           className="flex-grow bg-transparent text-white text-lg font-bold focus:outline-none placeholder-gray-500 min-w-0"
         />
 

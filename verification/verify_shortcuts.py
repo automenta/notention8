@@ -9,24 +9,76 @@ def test_shortcuts(page):
     page.wait_for_selector("button[title='New Note']")
     print("App loaded.")
 
-    # Check if sidebar exists initially
-    try:
-        page.wait_for_selector("#sidebar-search-input", timeout=2000)
-        print("Sidebar search input found on initial load.")
-    except:
-        print("Sidebar search input NOT found on initial load.")
+    # 1. Test Sidebar Navigation
+    print("Testing Sidebar Navigation...")
 
-    print("Testing Ctrl+N (New Note)...")
+    # Ensure we have at least 2 notes
+    print("Creating Note 1...")
     page.keyboard.press("Control+n")
-    page.wait_for_selector(".ProseMirror", timeout=5000)
-    print("New note created.")
+    # Wait for title input
+    page.wait_for_selector("#note-title-input", timeout=5000)
+    page.fill("#note-title-input", "Note 1 Title")
 
-    print("Testing Ctrl+S (Save)...")
-    page.keyboard.type("Hello World shortcut test")
+    # Focus editor
+    page.click(".ProseMirror")
+    page.keyboard.type("Content 1")
+
+    # Save to update title in sidebar
     page.keyboard.press("Control+s")
-    page.get_by_text("Saved").wait_for(timeout=5000)
-    print("Save toast verified.")
+    page.get_by_text("Saved").wait_for()
 
+    print("Creating Note 2...")
+    page.keyboard.press("Control+n")
+    page.wait_for_selector("#note-title-input", timeout=5000)
+    page.fill("#note-title-input", "Note 2 Title")
+
+    page.click(".ProseMirror")
+    page.keyboard.type("Content 2")
+
+    page.keyboard.press("Control+s")
+    page.get_by_text("Saved").wait_for()
+
+    # Focus Sidebar Search
+    print("Focusing Sidebar Search...")
+    page.keyboard.press("Control+/")
+    page.wait_for_selector("#sidebar-search-input:focus", timeout=5000)
+
+    # Arrow Down to first note (Note 2, as it's sorted by date desc)
+    print("Navigating to first note...")
+    page.keyboard.press("ArrowDown")
+    # Check if a note item is focused
+    page.wait_for_function("document.activeElement.classList.contains('note-list-item')")
+    # Verify it is Note 2
+    focused_text = page.evaluate("document.activeElement.innerText")
+    if "Note 2 Title" not in focused_text:
+         raise Exception(f"Expected Note 2 Title, but got: {focused_text}")
+    else:
+         print("First note focused correctly.")
+
+    # Arrow Down to second note (Note 1)
+    print("Navigating to second note...")
+    page.keyboard.press("ArrowDown")
+    page.wait_for_function("document.activeElement.classList.contains('note-list-item')")
+    focused_text = page.evaluate("document.activeElement.innerText")
+    if "Note 1 Title" not in focused_text:
+         raise Exception(f"Expected Note 1 Title, but got: {focused_text}")
+    else:
+         print("Second note focused correctly.")
+
+    # Arrow Up back to first note
+    print("Navigating back up...")
+    page.keyboard.press("ArrowUp")
+    focused_text = page.evaluate("document.activeElement.innerText")
+    if "Note 2 Title" not in focused_text:
+         raise Exception(f"Expected Note 2 Title, but got: {focused_text}")
+
+    # Arrow Up back to search
+    print("Navigating back to search...")
+    page.keyboard.press("ArrowUp")
+    page.wait_for_selector("#sidebar-search-input:focus", timeout=5000)
+    print("Returned to search input.")
+
+    # 2. Test Command Palette (Existing test)
     print("Testing Ctrl+K (Command Palette)...")
     page.keyboard.press("Control+k")
     page.wait_for_selector("input[placeholder='Type a command or search...']", timeout=5000)
@@ -39,39 +91,6 @@ def test_shortcuts(page):
     page.wait_for_selector(".leaflet-container", timeout=5000)
     print("Navigated to Map.")
 
-    print("Testing Ctrl+/ (Search Sidebar)...")
-    # Go back to notes
-    page.keyboard.press("Control+k")
-    page.wait_for_selector("input[placeholder='Type a command or search...']")
-    page.keyboard.type("Go to Notes")
-    page.keyboard.press("Enter")
-
-    # Wait for view change
-    time.sleep(1)
-
-    # Sidebar should be visible
-    if page.is_visible("#sidebar-search-input"):
-         print("Sidebar search input is visible.")
-    else:
-         print("Sidebar search input is NOT visible. Dumping body...")
-         # print(page.content()) # Too much output
-
-    page.wait_for_selector("#sidebar-search-input", timeout=5000)
-
-    page.keyboard.press("Control+/")
-
-    # Check focus
-    is_focused = page.evaluate("document.activeElement.id === 'sidebar-search-input'")
-
-    if not is_focused:
-        print("Focus check failed for Ctrl+/. Active element: " + page.evaluate("document.activeElement.id"))
-        page.keyboard.press("Control+Shift+f")
-        is_focused = page.evaluate("document.activeElement.id === 'sidebar-search-input'")
-
-    if is_focused:
-        print("Sidebar search focused.")
-    else:
-        raise Exception("Sidebar search not focused")
 
 if __name__ == "__main__":
     with sync_playwright() as p:

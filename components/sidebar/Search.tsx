@@ -21,6 +21,15 @@ export const Search: React.FC<SearchProps> = ({
         placeholder="Search notes..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const firstNote = document.querySelector('.note-list-item') as HTMLElement;
+            if (firstNote) {
+              firstNote.focus();
+            }
+          }
+        }}
         className="w-full bg-gray-800 border border-transparent rounded-md py-2 pl-10 pr-10 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       />
       {searchTerm && (
