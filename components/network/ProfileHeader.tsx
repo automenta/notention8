@@ -1,16 +1,25 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { finalizeEvent, nip19 } from 'nostr-tools';
-import type { AppSettings, NostrProfile } from '../../types';
-import { EditIcon, LoadingSpinner } from '../icons';
-import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
 
-const ProfileEditorModal: React.FC<{
+import type { AppSettings, NostrProfile } from '../../types';
+import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
+import { EditIcon, LoadingSpinner } from '../icons';
+
+interface ProfileEditorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (profile: NostrProfile) => Promise<void>;
   initialProfile: NostrProfile;
   isSaving: boolean;
-}> = ({ isOpen, onClose, onSave, initialProfile, isSaving }) => {
+}
+
+function ProfileEditorModal({
+  isOpen,
+  onClose,
+  onSave,
+  initialProfile,
+  isSaving,
+}: ProfileEditorModalProps) {
   const [profile, setProfile] = useState(initialProfile);
 
   useEffect(() => setProfile(initialProfile), [initialProfile]);
@@ -77,13 +86,17 @@ const ProfileEditorModal: React.FC<{
       </div>
     </div>
   );
-};
+}
 
-export const ProfileHeader: React.FC<{
+export function ProfileHeader({
+  settings,
+  pubkey,
+  profileCache,
+}: {
   settings: AppSettings;
   pubkey: string;
   profileCache: Record<string, NostrProfile>;
-}> = ({ settings, pubkey, profileCache }) => {
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
@@ -158,4 +171,4 @@ export const ProfileHeader: React.FC<{
       />
     </>
   );
-};
+}

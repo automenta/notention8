@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { finalizeEvent, nip04, nip19 } from 'nostr-tools';
-import type { Contact, NostrEvent } from '../../types';
+
 import { useNostrProfile } from '../../hooks/useNostrProfile';
+import type { Contact, NostrEvent } from '../../types';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
 import { ArrowLeftIcon, SendIcon } from '../icons';
 
@@ -18,14 +19,14 @@ interface ChatWindowProps {
   ) => void;
 }
 
-export const ChatWindow: React.FC<ChatWindowProps> = ({
+export function ChatWindow({
   privkey,
   pubkey,
   selectedContact,
   onBack,
   messages,
   onSendMessage,
-}) => {
+}: ChatWindowProps) {
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -145,4 +146,4 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       </div>
     </div>
   );
-};
+}
