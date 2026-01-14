@@ -110,7 +110,10 @@ Use the following known keys if applicable to encourage schema reuse: ${knownKey
 If a new key is needed, create one that is concise and descriptive.
 
 Valid operators: "is", "is not", "contains", "greater than", "less than".
-Example output: ["[skill:is:React]", "[location:is:New York]", "[experience:greater than:5]"]
+
+IMPORTANT: For "location" or other "geo" type fields, try to output latitude and longitude in the format "lat,lng" if possible to infer from the text.
+Example output:
+- ["[skill:is:React]", "[location:is:40.7128,-74.0060]", "[experience:greater than:5]"]
 
 Return ONLY a valid JSON array of strings.
 

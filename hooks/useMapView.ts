@@ -35,7 +35,8 @@ export const useMapView = () => {
             prop.values[0] !== '...'
         )
         .map((prop) => {
-          const [lat, lng] = prop.values[0].split(',').map(parseFloat);
+          // Handle "lat,lng", "lat, lng", or just simple splitting
+          const [lat, lng] = prop.values[0].split(/,\s*/).map(parseFloat);
           if (isNaN(lat) || isNaN(lng)) return null;
           return { noteId: note.id, noteTitle: note.title, lat, lng };
         })

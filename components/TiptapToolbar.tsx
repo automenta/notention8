@@ -14,6 +14,7 @@ import {
   CodeBracketsIcon,
   HorizontalRuleIcon,
   SparklesIcon,
+  CubeIcon,
 } from './icons';
 
 interface TiptapToolbarProps {
@@ -21,6 +22,7 @@ interface TiptapToolbarProps {
   viewMode: 'rich' | 'code';
   toggleViewMode: () => void;
   onMagic?: () => void;
+  onTemplates?: () => void;
 }
 
 interface ToolbarButtonProps {
@@ -73,6 +75,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
   viewMode,
   toggleViewMode,
   onMagic,
+  onTemplates,
 }) => {
   if (!editor) return null;
 
@@ -156,6 +159,14 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
           onClick={onMagic}
           title="Magic Align (Auto-generate semantic properties)"
           icon={SparklesIcon}
+          isActive={false}
+        />
+      )}
+      {onTemplates && (
+        <ToolbarButton
+          onClick={onTemplates}
+          title="Insert Template"
+          icon={CubeIcon}
           isActive={false}
         />
       )}

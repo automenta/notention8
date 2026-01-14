@@ -12,9 +12,10 @@ interface TiptapEditorProps {
   ontology: OntologyNode[];
   minimal?: boolean;
   onMagic?: () => void;
+  onTemplates?: () => void;
 }
 
-export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontology, minimal = false, onMagic }) => {
+export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontology, minimal = false, onMagic, onTemplates }) => {
   const [viewMode, setViewMode] = useState<'rich' | 'code'>('rich');
 
   const editor = useTiptapConfig({
@@ -50,6 +51,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontolo
           viewMode={viewMode}
           toggleViewMode={toggleViewMode}
           onMagic={onMagic}
+          onTemplates={onTemplates}
         />
       )}
       <div className="flex-grow overflow-y-auto">
