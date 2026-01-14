@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useNotes } from '../../hooks/useNotes';
-import { useSettings } from '../../hooks/useSettingsContext';
+import React from 'react';
 import { TiptapEditor } from '../TiptapEditor';
 import type { Note } from '../../types';
+import { useAgentSessionLogic } from '../../hooks/simulator/useAgentSessionLogic';
 
 interface Props {
   agentName: string;
@@ -23,35 +22,14 @@ export const AgentSessionView: React.FC<Props> = ({
     notifications,
     minimal = false
 }) => {
-  const { notes, addNote, updateNote } = useNotes();
-  const { settings } = useSettings();
-  const [activeNote, setActiveNote] = useState<Note | null>(null);
-
-  // Initialize or Select Default Note
-  useEffect(() => {
-    if (notes.length === 0) {
-      const newNote = addNote();
-      setActiveNote(newNote);
-    } else if (!activeNote && notes.length > 0) {
-        setActiveNote(notes[0]);
-    }
-  }, [notes, addNote, activeNote]);
-
-  // Handle "Publish" status trigger from Director
-  useEffect(() => {
-    if (status === 'Published' && activeNote) {
-        const finalNote = { ...activeNote, content: currentDraft || activeNote.content };
-        // Save to local DB
-        updateNote(finalNote);
-        // Notify Network
-        onPublish(finalNote);
-    }
-  }, [status]);
-
-  // The note to display. If typing (currentDraft exists and matches activeNote), use draft.
-  const displayNote = activeNote
-    ? { ...activeNote, content: (currentDraft && status !== 'Idle' && status !== 'Published') ? currentDraft : activeNote.content }
-    : null;
+  const {
+      notes,
+      addNote,
+      activeNote,
+      setActiveNote,
+      displayNote,
+      settings
+  } = useAgentSessionLogic({ status, onPublish, currentDraft });
 
   return (
     <div className="flex flex-col h-full bg-gray-900 border border-gray-700 rounded-lg overflow-hidden shadow-lg relative transition-colors duration-500">
