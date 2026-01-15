@@ -22,7 +22,8 @@ def test_essential_features(page):
     page.screenshot(path="verification/help_modal.png")
 
     # Close Modal
-    page.get_by_role("button", name="Close").click()
+    # Use exact match or filter to distinguish from "Close Sidebar"
+    page.get_by_role("button", name="Close", exact=True).click()
 
     # 4. Test Nostr Import UI
     # Navigate to Settings

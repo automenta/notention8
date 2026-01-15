@@ -40,17 +40,36 @@ export const DataTab: React.FC = () => {
               const text = event.target?.result as string;
               const data = JSON.parse(text);
 
-              if (!data.notes || !data.settings) {
-                  throw new Error("Invalid backup file format.");
+              // Case 1: Full Backup (notes + settings)
+              if (data.notes && data.settings) {
+                  if (confirm(`Found backup with ${data.notes.length} notes. This will OVERWRITE your current data. Continue?`)) {
+                      await localforage.setItem('notention-notes', data.notes);
+                      await localforage.setItem('notention-settings', data.settings);
+                      alert("Import successful! Reloading...");
+                      window.location.reload();
+                  }
+                  return;
               }
 
-              if (confirm(`Found ${data.notes.length} notes. This will OVERWRITE your current data. Continue?`)) {
-                  // Restore data
-                  await localforage.setItem('notention-notes', data.notes);
-                  await localforage.setItem('notention-settings', data.settings);
-                  alert("Import successful! Reloading...");
-                  window.location.reload();
+              // Case 2: Single Note
+              if (data.id && data.content) {
+                  const currentNotes = await localforage.getItem<any[]>('notention-notes') || [];
+                  const existingIndex = currentNotes.findIndex((n) => n.id === data.id);
+
+                  if (existingIndex >= 0) {
+                      if (!confirm(`Note "${data.title}" already exists. Overwrite?`)) return;
+                      currentNotes[existingIndex] = data;
+                  } else {
+                      currentNotes.push(data);
+                  }
+
+                  await localforage.setItem('notention-notes', currentNotes);
+                  alert(`Imported note: ${data.title}`);
+                  window.location.reload(); // Reload to refresh state
+                  return;
               }
+
+              throw new Error("Unknown file format. Expected a backup or a note.");
           } catch (err: unknown) {
               const message = err instanceof Error ? err.message : String(err);
               alert("Import failed: " + message);
