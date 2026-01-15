@@ -13,6 +13,7 @@ import {
   PlusIcon,
   SettingsIcon,
   SearchIcon,
+  SidebarIcon,
 } from './icons';
 
 interface HeaderProps {
@@ -56,7 +57,7 @@ function NavButton({
 }
 
 export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
-  const { activeView, setActiveView, notificationCount } = useView();
+  const { activeView, setActiveView, notificationCount, isSidebarOpen, setIsSidebarOpen } = useView();
   const { settings } = useSettings();
 
   const navItems: {
@@ -89,6 +90,14 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
     <header className="flex-shrink-0 bg-gray-900 h-16 px-4 flex items-center justify-between border-b border-gray-700/50">
       {/* Left Section */}
       <div className="flex items-center gap-4">
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          title={isSidebarOpen ? "Close Sidebar" : "Open Sidebar"}
+          className="hidden md:block p-2 text-gray-400 hover:text-white transition-colors hover:bg-gray-800 rounded-md"
+        >
+          <SidebarIcon className="h-6 w-6" />
+        </button>
+
         <button
           onClick={onNewNote}
           title="New Note"

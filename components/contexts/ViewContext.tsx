@@ -21,6 +21,8 @@ interface ViewContextType {
   clearNotifications: () => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (isOpen: boolean) => void;
 }
 
 export interface MatchResult {
@@ -39,6 +41,7 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
     'notention-sort-order',
     'updatedAt_desc'
   );
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeView, setActiveView] = useState<View>('notes');
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [matchingNoteId, setMatchingNoteId] = useState<string | null>(null);
@@ -101,7 +104,9 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
         searchTerm,
         setSearchTerm,
         sortOrder,
-        setSortOrder
+        setSortOrder,
+        isSidebarOpen,
+        setIsSidebarOpen
       }}
     >
       {children}

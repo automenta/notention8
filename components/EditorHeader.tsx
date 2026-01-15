@@ -8,7 +8,8 @@ import {
   HelpIcon,
   SearchSparkleIcon,
   ChevronUpIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  DownloadIcon
 } from './icons';
 import { TagInput } from './TagInput';
 import { HelpModal } from './common/HelpModal';
@@ -33,6 +34,7 @@ interface EditorHeaderProps {
   onPrevious?: () => void;
   hasNext?: boolean;
   hasPrevious?: boolean;
+  onExport?: () => void;
 }
 
 export const EditorHeader: React.FC<EditorHeaderProps> = ({
@@ -55,6 +57,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   onPrevious,
   hasNext,
   hasPrevious,
+  onExport,
 }) => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
@@ -111,6 +114,17 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
                 className="hidden md:block p-2 text-gray-400 hover:text-white transition-colors"
             >
                 <PlusCircleIcon className="h-5 w-5" />
+            </button>
+        )}
+
+        {/* Export Button */}
+        {onExport && (
+            <button
+                onClick={onExport}
+                title="Export JSON"
+                className="hidden md:block p-2 text-gray-400 hover:text-white transition-colors"
+            >
+                <DownloadIcon className="h-5 w-5" />
             </button>
         )}
 

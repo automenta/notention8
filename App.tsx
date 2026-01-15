@@ -32,6 +32,7 @@ function App() {
     setSelectedNoteId,
     searchTerm,
     sortOrder,
+    isSidebarOpen,
   } = useView();
   const { settings, setSettings } = useSettings();
 
@@ -131,8 +132,9 @@ function App() {
         {activeView === 'notes' && (
           <div
             className={`
-                w-full md:w-[320px] flex-shrink-0 bg-gray-900 border-r border-gray-700/50
-                ${selectedNoteId ? 'hidden md:block' : 'block'}
+                flex-shrink-0 bg-gray-900 border-r border-gray-700/50 transition-all duration-300 ease-in-out
+                ${selectedNoteId ? 'hidden md:block' : 'w-full block'}
+                ${isSidebarOpen ? 'md:w-[320px]' : 'md:w-0 md:border-r-0 overflow-hidden'}
             `}
           >
             <Sidebar sortedNotes={sortedNotes} />

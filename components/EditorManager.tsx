@@ -59,6 +59,16 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     }
   }, [hasNext, sortedNotes, currentIndex, setSelectedNoteId]);
 
+  const handleExport = () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dirtyNote, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", `${dirtyNote.title || 'untitled'}.json`);
+      document.body.appendChild(downloadAnchorNode); // required for firefox
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
@@ -123,6 +133,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         onPrevious={handlePrevious}
         hasNext={hasNext}
         hasPrevious={hasPrevious}
+        onExport={handleExport}
       />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col relative">
