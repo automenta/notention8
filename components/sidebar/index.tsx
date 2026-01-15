@@ -54,13 +54,24 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
 
   return (
     <div className="bg-gray-900 flex flex-col h-full">
-      <div className="p-4 flex-shrink-0 border-b border-gray-700/50 space-y-4">
-        <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      <div className="flex-shrink-0 border-b border-gray-700/50 p-3 space-y-3">
+        <div className="flex items-center gap-2">
+            <div className="flex-grow">
+                <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+            </div>
+             <button
+                onClick={handleCreateNote}
+                className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors flex-shrink-0"
+                title="New Note"
+            >
+                <PlusIcon className="h-5 w-5" />
+            </button>
+        </div>
+
+        <SortSelector sortOrder={sortOrder} onSortChange={setSortOrder} />
+
+        <TemplateList />
       </div>
-
-      <SortSelector sortOrder={sortOrder} onSortChange={setSortOrder} />
-
-      <TemplateList />
 
       <div className="flex-grow p-2 space-y-1 overflow-y-auto">
         {sortedNotes.length > 0 ? (

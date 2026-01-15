@@ -43,7 +43,7 @@ export const TemplateList: React.FC = () => {
     };
 
     return (
-        <div className="p-2 border-b border-gray-700/50 flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
             <span className="text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Templates:</span>
             <div className="flex flex-wrap gap-1">
                 {allTemplates.map(tmpl => (
