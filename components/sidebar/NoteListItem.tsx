@@ -77,7 +77,7 @@ export const NoteListItem: React.FC<{
           onDelete();
         }}
         tabIndex={-1} // Prevent tabbing into delete button for simpler nav
-        className="ml-2 p-1 text-gray-500 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-900/50 hover:text-red-400 transition-opacity focus:opacity-100"
+        className="ml-2 p-1 text-gray-500 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:bg-red-900/50 hover:text-red-400 transition-opacity focus:opacity-100"
         title="Delete Note"
       >
         <TrashIcon className="h-4 w-4" />
