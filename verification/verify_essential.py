@@ -8,7 +8,8 @@ def test_essential_features(page):
     # Click the main "+" button in the header or sidebar
     # The header has a "+" button. Let's find it.
     # It seems to be a blue button with a plus icon.
-    page.get_by_role("button", name="New Note").click()
+    # FIX: There are two buttons, let's pick the first one which seems to be in the banner, or just first().
+    page.get_by_role("button", name="New Note").first.click()
 
     # 3. Test Help Modal
     # Now EditorHeader should be visible
@@ -30,7 +31,7 @@ def test_essential_features(page):
     page.get_by_role("button", name="Settings").click()
 
     # Click Nostr Tab
-    page.get_by_text("🔑 Nostr").click()
+    page.get_by_text("🔑 Network & Keys").click()
 
     # Verify Import UI exists
     page.get_by_text("Already have an account? Import your private key.").wait_for()

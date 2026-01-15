@@ -10,13 +10,13 @@ def run(playwright):
         page.wait_for_selector("button[title='New Note']")
 
         # 1. Click New Note to ensure we have a note selected
-        page.get_by_title("New Note").click()
+        page.get_by_title("New Note").first.click()
 
         # Check for EditorHeader
-        expect(page.get_by_placeholder("Note Title")).to_be_visible()
+        expect(page.get_by_placeholder("Untitled Note")).to_be_visible()
 
         # Type something
-        page.get_by_placeholder("Note Title").fill("My Template Note")
+        page.get_by_placeholder("Untitled Note").fill("My Template Note")
 
         # 2. Click Save as Template button
         # title="Save as Template"

@@ -41,7 +41,7 @@ def run():
         note_items = page.locator("div[role='button']").all()
         if len(note_items) == 0:
              print("No notes found. Creating one to test auto-select behavior manually (though auto-select happens on load).")
-             page.get_by_role("button", name="New Note").click()
+             page.get_by_role("button", name="New Note").first.click()
              # After creating, it should be selected.
         else:
              print("Notes found. Verifying auto-selection...")

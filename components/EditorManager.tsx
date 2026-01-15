@@ -37,6 +37,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     isApiKeyAvailable,
     settings,
     isPublished,
+    saveImmediately,
   } = useEditorLogic({ note, onSave });
 
   const { setSelectedNoteId, showToast } = useView();
@@ -73,7 +74,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
-        onSave(dirtyNote);
+        saveImmediately();
         showToast('Saved');
       }
 

@@ -34,6 +34,11 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
 
   const { dirtyNote, setDirtyNote } = useDebouncedSave(note, handlePersist);
 
+  // Expose immediate save for Ctrl+S
+  const saveImmediately = useCallback(() => {
+      handlePersist(dirtyNote);
+  }, [handlePersist, dirtyNote]);
+
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) =>
       setDirtyNote((prev) => ({ ...prev, title: e.target.value })),
@@ -173,6 +178,7 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     handleAutoTag,
     handleMagic,
     handleSaveTemplate,
+    saveImmediately,
     isAutoTagging,
     isApiKeyAvailable,
     settings, // needed for ontology

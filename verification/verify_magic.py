@@ -17,7 +17,7 @@ def run(playwright):
         page.wait_for_selector("text=Notes", timeout=20000)
 
         print("Clicking New Note...")
-        page.get_by_title("New Note").click()
+        page.get_by_title("New Note").first.click()
 
         print("Waiting for editor...")
         page.wait_for_selector(".ProseMirror", timeout=10000)

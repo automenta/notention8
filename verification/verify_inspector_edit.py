@@ -11,7 +11,7 @@ def verify_inspector_edit():
         try:
              page.get_by_role("button", name="Create First Note").click()
         except:
-             page.locator("button[title='New Note']").click()
+             page.locator("button[title='New Note']").first.click()
 
         page.wait_for_selector("#note-title-input")
 
