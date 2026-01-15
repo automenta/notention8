@@ -101,15 +101,18 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[20vh] bg-black/50 backdrop-blur-sm">
-      <div className="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 w-full max-w-2xl overflow-hidden flex flex-col max-h-[60vh]">
-        <div className="flex items-center p-4 border-b border-gray-700">
-          <SearchIcon className="h-6 w-6 text-gray-400 mr-3" />
+    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] bg-black/70 backdrop-blur-sm animate-fade-in">
+      <div
+        className="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 w-full max-w-2xl overflow-hidden flex flex-col max-h-[60vh] transform transition-all animate-slide-in-up"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center p-4 border-b border-gray-700/50">
+          <SearchIcon className="h-5 w-5 text-gray-400 mr-3" />
           <input
             ref={inputRef}
             type="text"
-            className="flex-1 bg-transparent text-xl text-white placeholder-gray-500 focus:outline-none"
-            placeholder="Type a command or search..."
+            className="flex-1 bg-transparent text-lg text-white placeholder-gray-500 focus:outline-none"
+            placeholder="Type a command or search notes..."
             value={query}
             onChange={(e) => {
                 setQuery(e.target.value);
@@ -117,17 +120,22 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             }}
             onKeyDown={handleKeyDown}
           />
+          <div className="text-xs text-gray-500 border border-gray-700 rounded px-1.5 py-0.5">Esc</div>
         </div>
-        <div className="overflow-y-auto flex-1 p-2">
+
+        <div className="overflow-y-auto flex-1 p-2 space-y-1 custom-scrollbar">
             {allItems.length === 0 && (
-                <div className="p-4 text-center text-gray-500">No results found.</div>
+                <div className="p-8 text-center text-gray-500">
+                    <p>No results found.</p>
+                </div>
             )}
+
             {allItems.map((item, index) => (
                 <div
                     key={item.id}
                     className={`
-                        flex items-center p-3 rounded-lg cursor-pointer
-                        ${index === selectedIndex ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700'}
+                        flex items-center p-3 rounded-lg cursor-pointer transition-colors
+                        ${index === selectedIndex ? 'bg-blue-600/20 border border-blue-500/50' : 'border border-transparent hover:bg-gray-700/50'}
                     `}
                     onClick={() => {
                         item.action();
@@ -135,29 +143,40 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     }}
                     onMouseEnter={() => setSelectedIndex(index)}
                 >
-                    <div className={`mr-3 ${index === selectedIndex ? 'text-white' : 'text-gray-400'}`}>
+                    <div className={`mr-4 flex-shrink-0 ${index === selectedIndex ? 'text-blue-400' : 'text-gray-400'}`}>
                         {item.icon}
                     </div>
-                    <div className="flex-1">
-                        <div className="font-medium">{item.label}</div>
+                    <div className="flex-1 min-w-0">
+                        <div className={`font-medium truncate ${index === selectedIndex ? 'text-white' : 'text-gray-200'}`}>
+                            {item.label}
+                        </div>
                         {item.description && (
-                            <div className={`text-sm ${index === selectedIndex ? 'text-blue-200' : 'text-gray-500'}`}>
+                            <div className={`text-sm truncate ${index === selectedIndex ? 'text-blue-200' : 'text-gray-500'}`}>
                                 {item.description}
                             </div>
                         )}
                     </div>
-                    {item.type === 'command' && (
-                        <div className={`text-xs px-2 py-1 rounded border ${index === selectedIndex ? 'border-blue-400 text-blue-100' : 'border-gray-600 text-gray-500'}`}>
-                            Cmd
+                    {item.type === 'command' ? (
+                        <div className={`ml-2 text-[10px] font-mono px-1.5 py-0.5 rounded uppercase tracking-wider ${index === selectedIndex ? 'bg-blue-500/30 text-blue-200' : 'bg-gray-700 text-gray-500'}`}>
+                            CMD
+                        </div>
+                    ) : (
+                        <div className={`ml-2 text-[10px] font-mono px-1.5 py-0.5 rounded uppercase tracking-wider ${index === selectedIndex ? 'bg-blue-500/30 text-blue-200' : 'bg-gray-700 text-gray-500'}`}>
+                            NOTE
                         </div>
                     )}
                 </div>
             ))}
         </div>
-        <div className="p-2 border-t border-gray-700 text-xs text-gray-500 flex justify-end px-4 py-2 bg-gray-900/50">
-            <span className="mr-4">↑↓ to navigate</span>
-            <span className="mr-4">↵ to select</span>
-            <span>Esc to close</span>
+
+        <div className="p-2 border-t border-gray-700/50 text-xs text-gray-500 flex justify-between px-4 py-2 bg-gray-900/30">
+            <div>
+                <span className="font-semibold">ProTip:</span> Use <code className="bg-gray-700 px-1 rounded text-gray-300">#</code> to search tags.
+            </div>
+            <div className="flex gap-4">
+                <span><kbd className="font-sans">↑↓</kbd> navigate</span>
+                <span><kbd className="font-sans">↵</kbd> select</span>
+            </div>
         </div>
       </div>
     </div>
