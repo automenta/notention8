@@ -7,19 +7,19 @@ def test_ui_cleanup(page):
     # 2. Go to Settings
     page.get_by_role("button", name="Settings").click()
 
-    # Check that the big "Settings" header is GONE
-    # We expect NOT to find an H1 with "Settings" text
+    # Check that the big "Settings" header is present (it provides context)
     try:
         page.get_by_role("heading", name="Settings", exact=True).wait_for(timeout=2000)
-        print("FAIL: Settings header still visible")
+        print("PASS: Settings header visible")
     except:
-        print("PASS: Settings header removed")
+        print("FAIL: Settings header missing")
 
     # Check that tabs are visible
     page.get_by_role("button", name="🤖 AI").wait_for()
 
     # Check Developer Mode toggle is present
-    page.get_by_text("DEV MODE").wait_for()
+    # Text is "Dev Mode" but uppercase via CSS. Playwright might fuzzy match or we use loose matching.
+    page.get_by_text("Dev Mode").wait_for()
 
     # Screenshot Settings
     page.screenshot(path="verification/settings_clean.png")
