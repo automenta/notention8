@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Note } from '../types';
 
 import { useNotes } from '../hooks/useNotes';
 import { useSettings } from '../hooks/useSettingsContext';
@@ -13,7 +14,11 @@ import { NotesView } from './views/NotesView';
 import { OntologyView } from './views/OntologyView';
 import { SettingsView } from './views/SettingsView';
 
-export function MainView() {
+interface MainViewProps {
+  sortedNotes?: Note[];
+}
+
+export function MainView({ sortedNotes }: MainViewProps) {
   const { activeView, matchingNoteId, toast } = useView();
   const { settingsLoading } = useSettings();
   const { notes, notesLoading } = useNotes();
@@ -32,7 +37,7 @@ export function MainView() {
   const renderView = () => {
     switch (activeView) {
       case 'notes':
-        return <NotesView />;
+        return <NotesView sortedNotes={sortedNotes} />;
       case 'ontology':
         return <OntologyView />;
       case 'map':

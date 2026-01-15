@@ -21,6 +21,8 @@ vi.mock('../hooks/useViewContext', () => ({
     setActiveView: vi.fn(),
     selectedNoteId: null,
     setSelectedNoteId: vi.fn(),
+    searchTerm: '',
+    sortOrder: 'updatedAt_desc',
   }),
 }));
 

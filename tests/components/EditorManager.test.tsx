@@ -34,6 +34,13 @@ vi.mock('../../hooks/useAutoTagging', () => ({
   }),
 }));
 
+// Mock useNotes
+vi.mock('../../hooks/useNotes', () => ({
+  useNotes: () => ({
+    notes: [],
+  }),
+}));
+
 describe('EditorManager', () => {
   const mockOnSave = vi.fn();
   const initialNote: Note = {

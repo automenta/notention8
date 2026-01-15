@@ -46,6 +46,16 @@ export const NoteIcon = (props: IconProps) => (
   </OutlineIcon>
 );
 
+export const ChevronUpIcon = (props: IconProps) => (
+  <OutlineIcon {...props}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M4.5 15.75l7.5-7.5 7.5 7.5"
+    />
+  </OutlineIcon>
+);
+
 export const OntologyIcon = (props: IconProps) => (
   <OutlineIcon {...props}>
     <path
