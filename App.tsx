@@ -8,6 +8,7 @@ import { useNotes } from './hooks/useNotes';
 import { useSortedFilteredNotes } from './hooks/useSortedFilteredNotes';
 import { useView } from './hooks/useViewContext';
 import { useSettings } from './hooks/useSettingsContext';
+import { useUrlRouting } from './hooks/useUrlRouting';
 import { CommandPalette } from './components/common/CommandPalette';
 import { HelpModal } from './components/common/HelpModal';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
@@ -42,6 +43,13 @@ function App() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   const sortedNotes = useSortedFilteredNotes(notes, searchTerm, sortOrder);
+
+  useUrlRouting({
+      activeView,
+      setActiveView,
+      selectedNoteId,
+      setSelectedNoteId
+  });
 
   useAutoSelectNote({
     activeView,
