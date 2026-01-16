@@ -3,6 +3,7 @@ import { Note } from '../../types';
 import {
   SearchIcon,
   NoteIcon,
+  PlusIcon,
 } from '../icons';
 
 interface CommandItem {
@@ -19,6 +20,7 @@ interface CommandPaletteProps {
   onClose: () => void;
   notes: Note[];
   onSelectNote: (noteId: string) => void;
+  onCreateNote?: (title: string) => void;
   commands: {
     label: string;
     icon: React.ReactElement;
@@ -31,6 +33,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   onClose,
   notes,
   onSelectNote,
+  onCreateNote,
   commands,
 }) => {
   const [query, setQuery] = useState('');
@@ -63,6 +66,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     : commands;
 
   const allItems: CommandItem[] = [
+    ...(query && onCreateNote
+      ? [
+          {
+            id: 'create-note',
+            type: 'command' as const,
+            label: `Create new note: "${query}"`,
+            icon: <PlusIcon className="h-5 w-5" />,
+            action: () => onCreateNote(query),
+          },
+        ]
+      : []),
     ...filteredCommands.map((cmd) => ({
       id: `cmd-${cmd.label}`,
       type: 'command' as const,
