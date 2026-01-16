@@ -58,7 +58,7 @@ function NavButton({
 }
 
 export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
-  const { activeView, setActiveView, notificationCount, isSidebarOpen, setIsSidebarOpen } = useView();
+  const { activeView, setActiveView, notificationCount, isSidebarOpen, setIsSidebarOpen, chatNotificationCount } = useView();
   const { settings } = useSettings();
 
   const navItems: {
@@ -76,7 +76,7 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
       icon: <NetworkIcon />,
       badgeCount: notificationCount,
     },
-    { view: 'chat', label: 'Chat', icon: <ChatIcon /> },
+    { view: 'chat', label: 'Chat', icon: <ChatIcon />, badgeCount: chatNotificationCount },
     { view: 'ontology', label: 'Ontology', icon: <OntologyIcon /> },
   ];
 

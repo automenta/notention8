@@ -23,6 +23,9 @@ interface ViewContextType {
   setSearchTerm: (term: string) => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isOpen: boolean) => void;
+  chatNotificationCount: number;
+  incrementChatNotification: () => void;
+  resetChatNotification: () => void;
 }
 
 export interface MatchResult {
@@ -49,6 +52,7 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
   const [toast, setToast] = useState<string | null>(null);
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [chatNotificationCount, setChatNotificationCount] = useState(0);
   const lastToastTimeRef = React.useRef(0);
 
   const notificationCount = matches.length;
@@ -84,6 +88,9 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
       // But the prompt says "alerting users".
   };
 
+  const incrementChatNotification = () => setChatNotificationCount(c => c + 1);
+  const resetChatNotification = () => setChatNotificationCount(0);
+
   return (
     <ViewContext.Provider
       value={{
@@ -106,7 +113,10 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
         sortOrder,
         setSortOrder,
         isSidebarOpen,
-        setIsSidebarOpen
+        setIsSidebarOpen,
+        chatNotificationCount,
+        incrementChatNotification,
+        resetChatNotification
       }}
     >
       {children}

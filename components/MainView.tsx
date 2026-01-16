@@ -5,6 +5,7 @@ import { useNotes } from '../hooks/useNotes';
 import { useSettings } from '../hooks/useSettingsContext';
 import { useView } from '../hooks/useViewContext';
 import { useBackgroundMatcher } from '../hooks/useBackgroundMatcher';
+import { useChatNotifications } from '../hooks/useChatNotifications';
 import { LoadingSpinner } from './icons';
 import { SimulatorView } from './simulator/SimulatorView';
 import { ChatView } from './views/ChatView';
@@ -26,6 +27,7 @@ export function MainView({ sortedNotes }: MainViewProps) {
 
   // Run background matching
   useBackgroundMatcher();
+  useChatNotifications();
 
   if (notesLoading || settingsLoading) {
     return (
