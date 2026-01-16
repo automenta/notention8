@@ -58,8 +58,25 @@ function NavButton({
 }
 
 export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
-  const { activeView, setActiveView, notificationCount, isSidebarOpen, setIsSidebarOpen, chatNotificationCount } = useView();
+  const {
+      activeView,
+      setActiveView,
+      notificationCount,
+      isSidebarOpen,
+      setIsSidebarOpen,
+      chatNotificationCount,
+      selectedNoteId,
+      setSelectedNoteId
+  } = useView();
   const { settings } = useSettings();
+
+  const handleNavClick = (view: View) => {
+      if (view === 'notes' && activeView === 'notes' && selectedNoteId) {
+          setSelectedNoteId(null);
+      } else {
+          setActiveView(view);
+      }
+  };
 
   const navItems: {
     view: View;
@@ -124,7 +141,7 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
             icon={item.icon}
             label={item.label}
             isActive={activeView === item.view}
-            onClick={() => setActiveView(item.view)}
+            onClick={() => handleNavClick(item.view)}
             badgeCount={item.badgeCount}
           />
         ))}

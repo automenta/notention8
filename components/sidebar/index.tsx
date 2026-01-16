@@ -46,10 +46,13 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
     }
   };
 
-  const handleCreateNote = () => {
-      const newNote = addNote();
+  const handleCreateNote = (title?: string) => {
+      // Use the provided title or undefined (which defaults to empty/untitled in addNote)
+      // If title is passed (e.g. from search), use it.
+      const newNote = addNote(title && typeof title === 'string' ? { title } : undefined);
       setSelectedNoteId(newNote.id);
       setActiveView('notes');
+      if (title) setSearchTerm('');
   };
 
   return (
@@ -89,9 +92,17 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
             <p className="text-gray-500 mb-4">
               {searchTerm ? 'No notes match your search.' : 'No notes yet.'}
             </p>
-            {!searchTerm && (
+            {searchTerm ? (
+                 <button
+                    onClick={() => handleCreateNote(searchTerm)}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm font-medium"
+                >
+                    <PlusIcon className="h-4 w-4" />
+                    Create note "{searchTerm}"
+                </button>
+            ) : (
                 <button
-                    onClick={handleCreateNote}
+                    onClick={() => handleCreateNote()}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm font-medium"
                 >
                     <PlusIcon className="h-4 w-4" />
