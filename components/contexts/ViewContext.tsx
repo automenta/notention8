@@ -1,5 +1,6 @@
 import React, { createContext, ReactNode, useState } from 'react';
 import { useLocalForage } from '../../hooks/useLocalForage';
+import { useToast } from './ToastContext';
 import type { View, SortOrder } from '../../types';
 
 interface ViewContextType {
@@ -13,7 +14,6 @@ interface ViewContextType {
   setMatchingNoteId: (id: string | null) => void;
   selectedChatPubkey: string | null;
   setSelectedChatPubkey: (pubkey: string | null) => void;
-  toast: string | null;
   showToast: (msg: string) => void;
   notificationCount: number;
   matches: MatchResult[];
@@ -49,22 +49,15 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [matchingNoteId, setMatchingNoteId] = useState<string | null>(null);
   const [selectedChatPubkey, setSelectedChatPubkey] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const { addToast } = useToast();
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [chatNotificationCount, setChatNotificationCount] = useState(0);
-  const lastToastTimeRef = React.useRef(0);
 
   const notificationCount = matches.length;
 
   const showToast = (msg: string) => {
-      const now = Date.now();
-      // Simple debounce/throttle: only one toast every 3 seconds
-      if (now - lastToastTimeRef.current < 3000) return;
-
-      lastToastTimeRef.current = now;
-      setToast(msg);
-      setTimeout(() => setToast(null), 3000);
+      addToast(msg);
   };
 
   const addMatch = (match: MatchResult) => {
@@ -102,7 +95,6 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
         setMatchingNoteId,
         selectedChatPubkey,
         setSelectedChatPubkey,
-        toast,
         showToast,
         notificationCount,
         matches,

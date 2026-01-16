@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { Note } from '../../types';
 import { useView } from '../../hooks/useViewContext';
 import { useNotes } from '../../hooks/useNotes';
+import { useToast } from '../contexts/ToastContext';
 import { ConfirmationModal } from '../common/ConfirmationModal';
 import { NoteListItem } from './NoteListItem';
 import { Search } from './Search';
@@ -25,6 +26,7 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
   } = useView();
 
   const { deleteNote, addNote } = useNotes();
+  const { addToast } = useToast();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [noteToDeleteId, setNoteToDeleteId] = useState<string | null>(null);
@@ -42,6 +44,7 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
         setSelectedNoteId(nextNote ? nextNote.id : null);
       }
       deleteNote(noteToDeleteId);
+      addToast('Note deleted', 'success');
       setNoteToDeleteId(null);
     }
   };
