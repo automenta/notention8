@@ -35,6 +35,7 @@ export function TimeView() {
     const { notes } = useNotes();
     const { setSelectedNoteId, setActiveView } = useView();
     const [locationFilterId, setLocationFilterId] = useState<string>('');
+    const [filterRadius, setFilterRadius] = useState<number>(50); // km
 
     // Get all notes that have a location property
     const locationNotes = useMemo(() => {
@@ -67,7 +68,7 @@ export function TimeView() {
                 if (!noteCoords) return;
 
                 const dist = haversineDistance(filterCoords, noteCoords);
-                if (dist > 50) return; // 50km radius
+                if (dist > filterRadius) return;
             }
 
             // Helper to get date value from keys
@@ -113,7 +114,7 @@ export function TimeView() {
         });
 
         return evts;
-    }, [notes, locationFilterId]);
+    }, [notes, locationFilterId, filterRadius]);
 
     const handleSelectEvent = (event: CalendarEvent) => {
         setSelectedNoteId(event.id);
@@ -142,10 +143,10 @@ export function TimeView() {
             `}</style>
 
             {/* Toolbar */}
-            <div className="flex items-center gap-4 mb-4 bg-gray-800 p-2 rounded-lg border border-gray-700">
-                <div className="flex items-center gap-2 text-gray-300">
+            <div className="flex flex-wrap items-center gap-4 mb-4 bg-gray-800 p-2 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-2 text-gray-300" title="Filter events by proximity to a location note">
                     <MapPinIcon className="w-5 h-5 text-blue-400" />
-                    <span className="text-sm font-semibold">Spacetime Filter:</span>
+                    <span className="text-sm font-semibold hidden sm:inline">Spacetime Filter:</span>
                 </div>
                 <select
                     className="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-blue-500 max-w-xs"
@@ -160,9 +161,16 @@ export function TimeView() {
                     ))}
                 </select>
                 {locationFilterId && (
-                    <span className="text-xs text-gray-500">
-                        Showing events within 50km
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="number"
+                            value={filterRadius}
+                            onChange={(e) => setFilterRadius(Number(e.target.value))}
+                            className="w-16 bg-gray-900 border border-gray-700 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-blue-500"
+                            min="1"
+                        />
+                        <span className="text-xs text-gray-500">km radius</span>
+                    </div>
                 )}
             </div>
 
