@@ -73,6 +73,41 @@ export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], m
 
       Mention.configure({
           HTMLAttributes: {
+            class: 'suggestion-note',
+          },
+          suggestion: {
+              ...configureSuggestions((query) => {
+                  const lower = query.toLowerCase();
+                  return notesRef.current
+                      .filter(n => (n.title || 'Untitled').toLowerCase().includes(lower))
+                      .slice(0, 5)
+                      .map(n => ({
+                          id: n.id,
+                          label: n.title || 'Untitled',
+                          description: 'Note'
+                      }));
+              }, '[['), // Wiki-link style trigger
+              command: ({ editor, range, props }) => {
+                  // Delete the trigger and query
+                  editor.chain().focus().deleteRange(range).run();
+                  // Insert the mention manually or as a link?
+                  // Let's insert the standard mention node but maybe formatted differently?
+                  // For now, reusing the existing note mention structure is easiest
+                  // but we need to ensure it's inserted correctly.
+
+                  editor.chain().focus().insertContent({
+                      type: 'noteSuggestion', // Use the existing note suggestion type
+                      attrs: {
+                          id: props.id,
+                          label: props.label
+                      }
+                  }).insertContent(' ').run();
+              }
+          }
+      }).extend({ name: 'wikiLinkSuggestion' }),
+
+      Mention.configure({
+          HTMLAttributes: {
             class: 'suggestion-slash',
           },
           suggestion: {
