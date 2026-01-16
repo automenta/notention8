@@ -1,4 +1,5 @@
 import type { Note, Property } from '../types';
+import { parseGeo, haversineDistance } from './spacetime';
 
 /**
  * Calculates a match score between a Request Note (Query) and an Offer Note (Target).
@@ -53,6 +54,10 @@ const checkConstraint = (constraint: Property, target: Note): boolean => {
   // So we iterate ALL constraint values and ensure target has them (AND logic).
 
   return constraint.values.every(cValStr => {
+
+      // Special handling for 'is near' which needs parsing but we handle inside loop?
+      // No, let's parse inside loop.
+
       const constraintVal = parseValue(cValStr);
 
       // Target must satisfy this specific value constraint
@@ -85,6 +90,19 @@ const checkConstraint = (constraint: Property, target: Note): boolean => {
             // "React Developer" contains "React"? Yes.
             return String(tVal).toLowerCase().includes(String(constraintVal).toLowerCase());
 
+          case 'is near':
+              // Spacetime proximity
+              const p1 = parseGeo(String(tVal));
+              const p2 = parseGeo(String(constraintVal));
+              if (!p1 || !p2) return false;
+
+              // Default 50km if not specified?
+              // Ideally constraint would be [location is near 40.7,-74.0, 50km]
+              // But parsing "40.7,-74.0, 50km" in parseGeo is not supported yet.
+              // Let's hardcode 50km for now as "near".
+              const dist = haversineDistance(p1, p2);
+              return dist <= 50;
+
           default:
             return false;
         }
@@ -94,8 +112,19 @@ const checkConstraint = (constraint: Property, target: Note): boolean => {
 
 const parseValue = (val: string | number): string | number => {
   if (typeof val === 'number') return val;
+
+  // Try to parse as Date first if it looks like one (simple check)
+  // ISO date format YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}/.test(val)) {
+      return val;
+  }
+
   const num = parseFloat(val);
-  // Check if it is a valid number and the string is actually numeric (avoids "100px" being 100 if we want strict, but parseFloat is lenient)
-  // For strict matching, "Active" should not be NaN.
+  // Check if it is a valid number and the string is actually numeric
+  // We want to avoid parsing "40.7,-74.0" as 40.7 (losing info)
+
+  // If the string contains a comma, treat as string (likely coords or list)
+  if (val.includes(',')) return val;
+
   return isNaN(num) ? val : num;
 };
