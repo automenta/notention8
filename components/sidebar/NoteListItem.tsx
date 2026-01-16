@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import type { Note } from '../../types';
-import { TrashIcon, WorldIcon } from '../icons';
+import { TrashIcon, WorldIcon, DownloadIcon } from '../icons';
 import { getTextFromHtml } from '../../utils/nostr';
 
 export const NoteListItem: React.FC<{
@@ -14,6 +14,17 @@ export const NoteListItem: React.FC<{
   const contentPreview = React.useMemo(() => {
     return getTextFromHtml(note.content) || 'No content';
   }, [note.content]);
+
+  const handleExport = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(note, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", `${note.title || 'untitled'}.json`);
+      document.body.appendChild(downloadAnchorNode); // required for firefox
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
@@ -71,17 +82,27 @@ export const NoteListItem: React.FC<{
           <p className="text-sm text-gray-400 truncate">{contentPreview}</p>
         </div>
       </div>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
-        tabIndex={-1} // Prevent tabbing into delete button for simpler nav
-        className="ml-2 p-1 text-gray-500 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:bg-red-900/50 hover:text-red-400 transition-opacity focus:opacity-100"
-        title="Delete Note"
-      >
-        <TrashIcon className="h-4 w-4" />
-      </button>
+      <div className="flex items-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity focus-within:opacity-100">
+        <button
+            onClick={handleExport}
+            tabIndex={-1}
+            className="p-1 text-gray-500 rounded-full hover:bg-gray-700 hover:text-white"
+            title="Export Note"
+        >
+            <DownloadIcon className="h-4 w-4" />
+        </button>
+        <button
+            onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+            }}
+            tabIndex={-1} // Prevent tabbing into delete button for simpler nav
+            className="ml-1 p-1 text-gray-500 rounded-full hover:bg-red-900/50 hover:text-red-400"
+            title="Delete Note"
+        >
+            <TrashIcon className="h-4 w-4" />
+        </button>
+      </div>
     </div>
   );
 };

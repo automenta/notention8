@@ -6,6 +6,7 @@ import { useNotes } from '../../hooks/useNotes';
 import { useView } from '../../hooks/useViewContext';
 import type { Contact, NostrEvent } from '../../types';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
+import { parseProperties } from '../../utils/parsing';
 import { ArrowLeftIcon, SendIcon, DocumentDuplicateIcon } from '../icons';
 
 interface ChatWindowProps {
@@ -145,10 +146,12 @@ export function ChatWindow({
                     {!isMe && (
                         <button
                             onClick={() => {
+                                const properties = parseProperties(msg.content);
                                 addNote({
                                     title: 'Chat Note',
                                     content: msg.content,
-                                    tags: []
+                                    tags: [],
+                                    properties
                                 });
                                 showToast('Forked to Notes');
                             }}
