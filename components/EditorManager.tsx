@@ -10,6 +10,7 @@ import { PropertyInspector } from './editor/PropertyInspector';
 import { TemplateSelector } from './editor/TemplateSelector';
 import { SaveTemplateModal } from './editor/SaveTemplateModal';
 import { MapPickerModal } from './map/MapPickerModal';
+import { TimePickerModal } from './common/TimePickerModal';
 import { OntologyNode } from '../types';
 
 interface EditorManagerProps {
@@ -33,6 +34,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     handleMagic,
     handleSaveTemplate,
     handleUpdateLocation,
+    handleUpdateProperty,
     isAutoTagging,
     isApiKeyAvailable,
     settings,
@@ -93,6 +95,8 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
   }, [dirtyNote, onSave, showToast, handlePrevious, handleNext]);
   const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
+  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+  const [pickingTimeKey, setPickingTimeKey] = useState<string>('');
 
   const allTemplates = [
       ...settings.customTemplates,
@@ -110,6 +114,18 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
 
       handleContentSave(newContent);
       setIsTemplateSelectorOpen(false);
+  };
+
+  const handlePickTime = (key: string) => {
+      setPickingTimeKey(key);
+      setIsTimePickerOpen(true);
+  };
+
+  const handleTimeSelected = (timeVal: string) => {
+      if (pickingTimeKey) {
+          handleUpdateProperty(pickingTimeKey, timeVal);
+      }
+      setIsTimePickerOpen(false);
   };
 
   return (
@@ -166,6 +182,8 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
             onUpdateText={handleUpdateTextFromInspector}
             onPropertyChange={() => {}} // Read only for now (updates text)
             onPickLocation={() => setIsMapPickerOpen(true)}
+            onPickTime={handlePickTime}
+            ontology={settings.ontology}
           />
         )}
       </div>
@@ -178,6 +196,12 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         isOpen={isMapPickerOpen}
         onClose={() => setIsMapPickerOpen(false)}
         onLocationSelect={handleUpdateLocation}
+      />
+      <TimePickerModal
+        isOpen={isTimePickerOpen}
+        onClose={() => setIsTimePickerOpen(false)}
+        onTimeSelect={handleTimeSelected}
+        title={`Pick Time for ${pickingTimeKey}`}
       />
     </div>
   );

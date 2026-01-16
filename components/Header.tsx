@@ -14,6 +14,7 @@ import {
   SettingsIcon,
   SearchIcon,
   SidebarIcon,
+  ClockIcon,
 } from './icons';
 
 interface HeaderProps {
@@ -68,6 +69,7 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
   }[] = [
     { view: 'notes', label: 'Notes', icon: <NoteIcon /> },
     { view: 'map', label: 'Map', icon: <MapIcon /> },
+    { view: 'time', label: 'Time', icon: <ClockIcon /> },
     {
       view: 'network',
       label: 'Network',

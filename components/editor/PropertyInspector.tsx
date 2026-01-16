@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import type { Property } from '../../types';
+import type { Property, OntologyNode } from '../../types';
 import {
   CheckIcon,
   PencilIcon,
@@ -9,6 +9,7 @@ import {
   TrashIcon,
   XIcon,
   MapPinIcon,
+  ClockIcon,
 } from '../icons';
 
 interface PropertyInspectorProps {
@@ -16,12 +17,16 @@ interface PropertyInspectorProps {
   onPropertyChange: (newProperties: Property[]) => void;
   onUpdateText: (oldProp: Property | null, newProp: Property | null) => void;
   onPickLocation?: () => void;
+  onPickTime?: (key: string) => void;
+  ontology?: OntologyNode[];
 }
 
 export function PropertyInspector({
   properties,
   onUpdateText,
   onPickLocation,
+  onPickTime,
+  ontology = []
 }: PropertyInspectorProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -77,6 +82,22 @@ export function PropertyInspector({
     }
   };
 
+  const getAttributeType = (key: string, nodes: OntologyNode[]): string | undefined => {
+    for (const node of nodes) {
+      if (node.attributes && node.attributes[key]) {
+        return node.attributes[key].type;
+      }
+      if (node.children) {
+        const found = getAttributeType(key, node.children);
+        if (found) return found;
+      }
+    }
+    return undefined;
+  };
+
+  const type = editKey ? getAttributeType(editKey, ontology) : undefined;
+  const isTemporal = type === 'date' || type === 'datetime' || ['start', 'end', 'date', 'time', 'deadline', 'dueDate', 'startDateTime', 'endDateTime'].some(k => editKey.toLowerCase().includes(k.toLowerCase()));
+
   return (
     <div className="bg-gray-900 border-l border-gray-700/50 w-72 flex-shrink-0 flex flex-col h-full transition-all duration-300">
       <div className="p-3 border-b border-gray-700 font-semibold text-gray-300 flex justify-between items-center bg-gray-800/30">
@@ -96,20 +117,35 @@ export function PropertyInspector({
       <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
         {(isAdding || editingIndex !== null) && (
           <div className="bg-gray-800 p-3 rounded-md border border-blue-500/50 space-y-3 animate-fade-in shadow-lg">
-            <div className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1 flex justify-between items-center">
+            <div className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1 flex justify-between items-center flex-wrap gap-1">
               <span>{isAdding ? 'New Property' : 'Edit Property'}</span>
-              {onPickLocation && (isAdding || ['location', 'geo', 'place'].includes(editKey)) && (
-                  <button
-                    onClick={() => {
-                        if (isAdding && !editKey) setEditKey('location');
-                        onPickLocation();
-                    }}
-                    className='text-xs text-blue-300 hover:text-white flex items-center gap-1 bg-blue-900/30 px-2 py-0.5 rounded'
-                    title="Pick location on map"
-                  >
-                      <MapPinIcon className="w-3 h-3" /> Pick
-                  </button>
-              )}
+              <div className="flex gap-1">
+                {onPickLocation && (isAdding || ['location', 'geo', 'place'].includes(editKey)) && (
+                    <button
+                        onClick={() => {
+                            if (isAdding && !editKey) setEditKey('location');
+                            onPickLocation();
+                        }}
+                        className='text-xs text-blue-300 hover:text-white flex items-center gap-1 bg-blue-900/30 px-2 py-0.5 rounded'
+                        title="Pick location on map"
+                    >
+                        <MapPinIcon className="w-3 h-3" /> Pick
+                    </button>
+                )}
+                {onPickTime && (isAdding || isTemporal) && (
+                     <button
+                        onClick={() => {
+                            const defaultKey = 'startDateTime';
+                            if (isAdding && !editKey) setEditKey(defaultKey);
+                            onPickTime(editKey || defaultKey);
+                        }}
+                        className='text-xs text-green-300 hover:text-white flex items-center gap-1 bg-green-900/30 px-2 py-0.5 rounded'
+                        title="Pick date/time"
+                    >
+                        <ClockIcon className="w-3 h-3" /> Time
+                    </button>
+                )}
+              </div>
             </div>
             <input
               className="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:border-blue-500 outline-none transition-colors"
