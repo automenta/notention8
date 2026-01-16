@@ -18,7 +18,7 @@ export const Search: React.FC<SearchProps> = ({
       <input
         id="sidebar-search-input"
         type="text"
-        placeholder="Search notes..."
+        placeholder="Search notes... (Ctrl+/)"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         onKeyDown={(e) => {

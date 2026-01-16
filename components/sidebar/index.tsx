@@ -8,7 +8,7 @@ import { NoteListItem } from './NoteListItem';
 import { Search } from './Search';
 import { SortSelector } from './SortSelector';
 import { TemplateList } from './TemplateList';
-import { PlusIcon } from '../icons';
+import { PlusIcon, NoteIcon } from '../icons';
 
 interface SidebarProps {
   sortedNotes?: Note[];
@@ -68,7 +68,7 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
              <button
                 onClick={handleCreateNote}
                 className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors flex-shrink-0"
-                title="New Note"
+                title="New Note (Ctrl+N)"
             >
                 <PlusIcon className="h-5 w-5" />
             </button>
@@ -91,9 +91,15 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
             />
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-            <p className="text-gray-500 mb-4">
-              {searchTerm ? 'No notes match your search.' : 'No notes yet.'}
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <div className="bg-gray-800 p-4 rounded-full mb-4">
+                <NoteIcon className="h-8 w-8 text-gray-600" />
+            </div>
+            <p className="text-gray-400 mb-2 font-medium">
+              {searchTerm ? 'No matching notes found' : 'Your notebook is empty'}
+            </p>
+            <p className="text-gray-500 text-sm mb-6 max-w-xs">
+              {searchTerm ? `Try adjusting your search for '${searchTerm}'` : 'Capture your ideas, daily tasks, and knowledge.'}
             </p>
             {searchTerm ? (
                  <button
@@ -101,7 +107,7 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm font-medium"
                 >
                     <PlusIcon className="h-4 w-4" />
-                    Create note "{searchTerm}"
+                    Create note &apos;{searchTerm}&apos;
                 </button>
             ) : (
                 <button
