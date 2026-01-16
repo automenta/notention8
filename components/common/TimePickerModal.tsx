@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from './Modal';
 import { format, isValid, parseISO } from 'date-fns';
+import { useToast } from '../contexts/ToastContext';
 
 interface TimePickerModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export function TimePickerModal({
 }: TimePickerModalProps) {
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
+    const { addToast } = useToast();
 
     useEffect(() => {
         if (isOpen) {
@@ -46,11 +48,11 @@ export function TimePickerModal({
                 onTimeSelect(`${date}T${time}:00`);
                 onClose();
             } else {
-                alert("Invalid date/time combination");
+                addToast("Invalid date/time combination", "error");
             }
         } catch (e: unknown) {
             console.error(e);
-            alert("Error constructing date");
+            addToast("Error constructing date", "error");
         }
     };
 

@@ -12,9 +12,11 @@ import {
 } from '../../utils/ontologyHelpers';
 import { TrashIcon, EditIcon, PlusIcon, FolderIcon, TagIcon, MergeIcon, SparklesIcon } from '../icons';
 import { Modal } from '../common/Modal';
+import { useToast } from '../contexts/ToastContext';
 
 export const OntologyTab: React.FC = () => {
   const { settings, setSettings } = useSettings();
+  const { addToast } = useToast();
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
   // Removed unused state vars: editingNodeId, setEditingNodeId, editingAttrKey, setEditingAttrKey
@@ -104,7 +106,7 @@ export const OntologyTab: React.FC = () => {
             }));
         } catch (e: unknown) {
             const message = e instanceof Error ? e.message : String(e);
-            alert(message);
+            addToast(message, 'error');
         }
     }
   };
@@ -117,7 +119,7 @@ export const OntologyTab: React.FC = () => {
   const executeMerge = () => {
     if (!mergingAttr || !targetMergeKey) return;
     if (mergingAttr.sourceKey === targetMergeKey) {
-        alert("Source and target keys must be different.");
+        addToast("Source and target keys must be different.", 'error');
         return;
     }
 
@@ -126,11 +128,12 @@ export const OntologyTab: React.FC = () => {
             ...prev,
             ontology: mergeAttributes(prev.ontology, mergingAttr.nodeId, mergingAttr.sourceKey, targetMergeKey)
         }));
+        addToast(`Merged '${mergingAttr.sourceKey}' into '${targetMergeKey}'`, 'success');
         setMergingAttr(null);
         setTargetMergeKey('');
     } catch (e: unknown) {
         const message = e instanceof Error ? e.message : String(e);
-        alert(message);
+        addToast(message, 'error');
     }
   };
 

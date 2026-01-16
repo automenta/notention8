@@ -48,8 +48,8 @@ export const DataTab: React.FC = () => {
                   if (confirm(`Found backup with ${data.notes.length} notes. This will OVERWRITE your current data. Continue?`)) {
                       await localforage.setItem('notention-notes', data.notes);
                       await localforage.setItem('notention-settings', data.settings);
-                      alert("Import successful! Reloading...");
-                      window.location.reload();
+                      addToast("Import successful! Reloading...", "success");
+                      setTimeout(() => window.location.reload(), 1500);
                   }
                   return;
               }
@@ -67,8 +67,8 @@ export const DataTab: React.FC = () => {
                   }
 
                   await localforage.setItem('notention-notes', currentNotes);
-                  alert(`Imported note: ${data.title}`);
-                  window.location.reload(); // Reload to refresh state
+                  addToast(`Imported note: ${data.title}`, "success");
+                  setTimeout(() => window.location.reload(), 1000); // Reload to refresh state
                   return;
               }
 

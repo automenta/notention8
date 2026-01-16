@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import { useSettings } from './useSettingsContext';
-import { useView } from './useViewContext';
+import { useToast } from '../components/contexts/ToastContext';
 import { Gardener } from '../services/gardener';
 import { LocalAIProvider } from '../services/ai/LocalProvider';
 import { RemoteAIProvider } from '../services/ai/RemoteProvider';
@@ -32,7 +32,7 @@ const mergeAttributesToEmergent = (ontology: OntologyNode[], newAttributes: Reco
 
 export const useGardener = () => {
   const { settings, setSettings } = useSettings();
-  const { showToast } = useView();
+  const { addToast } = useToast();
 
   const gardener = useMemo(() => {
     // Instantiate provider based on settings
@@ -111,7 +111,7 @@ export const useGardener = () => {
                       }
                   };
                   hasChanges = true;
-                  showToast(`New concept discovered: ${prop.key}`);
+                  addToast(`New concept discovered: ${prop.key}`, 'info');
               }
           });
 
@@ -119,7 +119,7 @@ export const useGardener = () => {
 
           return { ...prev, ontology: mergeAttributesToEmergent(currentOntology, newAttrsMap) };
       });
-  }, [setSettings, showToast]);
+  }, [setSettings, addToast]);
 
   const alignToOntology = useCallback(async (text: string, ontology: any[]) => {
       return await gardener.alignToOntology(text, ontology);

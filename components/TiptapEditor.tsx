@@ -6,6 +6,7 @@ import { sanitizeHTML } from '../utils/sanitize';
 import { formatHtmlForDisplay } from '../utils/editor';
 import { useTiptapConfig } from './editor/useTiptapConfig';
 import { useView } from '../hooks/useViewContext';
+import { useToast } from './contexts/ToastContext';
 
 interface TiptapEditorProps {
   note: Note;
@@ -20,7 +21,8 @@ interface TiptapEditorProps {
 
 export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontology, templates, minimal = false, onMagic, onTemplates, notes = [] }) => {
   const [viewMode, setViewMode] = useState<'rich' | 'code'>('rich');
-  const { setSearchTerm, setActiveView, showToast, setSelectedNoteId } = useView();
+  const { setSearchTerm, setActiveView, setSelectedNoteId } = useView();
+  const { addToast } = useToast();
 
   const editor = useTiptapConfig({
       content: note.content,
@@ -63,7 +65,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontolo
 
           setSearchTerm(searchTerm);
           setActiveView('notes');
-          showToast(`Filtered by ${searchTerm}`);
+          addToast(`Filtered by ${searchTerm}`, 'info');
       }
 
       // Handle Note Links
@@ -75,7 +77,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontolo
               setActiveView('notes');
           }
       }
-  }, [setSearchTerm, setActiveView, showToast, setSelectedNoteId]);
+  }, [setSearchTerm, setActiveView, addToast, setSelectedNoteId]);
 
   return (
     <div className="flex flex-col h-full">
