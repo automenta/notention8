@@ -77,7 +77,8 @@ def test_note_link(page):
 
     # Save
     page.keyboard.press("Control+s")
-    page.get_by_text("Saved").wait_for()
+    # Wait for saved. Using first to avoid strict mode issues if multiple toast containers exist or quick toggles
+    page.locator("text=Saved").first.wait_for()
 
     # Click the link
     print("Clicking the link...")
