@@ -69,29 +69,33 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 <div className="border-t border-gray-700 pt-4">
                     <h3 className="font-bold text-white mb-2">Keyboard Shortcuts</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-400">Command Palette</span>
+                        <div className="flex justify-between items-center group">
+                            <span className="text-gray-400 group-hover:text-white transition-colors">Command Palette</span>
                             <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Ctrl+K</code>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-400">New Note</span>
+                        <div className="flex justify-between items-center group">
+                            <span className="text-gray-400 group-hover:text-white transition-colors">New Note</span>
                             <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Ctrl+N</code>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-400">Search Sidebar</span>
+                        <div className="flex justify-between items-center group">
+                            <span className="text-gray-400 group-hover:text-white transition-colors">Search Sidebar</span>
                             <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Ctrl+/</code>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-400">Save Note</span>
+                        <div className="flex justify-between items-center group">
+                            <span className="text-gray-400 group-hover:text-white transition-colors">Save Note</span>
                             <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Ctrl+S</code>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-400">Previous Note</span>
+                        <div className="flex justify-between items-center group">
+                            <span className="text-gray-400 group-hover:text-white transition-colors">Previous Note</span>
                             <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Alt+Up</code>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-400">Next Note</span>
+                        <div className="flex justify-between items-center group">
+                            <span className="text-gray-400 group-hover:text-white transition-colors">Next Note</span>
                             <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Alt+Down</code>
+                        </div>
+                        <div className="flex justify-between items-center group">
+                            <span className="text-gray-400 group-hover:text-white transition-colors">Back to List</span>
+                            <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Alt+Left</code>
                         </div>
                     </div>
                 </div>

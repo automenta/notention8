@@ -154,54 +154,59 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
 
   return (
     <div className="flex-shrink-0 p-2 border-b border-gray-700/50 flex items-center flex-wrap gap-1">
-      {onMagic && (
-        <ToolbarButton
-          onClick={onMagic}
-          title="Magic Align (Auto-generate semantic properties)"
-          icon={SparklesIcon}
-          isActive={false}
-        />
-      )}
-      {onTemplates && (
-        <ToolbarButton
-          onClick={onTemplates}
-          title="Insert Template"
-          icon={CubeIcon}
-          isActive={false}
-        />
-      )}
-      <div className="w-px h-6 bg-gray-700 mx-1"></div>
-      {actions.map((item, index) => {
-        if (item.type === 'separator') {
-          return (
-            <div
-              key={`sep-${index}`}
-              className="w-px h-6 bg-gray-700 mx-1"
-            ></div>
-          );
-        }
-        return (
+      <div className="flex items-center gap-1 mr-2">
+        {onMagic && (
           <ToolbarButton
-            key={item.title}
-            onClick={item.action}
-            disabled={item.disabled ? item.disabled() : false}
-            isActive={item.isActive ? item.isActive() : false}
-            title={item.title}
-            icon={item.icon}
+            onClick={onMagic}
+            title="Magic Align (Auto-generate semantic properties)"
+            icon={SparklesIcon}
+            isActive={false}
           />
-        );
-      })}
+        )}
+        {onTemplates && (
+          <ToolbarButton
+            onClick={onTemplates}
+            title="Insert Template"
+            icon={CubeIcon}
+            isActive={false}
+          />
+        )}
+      </div>
 
-      <div className="flex-grow"></div>
+      <div className="flex items-center flex-wrap gap-1 flex-grow">
+        <div className="w-px h-6 bg-gray-700 mx-1 hidden sm:block"></div>
+        {actions.map((item, index) => {
+          if (item.type === 'separator') {
+            return (
+              <div
+                key={`sep-${index}`}
+                className="w-px h-6 bg-gray-700 mx-1 hidden sm:block"
+              ></div>
+            );
+          }
+          return (
+            <ToolbarButton
+              key={item.title}
+              onClick={item.action}
+              disabled={item.disabled ? item.disabled() : false}
+              isActive={item.isActive ? item.isActive() : false}
+              title={item.title}
+              icon={item.icon}
+            />
+          );
+        })}
+      </div>
 
-      <ToolbarButton
-        onClick={toggleViewMode}
-        isActive={viewMode === 'code'}
-        title={
-          viewMode === 'code' ? 'Switch to Rich Text' : 'Switch to HTML Code'
-        }
-        icon={CodeBracketsIcon}
-      />
+      <div className="border-l border-gray-700 pl-1 ml-1">
+        <ToolbarButton
+          onClick={toggleViewMode}
+          isActive={viewMode === 'code'}
+          title={
+            viewMode === 'code' ? 'Switch to Rich Text' : 'Switch to HTML Code'
+          }
+          icon={CodeBracketsIcon}
+        />
+      </div>
     </div>
   );
 };
