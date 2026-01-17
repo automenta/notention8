@@ -60,6 +60,7 @@ export interface Template {
 
 export interface AppSettings {
   aiEnabled: boolean;
+  aiProvider?: 'remote' | 'webllm';
   googleGeminiApiKey?: string; // Added user-configurable API key
   developerMode: boolean;
   theme: 'light' | 'dark';

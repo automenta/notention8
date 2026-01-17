@@ -148,4 +148,10 @@ export class WebLLMProvider implements AIProvider {
         return [];
     }
   }
+
+  async alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]> {
+    // Re-use suggestTags but with stricter ontology prompting if needed.
+    // For now, suggestTags already handles ontology context.
+    return this.suggestTags(text, ontology);
+  }
 }
