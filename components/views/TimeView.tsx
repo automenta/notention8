@@ -7,7 +7,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useNotes } from '../../hooks/useNotes';
 import { useView } from '../../hooks/useViewContext';
 import { MapPinIcon } from '../icons';
-import { parseGeo, haversineDistance } from '../../utils/spacetime';
+import { parseGeo, parseGeoFromValues, haversineDistance } from '../../utils/spacetime';
 
 const locales = {
   'en-US': enUS,
@@ -50,8 +50,8 @@ export function TimeView() {
         if (locationFilterId) {
             const filterNote = notes.find(n => n.id === locationFilterId);
             const locProp = filterNote?.properties.find(p => ['location', 'geo', 'place'].includes(p.key));
-            if (locProp?.values[0]) {
-                filterCoords = parseGeo(locProp.values[0]);
+            if (locProp) {
+                filterCoords = parseGeoFromValues(locProp.values);
             }
         }
 
@@ -62,9 +62,9 @@ export function TimeView() {
             // Location Check
             if (filterCoords) {
                 const noteLocProp = props.find(p => ['location', 'geo', 'place'].includes(p.key));
-                if (!noteLocProp || !noteLocProp.values[0]) return; // Exclude notes without location if filtering
+                if (!noteLocProp) return; // Exclude notes without location if filtering
 
-                const noteCoords = parseGeo(noteLocProp.values[0]);
+                const noteCoords = parseGeoFromValues(noteLocProp.values);
                 if (!noteCoords) return;
 
                 const dist = haversineDistance(filterCoords, noteCoords);

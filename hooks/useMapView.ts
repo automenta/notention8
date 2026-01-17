@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import L from 'leaflet';
 import { useNotes } from './useNotes';
 import { useView } from './useViewContext';
+import { parseGeoFromValues } from '../utils/spacetime';
 
 interface GeoPoint {
   noteId: string;
@@ -27,20 +28,20 @@ export const useMapView = () => {
 
   const geoPoints = useMemo<GeoPoint[]>(() => {
     return notes.flatMap((note) => {
-      return note.properties
-        .filter(
-          (prop) =>
-            prop.key === 'location' &&
-            prop.values[0] &&
-            prop.values[0] !== '...'
-        )
-        .map((prop) => {
-          // Handle "lat,lng", "lat, lng", or just simple splitting
-          const [lat, lng] = prop.values[0].split(/,\s*/).map(parseFloat);
-          if (isNaN(lat) || isNaN(lng)) return null;
-          return { noteId: note.id, noteTitle: note.title, lat, lng };
-        })
-        .filter((p): p is GeoPoint => p !== null);
+      // Check for location-related properties
+      const locProp = note.properties.find(p => ['location', 'geo', 'place'].includes(p.key) && p.values.length > 0);
+
+      if (!locProp) return [];
+
+      const coords = parseGeoFromValues(locProp.values);
+      if (!coords) return [];
+
+      return [{
+          noteId: note.id,
+          noteTitle: note.title,
+          lat: coords.lat,
+          lng: coords.lng
+      }];
     });
   }, [notes]);
 

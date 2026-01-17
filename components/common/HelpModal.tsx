@@ -57,6 +57,30 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="border-t border-gray-700 pt-4">
+                    <h3 className="font-bold text-white mb-2">Special Properties</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                         <div>
+                            <h4 className="font-semibold text-gray-200 mb-2 text-xs uppercase tracking-wider">Location</h4>
+                             <p className="text-sm text-gray-400 mb-1">
+                                 Keys: <code className="text-blue-300">location</code>, <code className="text-blue-300">geo</code>, <code className="text-blue-300">place</code>
+                             </p>
+                             <div className="text-xs text-gray-500">
+                                 Val: <code className="text-gray-300">lat,lng</code>
+                             </div>
+                         </div>
+                         <div>
+                            <h4 className="font-semibold text-gray-200 mb-2 text-xs uppercase tracking-wider">Time</h4>
+                             <p className="text-sm text-gray-400 mb-1">
+                                 Keys: <code className="text-blue-300">date</code>, <code className="text-blue-300">deadline</code>, <code className="text-blue-300">start</code>, <code className="text-blue-300">end</code>
+                             </p>
+                             <div className="text-xs text-gray-500">
+                                 Val: ISO 8601 Date
+                             </div>
+                         </div>
+                    </div>
+                </div>
+
+                <div className="border-t border-gray-700 pt-4">
                     <h3 className="font-bold text-white mb-2">Tips</h3>
                     <ul className="list-disc list-inside text-sm text-gray-400 space-y-1">
                         <li>Use <strong>#hashtags</strong> for general categorization.</li>
