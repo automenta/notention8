@@ -35,6 +35,7 @@ describe('AITab', () => {
             </ToastProvider>
         );
         expect(screen.getByText('Local Processing')).toBeInTheDocument();
+        expect(screen.getByText('Local Model')).toBeInTheDocument();
         expect(screen.queryByPlaceholderText('Enter API Key')).not.toBeInTheDocument();
     });
 

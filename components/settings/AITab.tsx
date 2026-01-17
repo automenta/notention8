@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SparklesIcon, CheckIcon, CpuChipIcon } from '../icons';
 import { isGeminiApiKeyAvailable } from '@/services/ai/RemoteProvider';
+import { AVAILABLE_MODELS } from '@/services/ai/WebLLMProvider';
 import type { AppSettings } from '@/types';
 import { useToast } from '../contexts/ToastContext';
 import { Toggle } from '../common/Toggle';
@@ -78,14 +79,27 @@ export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
           </select>
 
           {settings.aiProvider === 'webllm' ? (
-              <div className="p-3 bg-blue-900/20 border border-blue-800 rounded text-sm text-blue-200 flex gap-2">
-                  <CpuChipIcon className="w-5 h-5 flex-shrink-0" />
-                  <div>
-                      <p className="font-bold mb-1">Local Processing</p>
-                      <p>Uses WebGPU to run Llama 3.2 directly in your browser. No data leaves your device. Requires a modern GPU.</p>
-                      <p className="mt-2 text-xs opacity-70">Note: First load requires downloading model weights (~2GB).</p>
-                  </div>
-              </div>
+              <>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Local Model</label>
+                <select
+                    value={settings.aiModel || AVAILABLE_MODELS[0].id}
+                    onChange={(e) => setSettings(prev => ({ ...prev, aiModel: e.target.value }))}
+                    className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:border-blue-500 outline-none mb-4"
+                >
+                    {AVAILABLE_MODELS.map(m => (
+                        <option key={m.id} value={m.id}>{m.label}</option>
+                    ))}
+                </select>
+
+                <div className="p-3 bg-blue-900/20 border border-blue-800 rounded text-sm text-blue-200 flex gap-2">
+                    <CpuChipIcon className="w-5 h-5 flex-shrink-0" />
+                    <div>
+                        <p className="font-bold mb-1">Local Processing</p>
+                        <p>Uses WebGPU to run the selected model directly in your browser. No data leaves your device. Requires a modern GPU.</p>
+                        <p className="mt-2 text-xs opacity-70">Note: First load requires downloading model weights (~2GB).</p>
+                    </div>
+                </div>
+              </>
           ) : (
               <>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Google Gemini API Key</label>
