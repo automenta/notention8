@@ -191,11 +191,17 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
                content = content + '\n\n' + suggestions.map(t => `<p>${t}</p>`).join('');
           }
           handleContentSave(content);
+
+          // Also trigger auto-tagging
+          handleAutoTag();
+
           addToast(`Magic: Added ${suggestions.length} properties, converted ${convertedCount} dates.`, 'success');
       } else {
-          addToast('Magic: No suggestions found.', 'info');
+          // Even if no properties, try auto-tagging
+          handleAutoTag();
+          addToast('Magic: Checked tags and properties.', 'info');
       }
-  }, [dirtyNote.content, alignToOntology, settings.ontology, handleContentSave, addToast]);
+  }, [dirtyNote.content, alignToOntology, settings.ontology, handleContentSave, addToast, handleAutoTag]);
 
   const handleSaveTemplate = useCallback((name: string) => {
       const template = {
