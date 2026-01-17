@@ -41,7 +41,7 @@ export const useGardener = () => {
 
     if (settings.aiEnabled) {
         if (settings.aiProvider === 'webllm') {
-            provider = new WebLLMProvider();
+            provider = new WebLLMProvider(settings.aiModel);
         } else {
             provider = new RemoteAIProvider(settings.googleGeminiApiKey);
         }
@@ -50,7 +50,7 @@ export const useGardener = () => {
     }
 
     return new Gardener(provider);
-  }, [settings.aiEnabled, settings.aiProvider, settings.googleGeminiApiKey]);
+  }, [settings.aiEnabled, settings.aiProvider, settings.aiModel, settings.googleGeminiApiKey]);
 
   const evolveOntology = useCallback(async (notes: Note[]) => {
     const newAttributes = await gardener.evolveOntology(notes);
