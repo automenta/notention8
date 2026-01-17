@@ -47,6 +47,8 @@ export interface Note {
   updatedAt: string;
   nostrEventId?: string;
   publishedAt?: string;
+  pinned?: boolean;
+  deletedAt?: string;
 }
 
 export interface Template {
@@ -94,4 +96,5 @@ export type View =
   | 'settings'
   | 'map'
   | 'time'
+  | 'trash'
   | 'simulator';

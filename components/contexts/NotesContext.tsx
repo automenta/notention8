@@ -7,6 +7,8 @@ interface NotesContextType {
   addNote: (overrides?: Partial<Note>) => Note;
   updateNote: (note: Note) => void;
   deleteNote: (id: string) => void;
+  restoreNote: (id: string) => void;
+  permanentlyDeleteNote: (id: string) => void;
   notesLoading: boolean;
 }
 
@@ -15,12 +17,12 @@ const NotesContext = createContext<NotesContextType | undefined>(undefined);
 export const NotesProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const { notes, addNote, updateNote, deleteNote, notesLoading } =
+  const { notes, addNote, updateNote, deleteNote, restoreNote, permanentlyDeleteNote, notesLoading } =
     useNotesState();
 
   return (
     <NotesContext.Provider
-      value={{ notes, addNote, updateNote, deleteNote, notesLoading }}
+      value={{ notes, addNote, updateNote, deleteNote, restoreNote, permanentlyDeleteNote, notesLoading }}
     >
       {children}
     </NotesContext.Provider>

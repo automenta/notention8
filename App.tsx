@@ -22,7 +22,8 @@ import {
     ChatIcon,
     CodeBracketsIcon,
     HelpIcon,
-    SidebarIcon
+    SidebarIcon,
+    TrashIcon
 } from './components/icons';
 
 function App() {
@@ -42,7 +43,7 @@ function App() {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
-  const sortedNotes = useSortedFilteredNotes(notes, searchTerm, sortOrder);
+  const sortedNotes = useSortedFilteredNotes(notes, searchTerm, sortOrder, activeView === 'trash');
 
   useUrlRouting({
       activeView,
@@ -111,6 +112,11 @@ function App() {
           label: 'Go to Settings',
           icon: <SettingsIcon className="h-5 w-5" />,
           action: () => setActiveView('settings')
+      },
+      {
+          label: 'Go to Trash',
+          icon: <TrashIcon className="h-5 w-5" />,
+          action: () => setActiveView('trash')
       },
       {
           label: 'Open Help & Shortcuts',

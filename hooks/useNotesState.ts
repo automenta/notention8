@@ -31,6 +31,32 @@ export const useNotesState = (driver?: LocalForage) => {
 
   const deleteNote = useCallback(
     (id: string) => {
+      setNotes((prev) =>
+        prev.map((n) =>
+          n.id === id
+            ? { ...n, deletedAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+            : n
+        )
+      );
+    },
+    [setNotes]
+  );
+
+  const restoreNote = useCallback(
+    (id: string) => {
+      setNotes((prev) =>
+        prev.map((n) =>
+          n.id === id
+            ? { ...n, deletedAt: undefined, updatedAt: new Date().toISOString() }
+            : n
+        )
+      );
+    },
+    [setNotes]
+  );
+
+  const permanentlyDeleteNote = useCallback(
+    (id: string) => {
       setNotes((prev) => prev.filter((note) => note.id !== id));
     },
     [setNotes]
@@ -41,6 +67,8 @@ export const useNotesState = (driver?: LocalForage) => {
     addNote,
     updateNote,
     deleteNote,
+    restoreNote,
+    permanentlyDeleteNote,
     notesLoading,
   };
 };

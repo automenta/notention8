@@ -22,14 +22,18 @@ interface NoteMetadata {
 export const useSortedFilteredNotes = (
   notes: Note[],
   searchTerm: string,
-  sortOrder: SortOrder
+  sortOrder: SortOrder,
+  showTrash: boolean = false
 ) => {
   const cacheRef = useRef<Record<string, NoteMetadata>>({});
 
   // Augment notes with searchable metadata, using a cache to avoid expensive DOM operations
   const notesWithMetadata = useMemo(() => {
+    // Filter by deletion status before processing metadata
+    const activeNotes = notes.filter(n => showTrash ? !!n.deletedAt : !n.deletedAt);
+
     const cache = cacheRef.current;
-    return notes.map((note) => {
+    return activeNotes.map((note) => {
       const cached = cache[note.id];
       // Only re-parse if the note has been updated
       if (cached && cached.updatedAt === note.updatedAt) {
@@ -56,11 +60,11 @@ export const useSortedFilteredNotes = (
 
       return { ...note, ...metadata };
     });
-  }, [notes]);
+  }, [notes, showTrash]);
 
   const filteredNotes = useMemo(() => {
     if (!searchTerm.trim()) {
-      return notes; // Return original notes if no search
+      return notesWithMetadata; // Return parsed notes (which are already filtered by deletion status)
     }
 
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -111,6 +115,10 @@ export const useSortedFilteredNotes = (
     // Return sorted original notes (stripping metadata for cleanliness, though not strictly necessary in JS)
     // Actually we can just return the objects from filteredNotes which are augmented.
     // Consumers of this hook expect Note[]. The augmented object is a valid Note.
-    return [...filteredNotes].sort(sorter);
+    return [...filteredNotes].sort((a, b) => {
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+        return sorter(a, b);
+    });
   }, [filteredNotes, sortOrder]);
 };
