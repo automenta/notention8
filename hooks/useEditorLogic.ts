@@ -9,6 +9,7 @@ import { useToast } from '../components/contexts/ToastContext';
 import { useSettings } from './useSettingsContext';
 import { useAutoTagging } from './useAutoTagging';
 import { useGardener } from './useGardener';
+import { parseNaturalDate } from '../utils/dateParsing';
 
 interface UseEditorLogicProps {
   note: Note;
@@ -66,6 +67,12 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       // We use getTextFromHtml to get clean text for regex parsing
       const text = getTextFromHtml(content);
       const properties = parseProperties(text);
+
+      // Auto-convert natural dates if present in properties
+      // This logic could be more sophisticated (e.g., suggest changes instead of auto-replace)
+      // But for "Magic" effect, let's keep it simple or do it only on specific triggers?
+      // Actually, let's leave handleContentSave pure and add a specific effect or hook for transformations if needed.
+      // For now, we will apply conversions during Magic or explicit actions to avoid annoying typing interference.
 
       setDirtyNote((prev) => {
           const updated = { ...prev, content, properties };
@@ -160,12 +167,33 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       const cleanText = getTextFromHtml(dirtyNote.content);
       const suggestions = await alignToOntology(cleanText, settings.ontology);
 
-      if (suggestions.length > 0) {
-          const newContent = dirtyNote.content + '\n\n' + suggestions.map(t => `<p>${t}</p>`).join('');
-          handleContentSave(newContent);
-          addToast(`Magic Align: Added ${suggestions.length} semantic properties.`, 'success');
+      // Also look for natural language date conversions in existing properties
+      const existingProps = parseProperties(cleanText);
+      let content = dirtyNote.content;
+      let convertedCount = 0;
+
+      existingProps.forEach(prop => {
+          if (['date', 'deadline', 'start', 'end'].some(k => prop.key.includes(k))) {
+             const val = prop.values[0];
+             if (!val) return; // Skip if no value
+
+             const parsed = parseNaturalDate(val);
+             if (parsed && parsed !== val) {
+                 const newProp = { ...prop, values: [parsed] };
+                 content = replacePropertyInString(content, prop, newProp);
+                 convertedCount++;
+             }
+          }
+      });
+
+      if (suggestions.length > 0 || convertedCount > 0) {
+          if (suggestions.length > 0) {
+               content = content + '\n\n' + suggestions.map(t => `<p>${t}</p>`).join('');
+          }
+          handleContentSave(content);
+          addToast(`Magic: Added ${suggestions.length} properties, converted ${convertedCount} dates.`, 'success');
       } else {
-          addToast('Magic Align: No semantic properties found.', 'warning');
+          addToast('Magic: No suggestions found.', 'info');
       }
   }, [dirtyNote.content, alignToOntology, settings.ontology, handleContentSave, addToast]);
 

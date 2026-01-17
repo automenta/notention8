@@ -21,6 +21,9 @@ interface PropertyInspectorProps {
   ontology?: OntologyNode[];
 }
 
+import { getCurrentPosition } from '../../utils/geolocation';
+import { useToast } from '../contexts/ToastContext';
+
 export function PropertyInspector({
   properties,
   onUpdateText,
@@ -34,6 +37,19 @@ export function PropertyInspector({
   const [editKey, setEditKey] = useState('');
   const [editOp, setEditOp] = useState('is');
   const [editValue, setEditValue] = useState('');
+
+  const { addToast } = useToast();
+
+  const handleUseCurrentLocation = async () => {
+      try {
+          const pos = await getCurrentPosition();
+          setEditValue(`${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`);
+          if (!editKey) setEditKey('location');
+          addToast('Current location fetched', 'success');
+      } catch (e) {
+          addToast('Failed to get location: ' + (e instanceof Error ? e.message : String(e)), 'error');
+      }
+  };
 
   const startAdd = () => {
     setIsAdding(true);
@@ -121,16 +137,25 @@ export function PropertyInspector({
               <span>{isAdding ? 'New Property' : 'Edit Property'}</span>
               <div className="flex gap-1">
                 {onPickLocation && (isAdding || ['location', 'geo', 'place'].includes(editKey)) && (
-                    <button
-                        onClick={() => {
-                            if (isAdding && !editKey) setEditKey('location');
-                            onPickLocation();
-                        }}
-                        className='text-xs text-blue-300 hover:text-white flex items-center gap-1 bg-blue-900/30 px-2 py-0.5 rounded'
-                        title="Pick location on map"
-                    >
-                        <MapPinIcon className="w-3 h-3" /> Pick
-                    </button>
+                    <div className="flex gap-1">
+                        <button
+                            onClick={handleUseCurrentLocation}
+                            className='text-xs text-blue-300 hover:text-white flex items-center gap-1 bg-blue-900/30 px-2 py-0.5 rounded'
+                            title="Use current location"
+                        >
+                            <MapPinIcon className="w-3 h-3" /> GPS
+                        </button>
+                        <button
+                            onClick={() => {
+                                if (isAdding && !editKey) setEditKey('location');
+                                onPickLocation();
+                            }}
+                            className='text-xs text-blue-300 hover:text-white flex items-center gap-1 bg-blue-900/30 px-2 py-0.5 rounded'
+                            title="Pick location on map"
+                        >
+                            <MapPinIcon className="w-3 h-3" /> Map
+                        </button>
+                    </div>
                 )}
                 {onPickTime && (isAdding || isTemporal) && (
                      <button
