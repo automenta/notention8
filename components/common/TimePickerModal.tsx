@@ -58,39 +58,41 @@ export function TimePickerModal({
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={title}>
-            <div className="space-y-5">
-                <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Date</label>
-                    <input
-                        type="date"
-                        className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
-                        value={date}
-                        onChange={e => setDate(e.target.value)}
-                        autoFocus
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Time</label>
-                     <input
-                        type="time"
-                        className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
-                        value={time}
-                        onChange={e => setTime(e.target.value)}
-                    />
+            <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider">Date</label>
+                        <input
+                            type="date"
+                            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+                            value={date}
+                            onChange={e => setDate(e.target.value)}
+                            autoFocus
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider">Time</label>
+                         <input
+                            type="time"
+                            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+                            value={time}
+                            onChange={e => setTime(e.target.value)}
+                        />
+                    </div>
                 </div>
 
-                <div className="flex justify-end gap-3 mt-8">
+                <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-gray-700/50">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded transition-colors"
+                        className="px-4 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors font-medium text-sm"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSave}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded transition-colors shadow-lg shadow-blue-900/20"
+                        className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg transition-colors shadow-lg shadow-blue-900/20 text-sm"
                     >
-                        Set Time
+                        Confirm
                     </button>
                 </div>
             </div>

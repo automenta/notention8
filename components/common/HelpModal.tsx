@@ -10,54 +10,54 @@ interface HelpModalProps {
 export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Notention Help">
-            <div className="space-y-4 text-gray-300">
-                <p>
+            <div className="space-y-6 text-gray-300">
+                <p className="text-gray-400 leading-relaxed">
                     Notention is a semantic note-taking app that helps you connect with others.
                     Use special syntax to make your notes machine-readable.
                 </p>
 
-                <div className="border-t border-gray-700 pt-4">
-                    <h3 className="font-bold text-white mb-2 flex items-center gap-2">
+                <div className="border-t border-gray-700/50 pt-5">
+                    <h3 className="font-bold text-white mb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
                         <TagIcon className="w-4 h-4 text-blue-400" />
                         Semantic Syntax
                     </h3>
-                    <div className="bg-gray-900 p-3 rounded-lg font-mono text-sm space-y-2">
-                        <div className="flex gap-2">
-                            <span className="text-blue-400">[key:op:value]</span>
-                            <span className="text-gray-500">Canonical Format</span>
+                    <div className="bg-gray-900/50 border border-gray-700/50 p-4 rounded-lg font-mono text-sm space-y-2.5">
+                        <div className="flex items-center justify-between">
+                            <span className="text-blue-400 font-semibold">[key:op:value]</span>
+                            <span className="text-gray-500 text-xs uppercase tracking-wide">Canonical</span>
                         </div>
-                        <div className="flex gap-2">
-                            <span className="text-green-400">[key op value]</span>
-                            <span className="text-gray-500">Natural Format</span>
+                        <div className="flex items-center justify-between">
+                            <span className="text-green-400 font-semibold">[key op value]</span>
+                            <span className="text-gray-500 text-xs uppercase tracking-wide">Natural</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <h4 className="font-semibold text-gray-200 mb-2">Real (Facts)</h4>
-                        <ul className="text-sm space-y-1 list-disc list-inside text-gray-400">
-                            <li><code className="text-blue-300">is</code> : Exact match</li>
-                            <li><code className="text-blue-300">is not</code> : Negative match</li>
+                <div className="grid grid-cols-2 gap-6">
+                    <div className="bg-gray-800/30 p-4 rounded-lg border border-gray-700/30">
+                        <h4 className="font-semibold text-gray-200 mb-3 text-sm">Real (Facts)</h4>
+                        <ul className="text-sm space-y-2 text-gray-400">
+                            <li className="flex justify-between"><code className="text-blue-300 bg-blue-900/20 px-1 rounded">is</code> <span>Exact match</span></li>
+                            <li className="flex justify-between"><code className="text-blue-300 bg-blue-900/20 px-1 rounded">is not</code> <span>Negative match</span></li>
                         </ul>
-                        <div className="mt-2 text-xs text-gray-500">
+                        <div className="mt-3 text-xs text-gray-500 border-t border-gray-700/30 pt-2">
                             Ex: <code className="text-gray-300">[role:is:Engineer]</code>
                         </div>
                     </div>
-                    <div>
-                        <h4 className="font-semibold text-gray-200 mb-2">Imaginary (Constraints)</h4>
-                        <ul className="text-sm space-y-1 list-disc list-inside text-gray-400">
-                            <li><code className="text-green-300">&lt;</code>, <code className="text-green-300">&gt;</code> : Numeric</li>
-                            <li><code className="text-green-300">contains</code> : Partial match</li>
+                    <div className="bg-gray-800/30 p-4 rounded-lg border border-gray-700/30">
+                        <h4 className="font-semibold text-gray-200 mb-3 text-sm">Imaginary (Constraints)</h4>
+                        <ul className="text-sm space-y-2 text-gray-400">
+                            <li className="flex justify-between"><code className="text-green-300 bg-green-900/20 px-1 rounded">&lt; &gt;</code> <span>Numeric</span></li>
+                            <li className="flex justify-between"><code className="text-green-300 bg-green-900/20 px-1 rounded">contains</code> <span>Partial match</span></li>
                         </ul>
-                        <div className="mt-2 text-xs text-gray-500">
+                        <div className="mt-3 text-xs text-gray-500 border-t border-gray-700/30 pt-2">
                             Ex: <code className="text-gray-300">[price &lt; 100]</code>
                         </div>
                     </div>
                 </div>
 
-                <div className="border-t border-gray-700 pt-4">
-                    <h3 className="font-bold text-white mb-2">Special Properties</h3>
+                <div className="border-t border-gray-700/50 pt-5">
+                    <h3 className="font-bold text-white mb-3 text-sm uppercase tracking-wider">Special Properties</h3>
                     <div className="grid grid-cols-2 gap-4">
                          <div>
                             <h4 className="font-semibold text-gray-200 mb-2 text-xs uppercase tracking-wider">Location</h4>
@@ -80,46 +80,46 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                     </div>
                 </div>
 
-                <div className="border-t border-gray-700 pt-4">
-                    <h3 className="font-bold text-white mb-2">Tips</h3>
-                    <ul className="list-disc list-inside text-sm text-gray-400 space-y-1">
-                        <li>Use <strong>#hashtags</strong> for general categorization.</li>
-                        <li>Click <strong>Publish</strong> to save to Nostr.</li>
-                        <li>Click <strong>Find Matches</strong> to search the network.</li>
-                        <li>Enable <strong>Developer Mode</strong> in Settings for advanced tools.</li>
+                <div className="border-t border-gray-700/50 pt-5">
+                    <h3 className="font-bold text-white mb-3 text-sm uppercase tracking-wider">Tips</h3>
+                    <ul className="text-sm text-gray-400 space-y-2">
+                        <li className="flex gap-2"><span className="text-blue-500">•</span> Use <strong className="text-gray-300">#hashtags</strong> for general categorization.</li>
+                        <li className="flex gap-2"><span className="text-blue-500">•</span> Click <strong className="text-gray-300">Publish</strong> to save to Nostr.</li>
+                        <li className="flex gap-2"><span className="text-blue-500">•</span> Click <strong className="text-gray-300">Find Matches</strong> to search the network.</li>
+                        <li className="flex gap-2"><span className="text-blue-500">•</span> Enable <strong className="text-gray-300">Developer Mode</strong> in Settings for advanced tools.</li>
                     </ul>
                 </div>
 
-                <div className="border-t border-gray-700 pt-4">
-                    <h3 className="font-bold text-white mb-2">Keyboard Shortcuts</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                <div className="border-t border-gray-700/50 pt-5">
+                    <h3 className="font-bold text-white mb-3 text-sm uppercase tracking-wider">Keyboard Shortcuts</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
                         <div className="flex justify-between items-center group">
                             <span className="text-gray-400 group-hover:text-white transition-colors">Command Palette</span>
-                            <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Ctrl+K</code>
+                            <code className="text-gray-300 bg-gray-800 px-2 py-0.5 rounded border border-gray-700/50 font-mono text-xs">Ctrl+K</code>
                         </div>
                         <div className="flex justify-between items-center group">
                             <span className="text-gray-400 group-hover:text-white transition-colors">New Note</span>
-                            <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Ctrl+N</code>
+                            <code className="text-gray-300 bg-gray-800 px-2 py-0.5 rounded border border-gray-700/50 font-mono text-xs">Ctrl+N</code>
                         </div>
                         <div className="flex justify-between items-center group">
                             <span className="text-gray-400 group-hover:text-white transition-colors">Search Sidebar</span>
-                            <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Ctrl+/</code>
+                            <code className="text-gray-300 bg-gray-800 px-2 py-0.5 rounded border border-gray-700/50 font-mono text-xs">Ctrl+/</code>
                         </div>
                         <div className="flex justify-between items-center group">
                             <span className="text-gray-400 group-hover:text-white transition-colors">Save Note</span>
-                            <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Ctrl+S</code>
+                            <code className="text-gray-300 bg-gray-800 px-2 py-0.5 rounded border border-gray-700/50 font-mono text-xs">Ctrl+S</code>
                         </div>
                         <div className="flex justify-between items-center group">
                             <span className="text-gray-400 group-hover:text-white transition-colors">Previous Note</span>
-                            <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Alt+Up</code>
+                            <code className="text-gray-300 bg-gray-800 px-2 py-0.5 rounded border border-gray-700/50 font-mono text-xs">Alt+Up</code>
                         </div>
                         <div className="flex justify-between items-center group">
                             <span className="text-gray-400 group-hover:text-white transition-colors">Next Note</span>
-                            <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Alt+Down</code>
+                            <code className="text-gray-300 bg-gray-800 px-2 py-0.5 rounded border border-gray-700/50 font-mono text-xs">Alt+Down</code>
                         </div>
                         <div className="flex justify-between items-center group">
                             <span className="text-gray-400 group-hover:text-white transition-colors">Back to List</span>
-                            <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Alt+Left</code>
+                            <code className="text-gray-300 bg-gray-800 px-2 py-0.5 rounded border border-gray-700/50 font-mono text-xs">Alt+Left</code>
                         </div>
                     </div>
                 </div>
