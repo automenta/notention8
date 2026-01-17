@@ -232,11 +232,13 @@ export function PropertyInspector({
         ))}
 
         {properties.length === 0 && !isAdding && (
-          <div className="text-center text-gray-500 text-sm py-8 flex flex-col items-center gap-2 opacity-60">
-            <TagIcon className="w-8 h-8 mb-2" />
-            <p>No properties detected.</p>
-            <p className="text-xs">
-              Type <code>[key:val]</code> in the editor or add one manually.
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center text-gray-500 opacity-60">
+            <div className="bg-gray-800/50 p-3 rounded-full mb-3 border border-gray-700/50">
+                <TagIcon className="w-6 h-6" />
+            </div>
+            <p className="font-medium text-sm mb-1">No properties</p>
+            <p className="text-xs max-w-[200px]">
+              Type <code className="bg-gray-800 px-1 py-0.5 rounded text-blue-300">[key:val]</code> in the editor to add them automatically.
             </p>
           </div>
         )}
