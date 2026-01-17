@@ -101,7 +101,7 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
         <TemplateList />
       </div>
 
-      <div className="flex-grow p-2 space-y-1 overflow-y-auto">
+      <div className="flex-grow p-2 overflow-y-auto custom-scrollbar">
         {sortedNotes.length > 0 ? (
           sortedNotes.map((note) => (
             <NoteListItem
