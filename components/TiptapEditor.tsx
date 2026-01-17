@@ -7,6 +7,7 @@ import { formatHtmlForDisplay } from '../utils/editor';
 import { useTiptapConfig } from './editor/useTiptapConfig';
 import { useView } from '../hooks/useViewContext';
 import { useToast } from './contexts/ToastContext';
+import { EditorStatusBar } from './editor/EditorStatusBar';
 
 interface TiptapEditorProps {
   note: Note;
@@ -102,6 +103,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontolo
           />
         )}
       </div>
+      {!minimal && <EditorStatusBar editor={editor} />}
     </div>
   );
 };

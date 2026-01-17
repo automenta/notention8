@@ -75,6 +75,11 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
       addToast('Note exported as JSON', 'success');
   };
 
+  const handleCopyContent = () => {
+      navigator.clipboard.writeText(dirtyNote.content);
+      addToast('Content copied to clipboard', 'success');
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
@@ -159,6 +164,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         hasNext={hasNext}
         hasPrevious={hasPrevious}
         onExport={handleExport}
+        onCopyContent={handleCopyContent}
       />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col relative">

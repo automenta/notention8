@@ -10,7 +10,8 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
   DownloadIcon,
-  LockIcon
+  LockIcon,
+  ClipboardIcon
 } from './icons';
 import { TagInput } from './TagInput';
 import { HelpModal } from './common/HelpModal';
@@ -36,6 +37,7 @@ interface EditorHeaderProps {
   hasNext?: boolean;
   hasPrevious?: boolean;
   onExport?: () => void;
+  onCopyContent?: () => void;
   readOnly?: boolean;
 }
 
@@ -60,6 +62,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   hasNext,
   hasPrevious,
   onExport,
+  onCopyContent,
   readOnly = false,
 }) => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -135,6 +138,16 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
                         className="p-1.5 text-gray-400 hover:text-white transition-colors rounded-md hover:bg-gray-700/50"
                     >
                         <DownloadIcon className="h-5 w-5" />
+                    </button>
+                )}
+
+                {onCopyContent && (
+                    <button
+                        onClick={onCopyContent}
+                        title="Copy Content"
+                        className="p-1.5 text-gray-400 hover:text-white transition-colors rounded-md hover:bg-gray-700/50"
+                    >
+                        <ClipboardIcon className="h-5 w-5" />
                     </button>
                 )}
 
