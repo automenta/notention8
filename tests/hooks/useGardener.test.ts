@@ -15,6 +15,13 @@ vi.mock('../../hooks/useViewContext', () => ({
   useView: vi.fn(),
 }));
 
+// Mock useToast
+vi.mock('../../components/contexts/ToastContext', () => ({
+    useToast: () => ({
+        addToast: vi.fn(),
+    }),
+}));
+
 // Mock Gardener
 const mockAnalyzeOntology = vi.fn();
 vi.mock('../../services/gardener', () => ({

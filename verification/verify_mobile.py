@@ -52,7 +52,8 @@ def run():
         back_btn = page.locator('button[title="Back to List"]')
         if back_btn.is_visible():
             back_btn.click()
-            page.wait_for_selector('text=Your notebook is empty', timeout=10000)
+            # After creating a note, the list should show the note, not the empty state
+            page.wait_for_selector('text=Untitled Note', timeout=10000)
 
             # Take screenshot after back
             page.screenshot(path="verification/mobile_back_verified.png")

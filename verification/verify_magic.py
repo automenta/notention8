@@ -14,7 +14,7 @@ def run(playwright):
         page.goto("http://localhost:5173")
 
         print("Waiting for 'Notes'...")
-        page.wait_for_selector("text=Notes", timeout=20000)
+        page.wait_for_selector("button[title='Notes']", timeout=20000)
 
         print("Clicking New Note...")
         page.get_by_title("New Note").first.click()

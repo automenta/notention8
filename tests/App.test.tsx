@@ -4,6 +4,7 @@ import App from '../App';
 import { NotesProvider } from '../components/contexts/NotesContext';
 import { SettingsProvider } from '../components/contexts/SettingsContext';
 import { ViewProvider } from '../components/contexts/ViewContext';
+import { ToastProvider } from '../components/contexts/ToastContext';
 
 // Mock the hooks
 vi.mock('../hooks/useNotes', () => ({
@@ -32,13 +33,15 @@ describe('App component', () => {
     // We don't need to assert anything about the output for a simple smoke test.
     expect(() =>
       render(
-        <SettingsProvider>
-          <NotesProvider>
-            <ViewProvider>
-              <App />
-            </ViewProvider>
-          </NotesProvider>
-        </SettingsProvider>
+        <ToastProvider>
+          <SettingsProvider>
+            <NotesProvider>
+              <ViewProvider>
+                <App />
+              </ViewProvider>
+            </NotesProvider>
+          </SettingsProvider>
+        </ToastProvider>
       )
     ).not.toThrow();
   });
