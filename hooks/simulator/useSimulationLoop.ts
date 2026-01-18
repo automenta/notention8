@@ -131,7 +131,9 @@ export const useSimulationLoop = ({
             addLog(`${agent.name} published a note`, 'info');
 
             // Wait a bit before next loop
-            await new Promise(r => setTimeout(r, 2000));
+        // Add randomness to the delay (2000ms - 5000ms) to feel more organic
+        const delay = 2000 + Math.random() * 3000;
+        await new Promise(r => setTimeout(r, delay));
             updateAgent(agentIndex, { status: 'Idle' });
 
         } catch (e) {

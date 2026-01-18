@@ -6,6 +6,20 @@ export class MockLLMProvider implements AIProvider {
   isAvailable = true;
 
   async generateCompletion(prompt: string): Promise<string> {
+    // Intent Classification Mock
+    if (prompt.includes("Does the user explicitly instruct the agent to change their goal")) {
+        // Simple heuristic for mock: if user message says "goal", assume yes
+        const userMessageMatch = prompt.match(/User Message: "(.*?)"/);
+        const userMessage = userMessageMatch ? userMessageMatch[1] : "";
+
+        if (userMessage.toLowerCase().includes("goal") || userMessage.toLowerCase().includes("change")) {
+            // Extract a dummy goal
+            const newGoal = userMessage.split(":").pop()?.trim() || "New Goal";
+            return `GOAL: ${newGoal}`;
+        }
+        return "CHAT";
+    }
+
     // Simulating Agent Goals with more variance
     const variations = [
         "Need a quick turnaround.",
@@ -18,6 +32,11 @@ export class MockLLMProvider implements AIProvider {
 
     if (prompt.includes("Client")) return `I need a React developer for a landing page. Budget $500. ${suffix}`;
     if (prompt.includes("Freelancer")) return `Expert React developer available for gigs. $50/hr. ${suffix}`;
+
+    // Reply to goal change
+    if (prompt.includes("User instructed you to:")) {
+        return "Understood. I've updated my goal.";
+    }
 
     // Generic fallback for other prompts
     return `Simulated content response. ${suffix}`;
