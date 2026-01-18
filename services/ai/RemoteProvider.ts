@@ -129,4 +129,41 @@ ${text}`;
           return [];
       }
   }
+
+  async optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: string[], pruned: string[] }> {
+      if (!this.client) throw new Error('AI Provider not configured');
+
+      const knownKeys = new Set<string>();
+      const traverse = (nodes: OntologyNode[]) => {
+          nodes.forEach(n => {
+              if (n.attributes) Object.keys(n.attributes).forEach(k => knownKeys.add(k));
+              if (n.children) traverse(n.children);
+          });
+      };
+      traverse(ontology);
+      const keys = Array.from(knownKeys);
+
+      if (keys.length === 0) return { merged: [], pruned: [] };
+
+      const prompt = `Analyze the following list of attribute keys from an ontology schema.
+Identify potential optimizations, such as:
+1. Merging synonymous keys (e.g., "cost" and "price").
+2. Pruning keys that look like typos or are redundant.
+
+Return a JSON object with two arrays: "merged" and "pruned".
+"merged" should contain strings like 'Merged "old_key" into "new_key"'.
+"pruned" should contain strings like 'Pruned "bad_key"'.
+
+Keys:
+${keys.join(', ')}`;
+
+      try {
+          const result = await this.generateCompletion(prompt);
+          const jsonStr = result.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+          return JSON.parse(jsonStr);
+      } catch (e) {
+          console.error('Optimization Error:', e);
+          return { merged: [], pruned: [] };
+      }
+  }
 }

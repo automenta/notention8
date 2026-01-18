@@ -8,6 +8,7 @@ import { MockLLMProvider } from '../../services/ai/MockLLMProvider';
 import { useSimulationAgents } from './useSimulationAgents';
 import { useSimulationNetwork } from './useSimulationNetwork';
 import { useSimulationLoop } from './useSimulationLoop';
+import type { SimulationAgent } from './types';
 
 const RANDOM_PERSONAS = [
     {
@@ -43,7 +44,7 @@ const RANDOM_PERSONAS = [
 ];
 
 export const useSimulator = () => {
-  const { agents, agentsRef, updateAgent } = useSimulationAgents();
+  const { agents, agentsRef, updateAgent, deploySwarm: deploySwarmAgents } = useSimulationAgents();
   const [active, setActive] = useState(false);
 
   const [ontology, setOntology] = useState<OntologyNode[]>(DEFAULT_ONTOLOGY);
@@ -126,6 +127,30 @@ export const useSimulator = () => {
       });
       addLog(`Randomized agent to: ${random.name}`, 'info');
   }, [updateAgent, addLog]);
+
+  const deploySwarm = useCallback((newAgents: SimulationAgent[]) => {
+      deploySwarmAgents(newAgents);
+      addLog(`Swarm deployed with ${newAgents.length} agents.`, 'info');
+  }, [deploySwarmAgents, addLog]);
+
+  const optimizeOntology = useCallback(async () => {
+      if (!gardenerRef.current) return;
+
+      addLog("Starting ontology optimization...", 'info');
+      const result = await gardenerRef.current.optimizeOntology(ontologyRef.current);
+
+      result.merged.forEach(msg => addLog(`[Optimization] ${msg}`, 'ontology'));
+      result.pruned.forEach(msg => addLog(`[Optimization] ${msg}`, 'ontology'));
+
+      if (result.merged.length === 0 && result.pruned.length === 0) {
+          addLog("Ontology is already optimized.", 'info');
+      }
+
+      // TODO: Actually apply changes to ontology state if needed.
+      // For now, Mock provider only returns report, it doesn't return new ontology structure.
+      // If we want to apply merges, we need logic to modify the tree.
+      // We can leave this as a report for the "Experimentation" phase.
+  }, [addLog]);
 
   const sendMessageToAgent = useCallback((agentId: string, content: string) => {
     // 1. Add user message
@@ -238,6 +263,8 @@ export const useSimulator = () => {
     handlePublish,
     agentMessages,
     sendMessageToAgent,
-    randomizeAgent
+    randomizeAgent,
+    deploySwarm,
+    optimizeOntology
   };
 };

@@ -15,14 +15,21 @@ export const useSimulationAgents = () => {
   const updateAgent = useCallback((index: number, updates: Partial<SimulationAgent>) => {
     setAgents(prev => {
         const next = [...prev];
-        next[index] = { ...next[index], ...updates };
+        if (next[index]) {
+            next[index] = { ...next[index], ...updates };
+        }
         return next;
     });
+  }, []);
+
+  const deploySwarm = useCallback((newAgents: SimulationAgent[]) => {
+      setAgents(newAgents);
   }, []);
 
   return {
     agents,
     agentsRef,
-    updateAgent
+    updateAgent,
+    deploySwarm
   };
 };

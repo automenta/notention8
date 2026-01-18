@@ -14,6 +14,7 @@ export function OntologyView() {
     setActiveTab,
     isEvolving,
     handleEvolve,
+    handleOptimize,
     usageStats,
     conflicts
   } = useOntologyView();
@@ -42,6 +43,14 @@ export function OntologyView() {
 
           {settings.developerMode && (
             <div className="flex items-center gap-4 ml-auto">
+              <button
+                onClick={handleOptimize}
+                disabled={isEvolving}
+                className="text-xs font-bold uppercase tracking-wider bg-blue-700/80 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors disabled:opacity-50"
+              >
+                {isEvolving ? '...' : 'Optimize'}
+              </button>
+
               <button
                 onClick={handleEvolve}
                 disabled={isEvolving}

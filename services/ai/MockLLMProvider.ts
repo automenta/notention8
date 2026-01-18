@@ -100,4 +100,38 @@ export class MockLLMProvider implements AIProvider {
         sampleValues: ["Remote", "5 years", "Immediate"]
     }];
   }
+
+  async alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]> {
+      return this.suggestTags(text, ontology);
+  }
+
+  async optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: string[], pruned: string[] }> {
+      // Mock optimization:
+      // Check for 'cost' and 'price' -> merge to 'price'
+      // Check for unused keys (we don't have usage stats here easily, but we can simulate pruning)
+
+      const keys = new Set<string>();
+      const traverse = (nodes: OntologyNode[]) => {
+          nodes.forEach(n => {
+              if (n.attributes) Object.keys(n.attributes).forEach(k => keys.add(k));
+              if (n.children) traverse(n.children);
+          });
+      };
+      traverse(ontology);
+
+      const merged: string[] = [];
+      if (keys.has('cost') && keys.has('price')) {
+          merged.push('Merged "cost" into "price"');
+      }
+
+      // Mock random advice for demo purposes if nothing obvious
+      if (merged.length === 0 && keys.size > 5) {
+           merged.push('Suggested merging "rate" and "salary" (Simulated)');
+      }
+
+      return {
+          merged,
+          pruned: []
+      };
+  }
 }

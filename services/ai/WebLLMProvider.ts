@@ -160,4 +160,9 @@ export class WebLLMProvider implements AIProvider {
     // For now, suggestTags already handles ontology context.
     return this.suggestTags(text, ontology);
   }
+
+  async optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: string[], pruned: string[] }> {
+      // TODO: Implement actual LLM logic to find synonyms in the ontology tree.
+      return { merged: [], pruned: [] };
+  }
 }
