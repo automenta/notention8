@@ -8,6 +8,7 @@ import { useTiptapConfig } from './editor/useTiptapConfig';
 import { useView } from '../hooks/useViewContext';
 import { useToast } from './contexts/ToastContext';
 import { EditorStatusBar } from './editor/EditorStatusBar';
+import { EditorBubbleMenu } from './editor/EditorBubbleMenu';
 
 interface TiptapEditorProps {
   note: Note;
@@ -93,7 +94,10 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontolo
       )}
       <div className="flex-grow overflow-y-auto" onClick={handleEditorClick}>
         {viewMode === 'rich' ? (
-          <EditorContent editor={editor} />
+          <>
+            <EditorBubbleMenu editor={editor} />
+            <EditorContent editor={editor} />
+          </>
         ) : (
           <textarea
             className="w-full h-full p-4 bg-gray-900 text-gray-300 font-mono focus:outline-none resize-none"
