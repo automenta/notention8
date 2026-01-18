@@ -153,7 +153,7 @@ export class LocalAIProvider implements AIProvider {
       return Array.from(properties);
   }
 
-  async optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: string[], pruned: string[] }> {
+  async optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: { source: string, target: string }[], pruned: string[] }> {
       // Local heuristic:
       // Could potentially look for Levenshtein distance between keys?
       // For now, return empty.

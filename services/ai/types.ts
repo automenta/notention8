@@ -17,9 +17,9 @@ export interface AIProvider {
 
   /**
    * Analyzes the current ontology to identify redundancies or improvements.
-   * Returns a report of actions taken (or recommended).
+   * Returns a report of actions to take.
    */
-  optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: string[], pruned: string[] }>;
+  optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: { source: string, target: string }[], pruned: string[] }>;
 
   /**
    * Suggests tags for a given text.

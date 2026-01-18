@@ -29,7 +29,7 @@ export class Gardener {
       }
   }
 
-  async optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: string[], pruned: string[] }> {
+  async optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: { source: string, target: string }[], pruned: string[] }> {
       try {
           return await this.provider.optimizeOntology(ontology);
       } catch (e) {

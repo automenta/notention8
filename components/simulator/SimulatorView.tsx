@@ -22,7 +22,8 @@ export const SimulatorView: React.FC = () => {
       handlePublish,
       randomizeAgent,
       deploySwarm,
-      optimizeOntology
+      optimizeOntology,
+      importUserNotes
   } = useSimulatorContext();
 
   const [selectedView, setSelectedView] = useState<'overview' | string>('overview');
@@ -66,6 +67,13 @@ export const SimulatorView: React.FC = () => {
                     {active ? 'STOP' : 'START'}
                 </button>
             </div>
+            {/* Import Button */}
+            <button
+                onClick={importUserNotes}
+                className="w-full text-[10px] bg-gray-800 hover:bg-gray-700 text-gray-300 py-1 rounded border border-gray-700 transition-colors"
+            >
+                📥 Import My Notes
+            </button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-2 space-y-1">

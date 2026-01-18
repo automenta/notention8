@@ -3,11 +3,13 @@ import type { OntologyNode, NostrEvent } from '../../types';
 import type { AIProvider } from '../../services/ai/types';
 import { Gardener } from '../../services/gardener';
 import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
+import { mergeAttributes, deleteAttribute, findNode, renameAttribute } from '../../utils/ontologyHelpers';
 import { WebLLMProvider } from '../../services/ai/WebLLMProvider';
 import { MockLLMProvider } from '../../services/ai/MockLLMProvider';
 import { useSimulationAgents } from './useSimulationAgents';
 import { useSimulationNetwork } from './useSimulationNetwork';
 import { useSimulationLoop } from './useSimulationLoop';
+import { useNotes } from '../useNotes';
 import type { SimulationAgent } from './types';
 
 const RANDOM_PERSONAS = [
@@ -46,6 +48,7 @@ const RANDOM_PERSONAS = [
 export const useSimulator = () => {
   const { agents, agentsRef, updateAgent, deploySwarm: deploySwarmAgents } = useSimulationAgents();
   const [active, setActive] = useState(false);
+  const { notes: userNotes } = useNotes();
 
   const [ontology, setOntology] = useState<OntologyNode[]>(DEFAULT_ONTOLOGY);
   const ontologyRef = useRef(ontology);
@@ -65,7 +68,8 @@ export const useSimulator = () => {
       notifications,
       newAttributes,
       handlePublish,
-      addLog
+      addLog,
+      setNetworkNotes
   } = useSimulationNetwork(ontologyRef, setOntology, gardenerRef);
 
   // Initialize AI Provider
@@ -133,23 +137,70 @@ export const useSimulator = () => {
       addLog(`Swarm deployed with ${newAgents.length} agents.`, 'info');
   }, [deploySwarmAgents, addLog]);
 
+  const importUserNotes = useCallback(() => {
+      setNetworkNotes(prev => {
+          const imported = userNotes.filter(un => !prev.some(pn => pn.id === un.id));
+          addLog(`Imported ${imported.length} user notes into simulator.`, 'info');
+          return [...prev, ...imported];
+      });
+  }, [userNotes, addLog, setNetworkNotes]);
+
   const optimizeOntology = useCallback(async () => {
       if (!gardenerRef.current) return;
 
       addLog("Starting ontology optimization...", 'info');
       const result = await gardenerRef.current.optimizeOntology(ontologyRef.current);
 
-      result.merged.forEach(msg => addLog(`[Optimization] ${msg}`, 'ontology'));
-      result.pruned.forEach(msg => addLog(`[Optimization] ${msg}`, 'ontology'));
-
       if (result.merged.length === 0 && result.pruned.length === 0) {
           addLog("Ontology is already optimized.", 'info');
+          return;
       }
 
-      // TODO: Actually apply changes to ontology state if needed.
-      // For now, Mock provider only returns report, it doesn't return new ontology structure.
-      // If we want to apply merges, we need logic to modify the tree.
-      // We can leave this as a report for the "Experimentation" phase.
+      let newOntology = [...ontologyRef.current];
+
+      // Helper to find all nodes containing a key
+      const findNodeIdsForKey = (nodes: OntologyNode[], key: string): string[] => {
+          let ids: string[] = [];
+          for (const node of nodes) {
+              if (node.attributes && node.attributes[key]) {
+                  ids.push(node.id);
+              }
+              if (node.children) {
+                  ids = ids.concat(findNodeIdsForKey(node.children, key));
+              }
+          }
+          return ids;
+      };
+
+      result.merged.forEach(merge => {
+          addLog(`[Optimization] Merging '${merge.source}' -> '${merge.target}'`, 'ontology');
+          const nodeIds = findNodeIdsForKey(newOntology, merge.source);
+
+          nodeIds.forEach(nodeId => {
+             const node = findNode(newOntology, nodeId);
+             if (node) {
+                 if (node.attributes && node.attributes[merge.target]) {
+                     // Target exists: Merge (delete source, keep target)
+                     newOntology = mergeAttributes(newOntology, nodeId, merge.source, merge.target);
+                 } else {
+                     // Target missing: Rename source to target
+                     newOntology = renameAttribute(newOntology, nodeId, merge.source, merge.target);
+                 }
+             }
+          });
+      });
+
+      result.pruned.forEach(key => {
+          addLog(`[Optimization] Pruning '${key}'`, 'ontology');
+          const nodeIds = findNodeIdsForKey(newOntology, key);
+          nodeIds.forEach(nodeId => {
+              newOntology = deleteAttribute(newOntology, nodeId, key);
+          });
+      });
+
+      setOntology(newOntology);
+      addLog("Optimization applied to Simulator Ontology.", 'info');
+
   }, [addLog]);
 
   const sendMessageToAgent = useCallback((agentId: string, content: string) => {
@@ -265,6 +316,7 @@ export const useSimulator = () => {
     sendMessageToAgent,
     randomizeAgent,
     deploySwarm,
-    optimizeOntology
+    optimizeOntology,
+    importUserNotes
   };
 };

@@ -130,7 +130,7 @@ ${text}`;
       }
   }
 
-  async optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: string[], pruned: string[] }> {
+  async optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: { source: string, target: string }[], pruned: string[] }> {
       if (!this.client) throw new Error('AI Provider not configured');
 
       const knownKeys = new Set<string>();
@@ -150,9 +150,9 @@ Identify potential optimizations, such as:
 1. Merging synonymous keys (e.g., "cost" and "price").
 2. Pruning keys that look like typos or are redundant.
 
-Return a JSON object with two arrays: "merged" and "pruned".
-"merged" should contain strings like 'Merged "old_key" into "new_key"'.
-"pruned" should contain strings like 'Pruned "bad_key"'.
+Return a JSON object with two arrays:
+"merged": Array of objects { "source": "old_key", "target": "new_key" }
+"pruned": Array of strings (keys to remove)
 
 Keys:
 ${keys.join(', ')}`;
