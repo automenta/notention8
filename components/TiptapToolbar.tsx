@@ -15,6 +15,7 @@ import {
   HorizontalRuleIcon,
   SparklesIcon,
   CubeIcon,
+  TagIcon,
 } from './icons';
 
 interface TiptapToolbarProps {
@@ -23,6 +24,7 @@ interface TiptapToolbarProps {
   toggleViewMode: () => void;
   onMagic?: () => void;
   onTemplates?: () => void;
+  onInsertProperty?: () => void;
 }
 
 interface ToolbarButtonProps {
@@ -76,6 +78,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
   toggleViewMode,
   onMagic,
   onTemplates,
+  onInsertProperty,
 }) => {
   if (!editor) return null;
 
@@ -154,7 +157,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
 
   return (
     <div className="flex-shrink-0 px-3 py-2 border-b border-gray-700/50 flex items-center flex-wrap gap-2 bg-gray-900/50 backdrop-blur-sm">
-      {(onMagic || onTemplates) && (
+      {(onMagic || onTemplates || onInsertProperty) && (
         <div className="flex items-center gap-1 bg-purple-900/20 p-0.5 rounded-lg border border-purple-500/20">
             {onMagic && (
             <ToolbarButton
@@ -171,6 +174,14 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
                 icon={CubeIcon}
                 isActive={false}
             />
+            )}
+            {onInsertProperty && (
+                <ToolbarButton
+                    onClick={onInsertProperty}
+                    title="Insert Property"
+                    icon={TagIcon}
+                    isActive={false}
+                />
             )}
         </div>
       )}

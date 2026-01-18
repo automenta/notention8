@@ -9,6 +9,7 @@ import { useView } from '../hooks/useViewContext';
 import { useToast } from './contexts/ToastContext';
 import { EditorStatusBar } from './editor/EditorStatusBar';
 import { EditorBubbleMenu } from './editor/EditorBubbleMenu';
+import { InsertPropertyModal } from './editor/InsertPropertyModal';
 
 interface TiptapEditorProps {
   note: Note;
@@ -23,6 +24,7 @@ interface TiptapEditorProps {
 
 export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontology, templates, minimal = false, onMagic, onTemplates, notes = [] }) => {
   const [viewMode, setViewMode] = useState<'rich' | 'code'>('rich');
+  const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
   const { setSearchTerm, setActiveView, setSelectedNoteId } = useView();
   const { addToast } = useToast();
 
@@ -51,6 +53,17 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontolo
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onSave(e.target.value.replace(/\n/g, ''));
+  };
+
+  const handleInsertProperty = (key: string, operator: string, value: string) => {
+    if (editor) {
+      editor
+        .chain()
+        .focus()
+        .insertContent(` [${key}:${operator}:${value}] `)
+        .run();
+    }
+    setIsPropertyModalOpen(false);
   };
 
   const handleEditorClick = useCallback((e: React.MouseEvent) => {
@@ -90,12 +103,21 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontolo
           toggleViewMode={toggleViewMode}
           onMagic={onMagic}
           onTemplates={onTemplates}
+          onInsertProperty={() => setIsPropertyModalOpen(true)}
         />
       )}
+      <InsertPropertyModal
+        isOpen={isPropertyModalOpen}
+        onClose={() => setIsPropertyModalOpen(false)}
+        onInsert={handleInsertProperty}
+      />
       <div className="flex-grow overflow-y-auto" onClick={handleEditorClick}>
         {viewMode === 'rich' ? (
           <>
+            {/* FIXME: BubbleMenu import from @tiptap/react is failing in the current build environment.
+                Temporarily disabling to allow the app to load.
             <EditorBubbleMenu editor={editor} />
+            */}
             <EditorContent editor={editor} />
           </>
         ) : (
