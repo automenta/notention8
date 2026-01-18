@@ -10,6 +10,7 @@ import {
   XIcon,
   MapPinIcon,
   ClockIcon,
+  InformationCircleIcon
 } from '../icons';
 
 interface PropertyInspectorProps {
@@ -98,21 +99,25 @@ export function PropertyInspector({
     }
   };
 
-  const getAttributeType = (key: string, nodes: OntologyNode[]): string | undefined => {
+  const getAttributeDetails = (key: string, nodes: OntologyNode[]): { type: string, description?: string } | undefined => {
     for (const node of nodes) {
       if (node.attributes && node.attributes[key]) {
-        return node.attributes[key].type;
+        return { type: node.attributes[key].type, description: node.attributes[key].description };
       }
       if (node.children) {
-        const found = getAttributeType(key, node.children);
+        const found = getAttributeDetails(key, node.children);
         if (found) return found;
       }
     }
     return undefined;
   };
 
-  const type = editKey ? getAttributeType(editKey, ontology) : undefined;
+  const currentAttr = editKey ? getAttributeDetails(editKey, ontology) : undefined;
+  const type = currentAttr?.type;
+  const description = currentAttr?.description;
   const isTemporal = type === 'date' || type === 'datetime' || ['start', 'end', 'date', 'time', 'deadline', 'dueDate', 'startDateTime', 'endDateTime'].some(k => editKey.toLowerCase().includes(k.toLowerCase()));
+
+  const sortedProperties = [...properties].sort((a, b) => a.key.localeCompare(b.key));
 
   return (
     <div className="bg-gray-900 border-l border-gray-700/50 w-72 flex-shrink-0 flex flex-col h-full transition-all duration-300">
@@ -172,13 +177,26 @@ export function PropertyInspector({
                 )}
               </div>
             </div>
-            <input
-              className="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:border-blue-500 outline-none transition-colors"
-              placeholder="Key (e.g. price)"
-              value={editKey}
-              onChange={(e) => setEditKey(e.target.value)}
-              autoFocus
-            />
+            <div className="relative">
+                <input
+                className="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:border-blue-500 outline-none transition-colors"
+                placeholder="Key (e.g. price)"
+                value={editKey}
+                onChange={(e) => setEditKey(e.target.value)}
+                autoFocus
+                />
+                {type && (
+                    <span className="absolute right-2 top-1.5 text-[10px] uppercase bg-gray-700 text-gray-300 px-1 rounded">
+                        {type}
+                    </span>
+                )}
+            </div>
+            {description && (
+                <div className="text-xs text-gray-400 italic flex items-start gap-1">
+                    <InformationCircleIcon className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                    {description}
+                </div>
+            )}
             <select
               className="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-sm text-gray-300 focus:border-blue-500 outline-none"
               value={editOp}
@@ -217,21 +235,28 @@ export function PropertyInspector({
           </div>
         )}
 
-        {properties.map((prop, idx) => (
+        {sortedProperties.map((prop, idx) => {
+            const propDetails = getAttributeDetails(prop.key, ontology);
+            return (
           <div
             key={idx}
             className={`bg-gray-800/40 p-2 rounded border border-gray-700 hover:border-gray-600 group relative transition-all ${editingIndex === idx ? 'opacity-50 pointer-events-none' : ''}`}
           >
             <div className="flex justify-between items-start mb-1">
               <div
-                className="text-xs text-blue-400 font-mono font-bold truncate pr-6"
-                title={prop.key}
+                className="text-xs text-blue-400 font-mono font-bold truncate pr-6 flex items-center gap-1"
+                title={propDetails?.description || prop.key}
               >
                 {prop.key}
+                {propDetails && (
+                    <span className="text-[9px] text-gray-500 bg-gray-900/50 px-1 rounded uppercase font-normal">
+                        {propDetails.type}
+                    </span>
+                )}
               </div>
               <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 rounded">
                 <button
-                  onClick={() => startEdit(prop, idx)}
+                  onClick={() => startEdit(prop, properties.indexOf(prop))}
                   className="p-1 hover:text-yellow-400 text-gray-400"
                 >
                   <PencilIcon className="w-3 h-3" />
@@ -254,7 +279,7 @@ export function PropertyInspector({
               </span>
             </div>
           </div>
-        ))}
+        )})}
 
         {properties.length === 0 && !isAdding && (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center text-gray-500 opacity-60">

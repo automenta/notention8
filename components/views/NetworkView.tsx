@@ -80,13 +80,31 @@ export function NetworkView({ matchAgainst }: NetworkViewProps) {
             </h1>
           </div>
 
-          <input
-            type="text"
-            placeholder="Search notes..."
-            className="bg-gray-900 border border-gray-700 rounded px-3 py-1 text-sm text-gray-200 w-48 flex-shrink-0"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          />
+          <div className="flex flex-col items-end gap-2">
+            <input
+                type="text"
+                placeholder="Search notes..."
+                className="bg-gray-900 border border-gray-700 rounded px-3 py-1 text-sm text-gray-200 w-48 flex-shrink-0 focus:border-blue-500 outline-none transition-colors"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+            />
+            {sortedEvents.length > 0 && (
+                <div className="flex gap-1">
+                    {[...new Set(sortedEvents.flatMap(e => e.tags.filter((t: string[]) => t[0] === 't').map((t: string[]) => t[1])))]
+                        .slice(0, 3)
+                        .map(tag => (
+                            <button
+                                key={tag}
+                                onClick={() => setFilter(filter === tag ? '' : tag)}
+                                className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${filter === tag ? 'bg-blue-900/50 border-blue-500 text-blue-200' : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'}`}
+                            >
+                                #{tag}
+                            </button>
+                        ))
+                    }
+                </div>
+            )}
+          </div>
         </div>
 
         {/* Suggested Matches Section */}
