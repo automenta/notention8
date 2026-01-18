@@ -88,6 +88,7 @@ export interface Contact {
   name?: string;
   picture?: string;
   about?: string;
+  isAgent?: boolean;
 }
 
 export type View =

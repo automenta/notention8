@@ -52,6 +52,15 @@ export function ChatWindow({
     e.preventDefault();
     if (!newMessage.trim() || !selectedContact) return;
 
+    if (selectedContact.isAgent) {
+         // Bypass Nostr encryption for local agents
+         // We pass a dummy event object, as the handler in ChatView will call sendMessageToAgent
+         // which constructs its own event.
+         onSendMessage(selectedContact.pubkey, {} as any, newMessage.trim());
+         setNewMessage('');
+         return;
+    }
+
     try {
       const encryptedContent = await nip04.encrypt(
         privkey,
@@ -114,14 +123,21 @@ export function ChatWindow({
 
         <div className="min-w-0">
           <p className="font-bold text-white truncate">
-            {selectedProfile?.name || 'Anonymous'}
+            {selectedContact.name || selectedProfile?.name || 'Anonymous'}
           </p>
-          <p
-            className="text-xs text-gray-400 font-mono truncate"
-            title={nip19.npubEncode(selectedContact.pubkey)}
-          >
-            {formatNpub(nip19.npubEncode(selectedContact.pubkey))}
-          </p>
+          {!selectedContact.isAgent && (
+             <p
+               className="text-xs text-gray-400 font-mono truncate"
+               title={nip19.npubEncode(selectedContact.pubkey)}
+             >
+               {formatNpub(nip19.npubEncode(selectedContact.pubkey))}
+             </p>
+          )}
+          {selectedContact.isAgent && (
+              <p className="text-xs text-blue-400 font-mono truncate">
+                  AI Agent
+              </p>
+          )}
         </div>
       </div>
 

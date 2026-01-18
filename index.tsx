@@ -6,6 +6,7 @@ import { SettingsProvider } from './components/contexts/SettingsContext';
 import { NotesProvider } from './components/contexts/NotesContext';
 import { ViewProvider } from './components/contexts/ViewContext';
 import { ToastProvider } from './components/contexts/ToastContext';
+import { SimulatorProvider } from './components/contexts/SimulatorContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -19,7 +20,9 @@ root.render(
       <NotesProvider>
         <ToastProvider>
           <ViewProvider>
-            <App />
+            <SimulatorProvider>
+              <App />
+            </SimulatorProvider>
           </ViewProvider>
         </ToastProvider>
       </NotesProvider>
