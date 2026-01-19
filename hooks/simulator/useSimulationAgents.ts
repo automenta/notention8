@@ -23,13 +23,30 @@ export const useSimulationAgents = () => {
   }, []);
 
   const deploySwarm = useCallback((newAgents: SimulationAgent[]) => {
-      setAgents(newAgents);
+      setAgents(prev => [...prev, ...newAgents]);
+  }, []);
+
+  const addAgent = useCallback(() => {
+      setAgents(prev => [
+          ...prev,
+          {
+              id: Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join(''),
+              name: `Agent ${prev.length + 1}`,
+              persona: "You are a new agent.",
+              bio: "New Agent.",
+              goal: "Set a goal.",
+              currentDraft: "",
+              status: "Idle",
+              isAgent: true
+          }
+      ]);
   }, []);
 
   return {
     agents,
     agentsRef,
     updateAgent,
-    deploySwarm
+    deploySwarm,
+    addAgent
   };
 };

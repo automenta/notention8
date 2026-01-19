@@ -6,7 +6,7 @@ import { AITab } from '../settings/AITab';
 import { DataTab } from '../settings/DataTab';
 import { NostrTab } from '../settings/NostrTab';
 import { OntologyTab } from '../settings/OntologyTab';
-import { SimulatorView } from '../simulator/SimulatorView';
+// SimulatorView removed from Settings tabs to be a top-level view
 
 interface TabButtonProps {
   label: string;
@@ -84,11 +84,6 @@ export function SettingsView() {
                 isActive={activeTab === 'ontology'}
                 onClick={() => setActiveTab('ontology')}
               />
-              <TabButton
-                label="🧪 Simulator"
-                isActive={activeTab === 'simulator'}
-                onClick={() => setActiveTab('simulator')}
-              />
             </>
           )}
         </nav>
@@ -103,8 +98,6 @@ export function SettingsView() {
         )}
         {activeTab === 'data' && <DataTab />}
         {activeTab === 'ontology' && settings.developerMode && <OntologyTab />}
-        {activeTab === 'simulator' &&
-          settings.developerMode && <SimulatorView />}
       </div>
     </div>
   );

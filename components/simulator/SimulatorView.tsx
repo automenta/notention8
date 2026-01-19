@@ -22,8 +22,10 @@ export const SimulatorView: React.FC = () => {
       handlePublish,
       randomizeAgent,
       deploySwarm,
+      addAgent,
       optimizeOntology,
-      importUserNotes
+      importUserNotes,
+      saveNetworkNote
   } = useSimulatorContext();
 
   const [selectedView, setSelectedView] = useState<'overview' | string>('overview');
@@ -87,9 +89,14 @@ export const SimulatorView: React.FC = () => {
 
               <div className="mt-4 mb-2 px-3 flex justify-between items-center">
                   <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Agents</span>
-                  <button onClick={() => setShowSwarmModal(true)} className="text-[10px] text-blue-400 hover:text-blue-300 font-bold border border-blue-900/50 px-1.5 rounded bg-blue-900/20">
-                      + SWARM
-                  </button>
+                  <div className="flex gap-1">
+                      <button onClick={addAgent} className="text-[10px] text-gray-400 hover:text-white font-bold border border-gray-700 px-1.5 rounded bg-gray-800" title="Add Agent">
+                          +
+                      </button>
+                      <button onClick={() => setShowSwarmModal(true)} className="text-[10px] text-blue-400 hover:text-blue-300 font-bold border border-blue-900/50 px-1.5 rounded bg-blue-900/20" title="Deploy Swarm">
+                          + SWARM
+                      </button>
+                  </div>
               </div>
               {agents.map(agent => (
                   <button
@@ -114,7 +121,7 @@ export const SimulatorView: React.FC = () => {
                    {/* Community Stream */}
                    <div className="col-span-1 h-full overflow-hidden flex flex-col">
                          <div className="mb-2 font-bold text-gray-400 text-xs px-1">COMMUNITY STREAM</div>
-                         <CommunityWindow networkNotes={networkNotes} />
+                         <CommunityWindow networkNotes={networkNotes} onSaveNote={saveNetworkNote} />
                    </div>
 
                    {/* System Dashboard */}

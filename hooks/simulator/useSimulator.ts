@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import type { OntologyNode, NostrEvent } from '../../types';
+import type { OntologyNode, NostrEvent, Note } from '../../types';
 import type { AIProvider } from '../../services/ai/types';
 import { Gardener } from '../../services/gardener';
 import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
@@ -46,9 +46,9 @@ const RANDOM_PERSONAS = [
 ];
 
 export const useSimulator = () => {
-  const { agents, agentsRef, updateAgent, deploySwarm: deploySwarmAgents } = useSimulationAgents();
+  const { agents, agentsRef, updateAgent, deploySwarm: deploySwarmAgents, addAgent: addNewAgent } = useSimulationAgents();
   const [active, setActive] = useState(false);
-  const { notes: userNotes } = useNotes();
+  const { notes: userNotes, addNote } = useNotes();
 
   const [ontology, setOntology] = useState<OntologyNode[]>(DEFAULT_ONTOLOGY);
   const ontologyRef = useRef(ontology);
@@ -137,6 +137,11 @@ export const useSimulator = () => {
       addLog(`Swarm deployed with ${newAgents.length} agents.`, 'info');
   }, [deploySwarmAgents, addLog]);
 
+  const addAgent = useCallback(() => {
+      addNewAgent();
+      addLog("New agent added manually.", 'info');
+  }, [addNewAgent, addLog]);
+
   const importUserNotes = useCallback(() => {
       setNetworkNotes(prev => {
           const imported = userNotes.filter(un => !prev.some(pn => pn.id === un.id));
@@ -144,6 +149,11 @@ export const useSimulator = () => {
           return [...prev, ...imported];
       });
   }, [userNotes, addLog, setNetworkNotes]);
+
+  const saveNetworkNote = useCallback((note: Note) => {
+      addNote(note);
+      addLog(`Saved note ${note.id.slice(0,6)} to local notes.`, 'info');
+  }, [addNote, addLog]);
 
   const optimizeOntology = useCallback(async () => {
       if (!gardenerRef.current) return;
@@ -317,6 +327,8 @@ export const useSimulator = () => {
     randomizeAgent,
     deploySwarm,
     optimizeOntology,
-    importUserNotes
+    importUserNotes,
+    addAgent,
+    saveNetworkNote
   };
 };

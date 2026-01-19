@@ -1,12 +1,14 @@
 import React, { useMemo } from 'react';
 import type { Note } from '../../types';
 import { matchNotes } from '../../utils/matching';
+import { DownloadIcon } from '../icons';
 
 interface Props {
   networkNotes: Note[];
+  onSaveNote?: (note: Note) => void;
 }
 
-export const CommunityWindow: React.FC<Props> = ({ networkNotes }) => {
+export const CommunityWindow: React.FC<Props> = ({ networkNotes, onSaveNote }) => {
 
   // Simple matching visualization
   const matches = useMemo(() => {
@@ -57,6 +59,16 @@ export const CommunityWindow: React.FC<Props> = ({ networkNotes }) => {
                         <div className="flex justify-between items-start mb-1">
                              <div className="text-[9px] text-gray-400">{note.updatedAt ? new Date(note.updatedAt).toLocaleTimeString() : 'Now'}</div>
                              {isMatch && <span className="text-[8px] bg-indigo-600 text-white px-1 rounded animate-pulse">MATCH</span>}
+
+                             {onSaveNote && (
+                                 <button
+                                    onClick={() => onSaveNote(note)}
+                                    title="Save to My Notes"
+                                    className="ml-auto text-gray-500 hover:text-green-400 transition-colors"
+                                 >
+                                     <DownloadIcon className="w-3 h-3" />
+                                 </button>
+                             )}
                         </div>
 
                         <div className="text-[10px] text-gray-200 font-medium mb-1 break-words leading-tight">
