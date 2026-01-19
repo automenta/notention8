@@ -114,10 +114,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontolo
       <div className="flex-grow overflow-y-auto" onClick={handleEditorClick}>
         {viewMode === 'rich' ? (
           <>
-            {/* FIXME: BubbleMenu import from @tiptap/react is failing in the current build environment.
-                Temporarily disabling to allow the app to load.
             <EditorBubbleMenu editor={editor} />
-            */}
             <EditorContent editor={editor} />
           </>
         ) : (

@@ -1,5 +1,6 @@
 import React from 'react';
-import { BubbleMenu, Editor } from '@tiptap/react';
+import { Editor } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/react/menus';
 import {
   BoldIcon,
   ItalicIcon,

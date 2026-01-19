@@ -1,5 +1,6 @@
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import BubbleMenu from '@tiptap/extension-bubble-menu';
 import Mention from '@tiptap/extension-mention';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { useOntologyIndex } from '../../hooks/useOntologyIndex';
@@ -28,6 +29,7 @@ export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], m
   return useEditor({
     extensions: [
       StarterKit,
+      BubbleMenu,
       Mention.configure({
         HTMLAttributes: {
           class: 'suggestion-item',
