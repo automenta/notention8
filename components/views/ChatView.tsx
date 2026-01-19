@@ -5,9 +5,12 @@ import { DEFAULT_RELAYS, hexToBytes, pool } from '../../utils/nostr';
 import { ContactList } from '../chat/ContactList';
 import { ChatWindow } from '../chat/ChatWindow';
 import { useSettings } from '../../hooks/useSettingsContext';
+import { useView } from '../../hooks/useViewContext';
 
 export const ChatView: React.FC = () => {
   const { settings } = useSettings();
+  const { selectedChatPubkey, setSelectedChatPubkey } = useView();
+
   const privkey = settings.nostr.privkey;
   const pubkey = useMemo(
     () => (privkey ? getPublicKey(hexToBytes(privkey)) : null),
@@ -18,7 +21,27 @@ export const ChatView: React.FC = () => {
   const [messages, setMessages] = useState<
     Record<string, (NostrEvent & { content: string })[]>
   >({});
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+
+  // Use local state if we want isolated contact selection, or sync with ViewContext?
+  // Let's sync with ViewContext for deep linking from NetworkView
+  // We need to map selectedChatPubkey to a Contact object
+
+  const [localSelectedContact, setLocalSelectedContact] = useState<Contact | null>(null);
+
+  useEffect(() => {
+      if (selectedChatPubkey) {
+          // If we have a pubkey from context, ensure it's selected
+          // We might not have it in contacts list yet.
+          setLocalSelectedContact({ pubkey: selectedChatPubkey });
+      } else {
+          setLocalSelectedContact(null);
+      }
+  }, [selectedChatPubkey]);
+
+  const handleSelectContact = (contact: Contact | null) => {
+      setSelectedChatPubkey(contact ? contact.pubkey : null);
+  };
+
   const [isLoading, setIsLoading] = useState(true);
 
   const addMessage = useCallback(
@@ -95,19 +118,19 @@ export const ChatView: React.FC = () => {
 
   // Subscribe to messages for the selected contact
   useEffect(() => {
-    if (!selectedContact || !pubkey || !privkey) return;
+    if (!localSelectedContact || !pubkey || !privkey) return;
 
     const sub = pool.subscribeMany(
       DEFAULT_RELAYS,
       [
-        { kinds: [4], authors: [pubkey], '#p': [selectedContact.pubkey] },
-        { kinds: [4], authors: [selectedContact.pubkey], '#p': [pubkey] },
+        { kinds: [4], authors: [pubkey], '#p': [localSelectedContact.pubkey] },
+        { kinds: [4], authors: [localSelectedContact.pubkey], '#p': [pubkey] },
       ],
       { onevent: handleDecryption }
     );
 
     return () => sub.close();
-  }, [selectedContact, pubkey, privkey, handleDecryption]);
+  }, [localSelectedContact, pubkey, privkey, handleDecryption]);
 
   if (!privkey || !pubkey) {
     return (
@@ -126,28 +149,28 @@ export const ChatView: React.FC = () => {
   return (
     <div className="flex h-full bg-gray-800/50 rounded-lg overflow-hidden">
       <div
-        className={`w-full md:w-1/3 md:flex-shrink-0 ${selectedContact ? 'hidden md:block' : 'block'}`}
+        className={`w-full md:w-1/3 md:flex-shrink-0 ${localSelectedContact ? 'hidden md:block' : 'block'}`}
       >
         <ContactList
           privkey={privkey}
           pubkey={pubkey}
           contacts={contacts}
           setContacts={setContacts}
-          selectedContact={selectedContact}
-          onSelectContact={setSelectedContact}
+          selectedContact={localSelectedContact}
+          onSelectContact={handleSelectContact}
           isLoading={isLoading}
         />
       </div>
       <div
-        className={`w-full ${!selectedContact ? 'hidden md:block' : 'block'}`}
+        className={`w-full ${!localSelectedContact ? 'hidden md:block' : 'block'}`}
       >
         <ChatWindow
           privkey={privkey}
           pubkey={pubkey}
-          selectedContact={selectedContact}
-          onBack={() => setSelectedContact(null)}
+          selectedContact={localSelectedContact}
+          onBack={() => handleSelectContact(null)}
           messages={
-            selectedContact ? messages[selectedContact.pubkey] || [] : []
+            localSelectedContact ? messages[localSelectedContact.pubkey] || [] : []
           }
           onSendMessage={(peerPubkey, event, decryptedContent) =>
             addMessage(peerPubkey, event, decryptedContent)

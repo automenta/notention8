@@ -10,7 +10,7 @@ import {
   renameAttribute,
   mergeAttributes
 } from '../../utils/ontologyHelpers';
-import { TrashIcon, EditIcon, PlusIcon, FolderIcon, TagIcon, MergeIcon } from '../icons';
+import { TrashIcon, EditIcon, PlusIcon, FolderIcon, TagIcon, MergeIcon, SparklesIcon } from '../icons';
 import { Modal } from '../common/Modal';
 
 export const OntologyTab: React.FC = () => {
@@ -138,6 +138,9 @@ export const OntologyTab: React.FC = () => {
     const hasChildren = node.children && node.children.length > 0;
     const hasAttributes = node.attributes && Object.keys(node.attributes).length > 0;
 
+    // Highlight Emergent Node
+    const isEmergent = node.id === 'emergent';
+
     return (
       <li key={node.id} className="ml-4 border-l border-gray-700 pl-4 py-2">
         <div className="flex items-center gap-2 group">
@@ -148,8 +151,8 @@ export const OntologyTab: React.FC = () => {
             {isExpanded ? '▼' : '▶'}
           </button>
 
-          <FolderIcon className="w-5 h-5 text-blue-400" />
-          <span className="font-medium text-gray-200">{node.label}</span>
+          {isEmergent ? <SparklesIcon className="w-5 h-5 text-purple-400" /> : <FolderIcon className="w-5 h-5 text-blue-400" />}
+          <span className={`font-medium ${isEmergent ? 'text-purple-300' : 'text-gray-200'}`}>{node.label}</span>
           <span className="text-xs text-gray-500 font-mono">({node.id})</span>
 
           <div className="hidden group-hover:flex gap-2 ml-4">
@@ -176,6 +179,7 @@ export const OntologyTab: React.FC = () => {
                     <TagIcon className="w-4 h-4 text-yellow-600" />
                     <span className="text-gray-300">{key}</span>
                     <span className="text-xs text-gray-500">({attr.type})</span>
+                    {isEmergent && <span className="text-xs text-purple-400 border border-purple-500/50 px-1 rounded">inferred</span>}
 
                     <div className="hidden group-hover/attr:flex gap-2 ml-4">
                         <button onClick={() => handleRenameAttribute(node.id, key)} title="Rename">
@@ -217,6 +221,8 @@ export const OntologyTab: React.FC = () => {
       <p className="text-gray-400 mb-4 text-xs">
         Manage the semantic structure of your network.
         Use <b>Merge</b> to resolve conflicts (aliasing attributes).
+        <br/>
+        <span className="text-purple-400 flex items-center gap-1 mt-1"><SparklesIcon className="w-3 h-3"/> Emergent nodes are automatically learned from the network.</span>
       </p>
 
       <ul>

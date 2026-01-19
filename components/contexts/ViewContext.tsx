@@ -8,6 +8,8 @@ interface ViewContextType {
   setSelectedNoteId: (id: string | null) => void;
   matchingNoteId: string | null;
   setMatchingNoteId: (id: string | null) => void;
+  selectedChatPubkey: string | null;
+  setSelectedChatPubkey: (pubkey: string | null) => void;
 }
 
 const ViewContext = createContext<ViewContextType | undefined>(undefined);
@@ -18,6 +20,7 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
   const [activeView, setActiveView] = useState<View>('notes');
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [matchingNoteId, setMatchingNoteId] = useState<string | null>(null);
+  const [selectedChatPubkey, setSelectedChatPubkey] = useState<string | null>(null);
 
   return (
     <ViewContext.Provider
@@ -27,7 +30,9 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
         selectedNoteId,
         setSelectedNoteId,
         matchingNoteId,
-        setMatchingNoteId
+        setMatchingNoteId,
+        selectedChatPubkey,
+        setSelectedChatPubkey
       }}
     >
       {children}

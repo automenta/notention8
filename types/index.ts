@@ -51,6 +51,7 @@ export interface Note {
 
 export interface AppSettings {
   aiEnabled: boolean;
+  googleGeminiApiKey?: string; // Added user-configurable API key
   developerMode: boolean;
   theme: 'light' | 'dark';
   nostr: {

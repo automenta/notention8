@@ -14,7 +14,7 @@ export interface SimulationAgent {
     name: string;
     persona: string;
     currentDraft: string;
-    status: string; // "Thinking", "Typing", "Idle"
+    status: string; // "Thinking", "Typing", "Idle", "Contacting"
     goal: string;
 }
 
@@ -63,19 +63,10 @@ export const useSimulator = () => {
         try {
             // Attempt to load WebLLM
             const provider = new WebLLMProvider();
-            // Trigger an init check (e.g. by generating something small or just checking GPU)
-            // But WebLLMProvider constructor is lazy. We need to force a check or just assume it works until first call.
-            // However, our requirement is to fallback if "WebLLMProvider fails".
-            // Let's rely on checking `navigator.gpu` explicitly here as a proxy,
-            // since WebLLMProvider throws if it's missing.
 
             if (!navigator.gpu) {
                 throw new Error("WebGPU not supported");
             }
-
-            // We could also try to await provider.getEngine() if exposed, but it's private.
-            // Let's assume if GPU exists, we try. If it fails later, we might need robust error handling in the loop.
-            // For now, let's stick to the plan: explicit fallback on initialization.
 
             aiRef.current = provider;
             setAiProviderName(provider.name);
@@ -244,6 +235,17 @@ export const useSimulator = () => {
 
              if (score1 > 0.5 || score2 > 0.5) {
                  addLog(`MATCH: ${enrichedNote.id.slice(0,4)} <-> ${otherNote.id.slice(0,4)}`, 'match');
+
+                 // Update Agent Goals to simulate interaction
+                 // Find agent that owns enrichedNote or otherNote
+                 // Note: simulation agents don't own the 'otherNote' if it's from history, but here we assume only 2 agents active.
+                 // Ideally we map note.id back to agent.
+                 // For now, simple notification.
+
+                 // Simulate "Contact" action
+                 setTimeout(() => {
+                      addLog(`💬 Agent contacting peer...`, 'info');
+                 }, 1000);
 
                  setNotifications(n => ({
                      ...n,

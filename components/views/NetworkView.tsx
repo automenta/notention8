@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { getPublicKey } from 'nostr-tools';
 import type { NostrEvent } from '../../types';
-import { KeyIcon, LoadingSpinner, SettingsIcon } from '../icons';
+import { KeyIcon, LoadingSpinner, SettingsIcon, ArrowLeftIcon } from '../icons';
 import { DEFAULT_RELAYS, hexToBytes, pool } from '../../utils/nostr';
 import { matchNotes } from '../../utils/matching';
 import type { Note } from '../../types';
@@ -11,6 +11,8 @@ import { ProfileHeader } from '../network/ProfileHeader';
 import { NostrEventCard } from '../network/NostrEventCard';
 import { useView } from '../../hooks/useViewContext';
 import { useSettings } from '../../hooks/useSettingsContext';
+import { useGardener } from '../../hooks/useGardener';
+import type { Property } from '../../types';
 
 interface NetworkViewProps {
     matchAgainst?: Note | null;
@@ -18,7 +20,9 @@ interface NetworkViewProps {
 
 export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
   const { settings } = useSettings();
-  const { setActiveView } = useView();
+  const { setActiveView, setMatchingNoteId } = useView();
+  const { learnFromProperties } = useGardener();
+
   const onNavigateToSettings = () => setActiveView('settings');
   const pubkey = useMemo(
     () =>
@@ -47,7 +51,28 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
 
     const flushBatch = () => {
       if (pendingEventsRef.current.length > 0) {
-        setEvents((prev) => [...prev, ...pendingEventsRef.current]);
+        const newEvents = pendingEventsRef.current;
+        setEvents((prev) => [...prev, ...newEvents]);
+
+        // Passive Learning: Extract properties from new events
+        const allProps: Property[] = [];
+        newEvents.forEach(evt => {
+            evt.tags.forEach(t => {
+                if (t[0] === 'property') {
+                    // t = ['property', key, op, val]
+                    allProps.push({
+                        key: t[1],
+                        operator: t[2],
+                        values: [t[3]]
+                    });
+                }
+            });
+        });
+
+        if (allProps.length > 0) {
+            learnFromProperties(allProps);
+        }
+
         pendingEventsRef.current = [];
       }
       batchTimeoutRef.current = null;
@@ -77,7 +102,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
       if (batchTimeoutRef.current) clearTimeout(batchTimeoutRef.current);
       sub.close();
     };
-  }, [pubkey]);
+  }, [pubkey, learnFromProperties]);
 
   const sortedEvents = useMemo(() => {
     // Clone before sort to avoid mutating state
@@ -95,13 +120,30 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
         // Also note properties are in tags.
         return filtered.map(event => {
             // Extract props from tags
-            const props: Property[] = event.tags
-                .filter(t => t[0] === 'property')
-                .map(t => ({
-                    key: t[1],
-                    operator: t[2],
-                    values: [t[3]]
-                }));
+            // Our usePublish puts tags as ['property', key, op, value]
+            // We need to reconstruct Property[]
+
+            const propsMap = new Map<string, Property>();
+
+            event.tags.forEach(t => {
+                if (t[0] === 'property') {
+                    const key = t[1];
+                    const op = t[2];
+                    const val = t[3];
+
+                    if (propsMap.has(key)) {
+                        propsMap.get(key)!.values.push(val);
+                    } else {
+                        propsMap.set(key, {
+                            key,
+                            operator: op,
+                            values: [val]
+                        });
+                    }
+                }
+            });
+
+            const props = Array.from(propsMap.values());
 
             // Construct temp note
             const offerNote: Note = {
@@ -115,11 +157,14 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
                 updatedAt: ''
             };
 
-            const score = matchNotes(matchAgainst, offerNote);
+            const score = matchNotes(matchAgainst, offerNote) * 100;
             return { event, score };
         })
         .sort((a, b) => b.score - a.score) // Sort by score desc
-        .map(item => item.event)
+        .map(item => {
+             // Inject score into event object for Card to read
+             return { ...item.event, score: item.score };
+        })
         .slice(0, 100);
     }
 
@@ -167,14 +212,26 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
         profileCache={profiles}
       />
       <div className="p-4 md:p-6 flex-grow overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-white">
-                {matchAgainst ? `🎯 Matches for "${matchAgainst.title}"` : '⚡️ Public Feed'}
-            </h1>
+        <div className="flex justify-between items-center mb-6 gap-4">
+            <div className="flex items-center gap-3 overflow-hidden">
+                {matchAgainst && (
+                    <button
+                        onClick={() => setMatchingNoteId(null)}
+                        className="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors flex-shrink-0"
+                        title="Back to Feed"
+                    >
+                        <ArrowLeftIcon className="w-6 h-6" />
+                    </button>
+                )}
+                <h1 className="text-2xl font-bold text-white truncate">
+                    {matchAgainst ? `Matches for "${matchAgainst.title}"` : '⚡️ Public Feed'}
+                </h1>
+            </div>
+
             <input
                 type="text"
                 placeholder="Search notes..."
-                className="bg-gray-900 border border-gray-700 rounded px-3 py-1 text-sm text-gray-200"
+                className="bg-gray-900 border border-gray-700 rounded px-3 py-1 text-sm text-gray-200 w-48 flex-shrink-0"
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
             />
