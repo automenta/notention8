@@ -5,6 +5,7 @@ import Mention from '@tiptap/extension-mention';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { useOntologyIndex } from '../../hooks/useOntologyIndex';
 import { configureSuggestions } from './configureSuggestions';
+import { PropertyExtension } from './PropertyExtension';
 import type { OntologyNode, Template, Note } from '../../types';
 import { useRef, useEffect } from 'react';
 
@@ -30,6 +31,7 @@ export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], m
     extensions: [
       StarterKit,
       BubbleMenu,
+      PropertyExtension,
       Mention.configure({
         HTMLAttributes: {
           class: 'suggestion-item',

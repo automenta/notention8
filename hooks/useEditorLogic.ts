@@ -66,9 +66,9 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
                   }
               }
 
-              // Fallback: Check if tags contain the full label (normalized)
+              // Fallback: Check if tags contain the full label (normalized) or ID
               // This supports monolithic tags like "Job Request" if slices fail or aren't defined
-              if (noteTags.some(t => t.includes(label))) {
+              if (noteTags.some(t => t.includes(label) || t === node.id.toLowerCase())) {
                   return node;
               }
           }
@@ -311,6 +311,7 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     isPublished: !!dirtyNote.nostrEventId,
     actionLabel,
     validationErrors,
-    missingProperties
+    missingProperties,
+    matchingOntologyNode
   };
 };
