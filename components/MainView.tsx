@@ -9,6 +9,7 @@ import { MapView } from './views/MapView';
 import { NetworkView } from './views/NetworkView';
 import { ChatView } from './views/ChatView';
 import { SettingsView } from './views/SettingsView';
+import { SimulatorView } from './simulator/SimulatorView';
 
 export const MainView: React.FC = () => {
   const { activeView, matchingNoteId } = useView();
@@ -37,6 +38,8 @@ export const MainView: React.FC = () => {
       return <ChatView />;
     case 'settings':
       return <SettingsView />;
+    case 'simulator':
+      return <SimulatorView />;
     default:
       return null;
   }

@@ -84,4 +84,5 @@ export type View =
   | 'network'
   | 'chat'
   | 'settings'
-  | 'map';
+  | 'map'
+  | 'simulator';
