@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSettings } from './useSettingsContext';
 import { useNotes } from './useNotes';
 import { useGardener } from './useGardener';
+import { detectConflicts, Conflict } from '../utils/conflicts';
 
 export type OntologyTab = 'graph' | 'simulator' | 'conflicts';
 
@@ -37,6 +38,10 @@ export const useOntologyView = () => {
     return stats;
   }, [notes]);
 
+  const conflicts = useMemo(() => {
+      return detectConflicts(notes, ontology);
+  }, [notes, ontology]);
+
   const handleEvolve = async () => {
     setIsEvolving(true);
     await evolveOntology(notes);
@@ -52,5 +57,6 @@ export const useOntologyView = () => {
     isEvolving,
     handleEvolve,
     usageStats,
+    conflicts
   };
 };

@@ -28,6 +28,11 @@ export const Search: React.FC<SearchProps> = ({
             if (firstNote) {
               firstNote.focus();
             }
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            setSearchTerm('');
+            // Optional: blur input
+            (e.target as HTMLInputElement).blur();
           }
         }}
         className="w-full bg-gray-800 border border-transparent rounded-md py-2 pl-10 pr-10 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"

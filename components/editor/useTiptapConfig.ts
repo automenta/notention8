@@ -75,29 +75,39 @@ export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], m
           HTMLAttributes: {
             class: 'suggestion-slash',
           },
-          suggestion: configureSuggestions((query) => {
-              const lower = query.toLowerCase();
+          suggestion: {
+            ...configureSuggestions((query) => {
+                const lower = query.toLowerCase();
 
-              const templateItems = templates
-                  .filter(t => t.label.toLowerCase().includes(lower))
-                  .map(t => ({
-                      id: t.content, // Insert content
-                      label: t.label,
-                      description: 'Template',
-                      type: 'template'
-                  }));
+                const templateItems = templates
+                    .filter(t => t.label.toLowerCase().includes(lower))
+                    .map(t => ({
+                        id: t.content, // Insert content
+                        label: t.label,
+                        description: 'Template',
+                        type: 'template'
+                    }));
 
-               const propertyItems = allProperties
-                  .filter(p => p.label.toLowerCase().includes(lower))
-                  .map(p => ({
-                      id: `[${p.label}:is:?]`, // Insert semantic property syntax
-                      label: p.label,
-                      description: 'Property',
-                      type: 'property'
-                  }));
+                 const propertyItems = allProperties
+                    .filter(p => p.label.toLowerCase().includes(lower))
+                    .map(p => ({
+                        id: `[${p.label}:is:?]`, // Insert semantic property syntax
+                        label: p.label,
+                        description: 'Property',
+                        type: 'property'
+                    }));
 
-               return [...templateItems, ...propertyItems].slice(0, 10);
-          }, '/'),
+                 return [...templateItems, ...propertyItems].slice(0, 10);
+            }, '/'),
+            command: ({ editor, range, props }) => {
+                // Delete the slash command text
+                editor.chain().focus().deleteRange(range).run();
+
+                // Insert the content
+                const content = props.id;
+                editor.chain().focus().insertContent(content).run();
+            },
+          }
       }).extend({ name: 'slashCommand' }),
     ],
     content: sanitizeHTML(content),
