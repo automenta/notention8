@@ -15,7 +15,6 @@ import {
   SearchIcon,
   SidebarIcon,
   ClockIcon,
-  HomeIcon,
 } from './icons';
 
 interface HeaderProps {
@@ -82,10 +81,9 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
   const navItems: {
     view: View;
     label: string;
-    icon: React.ReactElement;
+    icon: React.ReactElement<{ className?: string }>;
     badgeCount?: number;
   }[] = [
-    { view: 'dashboard', label: 'Dashboard', icon: <HomeIcon /> },
     { view: 'notes', label: 'Notes', icon: <NoteIcon /> },
     { view: 'map', label: 'Map', icon: <MapIcon /> },
     { view: 'time', label: 'Time', icon: <ClockIcon /> },
@@ -136,7 +134,7 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
       </div>
 
       {/* Center Section - Navigation */}
-      <div className="hidden md:flex items-center gap-2">
+      <div className="flex items-center gap-2">
         {navItems.map((item) => (
           <NavButton
             key={item.view}

@@ -107,6 +107,7 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
         label: 'Job Request',
         description: 'A request for work or hiring.',
         actionLabel: 'Post Job',
+        extends: ['job', 'request'],
         requiredAttributes: ['role'],
         attributes: {
           role: {
@@ -126,6 +127,7 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
         label: 'Freelance Offer',
         description: 'Offering services as a freelancer.',
         actionLabel: 'Post Offer',
+        extends: ['freelance', 'offer'],
         requiredAttributes: ['role', 'rate'],
         attributes: {
           role: {
@@ -193,6 +195,7 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
               label: 'Marketplace Listing',
               description: 'An item for sale.',
               actionLabel: 'List Item',
+              extends: ['item', 'sale'],
               requiredAttributes: ['item', 'price'],
               attributes: {
                   item: {

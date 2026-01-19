@@ -56,11 +56,19 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
                   if (found) return found;
               }
 
-              // Check if tags contain the label
-              // e.g. Node: "Job Request" -> tags: ["job", "request"] or ["job request"]
-              // Simple check: if note tags contain the full label (normalized)
+              // Hyperslicing check (Extends): if node extends other concepts, check if all extended concepts are present
+              if (node.extends && node.extends.length > 0) {
+                  const allExtendedPresent = node.extends.every(ext =>
+                      noteTags.some(tag => tag.includes(ext.toLowerCase()))
+                  );
+                  if (allExtendedPresent) {
+                      return node;
+                  }
+              }
+
+              // Fallback: Check if tags contain the full label (normalized)
+              // This supports monolithic tags like "Job Request" if slices fail or aren't defined
               if (noteTags.some(t => t.includes(label))) {
-                  // console.log("Match found:", node.label, "for tags:", noteTags);
                   return node;
               }
           }
@@ -84,6 +92,19 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       });
 
       return errors;
+  })();
+
+  const missingProperties = (() => {
+      const missing: string[] = [];
+      if (!matchingOntologyNode || !matchingOntologyNode.requiredAttributes) return missing;
+
+      matchingOntologyNode.requiredAttributes.forEach(req => {
+          const hasProp = dirtyNote.properties.some(p => p.key.toLowerCase() === req.toLowerCase());
+          if (!hasProp) {
+              missing.push(req);
+          }
+      });
+      return missing;
   })();
 
   const handleTitleChange = useCallback(
@@ -289,6 +310,7 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     settings, // needed for ontology
     isPublished: !!dirtyNote.nostrEventId,
     actionLabel,
-    validationErrors
+    validationErrors,
+    missingProperties
   };
 };

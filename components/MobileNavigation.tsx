@@ -1,6 +1,7 @@
 import React from 'react';
 import { useView } from '../hooks/useViewContext';
 import { HomeIcon, NoteIcon, ChatIcon, SearchIcon } from './icons';
+import type { View } from '../types';
 
 interface MobileNavigationProps {
     onOpenPalette: () => void;
@@ -9,7 +10,7 @@ interface MobileNavigationProps {
 export function MobileNavigation({ onOpenPalette }: MobileNavigationProps) {
   const { activeView, setActiveView } = useView();
 
-  const navItems = [
+  const navItems: { view: View; label: string; icon: React.FC<any> }[] = [
     { view: 'dashboard', label: 'Home', icon: HomeIcon },
     { view: 'notes', label: 'Notes', icon: NoteIcon },
     { view: 'chat', label: 'Chat', icon: ChatIcon },
@@ -21,7 +22,7 @@ export function MobileNavigation({ onOpenPalette }: MobileNavigationProps) {
         {navItems.map((item) => (
           <button
             key={item.view}
-            onClick={() => setActiveView(item.view as any)}
+            onClick={() => setActiveView(item.view)}
             className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
               activeView === item.view ? 'text-blue-500' : 'text-gray-500 hover:text-gray-300'
             }`}

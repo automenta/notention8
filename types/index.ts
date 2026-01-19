@@ -36,6 +36,7 @@ export interface OntologyNode {
   children?: OntologyNode[];
   actionLabel?: string;
   requiredAttributes?: string[];
+  extends?: string[];
 }
 
 export interface Note {

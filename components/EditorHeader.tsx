@@ -44,6 +44,8 @@ interface EditorHeaderProps {
   isToolbarVisible?: boolean;
   onToggleToolbar?: () => void;
   actionLabel?: string;
+  missingProperties?: string[];
+  onAddProperty?: (key: string) => void;
 }
 
 export const EditorHeader: React.FC<EditorHeaderProps> = ({
@@ -72,6 +74,8 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   isToolbarVisible = true,
   onToggleToolbar,
   actionLabel = 'Publish',
+  missingProperties = [],
+  onAddProperty
 }) => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isTagInputVisible, setIsTagInputVisible] = useState(tags.length > 0);
@@ -105,7 +109,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
               disabled={readOnly}
               className={`w-full bg-transparent text-white text-xl font-bold focus:outline-none placeholder-gray-700 transition-colors focus:placeholder-gray-600 ${readOnly ? 'cursor-not-allowed opacity-75' : ''}`}
             />
-            {readOnly && <LockIcon className="h-4 w-4 text-gray-500 ml-2 flex-shrink-0" title="Read Only" />}
+            {readOnly && <LockIcon className="h-4 w-4 text-gray-500 ml-2 flex-shrink-0" />}
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -203,6 +207,23 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
 
             {/* Network Actions */}
             <div className="flex items-center gap-2 pl-1">
+                 {/* Property Hints */}
+                 {missingProperties.length > 0 && onAddProperty && (
+                    <div className="hidden lg:flex items-center gap-1 mr-2 animate-fade-in">
+                        <span className="text-xs text-yellow-500 mr-1">Missing:</span>
+                        {missingProperties.map(prop => (
+                            <button
+                                key={prop}
+                                onClick={() => onAddProperty(prop)}
+                                className="px-2 py-0.5 text-xs bg-yellow-900/30 text-yellow-200 border border-yellow-700/50 rounded-full hover:bg-yellow-900/50 transition-colors"
+                                title={`Add property: ${prop}`}
+                            >
+                                + {prop}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
                 {onFindMatches && (
                     <button
                       onClick={onFindMatches}
