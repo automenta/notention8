@@ -20,6 +20,7 @@ interface PropertyInspectorProps {
   onPickLocation?: () => void;
   onPickTime?: (key: string) => void;
   ontology?: OntologyNode[];
+  onClose?: () => void;
 }
 
 import { getCurrentPosition } from '../../utils/geolocation';
@@ -30,7 +31,8 @@ export function PropertyInspector({
   onUpdateText,
   onPickLocation,
   onPickTime,
-  ontology = []
+  ontology = [],
+  onClose
 }: PropertyInspectorProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -126,13 +128,24 @@ export function PropertyInspector({
           <TagIcon className="w-4 h-4 text-blue-500" />
           Properties
         </span>
-        <button
-          onClick={startAdd}
-          className="p-1.5 hover:bg-blue-900/50 rounded-md text-blue-400 transition-colors"
-          title="Add Property"
-        >
-          <PlusIcon className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1">
+            <button
+              onClick={startAdd}
+              className="p-1.5 hover:bg-blue-900/50 rounded-md text-blue-400 transition-colors"
+              title="Add Property"
+            >
+              <PlusIcon className="w-4 h-4" />
+            </button>
+            {onClose && (
+                <button
+                  onClick={onClose}
+                  className="p-1.5 hover:bg-red-900/30 rounded-md text-gray-400 hover:text-red-400 transition-colors"
+                  title="Close Inspector"
+                >
+                  <XIcon className="w-4 h-4" />
+                </button>
+            )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">

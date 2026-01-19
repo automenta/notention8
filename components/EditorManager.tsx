@@ -208,6 +208,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
             onPickLocation={() => setIsMapPickerOpen(true)}
             onPickTime={handlePickTime}
             ontology={settings.ontology}
+            onClose={() => setIsInspectorOpen(false)}
           />
         )}
       </div>
