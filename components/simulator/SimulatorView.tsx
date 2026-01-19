@@ -3,8 +3,12 @@ import { AgentSessionWrapper } from './AgentSessionWrapper';
 import { AgentSessionView } from './AgentSessionView';
 import { CommunityWindow } from './CommunityWindow';
 import { WebLLMProvider } from '../../services/ai/WebLLMProvider';
-import { parseProperties } from '../../utils/parsing'; // Need to parse properties for matching
-import type { Note } from '../../types';
+import { Gardener } from '../../services/gardener';
+import { parseProperties } from '../../utils/parsing';
+import { matchNotes } from '../../utils/matching';
+import { addAttribute, findNode } from '../../utils/ontologyHelpers';
+import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
+import type { Note, OntologyNode, OntologyAttribute } from '../../types';
 
 // Agent State
 interface SimulationAgent {
@@ -38,16 +42,30 @@ const INITIAL_AGENTS: SimulationAgent[] = [
 export const SimulatorView: React.FC = () => {
   const [agents, setAgents] = useState<SimulationAgent[]>(INITIAL_AGENTS);
   const [active, setActive] = useState(false);
-  const [logs, setLogs] = useState<string[]>([]);
+  const [logs, setLogs] = useState<{msg: string; type: 'info' | 'match' | 'ontology'}[]>([]);
   const [networkNotes, setNetworkNotes] = useState<Note[]>([]); // Shared Network State
+  const [ontology, setOntology] = useState<OntologyNode[]>(DEFAULT_ONTOLOGY);
+  const [notifications, setNotifications] = useState<Record<string, string[]>>({});
+  const [newAttributes, setNewAttributes] = useState<string[]>([]);
 
   const aiRef = useRef<WebLLMProvider>(new WebLLMProvider());
+  const gardenerRef = useRef<Gardener | null>(null);
   const agentsRef = useRef(agents);
+  const ontologyRef = useRef(ontology); // Ref for loop access
 
-  // Keep ref in sync
+  // Initialize Gardener
+  useEffect(() => {
+      gardenerRef.current = new Gardener(aiRef.current);
+  }, []);
+
+  // Keep refs in sync
   useEffect(() => {
     agentsRef.current = agents;
   }, [agents]);
+
+  useEffect(() => {
+    ontologyRef.current = ontology;
+  }, [ontology]);
 
   // Simulation Loop
   useEffect(() => {
@@ -58,6 +76,7 @@ export const SimulatorView: React.FC = () => {
     const loop = async () => {
         // Use ref to get latest state inside async loop
         const currentAgents = agentsRef.current;
+        const currentOntology = ontologyRef.current;
         const agentIndex = currentAgents.findIndex(a => a.status === 'Idle');
 
         if (agentIndex === -1) {
@@ -69,7 +88,7 @@ export const SimulatorView: React.FC = () => {
 
         // 1. Update Status: Thinking
         updateAgent(agentIndex, { status: 'Thinking...' });
-        addLog(`${agent.name} is thinking about goal: "${agent.goal}"`);
+        // addLog(`${agent.name} is thinking about goal: "${agent.goal}"`, 'info');
 
         // 2. AI Generation
         try {
@@ -86,15 +105,17 @@ export const SimulatorView: React.FC = () => {
             updateAgent(agentIndex, { status: 'Typing...' });
             await simulateTyping(agentIndex, content);
 
-            // 4. AI Tagging (Gardener)
+            // 4. AI Tagging (Gardener) & Ontology Evolution
+            // Pass the CURRENT ontology to the AI so it knows what terms to reuse!
             updateAgent(agentIndex, { status: 'Gardening...' });
-            const tags = await aiRef.current.suggestTags(content);
+            const tags = await aiRef.current.suggestTags(content, currentOntology);
+
             const taggedContent = content + '\n\n' + tags.map((t: string) => JSON.stringify(t)).join(' ');
             updateAgent(agentIndex, { currentDraft: taggedContent });
 
             // 5. Done - Publish Trigger
             updateAgent(agentIndex, { status: 'Published', goal: 'Wait for matches' });
-            addLog(`${agent.name} is publishing...`);
+            addLog(`${agent.name} published a note`, 'info');
 
             // Wait a bit before next loop
             await new Promise(r => setTimeout(r, 2000));
@@ -130,67 +151,146 @@ export const SimulatorView: React.FC = () => {
     }
   };
 
-  const handlePublish = (note: Note) => {
-      // Ensure the note has parsed properties (since AgentSessionView might not have run full parse)
-      // Actually AgentSessionView's TiptapEditor might have done it, but let's be safe.
+  const handlePublish = async (note: Note) => {
+      // 1. Enrich Note
       const properties = parseProperties(note.content);
       const enrichedNote = { ...note, properties };
 
-      setNetworkNotes(prev => [enrichedNote, ...prev]);
-      addLog(`Event Published: ${note.id.slice(0,6)} by user`);
+      setNetworkNotes(prev => {
+          // Prevent duplicates
+          const filtered = prev.filter(n => n.id !== enrichedNote.id);
+          const newNotes = [enrichedNote, ...filtered];
+
+          // 2. Run Matching Logic
+          // Only match against OTHER notes
+          filtered.forEach(otherNote => {
+             const score1 = matchNotes(enrichedNote, otherNote);
+             const score2 = matchNotes(otherNote, enrichedNote);
+
+             if (score1 > 0.5 || score2 > 0.5) {
+                 addLog(`MATCH: ${enrichedNote.id.slice(0,4)} <-> ${otherNote.id.slice(0,4)}`, 'match');
+
+                 setNotifications(n => ({
+                     ...n,
+                     '1': [...(n['1'] || []), `Match found!`],
+                     '2': [...(n['2'] || []), `Match found!`]
+                 }));
+             }
+          });
+
+          return newNotes;
+      });
+
+      // 3. Evolve Ontology
+      if (gardenerRef.current) {
+          try {
+              const newAttrs = await gardenerRef.current.evolveOntology([enrichedNote]);
+              if (newAttrs.length > 0) {
+                  setOntology(prevOntology => {
+                      let newOntology = [...prevOntology];
+                      const targetNodeId = newOntology[0]?.id || 'root';
+
+                      newAttrs.forEach(attr => {
+                          addLog(`Ontology + ${attr.key}`, 'ontology');
+                          setNewAttributes(prev => [attr.key, ...prev].slice(0, 10));
+
+                          const ontAttr: OntologyAttribute = {
+                              type: attr.type,
+                              description: attr.description,
+                              operators: { real: ['is'], imaginary: [] }
+                          };
+                          newOntology = addAttribute(newOntology, targetNodeId, attr.key, ontAttr);
+                      });
+                      return newOntology;
+                  });
+              }
+          } catch (e) {
+              console.error("Gardener Error:", e);
+          }
+      }
   };
 
-  const addLog = (msg: string) => setLogs(prev => [msg, ...prev].slice(0, 50));
+  const addLog = (msg: string, type: 'info' | 'match' | 'ontology') => setLogs(prev => [{msg, type}, ...prev].slice(0, 20));
 
   return (
-    <div className="flex flex-col h-full bg-black text-gray-200 p-4 overflow-hidden">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">🧪 Community Simulator</h1>
+    <div className="flex flex-col h-full bg-black text-gray-200 p-2 overflow-hidden">
+      <div className="flex justify-between items-center mb-2 px-2">
+        <h1 className="text-lg font-bold">🧪 Community Simulator</h1>
         <div className="flex gap-2">
             <button
                 onClick={() => setActive(!active)}
-                className={`px-4 py-2 rounded font-bold ${active ? 'bg-red-600' : 'bg-green-600'}`}
+                className={`px-3 py-1 rounded text-xs font-bold ${active ? 'bg-red-600' : 'bg-green-600'}`}
             >
-                {active ? 'Stop Simulation' : 'Start Simulation'}
+                {active ? 'STOP' : 'START'}
             </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 flex-grow overflow-hidden">
+      <div className="grid grid-cols-4 gap-2 flex-grow overflow-hidden h-full">
         {/* Agent 1 */}
-        <AgentSessionWrapper agentId={agents[0].id}>
-            <AgentSessionView
-                agentName={agents[0].name}
-                currentDraft={agents[0].currentDraft}
-                onDraftChange={(val) => updateAgent(0, { currentDraft: val })}
-                status={agents[0].status}
-                onPublish={handlePublish}
-            />
-        </AgentSessionWrapper>
+        <div className="col-span-1 h-full overflow-hidden">
+             <AgentSessionWrapper agentId={agents[0].id} ontology={ontology}>
+                <AgentSessionView
+                    agentName={agents[0].name}
+                    currentDraft={agents[0].currentDraft}
+                    onDraftChange={(val) => updateAgent(0, { currentDraft: val })}
+                    status={agents[0].status}
+                    onPublish={handlePublish}
+                    notifications={notifications[agents[0].id] || []}
+                    minimal={true}
+                />
+            </AgentSessionWrapper>
+        </div>
 
         {/* Agent 2 */}
-        <AgentSessionWrapper agentId={agents[1].id}>
-            <AgentSessionView
-                agentName={agents[1].name}
-                currentDraft={agents[1].currentDraft}
-                onDraftChange={(val) => updateAgent(1, { currentDraft: val })}
-                status={agents[1].status}
-                onPublish={handlePublish}
-            />
-        </AgentSessionWrapper>
+        <div className="col-span-1 h-full overflow-hidden">
+            <AgentSessionWrapper agentId={agents[1].id} ontology={ontology}>
+                <AgentSessionView
+                    agentName={agents[1].name}
+                    currentDraft={agents[1].currentDraft}
+                    onDraftChange={(val) => updateAgent(1, { currentDraft: val })}
+                    status={agents[1].status}
+                    onPublish={handlePublish}
+                    notifications={notifications[agents[1].id] || []}
+                    minimal={true}
+                />
+            </AgentSessionWrapper>
+        </div>
 
-        {/* Community Window */}
-        <CommunityWindow networkNotes={networkNotes} />
-      </div>
+        {/* Community Stream */}
+        <div className="col-span-1 h-full overflow-hidden">
+             <CommunityWindow networkNotes={networkNotes} />
+        </div>
 
-      {/* Logs (Condensed) */}
-      <div className="h-32 mt-4 bg-gray-900 border border-gray-700 rounded p-4 overflow-y-auto font-mono text-xs">
-        <h3 className="font-bold text-gray-500 mb-2 sticky top-0 bg-gray-900">System Logs</h3>
-        {logs.map((log, i) => (
-            <div key={i} className="mb-1 border-l-2 border-blue-500 pl-2">
-                <span className="text-gray-400">[{new Date().toLocaleTimeString()}]</span> {log}
-            </div>
-        ))}
+        {/* System Dashboard */}
+        <div className="col-span-1 h-full overflow-hidden flex flex-col bg-gray-900 border border-gray-700 rounded-lg">
+             <div className="bg-gray-800 px-3 py-2 border-b border-gray-700 font-bold text-xs text-gray-400">
+                 SYSTEM EVENTS
+             </div>
+             <div className="flex-1 overflow-y-auto p-2 space-y-2 font-mono text-[10px]">
+                 {logs.map((log, i) => (
+                     <div key={i} className={`p-1 border-l-2 pl-2 ${
+                         log.type === 'match' ? 'border-yellow-500 text-yellow-200' :
+                         log.type === 'ontology' ? 'border-green-500 text-green-300' :
+                         'border-blue-500 text-gray-400'
+                     }`}>
+                         {log.msg}
+                     </div>
+                 ))}
+             </div>
+
+             <div className="bg-gray-800 px-3 py-2 border-t border-gray-700 font-bold text-xs text-gray-400">
+                 ONTOLOGY GROWTH
+             </div>
+             <div className="h-1/3 overflow-y-auto p-2 font-mono text-[10px] space-y-1">
+                 {newAttributes.length === 0 && <span className="text-gray-600">No new attributes yet.</span>}
+                 {newAttributes.map((attr, i) => (
+                     <div key={i} className="text-green-400 flex items-center gap-1">
+                         <span>🌱</span> {attr}
+                     </div>
+                 ))}
+             </div>
+        </div>
       </div>
     </div>
   );

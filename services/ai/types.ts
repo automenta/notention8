@@ -1,4 +1,4 @@
-import type { Note, OntologyAttribute } from '../../types';
+import type { Note, OntologyAttribute, OntologyNode } from '../../types';
 
 export interface AIProvider {
   name: string;
@@ -17,8 +17,9 @@ export interface AIProvider {
 
   /**
    * Suggests tags for a given text.
+   * Optionally takes the current ontology to encourage reuse of terms.
    */
-  suggestTags(text: string): Promise<string[]>;
+  suggestTags(text: string, ontology?: OntologyNode[]): Promise<string[]>;
 }
 
 export interface InferredAttribute {

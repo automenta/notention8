@@ -13,9 +13,10 @@ interface TiptapEditorProps {
   note: Note;
   onSave: (updatedContent: string) => void;
   ontology: OntologyNode[];
+  minimal?: boolean;
 }
 
-export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontology }) => {
+export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontology, minimal = false }) => {
   const [viewMode, setViewMode] = useState<'rich' | 'code'>('rich');
 
   // Index suggestions
@@ -54,11 +55,11 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontolo
     content: sanitizeHTML(note.content),
     editorProps: {
       attributes: {
-        class: 'prose prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none h-full',
+        class: `prose prose-invert prose-sm focus:outline-none h-full ${minimal ? 'p-2 text-xs' : 'sm:prose-base lg:prose-lg xl:prose-2xl m-5'}`,
       },
     },
     onUpdate: ({ editor }) => onSave(editor.getHTML()),
-  }, [ontology]); // Re-create editor when ontology changes to update suggestions closure
+  }, [ontology, minimal]); // Re-create editor when ontology changes to update suggestions closure
 
   // Sync content from parent
   useEffect(() => {
@@ -80,7 +81,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({ note, onSave, ontolo
 
   return (
     <div className="flex flex-col h-full">
-      <TiptapToolbar editor={editor} viewMode={viewMode} toggleViewMode={toggleViewMode} />
+      {!minimal && <TiptapToolbar editor={editor} viewMode={viewMode} toggleViewMode={toggleViewMode} />}
       <div className="flex-grow overflow-y-auto">
         {viewMode === 'rich' ? (
           <EditorContent editor={editor} />

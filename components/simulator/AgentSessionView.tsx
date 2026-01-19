@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNotes } from '../../hooks/useNotes';
+import { useSettings } from '../../hooks/useSettingsContext';
 import { TiptapEditor } from '../TiptapEditor';
-import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
 import type { Note } from '../../types';
 
 interface Props {
@@ -10,6 +10,8 @@ interface Props {
   onDraftChange: (text: string) => void;
   status: string;
   onPublish: (note: Note) => void;
+  notifications: string[];
+  minimal?: boolean;
 }
 
 export const AgentSessionView: React.FC<Props> = ({
@@ -17,9 +19,12 @@ export const AgentSessionView: React.FC<Props> = ({
     currentDraft,
     onDraftChange,
     status,
-    onPublish
+    onPublish,
+    notifications,
+    minimal = false
 }) => {
   const { notes, addNote, updateNote } = useNotes();
+  const { settings } = useSettings();
   const [activeNote, setActiveNote] = useState<Note | null>(null);
 
   // Initialize or Select Default Note
@@ -41,28 +46,34 @@ export const AgentSessionView: React.FC<Props> = ({
         // Notify Network
         onPublish(finalNote);
     }
-  }, [status]); // Dependencies intentionally limited to trigger once on status change?
-                // Actually status might stay "Published" for a while.
-                // We need to ensure we don't double publish.
-                // The Director resets status to Idle eventually.
-                // We should probably rely on a separate trigger or check if content changed?
-                // For now, assuming Director manages status transition cleanly.
+  }, [status]);
 
   // The note to display. If typing (currentDraft exists and matches activeNote), use draft.
-  // Wait, currentDraft is global for the agent. We assume the agent is typing in the *active* note.
   const displayNote = activeNote
     ? { ...activeNote, content: (currentDraft && status !== 'Idle' && status !== 'Published') ? currentDraft : activeNote.content }
     : null;
 
   return (
-    <div className="flex flex-col h-full bg-gray-900 border border-gray-700 rounded-lg overflow-hidden shadow-lg">
+    <div className="flex flex-col h-full bg-gray-900 border border-gray-700 rounded-lg overflow-hidden shadow-lg relative transition-colors duration-500">
+
+      {/* Notifications Overlay */}
+      {notifications.length > 0 && (
+          <div className="absolute top-8 right-2 z-50 flex flex-col gap-1 pointer-events-none">
+              {notifications.map((msg, i) => (
+                  <div key={i} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-[10px] px-2 py-1 rounded shadow-lg animate-bounce border border-white/20">
+                      🔔 {msg}
+                  </div>
+              ))}
+          </div>
+      )}
+
       {/* Header */}
-      <div className="bg-gray-800 px-3 py-2 flex justify-between items-center border-b border-gray-700">
+      <div className={`bg-gray-800 px-2 flex justify-between items-center border-b border-gray-700 ${minimal ? 'py-1' : 'py-2'}`}>
         <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${status === 'Error' ? 'bg-red-500' : 'bg-green-500'}`}></div>
-            <span className="font-bold text-sm text-gray-200">{agentName}</span>
+            <span className={`font-bold text-gray-200 ${minimal ? 'text-xs' : 'text-sm'}`}>{agentName}</span>
         </div>
-        <span className="text-xs text-gray-400 font-mono flex items-center gap-1">
+        <span className="text-[10px] text-gray-400 font-mono flex items-center gap-1">
             {status === 'Typing...' && <span className="animate-pulse">⌨️</span>}
             {status}
         </span>
@@ -71,15 +82,15 @@ export const AgentSessionView: React.FC<Props> = ({
       <div className="flex flex-grow overflow-hidden">
           {/* Mini Sidebar */}
           <div className="w-1/4 bg-gray-950 border-r border-gray-800 flex flex-col">
-            <div className="p-2 border-b border-gray-800">
+            <div className="p-1 border-b border-gray-800">
                 <button
                     onClick={() => {
                         const n = addNote();
                         setActiveNote(n);
                     }}
-                    className="w-full text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 py-1 rounded"
+                    className="w-full text-[10px] bg-gray-800 hover:bg-gray-700 text-gray-300 py-1 rounded transition-colors"
                 >
-                    + New Note
+                    + Note
                 </button>
             </div>
             <div className="overflow-y-auto flex-1">
@@ -87,7 +98,7 @@ export const AgentSessionView: React.FC<Props> = ({
                     <div
                         key={note.id}
                         onClick={() => setActiveNote(note)}
-                        className={`p-2 cursor-pointer border-b border-gray-900 truncate text-xs ${activeNote?.id === note.id ? 'bg-blue-900/30 text-blue-200' : 'text-gray-500 hover:text-gray-300'}`}
+                        className={`p-1 cursor-pointer border-b border-gray-900 truncate text-[10px] transition-colors ${activeNote?.id === note.id ? 'bg-blue-900/30 text-blue-200' : 'text-gray-500 hover:text-gray-300'}`}
                     >
                         {note.title || "Untitled"}
                     </div>
@@ -98,18 +109,18 @@ export const AgentSessionView: React.FC<Props> = ({
           {/* Editor Area */}
           <div className="w-3/4 bg-gray-900 relative overflow-y-auto">
             {displayNote ? (
-                <div className="p-4 min-h-full">
+                <div className={`min-h-full ${minimal ? 'p-1' : 'p-4'}`}>
                     <TiptapEditor
                         note={displayNote}
-                        onChange={(content) => {
-                            // When user manually types (if we allowed it) or when simulated typing updates
+                        onSave={(content) => {
                             onDraftChange(content);
                         }}
-                        ontology={DEFAULT_ONTOLOGY}
+                        ontology={settings.ontology}
+                        minimal={minimal}
                     />
                 </div>
             ) : (
-                <div className="flex items-center justify-center h-full text-gray-600 text-xs">
+                <div className="flex items-center justify-center h-full text-gray-600 text-[10px]">
                     Initializing...
                 </div>
             )}
@@ -117,9 +128,9 @@ export const AgentSessionView: React.FC<Props> = ({
       </div>
 
       {/* Footer */}
-      <div className="bg-gray-950 px-3 py-1 text-[10px] text-gray-600 flex justify-between border-t border-gray-800">
-        <span>{notes.length} Notes</span>
-        <span>ID: {activeNote?.id.slice(0,4)}</span>
+      <div className="bg-gray-950 px-2 py-0.5 text-[9px] text-gray-600 flex justify-between border-t border-gray-800">
+        <span>{notes.length}</span>
+        <span>{activeNote?.id.slice(0,4)}</span>
       </div>
     </div>
   );

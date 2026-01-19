@@ -4,14 +4,16 @@ import { useNotesState } from '../../hooks/useNotesState';
 import { SettingsContext } from '../contexts/SettingsContext';
 import localforage from 'localforage';
 import type { ReactNode } from 'react';
+import type { OntologyNode } from '../../types';
 import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
 
 interface Props {
   agentId: string;
+  ontology: OntologyNode[];
   children: ReactNode;
 }
 
-export const AgentSessionWrapper: React.FC<Props> = ({ agentId, children }) => {
+export const AgentSessionWrapper: React.FC<Props> = ({ agentId, ontology, children }) => {
   // Create a unique localForage instance for this agent
   const driver = useMemo(() => {
     return localforage.createInstance({
@@ -32,11 +34,11 @@ export const AgentSessionWrapper: React.FC<Props> = ({ agentId, children }) => {
       nostr: {
         privkey: null, // Agents handle keys separately
       },
-      ontology: DEFAULT_ONTOLOGY,
+      ontology: ontology || DEFAULT_ONTOLOGY,
     },
     setSettings: () => {}, // No-op for now
     settingsLoading: false
-  }), []);
+  }), [ontology]);
 
   return (
     <SettingsContext.Provider value={settingsState}>
