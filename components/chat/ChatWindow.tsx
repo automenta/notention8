@@ -73,74 +73,109 @@ export function ChatWindow({
 
   if (!selectedContact) {
     return (
-      <div className="h-full flex flex-col bg-gray-800/70 items-center justify-center text-center text-gray-500">
-        <p>Select a contact to start chatting.</p>
+      <div className="h-full flex flex-col bg-gray-800/20 items-center justify-center text-center text-gray-500">
+        <div className="bg-gray-800 p-8 rounded-full mb-4">
+             <span className="text-4xl">💬</span>
+        </div>
+        <p className="text-lg font-semibold text-gray-400">Select a contact to start chatting</p>
+        <p className="text-sm">Your messages are end-to-end encrypted.</p>
       </div>
     );
   }
 
+  // Group messages by user and time proximity?
+  // For now, simple list.
+
   return (
-    <div className="h-full flex flex-col bg-gray-800/70">
-      <div className="flex-shrink-0 p-3 border-b border-gray-700/50 flex items-center gap-3">
+    <div className="h-full flex flex-col bg-gray-900/30">
+      {/* Header */}
+      <div className="flex-shrink-0 p-3 border-b border-gray-700/50 flex items-center gap-3 bg-gray-900/50">
         <button
           onClick={onBack}
-          className="md:hidden p-2 -ml-1 text-gray-400 hover:text-white"
+          className="md:hidden p-2 -ml-1 text-gray-400 hover:text-white rounded hover:bg-gray-800"
         >
-          <ArrowLeftIcon className="h-6 w-6" />
+          <ArrowLeftIcon className="h-5 w-5" />
         </button>
-        <img
-          src={
-            selectedProfile?.picture ||
-            `https://api.dicebear.com/8.x/bottts-neutral/svg?seed=${selectedContact.pubkey}`
-          }
-          className="h-10 w-10 rounded-full bg-gray-700"
-        />
-        <div>
-          <p className="font-bold text-white">
+        <div className="relative">
+             <img
+              src={
+                selectedProfile?.picture ||
+                `https://api.dicebear.com/8.x/bottts-neutral/svg?seed=${selectedContact.pubkey}`
+              }
+              className="h-10 w-10 rounded-full bg-gray-700 object-cover border border-gray-600"
+            />
+            {/* Online status could go here */}
+        </div>
+
+        <div className="min-w-0">
+          <p className="font-bold text-white truncate">
             {selectedProfile?.name || 'Anonymous'}
           </p>
           <p
-            className="text-xs text-gray-400 font-mono"
+            className="text-xs text-gray-400 font-mono truncate"
             title={nip19.npubEncode(selectedContact.pubkey)}
           >
             {formatNpub(nip19.npubEncode(selectedContact.pubkey))}
           </p>
         </div>
       </div>
+
+      {/* Messages */}
       <div className="flex-grow p-4 overflow-y-auto space-y-4">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.pubkey === pubkey ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-lg px-4 py-2 rounded-xl ${msg.pubkey === pubkey ? 'bg-blue-600' : 'bg-gray-600'}`}
-            >
-              <p className="text-white whitespace-pre-wrap break-words">
-                {msg.content}
-              </p>
-              <p className="text-xs text-gray-300/70 text-right mt-1">
-                {new Date(msg.created_at * 1000).toLocaleTimeString()}
-              </p>
-            </div>
-          </div>
-        ))}
+        {messages.length === 0 && (
+             <div className="text-center text-gray-600 py-10">
+                 <p>No messages yet.</p>
+                 <p className="text-xs">Say hello! 👋</p>
+             </div>
+        )}
+        {messages.map((msg, idx) => {
+            const isMe = msg.pubkey === pubkey;
+            const showTime = idx === messages.length - 1 || (idx < messages.length - 1 && messages[idx + 1].pubkey !== msg.pubkey);
+
+            return (
+              <div
+                key={msg.id}
+                className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+              >
+                <div
+                  className={`
+                    max-w-[85%] sm:max-w-lg px-4 py-2 rounded-2xl text-sm leading-relaxed shadow-sm
+                    ${isMe
+                        ? 'bg-blue-600 text-white rounded-tr-sm'
+                        : 'bg-gray-700 text-gray-100 rounded-tl-sm border border-gray-600'}
+                  `}
+                >
+                  <p className="whitespace-pre-wrap break-words">
+                    {msg.content}
+                  </p>
+                </div>
+                {showTime && (
+                    <span className="text-[10px] text-gray-500 mt-1 px-1">
+                        {new Date(msg.created_at * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </span>
+                )}
+              </div>
+            );
+        })}
         <div ref={messagesEndRef} />
       </div>
-      <div className="flex-shrink-0 p-4">
-        <form onSubmit={handleSendMessage} className="flex gap-2">
+
+      {/* Input */}
+      <div className="flex-shrink-0 p-4 bg-gray-900/50 border-t border-gray-700/50">
+        <form onSubmit={handleSendMessage} className="flex gap-2 max-w-4xl mx-auto">
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type a message..."
-            className="flex-grow p-3 bg-gray-700 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="flex-grow p-3 bg-gray-800 border border-gray-700 rounded-full text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
           />
           <button
             type="submit"
-            className="p-3 bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-500"
+            disabled={!newMessage.trim()}
+            className="p-3 bg-blue-600 rounded-full text-white hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors shadow-lg"
           >
-            <SendIcon className="h-6 w-6" />
+            <SendIcon className="h-5 w-5 translate-x-0.5" />
           </button>
         </form>
       </div>

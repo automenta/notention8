@@ -4,7 +4,7 @@ import { nip19 } from 'nostr-tools';
 import { useView } from '../../hooks/useViewContext';
 import type { NostrEvent, NostrProfile } from '../../types';
 import { formatNpub, extractPropertiesFromTags } from '../../utils/nostr';
-import { ChatIcon, SparklesIcon, MergeIcon, DocumentDuplicateIcon } from '../icons';
+import { ChatIcon, MergeIcon, DocumentDuplicateIcon, TagIcon } from '../icons';
 
 // Extend NostrEvent to include score if available
 export type ScoredNostrEvent = NostrEvent & { score?: number };
@@ -37,71 +37,103 @@ export function NostrEventCard({
     setActiveView('chat');
   };
 
-  const hasProperties = extractPropertiesFromTags(event.tags).length > 0;
+  const properties = extractPropertiesFromTags(event.tags);
+  const hashtags = event.tags.filter(t => t[0] === 't').map(t => t[1]);
 
   return (
-    <div className="bg-gray-800 p-4 rounded-lg border border-gray-700/80 animate-fade-in relative overflow-hidden group">
+    <div className="bg-gray-800 rounded-lg border border-gray-700/80 animate-fade-in relative overflow-hidden group hover:border-blue-500/30 transition-colors">
+
+      {/* Match Score Badge */}
       {matchScore !== undefined && (
         <div
-          className={`absolute top-0 right-0 px-2 py-1 text-xs font-bold rounded-bl-lg ${
+          className={`absolute top-0 right-0 px-3 py-1 text-xs font-bold rounded-bl-lg shadow-sm z-10 ${
             matchScore > 80
-              ? 'bg-green-900/80 text-green-400'
+              ? 'bg-green-600 text-white'
               : matchScore > 50
-                ? 'bg-yellow-900/80 text-yellow-400'
-                : 'bg-gray-700/80 text-gray-400'
+                ? 'bg-yellow-600 text-white'
+                : 'bg-gray-600 text-gray-200'
           }`}
         >
           {Math.round(matchScore)}% Match
         </div>
       )}
-      <div className="flex items-center text-sm text-gray-400 mb-2">
-        {profile?.picture && (
-          <img
-            src={profile.picture}
-            alt={profile.name || ''}
-            className="h-6 w-6 rounded-full mr-2"
-          />
-        )}
-        <span
-          className="font-semibold text-blue-400 hover:underline cursor-pointer"
-          title={authorNpub}
-        >
-          {profile?.name || formatNpub(authorNpub)}
-        </span>
-        <span className="ml-auto">{eventDate}</span>
-      </div>
-      <p className="text-gray-300 whitespace-pre-wrap break-words mb-2">
-        {event.content}
-      </p>
 
-      <div className="flex justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity mt-2 md:mt-0">
-        {onApplyMatch && hasProperties && (
+      <div className="p-4">
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-3">
+            <img
+                src={profile?.picture || `https://api.dicebear.com/8.x/bottts-neutral/svg?seed=${event.pubkey}`}
+                alt={profile?.name || ''}
+                className="h-8 w-8 rounded-full bg-gray-700 object-cover border border-gray-600"
+            />
+            <div className="min-w-0">
+                 <div
+                    className="font-semibold text-white truncate hover:underline cursor-pointer"
+                    title={authorNpub}
+                 >
+                    {profile?.name || formatNpub(authorNpub)}
+                 </div>
+                 <div className="text-xs text-gray-500">{eventDate}</div>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="text-gray-300 text-sm whitespace-pre-wrap break-words mb-4 line-clamp-6">
+            {event.content}
+          </div>
+
+          {/* Semantic Properties */}
+          {properties.length > 0 && (
+              <div className="mb-3 flex flex-wrap gap-2">
+                  {properties.map((prop, idx) => (
+                      <div key={idx} className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono bg-blue-900/30 text-blue-300 border border-blue-900/50">
+                          <span className="font-bold">{prop.key}</span>
+                          <span className="opacity-70">{prop.operator === 'is' ? ':' : prop.operator}</span>
+                          <span className="text-white">{prop.values.join(', ')}</span>
+                      </div>
+                  ))}
+              </div>
+          )}
+
+          {/* Hashtags */}
+          {hashtags.length > 0 && (
+              <div className="mb-4 flex flex-wrap gap-2 text-xs text-gray-400">
+                  {hashtags.map((tag, idx) => (
+                      <span key={idx} className="hover:text-blue-400 cursor-pointer">#{tag}</span>
+                  ))}
+              </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex justify-end gap-2 pt-3 border-t border-gray-700/50 opacity-100 md:opacity-80 group-hover:opacity-100 transition-all">
+            {onApplyMatch && properties.length > 0 && (
+                <button
+                  onClick={() => onApplyMatch(event)}
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-gray-700 hover:bg-purple-600 text-gray-300 hover:text-white rounded-md transition-colors"
+                  title="Apply semantic properties to your note"
+                >
+                  <MergeIcon className="w-3.5 h-3.5" />
+                  Apply Match
+                </button>
+            )}
+            {onFork && (
+                <button
+                    onClick={onFork}
+                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-gray-700 hover:bg-green-600 text-gray-300 hover:text-white rounded-md transition-colors"
+                    title="Fork this note to your collection"
+                >
+                    <DocumentDuplicateIcon className="w-3.5 h-3.5" />
+                    Fork
+                </button>
+            )}
             <button
-              onClick={() => onApplyMatch(event)}
-              className="flex items-center gap-1 text-xs px-2 py-1 bg-gray-700 hover:bg-purple-600 text-gray-300 hover:text-white rounded transition-colors"
-              title="Apply semantic properties to your note"
+              onClick={handleChat}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-gray-700 hover:bg-blue-600 text-gray-300 hover:text-white rounded-md transition-colors"
             >
-              <MergeIcon className="w-3 h-3" />
-              Apply Match
+              <ChatIcon className="w-3.5 h-3.5" />
+              Chat
             </button>
-        )}
-        {onFork && (
-            <button
-                onClick={onFork}
-                className="flex items-center gap-1 text-xs px-2 py-1 bg-gray-700 hover:bg-green-600 text-gray-300 hover:text-white rounded transition-colors"
-                title="Fork this note to your collection"
-            >
-                <DocumentDuplicateIcon className="w-3 h-3" />
-                Fork
-            </button>
-        )}
-        <button
-          onClick={handleChat}
-          className="flex items-center gap-1 text-xs px-2 py-1 bg-gray-700 hover:bg-blue-600 text-gray-300 hover:text-white rounded transition-colors"
-        >
-          <ChatIcon className="w-3 h-3" />
-          Chat
-        </button>
+          </div>
       </div>
     </div>
   );

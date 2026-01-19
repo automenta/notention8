@@ -108,7 +108,7 @@ describe('EditorManager', () => {
 
   it('updates title and saves after debounce when user types', () => {
     renderWithContext(<EditorManager note={initialNote} onSave={mockOnSave} />);
-    const titleInput = screen.getByPlaceholderText('Note Title') as HTMLInputElement;
+    const titleInput = screen.getByPlaceholderText('Untitled Note') as HTMLInputElement;
     expect(titleInput.value).toBe('Original Title');
     fireEvent.change(titleInput, { target: { value: 'New Title' } });
     expect(titleInput.value).toBe('New Title');
