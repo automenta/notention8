@@ -6,9 +6,18 @@ interface TagInputProps {
   onChange: (tags: string[]) => void;
   onAutoTag?: () => void;
   isAutoTagging?: boolean;
+  autoFocus?: boolean;
+  className?: string;
 }
 
-export const TagInput: React.FC<TagInputProps> = ({ tags, onChange, onAutoTag, isAutoTagging }) => {
+export const TagInput: React.FC<TagInputProps> = ({
+  tags,
+  onChange,
+  onAutoTag,
+  isAutoTagging,
+  autoFocus,
+  className = "p-2 bg-gray-900/50 rounded-md border border-gray-700/30"
+}) => {
   const [input, setInput] = useState('');
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -29,7 +38,7 @@ export const TagInput: React.FC<TagInputProps> = ({ tags, onChange, onAutoTag, i
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 p-2 bg-gray-900/50 rounded-md border border-gray-700/30">
+    <div className={`flex flex-wrap items-center gap-2 ${className}`}>
       <TagIcon className="h-4 w-4 text-gray-400" />
       {tags.map((tag) => (
         <span
@@ -52,6 +61,7 @@ export const TagInput: React.FC<TagInputProps> = ({ tags, onChange, onAutoTag, i
         onKeyDown={handleKeyDown}
         placeholder={tags.length === 0 ? "Add tags..." : ""}
         className="flex-grow min-w-[80px] bg-transparent text-sm text-gray-300 focus:outline-none placeholder-gray-600"
+        autoFocus={autoFocus}
       />
       {onAutoTag && (
         <button
