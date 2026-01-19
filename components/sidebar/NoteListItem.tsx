@@ -1,19 +1,35 @@
 import React, { useRef } from 'react';
 import type { Note } from '../../types';
-import { TrashIcon, WorldIcon, DownloadIcon } from '../icons';
+import { TrashIcon, WorldIcon, DownloadIcon, MapPinIcon, ClockIcon } from '../icons';
 import { getTextFromHtml } from '../../utils/nostr';
 
-export const NoteListItem: React.FC<{
+export const NoteListItem = React.memo(({
+  note,
+  isSelected,
+  onSelect,
+  onDelete
+}: {
   note: Note;
   isSelected: boolean;
   onSelect: () => void;
   onDelete: () => void;
-}> = ({ note, isSelected, onSelect, onDelete }) => {
+}) => {
   const itemRef = useRef<HTMLDivElement>(null);
 
   const contentPreview = React.useMemo(() => {
     return getTextFromHtml(note.content) || 'No content';
   }, [note.content]);
+
+  const hasLocation = React.useMemo(() => {
+      return note.properties.some(p => ['location', 'geo', 'place', 'lat', 'lng'].includes(p.key.toLowerCase()));
+  }, [note.properties]);
+
+  const hasTime = React.useMemo(() => {
+      return note.properties.some(p => {
+          const k = p.key.toLowerCase();
+          return k.includes('date') || k.includes('time') || k === 'start' || k === 'end' || k === 'deadline';
+      });
+  }, [note.properties]);
 
   const handleExport = (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -66,13 +82,25 @@ export const NoteListItem: React.FC<{
       }`}
     >
       <div className="flex-1 overflow-hidden flex items-center gap-3 pointer-events-none">
-        {note.nostrEventId && note.publishedAt && (
-          <span
-            title={`Published on Nostr at ${new Date(note.publishedAt).toLocaleString()}`}
-          >
-            <WorldIcon className="h-4 w-4 text-green-400 flex-shrink-0" />
-          </span>
-        )}
+        <div className="flex flex-col gap-1">
+            {note.nostrEventId && note.publishedAt && (
+            <span
+                title={`Published on Nostr at ${new Date(note.publishedAt).toLocaleString()}`}
+            >
+                <WorldIcon className="h-4 w-4 text-green-400 flex-shrink-0" />
+            </span>
+            )}
+            {hasLocation && (
+                <span title="Has location data">
+                    <MapPinIcon className="h-4 w-4 text-blue-400 flex-shrink-0" />
+                </span>
+            )}
+            {hasTime && (
+                <span title="Has time data">
+                    <ClockIcon className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                </span>
+            )}
+        </div>
         <div className="flex-1 overflow-hidden">
           <h3
             className={`font-semibold truncate ${isSelected ? 'text-white' : 'text-gray-200'}`}
@@ -105,4 +133,4 @@ export const NoteListItem: React.FC<{
       </div>
     </div>
   );
-};
+});

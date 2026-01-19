@@ -89,10 +89,15 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         e.preventDefault();
         handleNext();
       }
+
+      if (e.altKey && e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setSelectedNoteId(null);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dirtyNote, onSave, showToast, handlePrevious, handleNext]);
+  }, [dirtyNote, onSave, showToast, handlePrevious, handleNext, setSelectedNoteId]);
   const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
