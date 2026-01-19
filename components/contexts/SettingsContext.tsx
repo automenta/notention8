@@ -19,7 +19,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [settings, setSettings, settingsLoading] = useLocalForage<AppSettings>(
-    'notention-settings',
+    'notention-settings-v2',
     {
       aiEnabled: false,
       developerMode: false,

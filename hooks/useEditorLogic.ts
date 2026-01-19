@@ -10,6 +10,7 @@ import { useSettings } from './useSettingsContext';
 import { useAutoTagging } from './useAutoTagging';
 import { useGardener } from './useGardener';
 import { parseNaturalDate } from '../utils/dateParsing';
+import type { OntologyNode } from '../types';
 
 interface UseEditorLogicProps {
   note: Note;
@@ -42,40 +43,47 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       handlePersist(dirtyNote);
   }, [handlePersist, dirtyNote]);
 
-  // Determine intent and validation status
-  const intent = (() => {
-      const lowerTags = dirtyNote.tags.map(t => t.toLowerCase());
-      const hasTag = (t: string) => lowerTags.some(tag => tag.includes(t));
+  // Find matching ontology node based on tags
+  const matchingOntologyNode = (() => {
+      const findNode = (nodes: OntologyNode[]): OntologyNode | null => {
+          for (const node of nodes) {
+              const label = node.label.toLowerCase();
+              const noteTags = dirtyNote.tags.map(t => t.toLowerCase());
 
-      if (hasTag('job') && hasTag('request')) return 'JOB_REQUEST';
-      if (hasTag('freelance') && hasTag('offer')) return 'FREELANCE_OFFER';
-      if (hasTag('forsale') || hasTag('marketplace')) return 'MARKETPLACE_LISTING';
-      if (hasTag('bug') && hasTag('report')) return 'BUG_REPORT';
-      return 'GENERIC';
+              // Check children first (more specific matches)
+              if (node.children) {
+                  const found = findNode(node.children);
+                  if (found) return found;
+              }
+
+              // Check if tags contain the label
+              // e.g. Node: "Job Request" -> tags: ["job", "request"] or ["job request"]
+              // Simple check: if note tags contain the full label (normalized)
+              if (noteTags.some(t => t.includes(label))) {
+                  // console.log("Match found:", node.label, "for tags:", noteTags);
+                  return node;
+              }
+          }
+          return null;
+      };
+
+      return findNode(settings.ontology);
   })();
+
+  const actionLabel = matchingOntologyNode?.actionLabel || 'Publish';
 
   const validationErrors = (() => {
       const errors: string[] = [];
-      const hasProp = (keyPart: string) => dirtyNote.properties.some(p => p.key.toLowerCase().includes(keyPart));
+      if (!matchingOntologyNode || !matchingOntologyNode.requiredAttributes) return errors;
 
-      if (intent === 'JOB_REQUEST') {
-          if (!hasProp('role')) errors.push('Missing [role:...]');
-          if (!hasProp('budget') && !hasProp('rate')) errors.push('Missing [budget:...] or [rate:...]');
-      } else if (intent === 'MARKETPLACE_LISTING') {
-          if (!hasProp('item') && !hasProp('product')) errors.push('Missing [item:...]');
-          if (!hasProp('price') && !hasProp('cost')) errors.push('Missing [price:...]');
-      }
+      matchingOntologyNode.requiredAttributes.forEach(req => {
+          const hasProp = dirtyNote.properties.some(p => p.key.toLowerCase() === req.toLowerCase());
+          if (!hasProp) {
+              errors.push(`Missing required property: [${req}:...]`);
+          }
+      });
+
       return errors;
-  })();
-
-  const actionLabel = (() => {
-      switch (intent) {
-          case 'JOB_REQUEST': return 'Post Job';
-          case 'FREELANCE_OFFER': return 'Post Offer';
-          case 'MARKETPLACE_LISTING': return 'List Item';
-          case 'BUG_REPORT': return 'Submit Bug';
-          default: return 'Publish';
-      }
   })();
 
   const handleTitleChange = useCallback(

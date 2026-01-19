@@ -103,6 +103,44 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
     description: 'Activity involving mental or physical effort.',
     children: [
       {
+        id: 'job-request',
+        label: 'Job Request',
+        description: 'A request for work or hiring.',
+        actionLabel: 'Post Job',
+        requiredAttributes: ['role'],
+        attributes: {
+          role: {
+            type: 'string',
+            description: 'The job title or role.',
+            operators: { real: ['is'], imaginary: ['is not'] },
+          },
+          budget: {
+             type: 'number',
+             description: 'Budget or salary.',
+             operators: { real: ['is'], imaginary: ['greater than', 'less than'] },
+          }
+        }
+      },
+      {
+        id: 'freelance-offer',
+        label: 'Freelance Offer',
+        description: 'Offering services as a freelancer.',
+        actionLabel: 'Post Offer',
+        requiredAttributes: ['role', 'rate'],
+        attributes: {
+          role: {
+            type: 'string',
+            description: 'The role offered.',
+            operators: { real: ['is'], imaginary: ['is not'] },
+          },
+          rate: {
+             type: 'number',
+             description: 'Hourly rate.',
+             operators: { real: ['is'], imaginary: ['greater than', 'less than'] },
+          }
+        }
+      },
+      {
         id: 'project',
         label: 'Project',
         description: 'A planned piece of work.',
@@ -145,6 +183,29 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
         },
       },
     ],
+  },
+  {
+      id: 'marketplace',
+      label: 'Marketplace',
+      children: [
+          {
+              id: 'listing',
+              label: 'Marketplace Listing',
+              description: 'An item for sale.',
+              actionLabel: 'List Item',
+              requiredAttributes: ['item', 'price'],
+              attributes: {
+                  item: {
+                      type: 'string',
+                      operators: { real: ['is'], imaginary: ['is not'] }
+                  },
+                  price: {
+                      type: 'number',
+                      operators: { real: ['is'], imaginary: ['less than'] }
+                  }
+              }
+          }
+      ]
   },
   {
     id: 'templates',
