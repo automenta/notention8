@@ -41,6 +41,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     settings,
     isPublished,
     saveImmediately,
+    actionLabel
   } = useEditorLogic({ note, onSave });
 
   const { setSelectedNoteId } = useView();
@@ -169,6 +170,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         onCopyContent={handleCopyContent}
         isToolbarVisible={isToolbarVisible}
         onToggleToolbar={() => setIsToolbarVisible(!isToolbarVisible)}
+        actionLabel={actionLabel}
       />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col relative">

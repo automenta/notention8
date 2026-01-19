@@ -43,6 +43,7 @@ interface EditorHeaderProps {
   readOnly?: boolean;
   isToolbarVisible?: boolean;
   onToggleToolbar?: () => void;
+  actionLabel?: string;
 }
 
 export const EditorHeader: React.FC<EditorHeaderProps> = ({
@@ -70,6 +71,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   readOnly = false,
   isToolbarVisible = true,
   onToggleToolbar,
+  actionLabel = 'Publish',
 }) => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isTagInputVisible, setIsTagInputVisible] = useState(tags.length > 0);
@@ -214,14 +216,19 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
                 <button
                   onClick={onPublish}
                   disabled={isPublishing}
-                  title={isPublished ? 'Publish update' : 'Publish to Nostr'}
-                  className="p-2 text-blue-400 hover:text-white hover:bg-blue-600 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={isPublished ? 'Update on Nostr' : actionLabel}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm
+                    ${actionLabel !== 'Publish'
+                        ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20'
+                        : 'text-blue-400 hover:text-white hover:bg-blue-600'
+                    }`}
                 >
                   {isPublishing ? (
-                    <LoadingSpinner className="h-5 w-5" />
+                    <LoadingSpinner className="h-4 w-4" />
                   ) : (
-                    <SendIcon className="h-5 w-5" />
+                    <SendIcon className="h-4 w-4" />
                   )}
+                  {actionLabel !== 'Publish' && <span>{actionLabel}</span>}
                 </button>
             </div>
         </div>

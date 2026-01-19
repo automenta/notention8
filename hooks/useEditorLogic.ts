@@ -42,6 +42,42 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       handlePersist(dirtyNote);
   }, [handlePersist, dirtyNote]);
 
+  // Determine intent and validation status
+  const intent = (() => {
+      const lowerTags = dirtyNote.tags.map(t => t.toLowerCase());
+      const hasTag = (t: string) => lowerTags.some(tag => tag.includes(t));
+
+      if (hasTag('job') && hasTag('request')) return 'JOB_REQUEST';
+      if (hasTag('freelance') && hasTag('offer')) return 'FREELANCE_OFFER';
+      if (hasTag('forsale') || hasTag('marketplace')) return 'MARKETPLACE_LISTING';
+      if (hasTag('bug') && hasTag('report')) return 'BUG_REPORT';
+      return 'GENERIC';
+  })();
+
+  const validationErrors = (() => {
+      const errors: string[] = [];
+      const hasProp = (keyPart: string) => dirtyNote.properties.some(p => p.key.toLowerCase().includes(keyPart));
+
+      if (intent === 'JOB_REQUEST') {
+          if (!hasProp('role')) errors.push('Missing [role:...]');
+          if (!hasProp('budget') && !hasProp('rate')) errors.push('Missing [budget:...] or [rate:...]');
+      } else if (intent === 'MARKETPLACE_LISTING') {
+          if (!hasProp('item') && !hasProp('product')) errors.push('Missing [item:...]');
+          if (!hasProp('price') && !hasProp('cost')) errors.push('Missing [price:...]');
+      }
+      return errors;
+  })();
+
+  const actionLabel = (() => {
+      switch (intent) {
+          case 'JOB_REQUEST': return 'Post Job';
+          case 'FREELANCE_OFFER': return 'Post Offer';
+          case 'MARKETPLACE_LISTING': return 'List Item';
+          case 'BUG_REPORT': return 'Submit Bug';
+          default: return 'Publish';
+      }
+  })();
+
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) =>
       setDirtyNote((prev) => ({ ...prev, title: e.target.value })),
@@ -84,9 +120,15 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
 
   const handlePublish = async () => {
     if (!dirtyNote.content) return;
+
+    if (validationErrors.length > 0) {
+        alert(`Cannot ${actionLabel}:\n- ${validationErrors.join('\n- ')}`);
+        return;
+    }
+
     if (
       confirm(
-        'Are you sure you want to publish this note to the public Nostr network?'
+        `Are you sure you want to ${actionLabel.toLowerCase()} to the public Nostr network?`
       )
     ) {
       try {
@@ -102,10 +144,10 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
         };
         setDirtyNote(updatedNote);
         onSave(updatedNote);
-        addToast('Note published successfully!', 'success');
+        addToast(`${actionLabel} successful!`, 'success');
       } catch (e) {
         addToast(
-          'Failed to publish note: ' +
+          'Failed to publish: ' +
             (e instanceof Error ? e.message : String(e)),
           'error'
         );
@@ -237,6 +279,8 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     isAutoTagging,
     isApiKeyAvailable,
     settings, // needed for ontology
-    isPublished: !!dirtyNote.nostrEventId
+    isPublished: !!dirtyNote.nostrEventId,
+    actionLabel,
+    validationErrors
   };
 };
