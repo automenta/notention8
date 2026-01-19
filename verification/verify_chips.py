@@ -81,6 +81,12 @@ def test_missing_property_elicitation(page: Page):
     expect(chip).to_contain_text("rate")
     expect(chip).to_contain_text("150")
 
+    # Verify that the "Missing: + rate" hint disappears
+    # This confirms the system parsed the new property chip correctly
+    print("Verifying 'Missing' label disappearance...")
+    # The button shouldn't exist anymore or shouldn't be visible
+    expect(rate_btn).not_to_be_visible(timeout=5000)
+
     page.screenshot(path="verification/verification_chips_success.png")
     print("Test passed!")
 

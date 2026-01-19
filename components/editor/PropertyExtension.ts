@@ -13,12 +13,26 @@ export const PropertyExtension = Node.create({
     return {
       name: {
         default: null,
+        parseHTML: (element) => element.getAttribute('data-name'),
+        renderHTML: (attributes) => {
+          if (!attributes.name) return {};
+          return { 'data-name': attributes.name };
+        },
       },
       operator: {
         default: 'is',
+        parseHTML: (element) => element.getAttribute('data-operator'),
+        renderHTML: (attributes) => {
+          return { 'data-operator': attributes.operator };
+        },
       },
       value: {
         default: null,
+        parseHTML: (element) => element.getAttribute('data-value'),
+        renderHTML: (attributes) => {
+          if (!attributes.value) return {};
+          return { 'data-value': attributes.value };
+        },
       },
     };
   },
