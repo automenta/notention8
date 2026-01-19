@@ -15,6 +15,7 @@ import { NetworkView } from './views/NetworkView';
 import { NotesView } from './views/NotesView';
 import { OntologyView } from './views/OntologyView';
 import { SettingsView } from './views/SettingsView';
+import { DashboardView } from './views/DashboardView';
 
 interface MainViewProps {
   sortedNotes?: Note[];
@@ -39,6 +40,8 @@ export function MainView({ sortedNotes }: MainViewProps) {
 
   const renderView = () => {
     switch (activeView) {
+      case 'dashboard':
+        return <DashboardView />;
       case 'notes':
         return <NotesView sortedNotes={sortedNotes} />;
       case 'ontology':

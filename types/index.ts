@@ -100,4 +100,5 @@ export type View =
   | 'map'
   | 'time'
   | 'trash'
-  | 'simulator';
+  | 'simulator'
+  | 'dashboard';

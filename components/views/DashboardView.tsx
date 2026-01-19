@@ -1,189 +1,149 @@
-import React, { useMemo } from 'react';
-import type { Note } from '../../types';
+import React from 'react';
+import { useNotes } from '../../hooks/useNotes';
+import { useView } from '../../hooks/useViewContext';
+import { useSettings } from '../../hooks/useSettingsContext';
 import {
   NoteIcon,
   PlusIcon,
-  SearchIcon,
+  CubeIcon,
   MapIcon,
-  PinIcon,
+  ChatIcon,
   ClockIcon,
-  SparklesIcon,
+  HomeIcon
 } from '../icons';
-import { formatDistanceToNow } from 'date-fns';
 
-interface DashboardViewProps {
-  notes: Note[];
-  onCreateNote: () => void;
-  onSelectNote: (id: string) => void;
-  onSearch: () => void;
-  onOpenMap: () => void;
-}
+export function DashboardView() {
+  const { notes, addNote } = useNotes();
+  const { setActiveView, setSelectedNoteId } = useView();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { settings } = useSettings();
 
-export function DashboardView({
-  notes,
-  onCreateNote,
-  onSelectNote,
-  onSearch,
-  onOpenMap,
-}: DashboardViewProps) {
-  const greeting = useMemo(() => {
+  const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
     if (hour < 18) return 'Good afternoon';
     return 'Good evening';
-  }, []);
+  };
 
-  const pinnedNotes = useMemo(() => {
-    return notes.filter((n) => n.pinned && !n.deletedAt);
-  }, [notes]);
+  const recentNotes = [...notes]
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .slice(0, 6);
 
-  const recentNotes = useMemo(() => {
-    return [...notes]
-      .filter((n) => !n.pinned && !n.deletedAt)
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-      .slice(0, 6);
-  }, [notes]);
+  const stats = [
+    { label: 'Total Notes', value: notes.length, icon: NoteIcon, color: 'text-blue-400', bg: 'bg-blue-600/20' },
+    { label: 'Pinned', value: notes.filter(n => n.pinned).length, icon: HomeIcon, color: 'text-yellow-400', bg: 'bg-yellow-600/20' },
+  ];
 
-  const stats = useMemo(() => {
-    const totalNotes = notes.filter((n) => !n.deletedAt).length;
-    const totalProperties = notes.reduce(
-      (acc, n) => acc + (n.properties?.length || 0),
-      0
-    );
-    const publishedCount = notes.filter((n) => n.nostrEventId).length;
-    return { totalNotes, totalProperties, publishedCount };
-  }, [notes]);
+  const handleCreateNote = () => {
+     const newNote = addNote();
+     setSelectedNoteId(newNote.id);
+     setActiveView('notes');
+  };
 
   return (
-    <div className="h-full overflow-y-auto p-8 bg-gray-900 text-gray-200">
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div className="h-full overflow-y-auto p-4 md:p-8 bg-gray-900 text-white custom-scrollbar">
+      <div className="max-w-6xl mx-auto space-y-10">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold text-white mb-2">{greeting}</h1>
-            <p className="text-gray-400">
-              You have {stats.totalNotes} notes with {stats.totalProperties} semantic properties.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onCreateNote}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium shadow-lg shadow-blue-900/20"
-            >
-              <PlusIcon className="h-5 w-5" />
-              <span>New Note</span>
-            </button>
-          </div>
+        <div className="flex items-center justify-between">
+            <div>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-100 tracking-tight">{getGreeting()}</h1>
+                <p className="text-gray-400 mt-2 text-lg">Here's what's happening in your network.</p>
+            </div>
+            <div className="hidden md:flex gap-4">
+                 {stats.map((stat, i) => (
+                    <div key={i} className="flex items-center gap-3 bg-gray-800/50 px-4 py-2 rounded-lg border border-gray-700/30">
+                        <div className={`p-2 rounded-md ${stat.bg} ${stat.color}`}>
+                            <stat.icon className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase font-semibold tracking-wider">{stat.label}</p>
+                            <p className="text-xl font-bold">{stat.value}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button
-                onClick={onSearch}
-                className="p-4 bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50 hover:border-gray-600 rounded-xl transition-all group text-left"
-            >
-                <div className="bg-purple-900/20 p-2 rounded-lg w-fit mb-3 group-hover:bg-purple-900/30 transition-colors">
-                    <SearchIcon className="h-6 w-6 text-purple-400" />
-                </div>
-                <h3 className="font-semibold text-white">Search</h3>
-                <p className="text-sm text-gray-500">Find anything</p>
-            </button>
-
-             <button
-                onClick={onOpenMap}
-                className="p-4 bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50 hover:border-gray-600 rounded-xl transition-all group text-left"
-            >
-                <div className="bg-green-900/20 p-2 rounded-lg w-fit mb-3 group-hover:bg-green-900/30 transition-colors">
-                    <MapIcon className="h-6 w-6 text-green-400" />
-                </div>
-                <h3 className="font-semibold text-white">Map View</h3>
-                <p className="text-sm text-gray-500">Explore locations</p>
-            </button>
-
-            <button
-                 className="p-4 bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50 hover:border-gray-600 rounded-xl transition-all group text-left"
-                 onClick={() => { /* TODO: Open Time View */ }}
-            >
-                <div className="bg-orange-900/20 p-2 rounded-lg w-fit mb-3 group-hover:bg-orange-900/30 transition-colors">
-                    <ClockIcon className="h-6 w-6 text-orange-400" />
-                </div>
-                <h3 className="font-semibold text-white">Timeline</h3>
-                <p className="text-sm text-gray-500">Upcoming events</p>
-            </button>
-
-            <div className="p-4 bg-gray-800/30 border border-gray-700/30 rounded-xl flex flex-col justify-center items-center text-center">
-                 <SparklesIcon className="h-8 w-8 text-yellow-500 mb-2 opacity-50" />
-                 <span className="text-2xl font-bold text-white">{stats.publishedCount}</span>
-                 <span className="text-xs text-gray-500 uppercase tracking-wider">Published</span>
+        <div>
+            <h2 className="text-lg font-semibold text-gray-300 mb-4 px-1">Quick Actions</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button onClick={handleCreateNote} className="group p-6 bg-gray-800 hover:bg-gray-750 rounded-2xl flex flex-col items-center gap-4 transition-all border border-gray-700/50 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-900/10">
+                    <div className="p-4 bg-blue-600/20 text-blue-400 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-all transform group-hover:scale-110">
+                        <PlusIcon className="h-8 w-8" />
+                    </div>
+                    <span className="font-medium text-gray-200 group-hover:text-white">New Note</span>
+                </button>
+                <button onClick={() => setActiveView('map')} className="group p-6 bg-gray-800 hover:bg-gray-750 rounded-2xl flex flex-col items-center gap-4 transition-all border border-gray-700/50 hover:border-green-500/50 hover:shadow-lg hover:shadow-green-900/10">
+                    <div className="p-4 bg-green-600/20 text-green-400 rounded-full group-hover:bg-green-600 group-hover:text-white transition-all transform group-hover:scale-110">
+                        <MapIcon className="h-8 w-8" />
+                    </div>
+                    <span className="font-medium text-gray-200 group-hover:text-white">Map View</span>
+                </button>
+                <button onClick={() => setActiveView('chat')} className="group p-6 bg-gray-800 hover:bg-gray-750 rounded-2xl flex flex-col items-center gap-4 transition-all border border-gray-700/50 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-900/10">
+                    <div className="p-4 bg-purple-600/20 text-purple-400 rounded-full group-hover:bg-purple-600 group-hover:text-white transition-all transform group-hover:scale-110">
+                        <ChatIcon className="h-8 w-8" />
+                    </div>
+                    <span className="font-medium text-gray-200 group-hover:text-white">Chat</span>
+                </button>
+                <button onClick={() => setActiveView('simulator')} className="group p-6 bg-gray-800 hover:bg-gray-750 rounded-2xl flex flex-col items-center gap-4 transition-all border border-gray-700/50 hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-900/10">
+                    <div className="p-4 bg-orange-600/20 text-orange-400 rounded-full group-hover:bg-orange-600 group-hover:text-white transition-all transform group-hover:scale-110">
+                        <CubeIcon className="h-8 w-8" />
+                    </div>
+                    <span className="font-medium text-gray-200 group-hover:text-white">Simulator</span>
+                </button>
             </div>
         </div>
 
-        {/* Pinned Notes */}
-        {pinnedNotes.length > 0 && (
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <PinIcon className="h-5 w-5 text-gray-500" />
-              <h2 className="text-xl font-bold text-gray-200">Pinned</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {pinnedNotes.map((note) => (
-                <div
-                  key={note.id}
-                  onClick={() => onSelectNote(note.id)}
-                  className="bg-gray-800 border border-gray-700 hover:border-gray-600 p-4 rounded-xl cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5 group"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-white truncate pr-2 group-hover:text-blue-400 transition-colors">
-                      {note.title || 'Untitled Note'}
-                    </h3>
-                    <PinIcon className="h-4 w-4 text-blue-500 flex-shrink-0" />
-                  </div>
-                   <div className="text-sm text-gray-500 line-clamp-2 h-10 mb-3" dangerouslySetInnerHTML={{ __html: note.content || '<span class="italic opacity-50">No content</span>' }} />
-                   <div className="flex items-center gap-2 text-xs text-gray-600">
-                        <ClockIcon className="h-3 w-3" />
-                        <span>{formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}</span>
-                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
         {/* Recent Notes */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <NoteIcon className="h-5 w-5 text-gray-500" />
-            <h2 className="text-xl font-bold text-gray-200">Recent</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recentNotes.length > 0 ? (
-              recentNotes.map((note) => (
-                <div
-                  key={note.id}
-                  onClick={() => onSelectNote(note.id)}
-                  className="bg-gray-800/50 border border-gray-700/50 hover:bg-gray-800 hover:border-gray-600 p-4 rounded-xl cursor-pointer transition-all hover:shadow-lg group"
+        <div>
+            <div className="flex items-center justify-between mb-4 px-1">
+                <h2 className="text-lg font-semibold text-gray-300 flex items-center gap-2">
+                    <ClockIcon className="h-5 w-5 text-gray-400" />
+                    Recent Notes
+                </h2>
+                <button
+                    onClick={() => setActiveView('notes')}
+                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
                 >
-                  <h3 className="font-semibold text-gray-200 mb-2 truncate group-hover:text-blue-400 transition-colors">
-                    {note.title || 'Untitled Note'}
-                  </h3>
-                   <div className="text-sm text-gray-500 line-clamp-3 h-14 mb-3" dangerouslySetInnerHTML={{ __html: note.content || '<span class="italic opacity-50">No content</span>' }} />
-                   <div className="flex items-center justify-between pt-2 border-t border-gray-700/50">
-                       <div className="flex items-center gap-2 text-xs text-gray-600">
-                            <span>{formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}</span>
-                       </div>
-                       {note.nostrEventId && (
-                           <span className="h-2 w-2 rounded-full bg-green-500" title="Published"></span>
-                       )}
-                   </div>
+                    View all
+                </button>
+            </div>
+
+            {recentNotes.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {recentNotes.map(note => (
+                        <div
+                            key={note.id}
+                            onClick={() => {
+                                setSelectedNoteId(note.id);
+                                setActiveView('notes');
+                            }}
+                            className="p-5 bg-gray-800 hover:bg-gray-750 cursor-pointer rounded-xl border border-gray-700/50 hover:border-blue-500/50 transition-all group shadow-sm hover:shadow-md h-40 flex flex-col"
+                        >
+                            <h3 className="font-medium text-lg text-gray-200 group-hover:text-blue-400 truncate mb-2">
+                                {note.title || 'Untitled Note'}
+                            </h3>
+                            <p className="text-sm text-gray-500 line-clamp-2 mb-auto">
+                                {note.content.replace(/<[^>]*>/g, '').slice(0, 150) || 'No content preview available.'}
+                            </p>
+                            <div className="mt-4 flex items-center justify-between text-xs text-gray-600">
+                                <span>{new Date(note.updatedAt).toLocaleDateString()}</span>
+                                {note.tags.length > 0 && (
+                                    <span className="px-2 py-1 bg-gray-700/50 rounded-md text-gray-400 border border-gray-700">
+                                        #{note.tags[0]}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    ))}
                 </div>
-              ))
             ) : (
-                <div className="col-span-full py-12 text-center text-gray-500 bg-gray-800/30 rounded-xl border border-dashed border-gray-700">
-                    <p>No recent notes found. Create one to get started!</p>
+                <div className="text-center py-12 bg-gray-800/30 rounded-2xl border border-gray-800 border-dashed">
+                    <p className="text-gray-500">No notes yet. Create one above!</p>
                 </div>
             )}
-          </div>
-        </section>
+        </div>
       </div>
     </div>
   );
