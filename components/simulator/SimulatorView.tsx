@@ -3,12 +3,14 @@ import { AgentSessionWrapper } from './AgentSessionWrapper';
 import { AgentSessionView } from './AgentSessionView';
 import { CommunityWindow } from './CommunityWindow';
 import { WebLLMProvider } from '../../services/ai/WebLLMProvider';
+import { MockLLMProvider } from '../../services/ai/MockLLMProvider';
 import { Gardener } from '../../services/gardener';
 import { parseProperties } from '../../utils/parsing';
 import { matchNotes } from '../../utils/matching';
-import { addAttribute, findNode } from '../../utils/ontologyHelpers';
+import { addAttribute } from '../../utils/ontologyHelpers';
 import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
 import type { Note, OntologyNode, OntologyAttribute } from '../../types';
+import type { AIProvider } from '../../services/ai/types';
 
 // Agent State
 interface SimulationAgent {
@@ -42,20 +44,55 @@ const INITIAL_AGENTS: SimulationAgent[] = [
 export const SimulatorView: React.FC = () => {
   const [agents, setAgents] = useState<SimulationAgent[]>(INITIAL_AGENTS);
   const [active, setActive] = useState(false);
-  const [logs, setLogs] = useState<{msg: string; type: 'info' | 'match' | 'ontology'}[]>([]);
+  const [logs, setLogs] = useState<{msg: string; type: 'info' | 'match' | 'ontology' | 'reuse'}[]>([]);
   const [networkNotes, setNetworkNotes] = useState<Note[]>([]); // Shared Network State
   const [ontology, setOntology] = useState<OntologyNode[]>(DEFAULT_ONTOLOGY);
   const [notifications, setNotifications] = useState<Record<string, string[]>>({});
-  const [newAttributes, setNewAttributes] = useState<string[]>([]);
+  const [newAttributes, setNewAttributes] = useState<{key: string; type: string}[]>([]);
+  const [aiProviderName, setAiProviderName] = useState<string>("Initializing...");
 
-  const aiRef = useRef<WebLLMProvider>(new WebLLMProvider());
+  // AI & Gardener Refs
+  const aiRef = useRef<AIProvider | null>(null);
   const gardenerRef = useRef<Gardener | null>(null);
-  const agentsRef = useRef(agents);
-  const ontologyRef = useRef(ontology); // Ref for loop access
 
-  // Initialize Gardener
+  // State Refs for loop access
+  const agentsRef = useRef(agents);
+  const ontologyRef = useRef(ontology);
+
+  // Initialize AI Provider
   useEffect(() => {
-      gardenerRef.current = new Gardener(aiRef.current);
+    const initAI = async () => {
+        try {
+            // Attempt to load WebLLM
+            const provider = new WebLLMProvider();
+            // Trigger an init check (e.g. by generating something small or just checking GPU)
+            // But WebLLMProvider constructor is lazy. We need to force a check or just assume it works until first call.
+            // However, our requirement is to fallback if "WebLLMProvider fails".
+            // Let's rely on checking `navigator.gpu` explicitly here as a proxy,
+            // since WebLLMProvider throws if it's missing.
+
+            if (!navigator.gpu) {
+                throw new Error("WebGPU not supported");
+            }
+
+            // We could also try to await provider.getEngine() if exposed, but it's private.
+            // Let's assume if GPU exists, we try. If it fails later, we might need robust error handling in the loop.
+            // For now, let's stick to the plan: explicit fallback on initialization.
+
+            aiRef.current = provider;
+            setAiProviderName(provider.name);
+        } catch (e) {
+            console.warn("WebLLM failed to initialize, falling back to Mock:", e);
+            aiRef.current = new MockLLMProvider();
+            setAiProviderName(aiRef.current.name);
+        }
+
+        if (aiRef.current) {
+            gardenerRef.current = new Gardener(aiRef.current);
+        }
+    };
+
+    initAI();
   }, []);
 
   // Keep refs in sync
@@ -73,7 +110,16 @@ export const SimulatorView: React.FC = () => {
 
     let timeoutId: NodeJS.Timeout;
 
+    const simulateTyping = async (index: number, fullText: string) => {
+        for (let i = 0; i <= fullText.length; i++) {
+            updateAgent(index, { currentDraft: fullText.slice(0, i) });
+            await new Promise(r => setTimeout(r, 50));
+        }
+    };
+
     const loop = async () => {
+        if (!aiRef.current) return; // Wait for AI init
+
         // Use ref to get latest state inside async loop
         const currentAgents = agentsRef.current;
         const currentOntology = ontologyRef.current;
@@ -88,7 +134,6 @@ export const SimulatorView: React.FC = () => {
 
         // 1. Update Status: Thinking
         updateAgent(agentIndex, { status: 'Thinking...' });
-        // addLog(`${agent.name} is thinking about goal: "${agent.goal}"`, 'info');
 
         // 2. AI Generation
         try {
@@ -99,7 +144,24 @@ export const SimulatorView: React.FC = () => {
                 Keep it under 20 words.
                 Do not include tags yet.
             `;
-            const content = await aiRef.current.generateCompletion(prompt);
+
+            // Fallback handling inside the loop in case runtime error occurs
+            let content = "";
+            try {
+                content = await aiRef.current.generateCompletion(prompt);
+            } catch (e) {
+                console.error("AI Generation failed:", e);
+                // Last ditch fallback if main provider crashes mid-loop
+                if (aiRef.current instanceof WebLLMProvider) {
+                   addLog("WebLLM crashed, switching to Mock", 'info');
+                   aiRef.current = new MockLLMProvider();
+                   setAiProviderName(aiRef.current.name);
+                   gardenerRef.current = new Gardener(aiRef.current);
+                   content = await aiRef.current.generateCompletion(prompt);
+                } else {
+                   throw e;
+                }
+            }
 
             // 3. Typing Animation
             updateAgent(agentIndex, { status: 'Typing...' });
@@ -109,6 +171,27 @@ export const SimulatorView: React.FC = () => {
             // Pass the CURRENT ontology to the AI so it knows what terms to reuse!
             updateAgent(agentIndex, { status: 'Gardening...' });
             const tags = await aiRef.current.suggestTags(content, currentOntology);
+
+            // Visualize Tag Reuse
+            const existingKeys = new Set<string>();
+            const traverse = (nodes: OntologyNode[]) => {
+                nodes.forEach(n => {
+                    if (n.attributes) Object.keys(n.attributes).forEach(k => existingKeys.add(k));
+                    if (n.children) traverse(n.children);
+                });
+            };
+            traverse(currentOntology);
+
+            tags.forEach(t => {
+                // Parse tag: [key:op:val]
+                const match = t.match(/^\[([a-zA-Z0-9_]+)/);
+                if (match) {
+                    const key = match[1];
+                    if (existingKeys.has(key)) {
+                        addLog(`♻️ Reused schema: ${key}`, 'reuse');
+                    }
+                }
+            });
 
             const taggedContent = content + '\n\n' + tags.map((t: string) => JSON.stringify(t)).join(' ');
             updateAgent(agentIndex, { currentDraft: taggedContent });
@@ -142,13 +225,6 @@ export const SimulatorView: React.FC = () => {
         next[index] = { ...next[index], ...updates };
         return next;
     });
-  };
-
-  const simulateTyping = async (index: number, fullText: string) => {
-    for (let i = 0; i <= fullText.length; i++) {
-        updateAgent(index, { currentDraft: fullText.slice(0, i) });
-        await new Promise(r => setTimeout(r, 50));
-    }
   };
 
   const handlePublish = async (note: Note) => {
@@ -185,14 +261,28 @@ export const SimulatorView: React.FC = () => {
       if (gardenerRef.current) {
           try {
               const newAttrs = await gardenerRef.current.evolveOntology([enrichedNote]);
-              if (newAttrs.length > 0) {
+
+              // Only add if not exists
+              const currentOntology = ontologyRef.current;
+              const existingKeys = new Set<string>();
+              const traverse = (nodes: OntologyNode[]) => {
+                  nodes.forEach(n => {
+                      if (n.attributes) Object.keys(n.attributes).forEach(k => existingKeys.add(k));
+                      if (n.children) traverse(n.children);
+                  });
+              };
+              traverse(currentOntology);
+
+              const novelAttrs = newAttrs.filter(a => !existingKeys.has(a.key));
+
+              if (novelAttrs.length > 0) {
                   setOntology(prevOntology => {
                       let newOntology = [...prevOntology];
                       const targetNodeId = newOntology[0]?.id || 'root';
 
-                      newAttrs.forEach(attr => {
+                      novelAttrs.forEach(attr => {
                           addLog(`Ontology + ${attr.key}`, 'ontology');
-                          setNewAttributes(prev => [attr.key, ...prev].slice(0, 10));
+                          setNewAttributes(prev => [{key: attr.key, type: attr.type}, ...prev].slice(0, 10));
 
                           const ontAttr: OntologyAttribute = {
                               type: attr.type,
@@ -210,12 +300,21 @@ export const SimulatorView: React.FC = () => {
       }
   };
 
-  const addLog = (msg: string, type: 'info' | 'match' | 'ontology') => setLogs(prev => [{msg, type}, ...prev].slice(0, 20));
+  const addLog = (msg: string, type: 'info' | 'match' | 'ontology' | 'reuse') => setLogs(prev => [{msg, type}, ...prev].slice(0, 20));
 
   return (
     <div className="flex flex-col h-full bg-black text-gray-200 p-2 overflow-hidden">
       <div className="flex justify-between items-center mb-2 px-2">
-        <h1 className="text-lg font-bold">🧪 Community Simulator</h1>
+        <div className="flex items-center gap-3">
+            <h1 className="text-lg font-bold">🧪 Community Simulator</h1>
+            <span className={`text-[10px] px-2 py-0.5 rounded border ${
+                aiProviderName.includes("Mock")
+                ? "bg-yellow-900/50 border-yellow-700 text-yellow-500"
+                : "bg-green-900/50 border-green-700 text-green-400"
+            }`}>
+                AI: {aiProviderName}
+            </span>
+        </div>
         <div className="flex gap-2">
             <button
                 onClick={() => setActive(!active)}
@@ -272,7 +371,8 @@ export const SimulatorView: React.FC = () => {
                      <div key={i} className={`p-1 border-l-2 pl-2 ${
                          log.type === 'match' ? 'border-yellow-500 text-yellow-200' :
                          log.type === 'ontology' ? 'border-green-500 text-green-300' :
-                         'border-blue-500 text-gray-400'
+                         log.type === 'reuse' ? 'border-blue-400 text-blue-300' :
+                         'border-gray-500 text-gray-400'
                      }`}>
                          {log.msg}
                      </div>
@@ -286,7 +386,7 @@ export const SimulatorView: React.FC = () => {
                  {newAttributes.length === 0 && <span className="text-gray-600">No new attributes yet.</span>}
                  {newAttributes.map((attr, i) => (
                      <div key={i} className="text-green-400 flex items-center gap-1">
-                         <span>🌱</span> {attr}
+                         <span>🌱</span> {attr.key} <span className='text-gray-500'>({attr.type})</span>
                      </div>
                  ))}
              </div>

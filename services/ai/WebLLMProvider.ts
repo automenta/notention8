@@ -8,7 +8,6 @@ export class WebLLMProvider implements AIProvider {
   private engine: MLCEngine | null = null;
   private modelId = "Llama-3.2-3B-Instruct-q4f16_1-MLC";
   private initPromise: Promise<void> | null = null;
-  private useMock = false;
 
   constructor() {
     // Lazy init on first use
@@ -16,7 +15,6 @@ export class WebLLMProvider implements AIProvider {
 
   private async getEngine(): Promise<MLCEngine | null> {
     if (this.engine) return this.engine;
-    if (this.useMock) return null;
 
     if (!this.initPromise) {
       this.initPromise = (async () => {
@@ -36,24 +34,26 @@ export class WebLLMProvider implements AIProvider {
                 }
             );
         } catch (e) {
-            console.warn("Failed to load WebLLM (falling back to mock):", e);
-            this.useMock = true;
+            console.warn("Failed to load WebLLM:", e);
+            throw e; // Propagate error
         }
       })();
     }
 
-    await this.initPromise;
-    return this.engine; // Might be null if failed and useMock is true
+    try {
+        await this.initPromise;
+        return this.engine;
+    } catch (e) {
+        // If init failed, we can't return an engine.
+        // The calling methods will have to handle null or re-throw.
+        return null;
+    }
   }
 
   async generateCompletion(prompt: string): Promise<string> {
     const engine = await this.getEngine();
-    if (this.useMock || !engine) {
-        // Mock Response based on prompt keywords?
-        // Simulating Agent Goals
-        if (prompt.includes("Client")) return "I need a React developer for a landing page. Budget $500.";
-        if (prompt.includes("Freelancer")) return "Expert React developer available for gigs. $50/hr.";
-        return "Simulated content response.";
+    if (!engine) {
+        throw new Error("WebLLM engine not available");
     }
 
     const response = await engine.chat.completions.create({
@@ -65,26 +65,25 @@ export class WebLLMProvider implements AIProvider {
 
   async suggestTags(text: string, ontology?: OntologyNode[]): Promise<string[]> {
     const engine = await this.getEngine();
-    if (this.useMock || !engine) {
-        // Mock Tags
-        if (text.toLowerCase().includes("react")) return ["[skill:is:React]", "[role:is:Developer]"];
-        return ["[category:is:General]"];
+    if (!engine) {
+        throw new Error("WebLLM engine not available");
     }
 
-    let ontologyContext = "";
-    if (ontology && ontology.length > 0) {
-        // Flatten ontology to a list of keys for context
-        const keys: string[] = [];
+    // Extract ontology keys for context
+    const ontologyKeys = new Set<string>();
+    if (ontology) {
         const traverse = (nodes: OntologyNode[]) => {
             nodes.forEach(n => {
-                if (n.attributes) keys.push(...Object.keys(n.attributes));
+                if (n.attributes) Object.keys(n.attributes).forEach(k => ontologyKeys.add(k));
                 if (n.children) traverse(n.children);
             });
         };
         traverse(ontology);
-        if (keys.length > 0) {
-            ontologyContext = `\nExisting Ontology Keys (Reuse these if relevant): ${keys.join(', ')}`;
-        }
+    }
+
+    let ontologyContext = "";
+    if (ontologyKeys.size > 0) {
+        ontologyContext = `\nExisting Ontology Keys (Reuse these if relevant): ${Array.from(ontologyKeys).join(', ')}`;
     }
 
     const prompt = `
@@ -112,23 +111,8 @@ export class WebLLMProvider implements AIProvider {
 
   async analyzeOntology(notes: Note[]): Promise<InferredAttribute[]> {
     const engine = await this.getEngine();
-    if (this.useMock || !engine) {
-        // Mock Ontology Evolution
-        // Randomly suggest a new attribute to demonstrate the loop
-        const candidates = [
-            { key: "availability", type: "string", description: "Project availability" },
-            { key: "experience", type: "number", description: "Years of experience" },
-            { key: "location", type: "string", description: "Remote or On-site" }
-        ] as const;
-        const pick = candidates[Math.floor(Math.random() * candidates.length)];
-
-        return [{
-            key: pick.key,
-            type: pick.type,
-            description: pick.description,
-            usageCount: 1,
-            sampleValues: ["Remote", "5 years"]
-        }];
+    if (!engine) {
+        throw new Error("WebLLM engine not available");
     }
 
     const sampleText = notes.slice(0, 5).map(n => n.content).join("\n---\n");
