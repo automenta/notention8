@@ -4,12 +4,7 @@ import { useView } from '../../hooks/useViewContext';
 import { useSettings } from '../../hooks/useSettingsContext';
 import { parseProperties } from '../../utils/parsing';
 import { XIcon } from '../icons';
-
-const DEFAULT_TEMPLATES = [
-    { id: 'default-1', label: 'Job Request', icon: '💼', content: '#job #request \n\n[role:is:Software Engineer]\n[budget > 5000]\n[deadline:is:2024-12-31]\n' },
-    { id: 'default-2', label: 'Freelance Offer', icon: '👨‍💻', content: '#freelance #offer \n\n[role:is:Software Engineer]\n[rate:is:100]\n[skill contains React]\n' },
-    { id: 'default-3', label: 'Marketplace Listing', icon: '🏷️', content: '#forsale \n\n[item:is:Laptop]\n[price:is:1000]\n[condition:is:Used]\n' },
-];
+import { DEFAULT_TEMPLATES } from '../../utils/templates';
 
 export const TemplateList: React.FC = () => {
     const { addNote, updateNote } = useNotes();
