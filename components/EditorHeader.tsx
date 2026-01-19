@@ -12,7 +12,8 @@ import {
   DownloadIcon,
   LockIcon,
   ClipboardIcon,
-  TagIcon
+  TagIcon,
+  PencilIcon
 } from './icons';
 import { TagInput } from './TagInput';
 import { HelpModal } from './common/HelpModal';
@@ -40,6 +41,8 @@ interface EditorHeaderProps {
   onExport?: () => void;
   onCopyContent?: () => void;
   readOnly?: boolean;
+  isToolbarVisible?: boolean;
+  onToggleToolbar?: () => void;
 }
 
 export const EditorHeader: React.FC<EditorHeaderProps> = ({
@@ -65,6 +68,8 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   onExport,
   onCopyContent,
   readOnly = false,
+  isToolbarVisible = true,
+  onToggleToolbar,
 }) => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isTagInputVisible, setIsTagInputVisible] = useState(tags.length > 0);
@@ -134,6 +139,16 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
                         className="p-1.5 text-gray-400 hover:text-white transition-colors rounded-md hover:bg-gray-700/50"
                     >
                         <PlusCircleIcon className="h-5 w-5" />
+                    </button>
+                )}
+
+                {onToggleToolbar && (
+                    <button
+                        onClick={onToggleToolbar}
+                        title={isToolbarVisible ? "Hide Toolbar" : "Show Formatting Toolbar"}
+                        className={`p-1.5 transition-colors rounded-md hover:bg-gray-700/50 ${isToolbarVisible ? 'text-blue-400 bg-blue-900/10' : 'text-gray-400 hover:text-white'}`}
+                    >
+                        <PencilIcon className="h-5 w-5" />
                     </button>
                 )}
 
