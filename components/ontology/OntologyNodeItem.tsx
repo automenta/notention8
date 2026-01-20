@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { OntologyNode } from '../../types';
 import { ChevronDownIcon } from '../layout/icons';
+import { AttributeList } from './AttributeList';
 
 interface OntologyNodeProps {
   node: OntologyNode;
@@ -43,25 +44,8 @@ export const OntologyNodeItem: React.FC<OntologyNodeProps> = ({ node, level, usa
         )}
       </div>
 
-      {/* Render Attributes if open or always? Maybe inside the node item but below label */}
-      {/* Only showing attributes if we really want deep introspection.
-          For now, just showing children recursively.
-          But wait, we want to show attribute usage too? */}
       {isOpen && node.attributes && Object.keys(node.attributes).length > 0 && (
-          <div className="ml-8 mb-2 border-l-2 border-gray-700 pl-4">
-              {Object.entries(node.attributes).map(([key, attr]) => {
-                  const attrCount = usageStats?.get(key) || 0;
-                  return (
-                    <div key={key} className="text-sm text-gray-400 py-1 flex items-center gap-2">
-                        <span className="text-purple-400 font-mono">{key}</span>
-                        <span className="text-xs text-gray-600">({attr.type})</span>
-                        {attrCount > 0 && (
-                            <span className="text-xs bg-gray-800 px-1 rounded text-gray-300">{attrCount} uses</span>
-                        )}
-                    </div>
-                  );
-              })}
-          </div>
+          <AttributeList attributes={node.attributes} usageStats={usageStats} />
       )}
 
       {isOpen && hasChildren && (
