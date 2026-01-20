@@ -8,7 +8,7 @@ import type { Note } from '../../types';
 
 // Mock TiptapEditor
 vi.mock('../../components/editor/TiptapEditor', () => ({
-  TiptapEditor: () => <div data-testid="mock-editor">Editor</div>,
+  TiptapEditor: React.forwardRef((props, ref) => <div data-testid="mock-editor">Editor</div>),
 }));
 
 // Mock usePublish
