@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { EditorContent } from '@tiptap/react';
 import type { Note, OntologyNode, Template } from '../types';
 import { TiptapToolbar } from './TiptapToolbar';
@@ -21,9 +21,14 @@ interface TiptapEditorProps {
   onMagic?: () => void;
   onTemplates?: () => void;
   notes?: Note[];
+  onPickLocation?: () => Promise<string>;
 }
 
-export const TiptapEditor: React.FC<TiptapEditorProps> = ({
+export interface TiptapEditorRef {
+    openPropertyModal: (key?: string) => void;
+}
+
+export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(({
   note,
   onSave,
   ontology,
@@ -32,8 +37,9 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   showToolbar = true,
   onMagic,
   onTemplates,
-  notes = []
-}) => {
+  notes = [],
+  onPickLocation
+}, ref) => {
   const [viewMode, setViewMode] = useState<'rich' | 'code'>('rich');
   const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
   const [editingPropertyPos, setEditingPropertyPos] = useState<number | null>(null);
@@ -47,10 +53,14 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const { setSearchTerm, setActiveView, setSelectedNoteId } = useView();
   const { addToast } = useToast();
 
-  const handleOpenPropertyModal = useCallback((key: string) => {
-      setInitialModalData({ key, operator: 'is', value: '' });
+  const handleOpenPropertyModal = useCallback((key?: string) => {
+      setInitialModalData(key ? { key, operator: 'is', value: '' } : undefined);
       setIsPropertyModalOpen(true);
   }, []);
+
+  useImperativeHandle(ref, () => ({
+      openPropertyModal: handleOpenPropertyModal
+  }));
 
   const editor = useTiptapConfig({
       content: note.content,
@@ -308,7 +318,9 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         initialOperator={initialModalData?.operator}
         initialValue={initialModalData?.value}
         attributeDef={initialModalData?.key ? findAttributeDef(initialModalData.key, ontology) : undefined}
+        ontology={ontology}
         isEditing={editingPropertyPos !== null}
+        onPickLocation={onPickLocation}
       />
       <div className="flex-grow overflow-y-auto" onClick={handleEditorClick}>
         {viewMode === 'rich' ? (
@@ -328,4 +340,4 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       {!minimal && <EditorStatusBar editor={editor} />}
     </div>
   );
-};
+});
