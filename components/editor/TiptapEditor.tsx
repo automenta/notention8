@@ -28,6 +28,7 @@ interface TiptapEditorProps {
 
 export interface TiptapEditorRef {
     openPropertyModal: (key?: string) => void;
+    getSelection: () => string;
 }
 
 export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(function TiptapEditor({
@@ -61,7 +62,12 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(funct
   } = usePropertyInsertion();
 
   useImperativeHandle(ref, () => ({
-      openPropertyModal: handleOpenPropertyModal
+      openPropertyModal: handleOpenPropertyModal,
+      getSelection: () => {
+          if (!editor) return '';
+          const { from, to } = editor.state.selection;
+          return editor.state.doc.textBetween(from, to, ' ');
+      }
   }));
 
   const editor = useTiptapConfig({

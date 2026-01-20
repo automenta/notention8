@@ -60,18 +60,24 @@ export const useSimulationLoop = ({
 
         // 2. AI Generation
         try {
+            // Contextualize with last few logs or network events? (RAG-lite for Agents)
+            // For now, keep it simple: Agent acts on its goal.
+
             const prompt = `
+                You are a simulated agent in a decentralized network.
                 ${agent.persona}
-                Your current goal is: ${agent.goal}
-                Write a short note content that achieves this goal.
-                Keep it under 20 words.
-                Do not include tags yet.
+                Your current goal is: "${agent.goal}".
+
+                Action: Write a short, single-sentence status update or request that advances this goal.
+                Constraint: Do not use markdown or hashtags. Plain text only. Max 20 words.
             `;
 
             // Fallback handling inside the loop in case runtime error occurs
             let content = "";
             try {
                 content = await aiRef.current.generateCompletion(prompt);
+                // Clean output
+                content = content.replace(/"/g, '').trim();
             } catch (e) {
                 console.error("AI Generation failed:", e);
                 // Last ditch fallback if main provider crashes mid-loop

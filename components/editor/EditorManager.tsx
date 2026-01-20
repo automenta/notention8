@@ -219,7 +219,10 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
           isOpen={isMagicModalOpen}
           onClose={() => setIsMagicModalOpen(false)}
           onAutoTag={handleMagic}
-          onRunPrompt={handlePrompt}
+          onRunPrompt={(prompt) => {
+              const selection = editorRef.current?.getSelection();
+              return handlePrompt(prompt, selection);
+          }}
       />
     </div>
   );

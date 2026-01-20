@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import type { Note } from '../../types';
-import { TrashIcon, WorldIcon, DownloadIcon, MapPinIcon, ClockIcon, PinIcon, DocumentDuplicateIcon } from '../layout/icons';
+import { TrashIcon, WorldIcon, DownloadIcon, MapPinIcon, ClockIcon, PinIcon, DocumentDuplicateIcon, ChatIcon } from '../layout/icons';
 import { getTextFromHtml } from '../../utils/nostr';
 
 export const NoteListItem = React.memo(({
@@ -10,7 +10,8 @@ export const NoteListItem = React.memo(({
   onDelete,
   onPin,
   isTrash = false,
-  onRestore
+  onRestore,
+  onChatWithNote
 }: {
   note: Note;
   isSelected: boolean;
@@ -19,6 +20,7 @@ export const NoteListItem = React.memo(({
   onPin?: () => void;
   isTrash?: boolean;
   onRestore?: () => void;
+  onChatWithNote?: () => void;
 }) => {
   const itemRef = useRef<HTMLDivElement>(null);
 
@@ -152,14 +154,29 @@ export const NoteListItem = React.memo(({
                 </button>
             )}
             {!isTrash && (
-                <button
-                    onClick={handleExport}
-                    tabIndex={-1}
-                    className="p-1 text-gray-400 rounded hover:bg-gray-700/50 hover:text-white transition-colors"
-                    title="Export Note"
-                >
-                    <DownloadIcon className="h-3.5 w-3.5" />
-                </button>
+                <>
+                    {onChatWithNote && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onChatWithNote();
+                            }}
+                            tabIndex={-1}
+                            className="p-1 text-gray-400 rounded hover:bg-gray-700/50 hover:text-blue-300 transition-colors"
+                            title="Chat with Note"
+                        >
+                            <ChatIcon className="h-3.5 w-3.5" />
+                        </button>
+                    )}
+                    <button
+                        onClick={handleExport}
+                        tabIndex={-1}
+                        className="p-1 text-gray-400 rounded hover:bg-gray-700/50 hover:text-white transition-colors"
+                        title="Export Note"
+                    >
+                        <DownloadIcon className="h-3.5 w-3.5" />
+                    </button>
+                </>
             )}
             <button
                 onClick={(e) => {

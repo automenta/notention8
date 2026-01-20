@@ -9,6 +9,7 @@ import { useSimulationNetwork } from './useSimulationNetwork';
 import { useSimulationLoop } from './useSimulationLoop';
 import { useNotes } from '../useNotes';
 import { useSettings } from '../useSettingsContext';
+import { useView } from '../useViewContext';
 import { createAIProvider } from '../../services/ai/factory';
 import type { SimulationAgent } from './types';
 
@@ -50,6 +51,7 @@ export const useSimulator = () => {
   const [active, setActive] = useState(false);
   const { notes: userNotes, addNote } = useNotes();
   const { settings } = useSettings();
+  const { chatContextNoteId } = useView();
 
   const [ontology, setOntology] = useState<OntologyNode[]>(DEFAULT_ONTOLOGY);
   const ontologyRef = useRef(ontology);
@@ -225,16 +227,27 @@ export const useSimulator = () => {
              let responseText = "I am ready to help.";
              if (aiRef.current) {
                  try {
-                     // RAG-lite: Fetch recent notes for context
-                     const recentNotes = userNotes
-                        .slice(0, 5)
+                     // RAG-lite: Fetch relevant notes for context
+                     let contextNotes = userNotes.slice(0, 5);
+                     let contextLabel = "recent notes";
+
+                     // If context note is selected, prioritize it
+                     if (chatContextNoteId) {
+                         const note = userNotes.find(n => n.id === chatContextNoteId);
+                         if (note) {
+                             contextNotes = [note];
+                             contextLabel = "the active note";
+                         }
+                     }
+
+                     const notesText = contextNotes
                         .map(n => `[Note ${n.id.slice(0,4)}]: ${n.title} - ${n.content.replace(/<[^>]*>/g, '')}`)
                         .join('\n');
 
                      responseText = await aiRef.current.generateCompletion(
                          `You are a helpful AI Assistant in a note-taking application.
-                          You have access to the user's recent notes:
-                          ${recentNotes}
+                          You have access to ${contextLabel}:
+                          ${notesText}
 
                           User said: "${content}".
                           Reply helpfully and concisely. If the user asks about their notes, use the context above.`
