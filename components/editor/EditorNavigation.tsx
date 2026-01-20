@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronUpIcon, ChevronDownIcon } from '../layout/icons';
 
-interface EditorNavigationProps {
+export interface EditorNavigationProps {
     onNext?: () => void;
     onPrevious?: () => void;
     hasNext?: boolean;

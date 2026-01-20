@@ -162,7 +162,53 @@ export class WebLLMProvider implements AIProvider {
   }
 
   async optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: { source: string, target: string }[], pruned: string[] }> {
-      // TODO: Implement actual LLM logic to find synonyms in the ontology tree.
-      return { merged: [], pruned: [] };
+    const engine = await this.getEngine();
+    if (!engine) {
+         return { merged: [], pruned: [] };
+    }
+
+    // Extract all attributes with their descriptions
+    const attributes: { key: string; description: string }[] = [];
+    const traverse = (nodes: OntologyNode[]) => {
+        nodes.forEach(n => {
+            if (n.attributes) {
+                Object.entries(n.attributes).forEach(([key, attr]) => {
+                    attributes.push({ key, description: attr.description || '' });
+                });
+            }
+            if (n.children) traverse(n.children);
+        });
+    };
+    traverse(ontology);
+
+    if (attributes.length < 2) return { merged: [], pruned: [] };
+
+    const prompt = `
+      Analyze the following ontology attributes and identify pairs that are synonymous or highly redundant and should be merged.
+      Return a JSON object with a "merged" property containing an array of objects, each with "source" (the less common or less descriptive key) and "target" (the preferred key).
+      Also include a "pruned" property for keys that look like spam or are completely irrelevant.
+      Return ONLY valid JSON.
+
+      Attributes:
+      ${JSON.stringify(attributes, null, 2)}
+    `;
+
+    const response = await engine.chat.completions.create({
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.1,
+    });
+
+    const content = response.choices[0]?.message?.content || "{}";
+    try {
+        const jsonStr = content.replace(/```json/g, '').replace(/```/g, '').trim();
+        const result = JSON.parse(jsonStr);
+        return {
+            merged: Array.isArray(result.merged) ? result.merged : [],
+            pruned: Array.isArray(result.pruned) ? result.pruned : []
+        };
+    } catch {
+        console.warn("Failed to parse AI optimization:", content);
+        return { merged: [], pruned: [] };
+    }
   }
 }

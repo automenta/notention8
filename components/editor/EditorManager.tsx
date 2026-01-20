@@ -7,7 +7,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useNotes } from '../../hooks/useNotes';
 import { useEditorActions } from '../../hooks/useEditorActions';
 import { useEditorShortcuts } from '../../hooks/useEditorShortcuts';
-import type { Note, OntologyAttribute, OntologyNode } from '../../types';
+import type { Note, OntologyNode } from '../../types';
 import { EditorHeader } from './EditorHeader';
 import { TiptapEditor, TiptapEditorRef } from './TiptapEditor';
 import { PropertyInspector } from './PropertyInspector';
@@ -121,30 +121,36 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         key={note.id}
         title={dirtyNote.title}
         onTitleChange={handleTitleChange}
-        onPublish={handlePublish}
-        onFindMatches={handleFindMatches}
-        onBack={() => setSelectedNoteId(null)}
-        isPublishing={isPublishing}
-        isPublished={isPublished}
         tags={dirtyNote.tags}
         onTagsChange={handleTagsChange}
         onAutoTag={handleAutoTag}
         isAutoTagging={isAutoTagging}
         isApiKeyAvailable={isApiKeyAvailable}
-        isInspectorOpen={isInspectorOpen}
-        onToggleInspector={() => setIsInspectorOpen(!isInspectorOpen)}
-        onSaveTemplate={() => setIsSaveTemplateModalOpen(true)}
-        onNext={handleNext}
-        onPrevious={handlePrevious}
-        hasNext={hasNext}
-        hasPrevious={hasPrevious}
-        onExport={handleExport}
-        onCopyContent={handleCopyContent}
-        isToolbarVisible={isToolbarVisible}
-        onToggleToolbar={() => setIsToolbarVisible(!isToolbarVisible)}
-        actionLabel={actionLabel}
-        missingProperties={missingProperties}
-        onAddProperty={handleAddPropertyHint}
+        onBack={() => setSelectedNoteId(null)}
+        navigation={{
+            onNext: handleNext,
+            onPrevious: handlePrevious,
+            hasNext,
+            hasPrevious
+        }}
+        toolbar={{
+            onSaveTemplate: () => setIsSaveTemplateModalOpen(true),
+            onToggleToolbar: () => setIsToolbarVisible(!isToolbarVisible),
+            isToolbarVisible,
+            onExport: handleExport,
+            onCopyContent: handleCopyContent,
+            onToggleInspector: () => setIsInspectorOpen(!isInspectorOpen),
+            isInspectorOpen
+        }}
+        network={{
+            onPublish: handlePublish,
+            onFindMatches: handleFindMatches,
+            isPublishing,
+            isPublished,
+            actionLabel,
+            missingProperties,
+            onAddProperty: handleAddPropertyHint
+        }}
       />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col relative">

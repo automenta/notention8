@@ -2,68 +2,39 @@ import React, { useState } from 'react';
 import { ArrowLeftIcon, LockIcon } from '../layout/icons';
 import { TagInput } from './TagInput';
 import { HelpModal } from '../common/HelpModal';
-import { EditorNavigation } from './EditorNavigation';
-import { EditorToolbar } from './EditorToolbar';
-import { EditorNetworkActions } from './EditorNetworkActions';
+import { EditorNavigation, EditorNavigationProps } from './EditorNavigation';
+import { EditorToolbar, EditorToolbarProps } from './EditorToolbar';
+import { EditorNetworkActions, EditorNetworkActionsProps } from './EditorNetworkActions';
 
-interface EditorHeaderProps {
+export interface EditorHeaderProps {
   title: string;
   onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onPublish: () => void;
-  onFindMatches?: () => void;
-  onBack?: () => void;
-  isPublishing: boolean;
-  isPublished: boolean;
   tags: string[];
   onTagsChange: (tags: string[]) => void;
   onAutoTag?: () => void;
   isAutoTagging: boolean;
   isApiKeyAvailable: boolean;
-  isInspectorOpen?: boolean;
-  onToggleInspector?: () => void;
-  onSaveTemplate?: () => void;
-  onNext?: () => void;
-  onPrevious?: () => void;
-  hasNext?: boolean;
-  hasPrevious?: boolean;
-  onExport?: () => void;
-  onCopyContent?: () => void;
+  onBack?: () => void;
   readOnly?: boolean;
-  isToolbarVisible?: boolean;
-  onToggleToolbar?: () => void;
-  actionLabel?: string;
-  missingProperties?: string[];
-  onAddProperty?: (key: string) => void;
+
+  navigation: EditorNavigationProps;
+  toolbar: Omit<EditorToolbarProps, 'isTagInputVisible' | 'onToggleTags' | 'onOpenHelp'>;
+  network: EditorNetworkActionsProps;
 }
 
 export const EditorHeader: React.FC<EditorHeaderProps> = ({
   title,
   onTitleChange,
-  onPublish,
-  isPublishing,
-  isPublished,
   tags,
   onTagsChange,
   onAutoTag,
   isAutoTagging,
   isApiKeyAvailable,
-  onFindMatches,
   onBack,
-  isInspectorOpen,
-  onToggleInspector,
-  onSaveTemplate,
-  onNext,
-  onPrevious,
-  hasNext,
-  hasPrevious,
-  onExport,
-  onCopyContent,
   readOnly = false,
-  isToolbarVisible = true,
-  onToggleToolbar,
-  actionLabel = 'Publish',
-  missingProperties = [],
-  onAddProperty
+  navigation,
+  toolbar,
+  network
 }) => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isTagInputVisible, setIsTagInputVisible] = useState(tags.length > 0);
@@ -101,35 +72,16 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-            <EditorNavigation
-                onNext={onNext}
-                onPrevious={onPrevious}
-                hasNext={hasNext}
-                hasPrevious={hasPrevious}
-            />
+            <EditorNavigation {...navigation} />
 
             <EditorToolbar
-                onSaveTemplate={onSaveTemplate}
-                onToggleToolbar={onToggleToolbar}
-                isToolbarVisible={isToolbarVisible}
+                {...toolbar}
                 onToggleTags={handleToggleTags}
                 isTagInputVisible={isTagInputVisible}
-                onExport={onExport}
-                onCopyContent={onCopyContent}
                 onOpenHelp={() => setIsHelpOpen(true)}
-                onToggleInspector={onToggleInspector}
-                isInspectorOpen={isInspectorOpen}
             />
 
-            <EditorNetworkActions
-                missingProperties={missingProperties}
-                onAddProperty={onAddProperty}
-                onFindMatches={onFindMatches}
-                onPublish={onPublish}
-                isPublishing={isPublishing}
-                isPublished={isPublished}
-                actionLabel={actionLabel}
-            />
+            <EditorNetworkActions {...network} />
         </div>
       </div>
 
