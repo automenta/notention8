@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ClipboardIcon } from '../layout/icons';
 import { useToast } from '../contexts/ToastContext';
+import { Input } from './Input';
 
 interface CopyableFieldProps {
   label: string;
@@ -27,23 +28,23 @@ export const CopyableField: React.FC<CopyableFieldProps> = ({
         {label}
       </label>
       <div className="flex items-center gap-2">
-        <input
+        <Input
           type={visible ? 'text' : 'password'}
           readOnly
           value={value}
-          className="flex-grow p-2 bg-gray-800 rounded-md text-gray-300 font-mono text-xs focus:outline-none"
+          className="flex-grow"
         />
         {isSecret && (
           <button
             onClick={() => setVisible(!visible)}
-            className="p-2 text-gray-400 hover:text-white rounded-md text-xs bg-gray-700 hover:bg-gray-600"
+            className="p-2 text-gray-400 hover:text-white rounded-md text-xs bg-gray-700 hover:bg-gray-600 self-start mt-0.5"
           >
             {visible ? 'Hide' : 'Show'}
           </button>
         )}
         <button
           onClick={handleCopy}
-          className="p-2 bg-gray-600 rounded-md hover:bg-gray-500"
+          className="p-2 bg-gray-600 rounded-md hover:bg-gray-500 self-start mt-0.5"
           title="Copy to clipboard"
           type="button"
         >
