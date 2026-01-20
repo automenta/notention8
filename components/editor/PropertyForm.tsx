@@ -46,6 +46,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   }, [initialKey, initialOp, initialValue]);
 
   const getAttributeDetails = (k: string, nodes: OntologyNode[]): { type: string, description?: string } | undefined => {
+      if (!nodes) return undefined;
       for (const node of nodes) {
         if (node.attributes && node.attributes[k]) {
           return { type: node.attributes[k].type, description: node.attributes[k].description };

@@ -83,6 +83,7 @@ export function PropertyInspector({
   };
 
   const getAttributeDetails = (key: string, nodes: OntologyNode[]): { type: string, description?: string } | undefined => {
+    if (!nodes) return undefined;
     for (const node of nodes) {
       if (node.attributes && node.attributes[key]) {
         return { type: node.attributes[key].type, description: node.attributes[key].description };
