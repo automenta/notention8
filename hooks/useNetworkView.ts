@@ -5,10 +5,9 @@ import { DEFAULT_RELAYS, hexToBytes, pool, extractPropertiesFromTags, convertEve
 import { matchNotes } from '../utils/matching';
 import { useNostrProfile } from './useNostrProfile';
 import { useView } from './useViewContext';
-import { useToast } from '../components/contexts/ToastContext';
 import { useSettings } from './useSettingsContext';
 import { useGardener } from './useGardener';
-import { useNotes } from './useNotes';
+import { useNetworkActions } from './useNetworkActions';
 
 interface UseNetworkViewProps {
   matchAgainst?: Note | null;
@@ -16,10 +15,9 @@ interface UseNetworkViewProps {
 
 export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
   const { settings } = useSettings();
-  const { setActiveView, setMatchingNoteId, setSelectedNoteId } = useView();
-  const { addToast } = useToast();
+  const { setActiveView, setMatchingNoteId } = useView();
   const { learnFromProperties } = useGardener();
-  const { addNote, updateNote } = useNotes();
+  const { applyMatchToNote: applyMatch, forkNote } = useNetworkActions();
 
   const relays = useMemo(() => settings.nostr.relays || DEFAULT_RELAYS, [settings.nostr.relays]);
 
@@ -128,45 +126,9 @@ export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
   const profiles = useNostrProfile(authorPubkeys);
 
   const applyMatchToNote = (event: NostrEvent) => {
-      if (!matchAgainst) return;
-
-      const props = extractPropertiesFromTags(event.tags);
-      if (props.length === 0) {
-          addToast("No semantic properties found in this note.", 'warning');
-          return;
+      if (matchAgainst) {
+          applyMatch(matchAgainst, event);
       }
-
-      const tagsToAdd = props.map(p => {
-          // Flatten simple values
-          return p.values.map(v => `[${p.key}:${p.operator}:${v}]`).join('');
-      }).join('\n');
-
-      const newContent = matchAgainst.content + '\n\n' + tagsToAdd;
-
-      updateNote({
-          ...matchAgainst,
-          content: newContent,
-      });
-
-      addToast(`Applied ${props.length} properties from match!`, 'success');
-  };
-
-  const forkNote = (event: NostrEvent) => {
-      const newNote = addNote();
-      const eventNote = convertEventToNote(event);
-
-      const updatedNote = {
-          ...newNote,
-          title: `Fork of ${eventNote.title || 'Untitled'}`,
-          content: eventNote.content,
-          properties: eventNote.properties,
-          tags: eventNote.tags
-      };
-
-      updateNote(updatedNote);
-      setSelectedNoteId(newNote.id);
-      setActiveView('notes');
-      addToast('Note forked successfully!', 'success');
   };
 
   return {
