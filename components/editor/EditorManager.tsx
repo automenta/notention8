@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 
 import { useEditorLogic } from '../../hooks/useEditorLogic';
+import { useEditorModals } from '../../hooks/useEditorModals';
 import { useView } from '../../hooks/useViewContext';
 import { useToast } from '../contexts/ToastContext';
 import { useNotes } from '../../hooks/useNotes';
@@ -46,11 +47,22 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     missingProperties,
   } = useEditorLogic({ note, onSave });
 
+  const {
+      isInspectorOpen, setIsInspectorOpen,
+      isTemplateSelectorOpen, setIsTemplateSelectorOpen,
+      isSaveTemplateModalOpen, setIsSaveTemplateModalOpen,
+      isMapPickerOpen, setIsMapPickerOpen,
+      isTimePickerOpen, setIsTimePickerOpen,
+      pickingTimeKey,
+      handlePickTime,
+      handleTimeSelected,
+      handleLocationSelect,
+      handleRequestLocationPick
+  } = useEditorModals(handleUpdateProperty, handleUpdateLocation);
+
   const { setSelectedNoteId } = useView();
   const { addToast } = useToast();
   const editorRef = useRef<TiptapEditorRef>(null);
-  const [isInspectorOpen, setIsInspectorOpen] = useState(false);
-  const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
   const [isToolbarVisible, setIsToolbarVisible] = useState(true);
 
   const currentIndex = (sortedNotes || []).findIndex((n) => n.id === note.id);
@@ -80,12 +92,6 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
       setSelectedNoteId
   });
 
-  const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
-  const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
-  const [locationPickerCallback, setLocationPickerCallback] = useState<((loc: string) => void) | null>(null);
-  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
-  const [pickingTimeKey, setPickingTimeKey] = useState<string>('');
-
   const allTemplates = [
       ...settings.customTemplates,
   ];
@@ -103,41 +109,11 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
       setIsTemplateSelectorOpen(false);
   };
 
-  const handlePickTime = (key: string) => {
-      setPickingTimeKey(key);
-      setIsTimePickerOpen(true);
-  };
-
-  const handleTimeSelected = (timeVal: string) => {
-      if (pickingTimeKey) {
-          handleUpdateProperty(pickingTimeKey, timeVal);
-      }
-      setIsTimePickerOpen(false);
-  };
-
   const handleAddPropertyHint = (key: string) => {
       if (editorRef.current) {
           editorRef.current.openPropertyModal(key);
       }
   };
-
-  // Modified handleUpdateLocation to support generic picking
-  const handleLocationSelect = React.useCallback((latlng: string) => {
-      if (locationPickerCallback) {
-          locationPickerCallback(latlng);
-          setLocationPickerCallback(null);
-          setIsMapPickerOpen(false);
-          return;
-      }
-      handleUpdateLocation(latlng);
-  }, [handleUpdateLocation, locationPickerCallback]);
-
-  const handleRequestLocationPick = React.useCallback((): Promise<string> => {
-      return new Promise((resolve) => {
-          setLocationPickerCallback(() => (loc: string) => resolve(loc));
-          setIsMapPickerOpen(true);
-      });
-  }, []);
 
   return (
     <div className="flex flex-col h-full relative">

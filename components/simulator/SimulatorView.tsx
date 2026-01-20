@@ -7,7 +7,7 @@ import { SimulatorSidebar } from './SimulatorSidebar';
 import { SimulatorAgentEditor } from './SimulatorAgentEditor';
 import { SystemDashboard } from './SystemDashboard';
 import { useSimulatorContext } from '../contexts/SimulatorContext';
-import type { SwarmTemplate, SimulationAgent } from '../../hooks/simulator/types';
+import { useSwarmActions } from '../../hooks/simulator/useSwarmActions';
 
 export const SimulatorView: React.FC = () => {
   const {
@@ -23,30 +23,18 @@ export const SimulatorView: React.FC = () => {
       aiProviderName,
       handlePublish,
       randomizeAgent,
-      deploySwarm,
       addAgent,
       optimizeOntology,
       importUserNotes,
       saveNetworkNote
   } = useSimulatorContext();
+  const { handleDeploySwarm } = useSwarmActions();
 
   const [selectedView, setSelectedView] = useState<'overview' | string>('overview');
   const [showSwarmModal, setShowSwarmModal] = useState(false);
 
   const selectedAgentIndex = agents.findIndex(a => a.id === selectedView);
   const selectedAgent = selectedAgentIndex !== -1 ? agents[selectedAgentIndex] : null;
-
-  const handleDeploySwarm = (template: SwarmTemplate) => {
-      const newAgents: SimulationAgent[] = template.agents.map(a => ({
-          ...a,
-          id: Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join(''), // Valid-ish hex ID
-          currentDraft: '',
-          status: 'Idle',
-          isAgent: true
-      }));
-      deploySwarm(newAgents);
-      setShowSwarmModal(false);
-  };
 
   return (
     <div className="flex h-full bg-black text-gray-200 overflow-hidden relative">
@@ -110,7 +98,7 @@ export const SimulatorView: React.FC = () => {
       <SwarmModal
         isOpen={showSwarmModal}
         onClose={() => setShowSwarmModal(false)}
-        onDeploy={handleDeploySwarm}
+        onDeploy={(template) => handleDeploySwarm(template, () => setShowSwarmModal(false))}
       />
     </div>
   );
