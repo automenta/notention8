@@ -1,6 +1,9 @@
 import { CreateMLCEngine, MLCEngine } from "@mlc-ai/web-llm";
 import type { AIProvider, InferredAttribute } from './types';
 import type { Note, OntologyAttribute, OntologyNode } from '../../types';
+import { WebLLMChatModel } from './LangChainAdapters';
+import { HumanMessage } from '@langchain/core/messages';
+import { JsonOutputParser } from '@langchain/core/output_parsers';
 
 export const AVAILABLE_MODELS = [
     { id: "Llama-3.2-3B-Instruct-q4f16_1-MLC", label: "Llama 3.2 3B (Balanced)" },
@@ -12,6 +15,7 @@ export class WebLLMProvider implements AIProvider {
   name = 'WebLLM (In-Browser)';
   isAvailable = true;
   private engine: MLCEngine | null = null;
+  private chatModel: WebLLMChatModel | null = null;
   private modelId: string;
   private initPromise: Promise<void> | null = null;
 
@@ -19,60 +23,49 @@ export class WebLLMProvider implements AIProvider {
     this.modelId = modelId;
   }
 
-  private async getEngine(): Promise<MLCEngine | null> {
-    if (this.engine) return this.engine;
+  private async getChatModel(): Promise<WebLLMChatModel | null> {
+      if (this.chatModel) return this.chatModel;
 
-    if (!this.initPromise) {
-      this.initPromise = (async () => {
-        try {
-            // Check if WebGPU is available (basic check)
-            if (!navigator.gpu) {
-                throw new Error("WebGPU not supported");
-            }
+      if (!this.initPromise) {
+          this.initPromise = (async () => {
+             try {
+                 if (!navigator.gpu) throw new Error("WebGPU not supported");
+                 this.engine = await CreateMLCEngine(
+                     this.modelId,
+                     { initProgressCallback: () => {} }
+                 );
+                 this.chatModel = new WebLLMChatModel(this.engine, this.modelId);
+             } catch (e) {
+                 console.warn("Failed to load WebLLM:", e);
+                 throw e;
+             }
+          })();
+      }
 
-            this.engine = await CreateMLCEngine(
-                this.modelId,
-                {
-                    initProgressCallback: () => {
-                        // Suppress logs
-                    }
-                }
-            );
-        } catch (e) {
-            console.warn("Failed to load WebLLM:", e);
-            throw e; // Propagate error
-        }
-      })();
-    }
-
-    try {
-        await this.initPromise;
-        return this.engine;
-    } catch {
-        // If init failed, we can't return an engine.
-        // The calling methods will have to handle null or re-throw.
-        return null;
-    }
+      try {
+          await this.initPromise;
+          return this.chatModel;
+      } catch {
+          return null;
+      }
   }
 
   async generateCompletion(prompt: string): Promise<string> {
-    const engine = await this.getEngine();
-    if (!engine) {
-        throw new Error("WebLLM engine not available");
-    }
+    const model = await this.getChatModel();
+    if (!model) throw new Error("WebLLM engine not available");
 
-    const response = await engine.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-    });
-    return response.choices[0]?.message?.content || "";
+    try {
+        const response = await model.invoke([new HumanMessage(prompt)]);
+        return typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+    } catch (e) {
+        console.warn("WebLLM Generation Error:", e);
+        return "";
+    }
   }
 
   async suggestTags(text: string, ontology?: OntologyNode[]): Promise<string[]> {
-    const engine = await this.getEngine();
-    if (!engine) {
-        throw new Error("WebLLM engine not available");
-    }
+    const model = await this.getChatModel();
+    if (!model) throw new Error("WebLLM engine not available");
 
     // Extract ontology keys for context
     const ontologyKeys = new Set<string>();
@@ -99,26 +92,20 @@ export class WebLLMProvider implements AIProvider {
       Text: "${text}"
     `;
 
-    const response = await engine.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.1, // Deterministic
-    });
-
-    const content = response.choices[0]?.message?.content || "[]";
     try {
-        const jsonStr = content.replace(/```json/g, '').replace(/```/g, '').trim();
-        return JSON.parse(jsonStr);
+        const parser = new JsonOutputParser();
+        const response = await this.generateCompletion(prompt);
+        const jsonStr = response.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        return await parser.parse(jsonStr);
     } catch {
-        console.warn("Failed to parse AI tags:", content);
+        // Fallback or empty
         return [];
     }
   }
 
   async analyzeOntology(notes: Note[]): Promise<InferredAttribute[]> {
-    const engine = await this.getEngine();
-    if (!engine) {
-        throw new Error("WebLLM engine not available");
-    }
+    const model = await this.getChatModel();
+    if (!model) throw new Error("WebLLM engine not available");
 
     const sampleText = notes.slice(0, 5).map(n => n.content).join("\n---\n");
 
@@ -131,16 +118,11 @@ export class WebLLMProvider implements AIProvider {
       ${sampleText}
     `;
 
-    const response = await engine.chat.completions.create({
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.1,
-    });
-
-    const content = response.choices[0]?.message?.content || "[]";
     try {
-        const jsonStr = content.replace(/```json/g, '').replace(/```/g, '').trim();
-        const raw = JSON.parse(jsonStr);
-        // Map to expected interface
+        const parser = new JsonOutputParser();
+        const response = await this.generateCompletion(prompt);
+        const jsonStr = response.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        const raw = await parser.parse(jsonStr);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return raw.map((r: any) => ({
             key: r.key,
@@ -150,22 +132,17 @@ export class WebLLMProvider implements AIProvider {
             sampleValues: r.sampleValues || []
         }));
     } catch {
-        console.warn("Failed to parse AI ontology:", content);
         return [];
     }
   }
 
   async alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]> {
-    // Re-use suggestTags but with stricter ontology prompting if needed.
-    // For now, suggestTags already handles ontology context.
     return this.suggestTags(text, ontology);
   }
 
   async optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: { source: string, target: string }[], pruned: string[] }> {
-    const engine = await this.getEngine();
-    if (!engine) {
-         return { merged: [], pruned: [] };
-    }
+    const model = await this.getChatModel();
+    if (!model) return { merged: [], pruned: [] };
 
     // Extract all attributes with their descriptions
     const attributes: { key: string; description: string }[] = [];
@@ -193,21 +170,16 @@ export class WebLLMProvider implements AIProvider {
       ${JSON.stringify(attributes, null, 2)}
     `;
 
-    const response = await engine.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.1,
-    });
-
-    const content = response.choices[0]?.message?.content || "{}";
     try {
-        const jsonStr = content.replace(/```json/g, '').replace(/```/g, '').trim();
-        const result = JSON.parse(jsonStr);
+        const parser = new JsonOutputParser();
+        const response = await this.generateCompletion(prompt);
+        const jsonStr = response.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        const result = await parser.parse(jsonStr);
         return {
             merged: Array.isArray(result.merged) ? result.merged : [],
             pruned: Array.isArray(result.pruned) ? result.pruned : []
         };
     } catch {
-        console.warn("Failed to parse AI optimization:", content);
         return { merged: [], pruned: [] };
     }
   }

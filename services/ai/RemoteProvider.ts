@@ -1,6 +1,8 @@
 import type { AIProvider, InferredAttribute } from './types';
 import type { Note, OntologyNode } from '../../types';
-import { GoogleGenAI } from '@google/genai';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { HumanMessage } from '@langchain/core/messages';
+import { JsonOutputParser } from '@langchain/core/output_parsers';
 
 export const isGeminiApiKeyAvailable = (userKey?: string): boolean => {
   const key = userKey || process.env.API_KEY;
@@ -8,28 +10,32 @@ export const isGeminiApiKeyAvailable = (userKey?: string): boolean => {
 };
 
 export class RemoteAIProvider implements AIProvider {
-  name = 'Google Gemini';
+  name = 'Google Gemini (LangChain)';
   isAvailable: boolean;
-  private client: GoogleGenAI | null = null;
+  private model: ChatGoogleGenerativeAI | null = null;
   private modelName = 'gemini-1.5-flash';
 
   constructor(apiKey?: string) {
     const key = apiKey || process.env.API_KEY;
     this.isAvailable = !!(key && key !== 'YOUR_GEMINI_API_KEY');
     if (this.isAvailable) {
-      this.client = new GoogleGenAI({ apiKey: key || '' });
+      this.model = new ChatGoogleGenerativeAI({
+        apiKey: key || '',
+        modelName: this.modelName,
+        maxOutputTokens: 2048,
+        temperature: 0.1
+      });
     }
   }
 
   async generateCompletion(prompt: string): Promise<string> {
-    if (!this.client) throw new Error('AI Provider not configured');
+    if (!this.model) throw new Error('AI Provider not configured');
 
     try {
-      const response = await this.client.models.generateContent({
-        model: this.modelName,
-        contents: prompt,
-      });
-      return response.text?.trim() || '';
+      const response = await this.model.invoke([
+        new HumanMessage(prompt)
+      ]);
+      return typeof response.content === 'string' ? response.content.trim() : JSON.stringify(response.content);
     } catch (e) {
       console.error('AI Generation Error:', e);
       throw e;
@@ -37,7 +43,7 @@ export class RemoteAIProvider implements AIProvider {
   }
 
   async suggestTags(text: string): Promise<string[]> {
-    if (!this.client) throw new Error('AI Provider not configured');
+    if (!this.model) throw new Error('AI Provider not configured');
 
     const prompt = `Analyze the following note content and suggest up to 5 relevant tags.
 Return ONLY a valid JSON array of strings (e.g., ["tag1", "tag2"]).
@@ -47,9 +53,11 @@ Note Content:
 ${text}`;
 
     try {
-      const result = await this.generateCompletion(prompt);
-      const jsonStr = result.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-      return JSON.parse(jsonStr);
+      const parser = new JsonOutputParser();
+      const response = await this.generateCompletion(prompt);
+      // Clean markdown code blocks if present before parsing
+      const jsonStr = response.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      return await parser.parse(jsonStr);
     } catch (e) {
       console.error('Tag Suggestion Error:', e);
       return [];
@@ -57,11 +65,9 @@ ${text}`;
   }
 
   async analyzeOntology(notes: Note[]): Promise<InferredAttribute[]> {
-    if (!this.client) throw new Error('AI Provider not configured');
+    if (!this.model) throw new Error('AI Provider not configured');
 
-    // To avoid hitting context limits, we might only send a sample of notes or just their properties.
     const propertySummary = notes.map(n => {
-        // Only send properties to save tokens
         return n.properties.map(p => `${p.key}: ${p.values.join(', ')}`).join('; ');
     }).filter(s => s).join('\n');
 
@@ -82,9 +88,10 @@ Data:
 ${propertySummary}`;
 
     try {
-        const result = await this.generateCompletion(prompt);
-        const jsonStr = result.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-        return JSON.parse(jsonStr);
+        const parser = new JsonOutputParser();
+        const response = await this.generateCompletion(prompt);
+        const jsonStr = response.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        return await parser.parse(jsonStr);
     } catch (e) {
         console.error('Ontology Analysis Error:', e);
         return [];
@@ -92,9 +99,8 @@ ${propertySummary}`;
   }
 
   async alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]> {
-      if (!this.client) throw new Error('AI Provider not configured');
+      if (!this.model) throw new Error('AI Provider not configured');
 
-      // Flatten ontology for prompt
       const knownKeys = new Set<string>();
       const traverse = (nodes: OntologyNode[]) => {
           nodes.forEach(n => {
@@ -121,9 +127,10 @@ Text:
 ${text}`;
 
       try {
-          const result = await this.generateCompletion(prompt);
-          const jsonStr = result.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-          return JSON.parse(jsonStr);
+          const parser = new JsonOutputParser();
+          const response = await this.generateCompletion(prompt);
+          const jsonStr = response.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+          return await parser.parse(jsonStr);
       } catch (e) {
           console.error('Alignment Error:', e);
           return [];
@@ -131,7 +138,7 @@ ${text}`;
   }
 
   async optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: { source: string, target: string }[], pruned: string[] }> {
-      if (!this.client) throw new Error('AI Provider not configured');
+      if (!this.model) throw new Error('AI Provider not configured');
 
       const knownKeys = new Set<string>();
       const traverse = (nodes: OntologyNode[]) => {
@@ -158,9 +165,10 @@ Keys:
 ${keys.join(', ')}`;
 
       try {
-          const result = await this.generateCompletion(prompt);
-          const jsonStr = result.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-          return JSON.parse(jsonStr);
+          const parser = new JsonOutputParser();
+          const response = await this.generateCompletion(prompt);
+          const jsonStr = response.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+          return await parser.parse(jsonStr);
       } catch (e) {
           console.error('Optimization Error:', e);
           return { merged: [], pruned: [] };
