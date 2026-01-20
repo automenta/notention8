@@ -1,6 +1,16 @@
 import { ReactRenderer } from '@tiptap/react';
-import tippy, { Instance as TippyInstance } from 'tippy.js';
+import type { Editor } from '@tiptap/core';
+import tippy, { Instance as TippyInstance, GetReferenceClientRect } from 'tippy.js';
 import { SuggestionList, SuggestionItem } from './SuggestionList';
+
+interface SuggestionProps {
+  query: string;
+  editor: Editor;
+  clientRect: GetReferenceClientRect;
+  event: KeyboardEvent;
+  text: string;
+  range: { from: number; to: number };
+}
 
 export const configureSuggestions = (
   getItems: (query: string) => SuggestionItem[],
@@ -16,7 +26,7 @@ export const configureSuggestions = (
       let popup: TippyInstance[];
 
       return {
-        onStart: (props: any) => {
+        onStart: (props: SuggestionProps) => {
           component = new ReactRenderer(SuggestionList, {
             props,
             editor: props.editor,
@@ -37,7 +47,7 @@ export const configureSuggestions = (
           });
         },
 
-        onUpdate: (props: any) => {
+        onUpdate: (props: SuggestionProps) => {
           component.updateProps(props);
 
           if (!props.clientRect) {
@@ -49,7 +59,7 @@ export const configureSuggestions = (
           });
         },
 
-        onKeyDown: (props: any) => {
+        onKeyDown: (props: SuggestionProps) => {
           if (props.event.key === 'Escape') {
             popup[0].hide();
             return true;

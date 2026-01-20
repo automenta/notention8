@@ -1,12 +1,12 @@
 import React from 'react';
-import type { NostrEvent } from '../../types';
+import type { NostrEvent, NostrProfile } from '../../types';
 import { NostrEventCard } from './NostrEventCard';
 import { LoadingSpinner } from '../layout/icons';
 
 interface NetworkFeedListProps {
     isLoading: boolean;
     sortedEvents: NostrEvent[];
-    profiles: Record<string, any>;
+    profiles: Record<string, NostrProfile>;
     onApplyMatch?: (event: NostrEvent) => void;
     onFork: (event: NostrEvent) => void;
 }
