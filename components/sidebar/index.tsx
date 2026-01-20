@@ -8,7 +8,8 @@ import { NoteListItem } from './NoteListItem';
 import { Search } from './Search';
 import { SortSelector } from './SortSelector';
 import { TemplateList } from './TemplateList';
-import { PlusIcon, NoteIcon } from '../layout/icons';
+import { SidebarEmptyState } from './SidebarEmptyState';
+import { PlusIcon } from '../layout/icons';
 
 interface SidebarProps {
   sortedNotes?: Note[];
@@ -106,7 +107,7 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
                 <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             </div>
              <button
-                onClick={handleCreateNote}
+                onClick={() => handleCreateNote()}
                 className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors flex-shrink-0"
                 title="New Note (Ctrl+N)"
             >
@@ -134,34 +135,11 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
             />
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-            <div className="bg-gray-800 p-4 rounded-full mb-4">
-                <NoteIcon className="h-8 w-8 text-gray-600" />
-            </div>
-            <p className="text-gray-400 mb-2 font-medium">
-              {searchTerm ? 'No matching notes found' : (isTrashView ? 'Trash is empty' : 'Your notebook is empty')}
-            </p>
-            <p className="text-gray-500 text-sm mb-6 max-w-xs">
-              {searchTerm ? `Try adjusting your search for '${searchTerm}'` : 'Capture your ideas, daily tasks, and knowledge.'}
-            </p>
-            {searchTerm ? (
-                 <button
-                    onClick={() => handleCreateNote(searchTerm)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm font-medium"
-                >
-                    <PlusIcon className="h-4 w-4" />
-                    Create note &apos;{searchTerm}&apos;
-                </button>
-            ) : (
-                <button
-                    onClick={() => handleCreateNote()}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm font-medium"
-                >
-                    <PlusIcon className="h-4 w-4" />
-                    Create First Note
-                </button>
-            )}
-          </div>
+          <SidebarEmptyState
+              searchTerm={searchTerm}
+              isTrashView={isTrashView}
+              onCreateNote={handleCreateNote}
+          />
         )}
       </div>
 
