@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { OntologyNode } from '../../types';
-import { ChevronDownIcon } from '../icons';
+import { ChevronDownIcon } from '../layout/icons';
 
 interface OntologyNodeProps {
   node: OntologyNode;

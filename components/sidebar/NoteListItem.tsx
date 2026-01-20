@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import type { Note } from '../../types';
-import { TrashIcon, WorldIcon, DownloadIcon, MapPinIcon, ClockIcon, PinIcon, DocumentDuplicateIcon } from '../icons';
+import { TrashIcon, WorldIcon, DownloadIcon, MapPinIcon, ClockIcon, PinIcon, DocumentDuplicateIcon } from '../layout/icons';
 import { getTextFromHtml } from '../../utils/nostr';
 
 export const NoteListItem = React.memo(({

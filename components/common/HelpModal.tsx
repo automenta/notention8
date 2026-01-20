@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal } from './Modal';
-import { TagIcon } from '../icons';
+import { TagIcon } from '../layout/icons';
 
 interface HelpModalProps {
     isOpen: boolean;

@@ -3,7 +3,7 @@ import { finalizeEvent, nip19 } from 'nostr-tools';
 
 import type { AppSettings, NostrProfile } from '../../types';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
-import { EditIcon, LoadingSpinner } from '../icons';
+import { EditIcon, LoadingSpinner } from '../layout/icons';
 
 interface ProfileEditorModalProps {
   isOpen: boolean;

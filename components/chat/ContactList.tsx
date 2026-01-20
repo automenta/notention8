@@ -3,7 +3,7 @@ import { finalizeEvent, nip19 } from 'nostr-tools';
 import { useNostrProfile } from '../../hooks/useNostrProfile';
 import type { Contact } from '../../types';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
-import { UserPlusIcon, PlusIcon, SearchIcon, CpuChipIcon } from '../icons';
+import { UserPlusIcon, PlusIcon, SearchIcon, CpuChipIcon } from '../layout/icons';
 
 interface ContactListProps {
   privkey: string;

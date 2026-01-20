@@ -16,7 +16,7 @@ import {
   SparklesIcon,
   NetworkIcon,
   DocumentDuplicateIcon
-} from '../icons';
+} from '../layout/icons';
 
 const DAILY_PROMPTS = [
     "What's one thing you learned today?",

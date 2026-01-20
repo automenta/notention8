@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Modal } from '../common/Modal';
-import { TagIcon, CheckIcon, InformationCircleIcon, ICON_MAP, MapIcon } from '../icons';
+import { TagIcon, CheckIcon, InformationCircleIcon, ICON_MAP, MapIcon } from '../layout/icons';
 import type { OntologyAttribute, OntologyNode } from '../../types';
 import { findAttributeDef } from '../../utils/ontologyHelpers';
 

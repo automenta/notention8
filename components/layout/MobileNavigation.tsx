@@ -1,7 +1,7 @@
 import React from 'react';
-import { useView } from '../hooks/useViewContext';
+import { useView } from '../../hooks/useViewContext';
 import { HomeIcon, NoteIcon, ChatIcon, SearchIcon } from './icons';
-import type { View } from '../types';
+import type { View } from '../../types';
 
 interface MobileNavigationProps {
     onOpenPalette: () => void;

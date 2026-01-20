@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import { useEditorLogic } from '../hooks/useEditorLogic';
-import { useView } from '../hooks/useViewContext';
-import { useToast } from './contexts/ToastContext';
-import { useNotes } from '../hooks/useNotes';
-import type { Note } from '../types';
+import { useEditorLogic } from '../../hooks/useEditorLogic';
+import { useView } from '../../hooks/useViewContext';
+import { useToast } from '../contexts/ToastContext';
+import { useNotes } from '../../hooks/useNotes';
+import type { Note } from '../../types';
 import { EditorHeader } from './EditorHeader';
 import { TiptapEditor, TiptapEditorRef } from './TiptapEditor';
-import { PropertyInspector } from './editor/PropertyInspector';
-import { TemplateSelector } from './editor/TemplateSelector';
-import { SaveTemplateModal } from './editor/SaveTemplateModal';
-import { MapPickerModal } from './map/MapPickerModal';
-import { TimePickerModal } from './common/TimePickerModal';
-import { InsertPropertyModal } from './editor/InsertPropertyModal';
-import { OntologyNode, OntologyAttribute } from '../types';
-import { escapeAttribute } from '../utils/sanitize';
+import { PropertyInspector } from './PropertyInspector';
+import { TemplateSelector } from './TemplateSelector';
+import { SaveTemplateModal } from './SaveTemplateModal';
+import { MapPickerModal } from '../map/MapPickerModal';
+import { TimePickerModal } from '../common/TimePickerModal';
+import { InsertPropertyModal } from './InsertPropertyModal';
+import { OntologyNode, OntologyAttribute } from '../../types';
+import { escapeAttribute } from '../../utils/sanitize';
 
 interface EditorManagerProps {
   note: Note;

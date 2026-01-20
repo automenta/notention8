@@ -3,7 +3,7 @@ import { AgentSessionWrapper } from './AgentSessionWrapper';
 import { AgentSessionView } from './AgentSessionView';
 import { CommunityWindow } from './CommunityWindow';
 import { useSimulatorContext } from '../contexts/SimulatorContext';
-import { CubeIcon, CpuChipIcon } from '../icons';
+import { CubeIcon, CpuChipIcon } from "../layout/icons";
 import { SWARM_TEMPLATES } from '../../hooks/simulator/types';
 import type { SwarmTemplate, SimulationAgent } from '../../hooks/simulator/types';
 

@@ -16,7 +16,7 @@ import {
   SparklesIcon,
   CubeIcon,
   TagIcon,
-} from './icons';
+} from '../layout/icons';
 
 interface TiptapToolbarProps {
   editor: Editor | null;

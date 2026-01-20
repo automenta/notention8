@@ -10,7 +10,7 @@ import {
   renameAttribute,
   mergeAttributes
 } from '../../utils/ontologyHelpers';
-import { TrashIcon, EditIcon, PlusIcon, FolderIcon, TagIcon, MergeIcon, SparklesIcon } from '../icons';
+import { TrashIcon, EditIcon, PlusIcon, FolderIcon, TagIcon, MergeIcon, SparklesIcon } from '../layout/icons';
 import { Modal } from '../common/Modal';
 import { useToast } from '../contexts/ToastContext';
 

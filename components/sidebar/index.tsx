@@ -8,7 +8,7 @@ import { NoteListItem } from './NoteListItem';
 import { Search } from './Search';
 import { SortSelector } from './SortSelector';
 import { TemplateList } from './TemplateList';
-import { PlusIcon, NoteIcon } from '../icons';
+import { PlusIcon, NoteIcon } from '../layout/icons';
 
 interface SidebarProps {
   sortedNotes?: Note[];

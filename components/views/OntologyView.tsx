@@ -4,7 +4,8 @@ import { useOntologyView } from '../../hooks/useOntologyView';
 import { OntologyNodeItem } from '../ontology/OntologyNodeItem';
 import { SimulatorView } from '../simulator/SimulatorView';
 import { useView } from '../../hooks/useViewContext';
-import { ArrowLeftIcon, ArrowRightIcon } from '../icons';
+import { ArrowLeftIcon, ArrowRightIcon } from '../layout/icons';
+import { Tabs } from '../common/Tabs';
 
 export function OntologyView() {
   const {
@@ -59,31 +60,15 @@ export function OntologyView() {
                 {isEvolving ? 'Gardening...' : 'Run Gardener'}
               </button>
 
-              <div className="flex bg-gray-900 rounded-lg p-1">
-                <button
-                  onClick={() => setActiveTab('graph')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${activeTab === 'graph' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
-                >
-                  Graph
-                </button>
-                <button
-                  onClick={() => setActiveTab('simulator')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${activeTab === 'simulator' ? 'bg-purple-600 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
-                >
-                  Simulator
-                </button>
-                <button
-                  onClick={() => setActiveTab('conflicts')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-2 ${activeTab === 'conflicts' ? 'bg-red-600 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
-                >
-                  Conflicts
-                  {conflicts.length > 0 && (
-                      <span className="bg-red-900 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
-                          {conflicts.length}
-                      </span>
-                  )}
-                </button>
-              </div>
+              <Tabs
+                  tabs={[
+                      { id: 'graph', label: 'Graph' },
+                      { id: 'simulator', label: 'Simulator' },
+                      { id: 'conflicts', label: 'Conflicts', count: conflicts.length }
+                  ]}
+                  activeTab={activeTab}
+                  onChange={(id) => setActiveTab(id as any)}
+              />
             </div>
           )}
       </div>

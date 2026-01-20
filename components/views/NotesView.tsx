@@ -2,7 +2,7 @@ import React from 'react';
 import type { Note } from '../../types';
 
 import { useNotesView } from '../../hooks/useNotesView';
-import { EditorManager } from '../EditorManager';
+import { EditorManager } from '../editor/EditorManager';
 import { DashboardView } from './DashboardView';
 
 interface NotesViewProps {

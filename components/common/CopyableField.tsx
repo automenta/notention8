@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ClipboardIcon } from '../icons';
+import { ClipboardIcon } from '../layout/icons';
 import { useToast } from '../contexts/ToastContext';
 
 interface CopyableFieldProps {

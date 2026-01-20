@@ -6,7 +6,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 import { useNotes } from '../../hooks/useNotes';
 import { useView } from '../../hooks/useViewContext';
-import { MapPinIcon } from '../icons';
+import { MapPinIcon } from '../layout/icons';
 import { parseGeo, parseGeoFromValues, haversineDistance } from '../../utils/spacetime';
 
 const locales = {
@@ -123,25 +123,6 @@ export function TimeView() {
 
     return (
         <div className="h-full bg-gray-900 p-4 flex flex-col overflow-hidden">
-            <style>{`
-                .rbc-calendar { color: #e5e7eb; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-                .rbc-toolbar button { color: #e5e7eb; border-color: #374151; }
-                .rbc-toolbar button:hover { background-color: #374151; }
-                .rbc-toolbar button.rbc-active { background-color: #2563eb; color: white; border-color: #2563eb; }
-                .rbc-off-range-bg { background: #111827; }
-                .rbc-today { background: #1f2937; }
-                .rbc-event { background-color: #2563eb; border-radius: 4px; }
-                .rbc-time-view, .rbc-month-view { border-color: #374151; }
-                .rbc-day-bg + .rbc-day-bg { border-left-color: #374151; }
-                .rbc-time-header-content { border-left-color: #374151; }
-                .rbc-time-content { border-top-color: #374151; }
-                .rbc-timeslot-group { border-bottom-color: #374151; }
-                .rbc-time-content > * + * > * { border-left-color: #374151; }
-                .rbc-header { border-bottom-color: #374151; }
-                .rbc-month-row + .rbc-month-row { border-top-color: #374151; }
-                .rbc-day-bg { border-left-color: #374151; }
-            `}</style>
-
             {/* Toolbar */}
             <div className="flex flex-wrap items-center gap-4 mb-4 bg-gray-800 p-2 rounded-lg border border-gray-700">
                 <div className="flex items-center gap-2 text-gray-300" title="Filter events by proximity to a location note">
