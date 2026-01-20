@@ -66,12 +66,21 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     onSave(e.target.value.replace(/\n/g, ''));
   };
 
-  const handleInsertProperty = (key: string, operator: string, value: string) => {
+  const handleInsertProperty = (key: string, operator: string, value: string, icon?: string) => {
     if (editor) {
       editor
         .chain()
         .focus()
-        .insertContent(` [${key}:${operator}:${value}] `)
+        .insertContent({
+          type: 'property',
+          attrs: {
+            name: key,
+            operator: operator,
+            value: value,
+            icon: icon,
+          },
+        })
+        .insertContent(' ')
         .run();
     }
     setIsPropertyModalOpen(false);

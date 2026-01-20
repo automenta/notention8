@@ -19,6 +19,7 @@ export interface Property {
 export interface OntologyAttribute {
   type: 'string' | 'date' | 'number' | 'enum' | 'datetime' | 'geo';
   description?: string;
+  icon?: string;
   options?: string[]; // for enum type
   operators: {
     real: string[];

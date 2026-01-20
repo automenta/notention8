@@ -1,4 +1,4 @@
-import { Node, mergeAttributes } from '@tiptap/core';
+import { Node, mergeAttributes, InputRule } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import { PropertyChip } from './PropertyChip';
 
@@ -34,6 +34,14 @@ export const PropertyExtension = Node.create({
           return { 'data-value': attributes.value };
         },
       },
+      icon: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-icon'),
+        renderHTML: (attributes) => {
+          if (!attributes.icon) return {};
+          return { 'data-icon': attributes.icon };
+        },
+      },
     };
   },
 
@@ -48,6 +56,7 @@ export const PropertyExtension = Node.create({
             name: element.getAttribute('data-name'),
             operator: element.getAttribute('data-operator'),
             value: element.getAttribute('data-value'),
+            icon: element.getAttribute('data-icon'),
           };
         },
       },
@@ -60,5 +69,26 @@ export const PropertyExtension = Node.create({
 
   addNodeView() {
     return ReactNodeViewRenderer(PropertyChip);
+  },
+
+  addInputRules() {
+    return [
+      new InputRule({
+        find: /\[([^:]+):([^:]+):([^\]]+)\]$/,
+        handler: ({ state, range, match }) => {
+          const attributes = {
+            name: match[1],
+            operator: match[2],
+            value: match[3],
+          };
+
+          const { tr } = state;
+          const start = range.from;
+          const end = range.to;
+
+          tr.replaceWith(start, end, this.type.create(attributes));
+        },
+      }),
+    ];
   },
 });

@@ -172,12 +172,14 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
       setIsInsertPropertyModalOpen(true);
   };
 
-  const handleInsertProperty = (key: string, operator: string, value: string) => {
+  const handleInsertProperty = (key: string, operator: string, value: string, icon?: string) => {
       // We append the HTML representation of the property node so Tiptap can parse it into a chip
       const safeKey = escapeAttribute(key);
       const safeOperator = escapeAttribute(operator);
       const safeValue = escapeAttribute(value);
-      const propertyHtml = `<span data-type="property" data-name="${safeKey}" data-operator="${safeOperator}" data-value="${safeValue}"></span> `;
+      const safeIcon = icon ? escapeAttribute(icon) : '';
+      const iconAttr = safeIcon ? ` data-icon="${safeIcon}"` : '';
+      const propertyHtml = `<span data-type="property" data-name="${safeKey}" data-operator="${safeOperator}" data-value="${safeValue}"${iconAttr}></span> `;
       const newContent = dirtyNote.content + (dirtyNote.content ? '<p></p>' : '') + propertyHtml;
       handleContentSave(newContent);
   };

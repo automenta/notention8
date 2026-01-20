@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../common/Modal';
-import { TagIcon, CheckIcon, InformationCircleIcon } from '../icons';
+import { TagIcon, CheckIcon, InformationCircleIcon, ICON_MAP } from '../icons';
 import type { OntologyAttribute } from '../../types';
 
 interface InsertPropertyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onInsert: (key: string, operator: string, value: string) => void;
+  onInsert: (key: string, operator: string, value: string, icon?: string) => void;
   initialKey?: string;
   attributeDef?: OntologyAttribute;
 }
@@ -34,7 +34,7 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!key.trim() || !value.trim()) return;
-    onInsert(key.trim(), operator, value.trim());
+    onInsert(key.trim(), operator, value.trim(), attributeDef?.icon);
     onClose();
   };
 
@@ -108,7 +108,8 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
         </p>
 
         <div>
-          <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
+          <label className="block text-xs font-bold text-gray-400 uppercase mb-1 flex items-center gap-1">
+            {attributeDef?.icon && ICON_MAP[attributeDef.icon] && React.createElement(ICON_MAP[attributeDef.icon], { className: "w-4 h-4 text-blue-400" })}
             Key
           </label>
           <input
