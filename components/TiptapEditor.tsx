@@ -47,13 +47,19 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const { setSearchTerm, setActiveView, setSelectedNoteId } = useView();
   const { addToast } = useToast();
 
+  const handleOpenPropertyModal = useCallback((key: string) => {
+      setInitialModalData({ key, operator: 'is', value: '' });
+      setIsPropertyModalOpen(true);
+  }, []);
+
   const editor = useTiptapConfig({
       content: note.content,
       onUpdate: onSave,
       ontology,
       templates,
       minimal,
-      notes
+      notes,
+      onOpenPropertyModal: handleOpenPropertyModal
   });
 
   // Sync content from parent

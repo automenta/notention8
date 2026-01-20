@@ -16,9 +16,10 @@ interface UseTiptapConfigProps {
     templates?: Template[];
     minimal?: boolean;
     notes?: Note[];
+    onOpenPropertyModal?: (key: string) => void;
 }
 
-export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], minimal, notes = [] }: UseTiptapConfigProps) => {
+export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], minimal, notes = [], onOpenPropertyModal }: UseTiptapConfigProps) => {
   const { allTags, allProperties } = useOntologyIndex(ontology);
 
   // Use ref to access latest notes in callbacks without re-initializing editor
@@ -142,6 +143,11 @@ export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], m
                 // Delete the slash command text
                 editor.chain().focus().deleteRange(range).run();
 
+                if (props.type === 'property' && onOpenPropertyModal) {
+                    onOpenPropertyModal(props.label);
+                    return;
+                }
+
                 // Insert the content
                 const content = props.id;
                 editor.chain().focus().insertContent(content).run();
@@ -156,5 +162,5 @@ export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], m
       },
     },
     onUpdate: ({ editor }) => onUpdate(editor.getHTML()),
-  }, [ontology, minimal]);
+  }, [ontology, minimal, onOpenPropertyModal]);
 };
