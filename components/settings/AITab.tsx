@@ -1,5 +1,5 @@
 import React from 'react';
-import { SparklesIcon, CpuChipIcon, CheckIcon } from '../layout/icons';
+import { SparklesIcon, CpuChipIcon } from '../layout/icons';
 import { AVAILABLE_MODELS } from '@/services/ai/WebLLMProvider';
 import type { AppSettings, AIConfig } from '@/types';
 import { useToast } from '../contexts/ToastContext';
@@ -150,6 +150,20 @@ export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
                   <p className="text-xs text-gray-500">
                       Ensure your Ollama server is running and accessible (enable CORS if needed).
                   </p>
+              </div>
+          )}
+
+          {/* Test Connection Button (for local/custom providers) */}
+          {(currentProvider === 'openai' || currentProvider === 'ollama') && (
+              <div className="mt-4">
+                  <button
+                      onClick={() => {
+                          addToast('Use the "Magic" button in the editor to test.', 'info');
+                      }}
+                      className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm font-medium transition-colors"
+                  >
+                      Test Connection (Save first)
+                  </button>
               </div>
           )}
 

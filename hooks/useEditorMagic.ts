@@ -69,8 +69,10 @@ export function useEditorMagic({ content, tags, onTagsChange, onContentSave, ont
         const cleanText = getTextFromHtml(content);
         const fullPrompt = `${prompt}\n\nInput Text:\n${cleanText}`;
 
-        const result = await generateCompletion(fullPrompt);
-        if (result) {
+        try {
+            const result = await generateCompletion(fullPrompt);
+            if (!result) throw new Error("No response from AI provider");
+
             // We append the result for now, or replace?
             // Safer to append or let user decide, but for now let's just replace content if it seems like a rewrite,
             // or append if it seems like an analysis.
@@ -91,6 +93,9 @@ export function useEditorMagic({ content, tags, onTagsChange, onContentSave, ont
                  onContentSave(content + '\n<hr>\n' + formatted);
                  addToast('AI response appended.', 'success');
             }
+        } catch (e) {
+            console.error(e);
+            addToast('AI Request Failed: ' + (e instanceof Error ? e.message : String(e)), 'error');
         }
     }, [content, generateCompletion, onContentSave, addToast]);
 

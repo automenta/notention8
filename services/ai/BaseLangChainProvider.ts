@@ -23,6 +23,18 @@ export abstract class BaseLangChainProvider implements AIProvider {
     }
   }
 
+  async validateConnection(): Promise<boolean> {
+      try {
+          const model = await this.getModel();
+          if (!model) return false;
+          await model.invoke([new HumanMessage("Hello")]);
+          return true;
+      } catch (e) {
+          console.warn(`${this.name} Connection Validation Failed:`, e);
+          return false;
+      }
+  }
+
   async suggestTags(text: string, ontology?: OntologyNode[]): Promise<string[]> {
     const model = await this.getModel();
     if (!model) throw new Error(`${this.name} model not available`);

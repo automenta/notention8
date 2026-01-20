@@ -17,9 +17,12 @@ export class WebLLMProvider extends BaseLangChainProvider {
   private modelId: string;
   private initPromise: Promise<void> | null = null;
 
-  constructor(modelId: string = "Llama-3.2-3B-Instruct-q4f16_1-MLC") {
+  private onProgress?: (report: { text: string; progress: number }) => void;
+
+  constructor(modelId: string = "Llama-3.2-3B-Instruct-q4f16_1-MLC", onProgress?: (report: { text: string; progress: number }) => void) {
     super();
     this.modelId = modelId;
+    this.onProgress = onProgress;
   }
 
   protected async getModel(): Promise<BaseChatModel | null> {
@@ -31,7 +34,12 @@ export class WebLLMProvider extends BaseLangChainProvider {
                  if (!navigator.gpu) throw new Error("WebGPU not supported");
                  this.engine = await CreateMLCEngine(
                      this.modelId,
-                     { initProgressCallback: () => {} }
+                     {
+                         initProgressCallback: (report) => {
+                             if (this.onProgress) this.onProgress({ text: report.text, progress: report.progress });
+                             console.log(`WebLLM: ${report.text}`);
+                         }
+                     }
                  );
                  this.chatModel = new WebLLMChatModel(this.engine, this.modelId);
              } catch (e) {

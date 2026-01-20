@@ -45,7 +45,9 @@ export const useGardener = () => {
 
         switch (settings.aiProvider) { // Use aiProvider string from settings
             case 'webllm':
-                provider = new WebLLMProvider(config.webllm?.modelId);
+                provider = new WebLLMProvider(config.webllm?.modelId, (report) => {
+                    addToast(`Loading Model: ${Math.round(report.progress * 100)}% - ${report.text}`, 'info');
+                });
                 break;
             case 'ollama':
                 provider = new OllamaProvider(config.ollama?.baseUrl, config.ollama?.modelName);

@@ -64,6 +64,22 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
       }
   }, [settings.nostr.relays, settingsLoading, setSettings]);
 
+  // Migration: Move old googleGeminiApiKey to aiConfig.gemini.apiKey
+  useEffect(() => {
+      if (!settingsLoading && settings.googleGeminiApiKey && !settings.aiConfig?.gemini?.apiKey) {
+          setSettings(s => ({
+              ...s,
+              aiConfig: {
+                  ...s.aiConfig,
+                  gemini: {
+                      apiKey: s.googleGeminiApiKey || ''
+                  }
+              },
+              googleGeminiApiKey: undefined // Clear old key
+          }));
+      }
+  }, [settings.googleGeminiApiKey, settings.aiConfig, settingsLoading, setSettings]);
+
 
   return (
     <SettingsContext.Provider
