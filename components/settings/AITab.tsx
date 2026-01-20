@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { SparklesIcon, CheckIcon, CpuChipIcon } from '../layout/icons';
-import { isGeminiApiKeyAvailable } from '@/services/ai/RemoteProvider';
+import React from 'react';
+import { SparklesIcon, CpuChipIcon, CheckIcon } from '../layout/icons';
 import { AVAILABLE_MODELS } from '@/services/ai/WebLLMProvider';
-import type { AppSettings } from '@/types';
+import type { AppSettings, AIConfig } from '@/types';
 import { useToast } from '../contexts/ToastContext';
 import { Toggle } from '../common/Toggle';
+import { Input } from '../common/Input';
 
 interface AITabProps {
   settings: AppSettings;
@@ -13,46 +13,35 @@ interface AITabProps {
 
 export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
   const { addToast } = useToast();
-  const [keyInput, setKeyInput] = useState(settings.googleGeminiApiKey || '');
 
-  const apiKeyAvailable = isGeminiApiKeyAvailable(settings.googleGeminiApiKey);
-  const isWebLLM = settings.aiProvider === 'webllm';
-  const isEnabled = settings.aiEnabled;
+  const aiConfig: AIConfig = settings.aiConfig || {
+      provider: 'gemini',
+      gemini: { apiKey: '' },
+      openai: { apiKey: '', modelName: 'gpt-3.5-turbo' },
+      ollama: { baseUrl: 'http://localhost:11434', modelName: 'llama3' },
+      webllm: { modelId: 'Llama-3.2-3B-Instruct-q4f16_1-MLC' }
+  };
 
   const handleToggleAI = () => {
-    // If provider is remote and no key, don't allow enabling unless switching to webllm?
-    // Actually let user enable/disable regardless if WebLLM is selected.
-
-    if (isWebLLM) {
-         setSettings((prev) => ({ ...prev, aiEnabled: !prev.aiEnabled }));
-         return;
-    }
-
-    if (!apiKeyAvailable && !isEnabled) {
-        addToast('Please enter an API key or select Local Browser Model first.', 'error');
-        return;
-    }
     setSettings((prev) => ({ ...prev, aiEnabled: !prev.aiEnabled }));
   };
 
-  const saveKey = () => {
-      setSettings(prev => ({ ...prev, googleGeminiApiKey: keyInput }));
-      addToast('Gemini API key saved', 'success');
+  const updateConfig = (updater: (prev: AIConfig) => AIConfig) => {
+      setSettings(prev => ({
+          ...prev,
+          aiConfig: updater(prev.aiConfig || aiConfig)
+      }));
   };
 
-  const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const provider = e.target.value as 'remote' | 'webllm';
-      setSettings(prev => ({ ...prev, aiProvider: provider }));
+  const currentProvider = settings.aiProvider || 'gemini';
 
-      if (provider === 'webllm') {
-          // Auto-enable if disabled? No, let user decide.
-      } else {
-           if (!apiKeyAvailable) {
-               // If switching to remote and no key, maybe disable AI to avoid errors?
-               // Or just warn.
-               setSettings(prev => ({ ...prev, aiEnabled: false }));
-           }
-      }
+  const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const provider = e.target.value as any;
+      setSettings(prev => ({
+           ...prev,
+           aiProvider: provider,
+           aiConfig: { ...prev.aiConfig, provider } // Sync logic
+      }));
   };
 
   return (
@@ -70,89 +59,120 @@ export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
       <div className="p-4 bg-gray-800 rounded border border-gray-700">
           <label className="block text-sm font-medium text-gray-300 mb-2">AI Provider</label>
           <select
-             value={settings.aiProvider || 'remote'}
+             value={currentProvider}
              onChange={handleProviderChange}
              className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:border-blue-500 outline-none mb-4"
           >
-              <option value="remote">Google Gemini (Remote API)</option>
-              <option value="webllm">Llama 3.2 (Local Browser Model)</option>
+              <option value="gemini">Google Gemini (Remote)</option>
+              <option value="openai">OpenAI Compatible (Remote/Local)</option>
+              <option value="ollama">Ollama (Local)</option>
+              <option value="webllm">WebLLM (In-Browser)</option>
           </select>
 
-          {settings.aiProvider === 'webllm' ? (
+          {/* WebLLM Config */}
+          {currentProvider === 'webllm' && (
               <>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Local Model</label>
                 <select
-                    value={settings.aiModel || AVAILABLE_MODELS[0].id}
-                    onChange={(e) => setSettings(prev => ({ ...prev, aiModel: e.target.value }))}
+                    value={aiConfig.webllm?.modelId || AVAILABLE_MODELS[0].id}
+                    onChange={(e) => updateConfig(prev => ({ ...prev, webllm: { ...prev.webllm, modelId: e.target.value } }))}
                     className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:border-blue-500 outline-none mb-4"
                 >
                     {AVAILABLE_MODELS.map(m => (
                         <option key={m.id} value={m.id}>{m.label}</option>
                     ))}
                 </select>
-
                 <div className="p-3 bg-blue-900/20 border border-blue-800 rounded text-sm text-blue-200 flex gap-2">
                     <CpuChipIcon className="w-5 h-5 flex-shrink-0" />
                     <div>
                         <p className="font-bold mb-1">Local Processing</p>
-                        <p>Uses WebGPU to run the selected model directly in your browser. No data leaves your device. Requires a modern GPU.</p>
-                        <p className="mt-2 text-xs opacity-70">Note: First load requires downloading model weights (~2GB).</p>
+                        <p>Uses WebGPU to run the selected model directly in your browser.</p>
                     </div>
                 </div>
               </>
-          ) : (
-              <>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Google Gemini API Key</label>
-                <div className="flex gap-2">
-                    <input
-                        type="password"
-                        value={keyInput}
-                        onChange={(e) => setKeyInput(e.target.value)}
-                        placeholder="Enter API Key"
-                        className="flex-1 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:border-blue-500 outline-none"
-                    />
-                    <button
-                        onClick={saveKey}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium flex items-center gap-2"
-                    >
-                        <CheckIcon className="w-4 h-4"/> Save
-                    </button>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                    Your key is stored locally in your browser and sent directly to Google. It never touches our servers.
-                </p>
-              </>
           )}
+
+          {/* Gemini Config */}
+          {currentProvider === 'gemini' && (
+              <Input
+                  label="Google Gemini API Key"
+                  type="password"
+                  value={aiConfig.gemini?.apiKey || ''}
+                  onChange={(e) => updateConfig(prev => ({ ...prev, gemini: { ...prev.gemini, apiKey: e.target.value } }))}
+                  placeholder="Enter API Key"
+              />
+          )}
+
+          {/* OpenAI Config */}
+          {currentProvider === 'openai' && (
+              <div className="space-y-4">
+                  <Input
+                      label="API Key"
+                      type="password"
+                      value={aiConfig.openai?.apiKey || ''}
+                      onChange={(e) => updateConfig(prev => ({ ...prev, openai: { ...prev.openai!, apiKey: e.target.value } }))}
+                      placeholder="sk-..."
+                  />
+                  <Input
+                      label="Base URL (Optional)"
+                      type="text"
+                      value={aiConfig.openai?.baseUrl || ''}
+                      onChange={(e) => updateConfig(prev => ({ ...prev, openai: { ...prev.openai!, baseUrl: e.target.value } }))}
+                      placeholder="https://api.openai.com/v1"
+                  />
+                  <Input
+                      label="Model Name"
+                      type="text"
+                      value={aiConfig.openai?.modelName || 'gpt-3.5-turbo'}
+                      onChange={(e) => updateConfig(prev => ({ ...prev, openai: { ...prev.openai!, modelName: e.target.value } }))}
+                      placeholder="gpt-3.5-turbo"
+                  />
+              </div>
+          )}
+
+          {/* Ollama Config */}
+          {currentProvider === 'ollama' && (
+              <div className="space-y-4">
+                  <Input
+                      label="Base URL"
+                      type="text"
+                      value={aiConfig.ollama?.baseUrl || 'http://localhost:11434'}
+                      onChange={(e) => updateConfig(prev => ({ ...prev, ollama: { ...prev.ollama!, baseUrl: e.target.value } }))}
+                      placeholder="http://localhost:11434"
+                  />
+                  <Input
+                      label="Model Name"
+                      type="text"
+                      value={aiConfig.ollama?.modelName || 'llama3'}
+                      onChange={(e) => updateConfig(prev => ({ ...prev, ollama: { ...prev.ollama!, modelName: e.target.value } }))}
+                      placeholder="llama3"
+                  />
+                  <p className="text-xs text-gray-500">
+                      Ensure your Ollama server is running and accessible (enable CORS if needed).
+                  </p>
+              </div>
+          )}
+
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t border-gray-700">
         <div className="flex-grow">
-          <label htmlFor="ai-toggle" className={`font-medium ${isEnabled || (isWebLLM) ? 'text-gray-300' : 'text-gray-500'}`}>
+          <label htmlFor="ai-toggle" className={`font-medium text-gray-300`}>
             Enable AI Features
           </label>
           <p className="text-sm text-gray-500 mt-1">
             Enables features like note summarization, auto-tagging, and ontology gardening.
           </p>
         </div>
-        <div
-          className="relative"
-        >
+        <div className="relative">
           <Toggle
             id="ai-toggle"
             checked={settings.aiEnabled}
             onChange={handleToggleAI}
-            disabled={!isWebLLM && !apiKeyAvailable}
             ariaLabel="Enable AI Features"
           />
         </div>
       </div>
-
-      {!isWebLLM && !apiKeyAvailable && (
-        <div className="mt-4 p-3 bg-yellow-900/50 border border-yellow-700 text-yellow-300 text-sm rounded-md">
-          <strong>Action Required:</strong> A Google Gemini API key is not
-          configured. AI features are disabled. Please enter a key above or switch to Local Browser Model.
-        </div>
-      )}
     </div>
   );
 };

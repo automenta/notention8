@@ -12,7 +12,14 @@ describe('AITab', () => {
         nostr: { privkey: null },
         ontology: [],
         customTemplates: [],
-        aiProvider: 'remote'
+        aiProvider: 'gemini',
+        aiConfig: {
+            provider: 'gemini',
+            gemini: { apiKey: '' },
+            openai: { apiKey: '', modelName: '' },
+            ollama: { baseUrl: '', modelName: '' },
+            webllm: { modelId: '' }
+        }
     };
 
     const setSettings = vi.fn();
@@ -39,7 +46,7 @@ describe('AITab', () => {
         expect(screen.queryByPlaceholderText('Enter API Key')).not.toBeInTheDocument();
     });
 
-    it('shows API Key input when remote is selected', () => {
+    it('shows API Key input when gemini is selected', () => {
         render(
             <ToastProvider>
                 <AITab settings={mockSettings} setSettings={setSettings} />
