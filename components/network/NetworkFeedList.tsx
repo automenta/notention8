@@ -1,0 +1,53 @@
+import React from 'react';
+import type { NostrEvent } from '../../types';
+import { NostrEventCard } from './NostrEventCard';
+import { LoadingSpinner } from '../layout/icons';
+
+interface NetworkFeedListProps {
+    isLoading: boolean;
+    sortedEvents: NostrEvent[];
+    profiles: Record<string, any>;
+    onApplyMatch?: (event: NostrEvent) => void;
+    onFork: (event: NostrEvent) => void;
+}
+
+export const NetworkFeedList: React.FC<NetworkFeedListProps> = ({
+    isLoading,
+    sortedEvents,
+    profiles,
+    onApplyMatch,
+    onFork
+}) => {
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-48">
+                <LoadingSpinner className="h-8 w-8 text-gray-400" />
+            </div>
+        );
+    }
+
+    if (sortedEvents.length === 0) {
+        return (
+            <div className="text-center text-gray-500 py-10">
+                <p>No public notes found from connected relays.</p>
+                <p className="text-sm mt-1">
+                    This could be a temporary connection issue.
+                </p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-4">
+            {sortedEvents.map((event) => (
+                <NostrEventCard
+                    key={event.id}
+                    event={event}
+                    profile={profiles[event.pubkey]}
+                    onApplyMatch={onApplyMatch}
+                    onFork={() => onFork(event)}
+                />
+            ))}
+        </div>
+    );
+};
