@@ -4,12 +4,12 @@ import type { AIProvider } from '../../services/ai/types';
 import { Gardener } from '../../services/gardener';
 import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
 import { mergeAttributes, deleteAttribute, findNode, renameAttribute } from '../../utils/ontologyHelpers';
-import { WebLLMProvider } from '../../services/ai/WebLLMProvider';
-import { MockLLMProvider } from '../../services/ai/MockLLMProvider';
 import { useSimulationAgents } from './useSimulationAgents';
 import { useSimulationNetwork } from './useSimulationNetwork';
 import { useSimulationLoop } from './useSimulationLoop';
 import { useNotes } from '../useNotes';
+import { useSettings } from '../useSettingsContext';
+import { createAIProvider } from '../../services/ai/factory';
 import type { SimulationAgent } from './types';
 
 const RANDOM_PERSONAS = [
@@ -49,6 +49,7 @@ export const useSimulator = () => {
   const { agents, agentsRef, updateAgent, deploySwarm: deploySwarmAgents, addAgent: addNewAgent } = useSimulationAgents();
   const [active, setActive] = useState(false);
   const { notes: userNotes, addNote } = useNotes();
+  const { settings } = useSettings();
 
   const [ontology, setOntology] = useState<OntologyNode[]>(DEFAULT_ONTOLOGY);
   const ontologyRef = useRef(ontology);
@@ -72,35 +73,22 @@ export const useSimulator = () => {
       setNetworkNotes
   } = useSimulationNetwork(ontologyRef, setOntology, gardenerRef);
 
-  // Initialize AI Provider
+  // Initialize AI Provider from Global Settings
   useEffect(() => {
     const initAI = async () => {
         try {
-            // Attempt to load WebLLM
-            const provider = new WebLLMProvider();
-
-            if (('gpu' in navigator)) {
-                 // Simple check, robust check involves requesting adapter
-            } else {
-                 throw new Error("WebGPU not supported");
-            }
-
-            // Note: We might want to properly initialize/check WebLLM here
+            const provider = createAIProvider(settings, (msg) => addLog(msg, 'info'));
             aiRef.current = provider;
             setAiProviderName(provider.name);
+            gardenerRef.current = new Gardener(provider);
         } catch (e) {
-            console.warn("WebLLM failed to initialize, falling back to Mock:", e);
-            aiRef.current = new MockLLMProvider();
-            setAiProviderName(aiRef.current.name);
-        }
-
-        if (aiRef.current) {
-            gardenerRef.current = new Gardener(aiRef.current);
+            console.error("AI Init Failed:", e);
+            setAiProviderName("Offline");
         }
     };
 
     initAI();
-  }, []);
+  }, [settings, addLog]);
 
   // Keep refs in sync
   useEffect(() => {
@@ -237,10 +225,19 @@ export const useSimulator = () => {
              let responseText = "I am ready to help.";
              if (aiRef.current) {
                  try {
+                     // RAG-lite: Fetch recent notes for context
+                     const recentNotes = userNotes
+                        .slice(0, 5)
+                        .map(n => `[Note ${n.id.slice(0,4)}]: ${n.title} - ${n.content.replace(/<[^>]*>/g, '')}`)
+                        .join('\n');
+
                      responseText = await aiRef.current.generateCompletion(
                          `You are a helpful AI Assistant in a note-taking application.
+                          You have access to the user's recent notes:
+                          ${recentNotes}
+
                           User said: "${content}".
-                          Reply helpfully and concisely.`
+                          Reply helpfully and concisely. If the user asks about their notes, use the context above.`
                      );
                  } catch (e) {
                      console.error("AI generation failed for System AI", e);

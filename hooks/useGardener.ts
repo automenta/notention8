@@ -2,11 +2,7 @@ import { useMemo, useCallback } from 'react';
 import { useSettings } from './useSettingsContext';
 import { useToast } from '../components/contexts/ToastContext';
 import { Gardener } from '../services/gardener';
-import { LocalAIProvider } from '../services/ai/LocalProvider';
-import { GeminiProvider } from '../services/ai/RemoteProvider';
-import { WebLLMProvider } from '../services/ai/WebLLMProvider';
-import { OllamaProvider } from '../services/ai/OllamaProvider';
-import { OpenAIProvider } from '../services/ai/OpenAIProvider';
+import { createAIProvider } from '../services/ai/factory';
 import type { Note, Property, OntologyNode } from '../types';
 
 // Helper to merge attributes into the "Emergent" node
@@ -38,39 +34,9 @@ export const useGardener = () => {
   const { addToast } = useToast();
 
   const gardener = useMemo(() => {
-    let provider;
-
-    if (settings.aiEnabled) {
-        const config = settings.aiConfig || { provider: 'gemini' };
-
-        switch (settings.aiProvider) { // Use aiProvider string from settings
-            case 'webllm':
-                provider = new WebLLMProvider(config.webllm?.modelId, (report) => {
-                    addToast(`Loading Model: ${Math.round(report.progress * 100)}% - ${report.text}`, 'info');
-                });
-                break;
-            case 'ollama':
-                provider = new OllamaProvider(config.ollama?.baseUrl, config.ollama?.modelName);
-                break;
-            case 'openai':
-                provider = new OpenAIProvider(
-                    config.openai?.apiKey || '',
-                    config.openai?.baseUrl,
-                    config.openai?.modelName
-                );
-                break;
-            case 'gemini':
-            default:
-                // Fallback to old key if new config missing
-                provider = new GeminiProvider(config.gemini?.apiKey || settings.googleGeminiApiKey);
-                break;
-        }
-    } else {
-        provider = new LocalAIProvider();
-    }
-
+    const provider = createAIProvider(settings, (msg) => addToast(msg, 'info'));
     return new Gardener(provider);
-  }, [settings.aiEnabled, settings.aiProvider, settings.aiConfig, settings.googleGeminiApiKey]);
+  }, [settings, addToast]); // createAIProvider depends on settings
 
   const evolveOntology = useCallback(async (notes: Note[]) => {
     const newAttributes = await gardener.evolveOntology(notes);
