@@ -4,6 +4,8 @@ import { useView } from '../../hooks/useViewContext';
 import { useSettings } from '../../hooks/useSettingsContext';
 import { useSimulatorContext } from '../contexts/SimulatorContext';
 import { DEFAULT_TEMPLATES } from '../../utils/templates';
+import { DAILY_PROMPTS } from '../../utils/constants';
+import { getLogStyle } from '../../utils/ui';
 import { parseProperties } from '../../utils/parsing';
 import {
   NoteIcon,
@@ -17,16 +19,6 @@ import {
   NetworkIcon,
   DocumentDuplicateIcon
 } from '../layout/icons';
-
-const DAILY_PROMPTS = [
-    "What's one thing you learned today?",
-    "Describe a problem you're trying to solve.",
-    "Draft a message to a potential collaborator.",
-    "List 3 goals for this week.",
-    "Capture a quick thought about a project.",
-    "Who would be a valuable connection right now?",
-    "What knowledge is missing from your network?"
-];
 
 export function DashboardView() {
   const { notes, addNote, updateNote } = useNotes();
@@ -251,16 +243,11 @@ export function DashboardView() {
                     <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1">
                         {recentLogs.length > 0 ? (
                             recentLogs.map((log, i) => (
-                                <div key={i} className="text-xs p-3 bg-gray-900/50 rounded-lg border border-gray-800">
+                                <div key={i} className={`text-xs p-3 rounded-lg border-l-2 border-gray-800 ${getLogStyle(log.type)}`}>
                                     <div className="flex items-center gap-2 mb-1">
-                                         <span className={`w-1.5 h-1.5 rounded-full ${
-                                             log.type === 'match' ? 'bg-yellow-500' :
-                                             log.type === 'ontology' ? 'bg-green-500' :
-                                             'bg-blue-500'
-                                         }`}></span>
-                                         <span className="text-gray-500 font-mono uppercase text-[10px]">{log.type}</span>
+                                         <span className="text-gray-500 font-mono uppercase text-[10px] opacity-75">{log.type}</span>
                                     </div>
-                                    <p className="text-gray-300 leading-relaxed">{log.msg}</p>
+                                    <p className="leading-relaxed opacity-90">{log.msg}</p>
                                 </div>
                             ))
                         ) : (
