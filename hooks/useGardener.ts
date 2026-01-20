@@ -145,5 +145,9 @@ export const useGardener = () => {
       return result;
   }, [gardener, settings.ontology, addToast]);
 
-  return { evolveOntology, learnFromProperties, alignToOntology, optimizeOntology };
+  const generateCompletion = useCallback(async (prompt: string) => {
+      return await gardener.generateCompletion(prompt);
+  }, [gardener]);
+
+  return { evolveOntology, learnFromProperties, alignToOntology, optimizeOntology, generateCompletion };
 };

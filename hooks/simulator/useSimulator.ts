@@ -232,6 +232,41 @@ export const useSimulator = () => {
 
     // 2. Simulate response (async)
     setTimeout(async () => {
+        // Special Case: System AI
+        if (agentId === 'system-ai') {
+             let responseText = "I am ready to help.";
+             if (aiRef.current) {
+                 try {
+                     responseText = await aiRef.current.generateCompletion(
+                         `You are a helpful AI Assistant in a note-taking application.
+                          User said: "${content}".
+                          Reply helpfully and concisely.`
+                     );
+                 } catch (e) {
+                     console.error("AI generation failed for System AI", e);
+                     responseText = "I'm having trouble connecting to the AI provider.";
+                 }
+             } else {
+                 responseText = "AI Provider is not initialized.";
+             }
+
+             const agentMsg: NostrEvent & { content: string } = {
+                id: Math.random().toString(36),
+                pubkey: agentId,
+                created_at: Math.floor(Date.now() / 1000),
+                kind: 4,
+                tags: [],
+                content: responseText,
+                sig: ''
+            };
+
+            setAgentMessages(prev => {
+                const existing = prev[agentId] || [];
+                return { ...prev, [agentId]: [...existing, agentMsg] };
+            });
+            return;
+        }
+
         const agent = agentsRef.current.find(a => a.id === agentId);
         if (!agent) return;
 

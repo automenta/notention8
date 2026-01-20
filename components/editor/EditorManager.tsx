@@ -15,6 +15,7 @@ import { TemplateSelector } from './TemplateSelector';
 import { SaveTemplateModal } from './SaveTemplateModal';
 import { MapPickerModal } from '../map/MapPickerModal';
 import { TimePickerModal } from '../common/TimePickerModal';
+import { MagicModal } from './MagicModal';
 
 interface EditorManagerProps {
   note: Note;
@@ -45,6 +46,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     saveImmediately,
     actionLabel,
     missingProperties,
+    handlePrompt
   } = useEditorLogic({ note, onSave });
 
   const {
@@ -64,6 +66,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
   const { addToast } = useToast();
   const editorRef = useRef<TiptapEditorRef>(null);
   const [isToolbarVisible, setIsToolbarVisible] = useState(true);
+  const [isMagicModalOpen, setIsMagicModalOpen] = useState(false);
 
   const currentIndex = (sortedNotes || []).findIndex((n) => n.id === note.id);
   const hasPrevious = currentIndex > 0;
@@ -166,7 +169,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
                 if (settings.aiProvider === 'webllm' && settings.aiEnabled) {
                     addToast('Loading local model... this may take a while.', 'info');
                 }
-                handleMagic();
+                setIsMagicModalOpen(true);
             }}
             onTemplates={() => setIsTemplateSelectorOpen(!isTemplateSelectorOpen)}
             notes={notes}
@@ -211,6 +214,12 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         onClose={() => setIsTimePickerOpen(false)}
         onTimeSelect={handleTimeSelected}
         title={`Pick Time for ${pickingTimeKey}`}
+      />
+      <MagicModal
+          isOpen={isMagicModalOpen}
+          onClose={() => setIsMagicModalOpen(false)}
+          onAutoTag={handleMagic}
+          onRunPrompt={handlePrompt}
       />
     </div>
   );

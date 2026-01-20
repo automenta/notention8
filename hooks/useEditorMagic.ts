@@ -16,7 +16,7 @@ interface UseEditorMagicProps {
 }
 
 export function useEditorMagic({ content, tags, onTagsChange, onContentSave, ontology }: UseEditorMagicProps) {
-    const { alignToOntology } = useGardener();
+    const { alignToOntology, generateCompletion } = useGardener();
     const { addToast } = useToast();
 
     const { isAutoTagging, handleAutoTag, isApiKeyAvailable } = useAutoTagging({
@@ -65,8 +65,38 @@ export function useEditorMagic({ content, tags, onTagsChange, onContentSave, ont
         }
     }, [content, alignToOntology, ontology, onContentSave, addToast, handleAutoTag]);
 
+    const handlePrompt = useCallback(async (prompt: string) => {
+        const cleanText = getTextFromHtml(content);
+        const fullPrompt = `${prompt}\n\nInput Text:\n${cleanText}`;
+
+        const result = await generateCompletion(fullPrompt);
+        if (result) {
+            // We append the result for now, or replace?
+            // Safer to append or let user decide, but for now let's just replace content if it seems like a rewrite,
+            // or append if it seems like an analysis.
+            // Simple heuristic: if prompt contains "fix" or "rewrite", replace. Else append.
+            const lower = prompt.toLowerCase();
+            if (lower.includes('fix') || lower.includes('rewrite') || lower.includes('translate')) {
+                 // Try to preserve properties if possible by not stripping them?
+                 // The prompt explicitly asks to preserve them in our presets.
+                 // We will assume the LLM output is the new content.
+                 // We need to be careful about HTML. LLM often outputs markdown.
+                 // We might need a basic Markdown -> HTML converter or just wrap in <p>.
+                 // For now, let's just wrap in paragraphs if it looks like plain text.
+                 const formatted = result.split('\n').map(line => line.trim() ? `<p>${line}</p>` : '').join('');
+                 onContentSave(formatted);
+                 addToast('Content updated by AI.', 'success');
+            } else {
+                 const formatted = result.split('\n').map(line => line.trim() ? `<p>${line}</p>` : '').join('');
+                 onContentSave(content + '\n<hr>\n' + formatted);
+                 addToast('AI response appended.', 'success');
+            }
+        }
+    }, [content, generateCompletion, onContentSave, addToast]);
+
     return {
         handleMagic,
+        handlePrompt,
         handleAutoTag,
         isAutoTagging,
         isApiKeyAvailable

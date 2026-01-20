@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
+import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'react';
 import { EditorContent } from '@tiptap/react';
 import type { Note, OntologyNode, Template } from '../../types';
 import { TiptapToolbar } from './TiptapToolbar';
@@ -30,7 +30,7 @@ export interface TiptapEditorRef {
     openPropertyModal: (key?: string) => void;
 }
 
-export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(({
+export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(function TiptapEditor({
   note,
   onSave,
   ontology,
@@ -41,7 +41,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(({
   onTemplates,
   notes = [],
   onPickLocation
-}, ref) => {
+}, ref) {
   const [viewMode, setViewMode] = useState<'rich' | 'code'>('rich');
 
   const { setSearchTerm, setActiveView, setSelectedNoteId } = useView();

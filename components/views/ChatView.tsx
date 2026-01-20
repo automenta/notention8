@@ -35,7 +35,15 @@ export function ChatView() {
       isAgent: true
   }));
 
-  const allContacts = [...agentContacts, ...contacts];
+  // Add System AI Assistant
+  const aiAssistant: Contact = {
+      pubkey: 'system-ai',
+      name: 'AI Assistant',
+      about: 'Your versatile helper. Ask me anything!',
+      isAgent: true
+  };
+
+  const allContacts = [aiAssistant, ...agentContacts, ...contacts];
 
   // Resolve full contact object (to ensure properties like isAgent are present)
   const fullSelectedContact = localSelectedContact
@@ -86,7 +94,9 @@ export function ChatView() {
           onBack={() => handleSelectContact(null)}
           messages={displayMessages}
           onSendMessage={(peerPubkey, event, decryptedContent) => {
-            if (fullSelectedContact?.isAgent) {
+            if (peerPubkey === 'system-ai') {
+                sendMessageToAgent(peerPubkey, decryptedContent);
+            } else if (fullSelectedContact?.isAgent) {
                 sendMessageToAgent(peerPubkey, decryptedContent);
             } else {
                 addMessage(peerPubkey, event, decryptedContent);
