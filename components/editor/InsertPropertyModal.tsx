@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Modal } from '../common/Modal';
-import { TagIcon, CheckIcon, InformationCircleIcon, ICON_MAP, MapIcon } from '../layout/icons';
+import { TagIcon, InformationCircleIcon, ICON_MAP, MapIcon } from '../layout/icons';
+import { IconButton } from '../common/IconButton';
 import type { OntologyAttribute, OntologyNode } from '../../types';
 import { findAttributeDef } from '../../utils/ontologyHelpers';
 
@@ -142,17 +143,15 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
                     autoFocus={!!activeDef}
                 />
                 {onPickLocation && (
-                    <button
-                        type="button"
+                    <IconButton
                         onClick={async () => {
                             const loc = await onPickLocation();
                             if (loc) setValue(loc);
                         }}
-                        className="px-3 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded text-gray-300 hover:text-white transition-colors"
                         title="Pick from Map"
-                    >
-                        <MapIcon className="w-5 h-5" />
-                    </button>
+                        icon={MapIcon}
+                        variant="secondary"
+                    />
                 )}
             </div>
         );

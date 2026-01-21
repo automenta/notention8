@@ -1,6 +1,7 @@
 import React from 'react';
 import { CubeIcon, CpuChipIcon, PlusIcon, UserGroupIcon, DownloadIcon } from "../layout/icons";
 import { Badge } from '../common/Badge';
+import { IconButton } from '../common/IconButton';
 import type { SimulationAgent } from '../../hooks/simulator/types';
 
 interface SimulatorSidebarProps {
@@ -13,7 +14,7 @@ interface SimulatorSidebarProps {
   addAgent: () => void;
   onOpenSwarmModal: () => void;
   agents: SimulationAgent[];
-  notifications: Record<string, any[]>;
+  notifications: Record<string, unknown[]>;
 }
 
 export const SimulatorSidebar: React.FC<SimulatorSidebarProps> = ({
@@ -77,13 +78,13 @@ export const SimulatorSidebar: React.FC<SimulatorSidebarProps> = ({
           <div className="mt-6 mb-2 px-3 flex justify-between items-center group">
               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider group-hover:text-gray-400 transition-colors">Agents</span>
               <div className="flex gap-1 opacity-100 transition-opacity">
-                   <button
+                   <IconButton
                        onClick={addAgent}
-                       className="p-1 rounded bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700 border border-gray-700 transition-all"
                        title="Add Single Agent"
-                    >
-                      <PlusIcon className="w-3 h-3" />
-                  </button>
+                       icon={PlusIcon}
+                       variant="secondary"
+                       size="sm"
+                   />
                   <button
                       onClick={onOpenSwarmModal}
                       className="px-2 py-1 rounded bg-blue-900/20 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 border border-blue-900/50 text-[10px] font-bold transition-all flex items-center gap-1"
