@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import type { Note } from '../../types';
 import { TrashIcon, WorldIcon, DownloadIcon, MapPinIcon, ClockIcon, PinIcon, DocumentDuplicateIcon } from '../layout/icons';
 import { getTextFromHtml } from '../../utils/nostr';
+import { IconButton } from '../common/IconButton';
 
 export const NoteListItem = React.memo(({
   note,
@@ -126,52 +127,56 @@ export const NoteListItem = React.memo(({
 
         <div className={`flex items-center gap-1 transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} focus-within:opacity-100`}>
              {isTrash && onRestore && (
-                <button
+                <IconButton
                     onClick={(e) => {
                         e.stopPropagation();
                         onRestore();
                     }}
                     tabIndex={-1}
-                    className="p-1 text-gray-400 rounded hover:bg-green-900/30 hover:text-green-400 transition-colors"
+                    className="text-gray-400 hover:text-green-400 hover:bg-green-900/30"
                     title="Restore Note"
-                >
-                    <DocumentDuplicateIcon className="h-3.5 w-3.5 transform rotate-180" />
-                </button>
+                    icon={() => <DocumentDuplicateIcon className="h-3.5 w-3.5 transform rotate-180" />}
+                    size="sm"
+                    variant="ghost"
+                />
             )}
             {onPin && !isTrash && (
-                <button
+                <IconButton
                     onClick={(e) => {
                         e.stopPropagation();
                         onPin();
                     }}
                     tabIndex={-1}
-                    className={`p-1 rounded hover:bg-gray-700/50 transition-colors ${note.pinned ? 'text-blue-400' : 'text-gray-400 hover:text-white'}`}
+                    className={`${note.pinned ? 'text-blue-400' : 'text-gray-400 hover:text-white hover:bg-gray-700/50'}`}
                     title={note.pinned ? "Unpin Note" : "Pin Note"}
-                >
-                    <PinIcon className="h-3.5 w-3.5" />
-                </button>
+                    icon={PinIcon}
+                    size="sm"
+                    variant="ghost"
+                />
             )}
             {!isTrash && (
-                <button
+                <IconButton
                     onClick={handleExport}
                     tabIndex={-1}
-                    className="p-1 text-gray-400 rounded hover:bg-gray-700/50 hover:text-white transition-colors"
+                    className="text-gray-400 hover:text-white hover:bg-gray-700/50"
                     title="Export Note"
-                >
-                    <DownloadIcon className="h-3.5 w-3.5" />
-                </button>
+                    icon={DownloadIcon}
+                    size="sm"
+                    variant="ghost"
+                />
             )}
-            <button
+            <IconButton
                 onClick={(e) => {
                 e.stopPropagation();
                 onDelete();
                 }}
                 tabIndex={-1}
-                className="p-1 text-gray-400 rounded hover:bg-red-900/30 hover:text-red-400 transition-colors"
+                className="text-gray-400 hover:text-red-400 hover:bg-red-900/30"
                 title={isTrash ? "Delete Permanently" : "Move to Trash"}
-            >
-                <TrashIcon className="h-3.5 w-3.5" />
-            </button>
+                icon={TrashIcon}
+                size="sm"
+                variant="ghost"
+            />
         </div>
       </div>
     </div>

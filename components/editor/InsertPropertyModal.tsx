@@ -4,6 +4,8 @@ import { TagIcon, InformationCircleIcon, ICON_MAP, MapIcon } from '../layout/ico
 import { IconButton } from '../common/IconButton';
 import type { OntologyAttribute, OntologyNode } from '../../types';
 import { findAttributeDef } from '../../utils/ontologyHelpers';
+import { Input } from '../common/Input';
+import { Button } from '../common/Button';
 
 interface InsertPropertyModalProps {
   isOpen: boolean;
@@ -64,7 +66,7 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
     if (activeDef?.type === 'enum' && activeDef.options) {
       return (
         <select
-          className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none transition-colors"
+          className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           autoFocus={!!activeDef}
@@ -81,9 +83,8 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
 
     if (activeDef?.type === 'date') {
       return (
-        <input
+        <Input
           type="date"
-          className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none transition-colors"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           autoFocus={!!activeDef}
@@ -93,9 +94,8 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
 
     if (activeDef?.type === 'number') {
       return (
-        <input
+        <Input
           type="number"
-          className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none transition-colors"
           placeholder="e.g. 100"
           value={value}
           onChange={(e) => setValue(e.target.value)}
@@ -106,9 +106,8 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
 
     if (activeDef?.type === 'datetime') {
       return (
-        <input
+        <Input
           type="datetime-local"
-          className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none transition-colors"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           autoFocus={!!activeDef}
@@ -119,7 +118,7 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
     if (activeDef?.type === 'boolean') {
       return (
         <select
-          className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none transition-colors"
+          className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           autoFocus={!!activeDef}
@@ -134,23 +133,24 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
     if (activeDef?.type === 'geo') {
         return (
             <div className="flex gap-2">
-                <input
+                <Input
                     type="text"
-                    className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none transition-colors"
+                    className="flex-1"
                     placeholder="lat,lng"
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
                     autoFocus={!!activeDef}
                 />
                 {onPickLocation && (
-                    <IconButton
+                    <Button
+                        type="button"
                         onClick={async () => {
                             const loc = await onPickLocation();
                             if (loc) setValue(loc);
                         }}
-                        title="Pick from Map"
-                        icon={MapIcon}
                         variant="secondary"
+                        icon={MapIcon}
+                        title="Pick from Map"
                     />
                 )}
             </div>
@@ -158,9 +158,8 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
     }
 
     return (
-      <input
+      <Input
         type="text"
-        className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none transition-colors"
         placeholder={
           activeDef?.description
             ? `e.g. for ${activeDef.description}`
@@ -181,18 +180,16 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
         </p>
 
         <div>
-          <label className="block text-xs font-bold text-gray-400 uppercase mb-1 flex items-center gap-1">
+          <label className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider flex items-center gap-1">
             {activeDef?.icon && ICON_MAP[activeDef.icon] && React.createElement(ICON_MAP[activeDef.icon], { className: "w-4 h-4 text-blue-400" })}
             Key
           </label>
-          <input
+          <Input
             type="text"
-            className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none transition-colors"
             placeholder="e.g. status, price, deadline"
             value={key}
             onChange={(e) => setKey(e.target.value)}
             // Auto focus only if no attribute def (meaning we typed custom key or it's generic open)
-            // But actually we might want to edit key even if prefilled? Usually prefilled from "Missing" means we want that key.
             autoFocus={!activeDef}
           />
           {activeDef?.description && (
@@ -204,11 +201,11 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
+          <label className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider">
             Operator
           </label>
           <select
-            className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-gray-300 focus:border-blue-500 outline-none"
+            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-gray-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
             value={operator}
             onChange={(e) => setOperator(e.target.value)}
           >
@@ -221,7 +218,7 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
+          <label className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider">
             Value
           </label>
           {renderValueInput()}
@@ -233,21 +230,21 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
-          <button
+          <Button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
+            variant="ghost"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             disabled={!key.trim() || !value.trim()}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            variant="primary"
+            icon={TagIcon}
           >
-            <TagIcon className="w-4 h-4" />
             {isEditing ? "Update" : "Insert"}
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>
