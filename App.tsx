@@ -59,26 +59,27 @@ function App() {
       onCommandPalette: () => setIsPaletteOpen(true)
   });
 
+  const sidebarClasses = [
+    'flex-shrink-0 bg-gray-900 border-r border-gray-700/50',
+    'transition-all duration-300 ease-in-out',
+    activeView === 'notes' && !selectedNoteId ? 'w-full block' : 'hidden md:block',
+    isSidebarOpen ? 'md:w-[320px]' : 'md:w-0 md:border-r-0 overflow-hidden'
+  ].filter(Boolean).join(' ');
+
+  const mainClasses = [
+    'flex-1 p-3 overflow-hidden pb-20 md:pb-3',
+    activeView === 'notes' && !selectedNoteId ? 'hidden md:block' : 'block'
+  ].filter(Boolean).join(' ');
+
   return (
     <div className="flex flex-col h-screen bg-gray-800 text-gray-200">
       <Header onNewNote={handleNewNote} onOpenPalette={() => setIsPaletteOpen(true)} />
       <div className="flex flex-1 overflow-hidden">
-        <div
-          className={`
-              flex-shrink-0 bg-gray-900 border-r border-gray-700/50 transition-all duration-300 ease-in-out
-              ${activeView === 'notes' && !selectedNoteId ? 'w-full block' : 'hidden md:block'}
-              ${isSidebarOpen ? 'md:w-[320px]' : 'md:w-0 md:border-r-0 overflow-hidden'}
-          `}
-        >
+        <div className={sidebarClasses}>
           <Sidebar sortedNotes={sortedNotes} />
         </div>
 
-        <main
-          className={`
-                flex-1 p-3 overflow-hidden pb-20 md:pb-3
-                ${activeView === 'notes' && !selectedNoteId ? 'hidden md:block' : 'block'}
-            `}
-        >
+        <main className={mainClasses}>
           <MainView sortedNotes={sortedNotes} />
         </main>
       </div>

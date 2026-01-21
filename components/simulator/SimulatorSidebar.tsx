@@ -86,7 +86,7 @@ export const SimulatorSidebar: React.FC<SimulatorSidebarProps> = ({
                       onClick={onOpenSwarmModal}
                       variant="ghost"
                       size="xs"
-                      className="text-[10px] font-bold text-blue-400 hover:text-blue-300 bg-blue-900/20 hover:bg-blue-900/40 border border-blue-900/50 px-2 py-1"
+                      className="!text-xs font-bold text-blue-400 hover:text-blue-300 bg-blue-900/20 hover:bg-blue-900/40 border border-blue-900/50"
                       icon={UserGroupIcon}
                       title="Deploy Agent Swarm"
                     >

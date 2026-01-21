@@ -14,8 +14,9 @@ import { DashboardStats } from '../dashboard/DashboardStats';
 
 interface Widget {
   id: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component: React.ComponentType<any>;
-  props: any;
+  props: Record<string, unknown>;
 }
 
 export function DashboardView() {
