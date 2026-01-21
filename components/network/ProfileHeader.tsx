@@ -3,7 +3,13 @@ import { finalizeEvent, nip19 } from 'nostr-tools';
 
 import type { AppSettings, NostrProfile } from '../../types';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
-import { EditIcon, LoadingSpinner } from '../layout/icons';
+import { EditIcon } from '../layout/icons';
+import { Avatar } from '../common/Avatar';
+import { IconButton } from '../common/IconButton';
+import { Button } from '../common/Button';
+import { Input } from '../common/Input';
+import { Textarea } from '../common/Textarea';
+import { Modal } from '../common/Modal';
 
 interface ProfileEditorModalProps {
   isOpen: boolean;
@@ -24,8 +30,6 @@ function ProfileEditorModal({
 
   useEffect(() => setProfile(initialProfile), [initialProfile]);
 
-  if (!isOpen) return null;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await onSave(profile);
@@ -33,58 +37,52 @@ function ProfileEditorModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-fade-in">
-      <div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6 border border-gray-700">
-        <h2 className="text-2xl font-bold text-white mb-4">Edit Profile</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="Display Name"
-              value={profile.name || ''}
-              onChange={(e) =>
-                setProfile((p) => ({ ...p, name: e.target.value }))
-              }
-              className="w-full p-2 bg-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <input
-              type="text"
-              placeholder="Picture URL"
-              value={profile.picture || ''}
-              onChange={(e) =>
-                setProfile((p) => ({ ...p, picture: e.target.value }))
-              }
-              className="w-full p-2 bg-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <textarea
-              placeholder="About"
-              value={profile.about || ''}
-              onChange={(e) =>
-                setProfile((p) => ({ ...p, about: e.target.value }))
-              }
-              className="w-full p-2 bg-gray-700 rounded-md text-white h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-            ></textarea>
-          </div>
+    <Modal isOpen={isOpen} onClose={onClose} title="Edit Profile">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            label="Display Name"
+            placeholder="Display Name"
+            value={profile.name || ''}
+            onChange={(e) =>
+              setProfile((p) => ({ ...p, name: e.target.value }))
+            }
+          />
+          <Input
+            label="Picture URL"
+            placeholder="Picture URL"
+            value={profile.picture || ''}
+            onChange={(e) =>
+              setProfile((p) => ({ ...p, picture: e.target.value }))
+            }
+          />
+          <Textarea
+            label="About"
+            placeholder="About"
+            value={profile.about || ''}
+            onChange={(e) =>
+              setProfile((p) => ({ ...p, about: e.target.value }))
+            }
+            className="h-24"
+          />
           <div className="flex justify-end gap-4 mt-6">
-            <button
+            <Button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition-colors"
+              variant="secondary"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isSaving}
-              className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-wait transition-colors flex items-center gap-2"
+              isLoading={isSaving}
+              variant="primary"
             >
-              {isSaving && <LoadingSpinner className="h-4 w-4" />}{' '}
-              {isSaving ? 'Saving...' : 'Save'}
-            </button>
+              Save
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -131,13 +129,11 @@ export function ProfileHeader({
   return (
     <>
       <div className="flex-shrink-0 p-4 border-b border-gray-700/50 flex items-center gap-4 bg-gray-900/50">
-        <img
-          src={
-            myProfile?.picture ||
-            `https://api.dicebear.com/8.x/bottts-neutral/svg?seed=${npub}`
-          }
-          alt="avatar"
-          className="h-16 w-16 rounded-full border-2 border-gray-600"
+        <Avatar
+          src={myProfile?.picture}
+          pubkey={pubkey}
+          size="xl"
+          className="border-2 border-gray-600"
         />
         <div className="flex-grow">
           <h2 className="text-xl font-bold text-white">
@@ -154,13 +150,12 @@ export function ProfileHeader({
             <p className="text-sm text-gray-300 mt-1">{myProfile.about}</p>
           )}
         </div>
-        <button
+        <IconButton
           onClick={() => setIsModalOpen(true)}
-          className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-md transition-colors"
+          icon={EditIcon}
           title="Edit Profile"
-        >
-          <EditIcon className="h-5 w-5" />
-        </button>
+          variant="secondary"
+        />
       </div>
       <ProfileEditorModal
         isOpen={isModalOpen}

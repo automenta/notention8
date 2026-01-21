@@ -6,6 +6,10 @@ import type { SwarmTemplate } from '../../hooks/simulator/types';
 import { SwarmModal } from '../simulator/SwarmModal';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
 import { SearchIcon, CpuChipIcon, UserGroupIcon, UserPlusIcon } from '../layout/icons';
+import { Avatar } from '../common/Avatar';
+import { IconButton } from '../common/IconButton';
+import { Button } from '../common/Button';
+import { Input } from '../common/Input';
 
 interface ContactListProps {
   privkey: string;
@@ -108,13 +112,10 @@ export const ContactList: React.FC<ContactListProps> = ({
           `}
         >
           <div className="relative">
-              <img
-                src={
-                  profile?.picture ||
-                  contact.picture ||
-                  `https://api.dicebear.com/8.x/bottts-neutral/svg?seed=${contact.pubkey}`
-                }
-                className="h-10 w-10 rounded-full bg-gray-700 object-cover"
+              <Avatar
+                src={profile?.picture || contact.picture}
+                pubkey={contact.pubkey}
+                size="md"
               />
               {contact.isAgent && (
                   <div className="absolute -bottom-1 -right-1 bg-gray-900 rounded-full p-0.5 border border-gray-700" title="AI Agent">
@@ -152,57 +153,58 @@ export const ContactList: React.FC<ContactListProps> = ({
             <div className="flex gap-1">
                  {onAddAgent && (
                     <>
-                        <button
+                        <IconButton
                             onClick={onAddAgent}
-                            className="p-1.5 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 hover:text-white transition-colors"
+                            icon={CpuChipIcon}
                             title="Add Agent"
-                        >
-                            <CpuChipIcon className="h-4 w-4" />
-                        </button>
-                        <button
+                            variant="secondary"
+                            size="sm"
+                        />
+                        <IconButton
                              onClick={() => setIsSwarmModalOpen(true)}
-                             className="p-1.5 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 hover:text-white transition-colors"
+                             icon={UserGroupIcon}
                              title="Deploy Swarm"
-                        >
-                             <UserGroupIcon className="h-4 w-4" />
-                        </button>
+                             variant="secondary"
+                             size="sm"
+                        />
                     </>
                  )}
-                 <button
+                 <IconButton
                     onClick={() => setIsAddingContact(!isAddingContact)}
-                    className="p-1.5 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 hover:text-white transition-colors"
+                    icon={UserPlusIcon}
                     title="Add Contact"
-                >
-                    <UserPlusIcon className="h-4 w-4" />
-                </button>
+                    variant={isAddingContact ? 'primary' : 'secondary'}
+                    size="sm"
+                />
             </div>
         </h2>
 
         {isAddingContact && (
             <div className="animate-fade-in bg-gray-800/50 p-3 rounded-lg border border-gray-700">
                 <form onSubmit={handleAddContact} className="flex flex-col gap-2">
-                  <input
-                    type="text"
+                  <Input
                     value={newContactNpub}
                     onChange={(e) => setNewContactNpub(e.target.value)}
                     placeholder="npub..."
-                    className="w-full p-2 text-sm bg-gray-900 border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
                     autoFocus
+                    className="text-sm"
                   />
                   <div className="flex justify-end gap-2">
-                       <button
+                       <Button
                         type="button"
                         onClick={() => setIsAddingContact(false)}
-                        className="px-3 py-1 text-xs text-gray-400 hover:text-white"
+                        variant="ghost"
+                        size="xs"
                       >
                         Cancel
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="submit"
-                        className="px-3 py-1 bg-blue-600 rounded text-white text-xs hover:bg-blue-700"
+                        variant="primary"
+                        size="xs"
                       >
                         Add
-                      </button>
+                      </Button>
                   </div>
                 </form>
                 {error && <p className="text-red-400 text-xs mt-2">{error}</p>}

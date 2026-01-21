@@ -5,6 +5,8 @@ import { useView } from '../../hooks/useViewContext';
 import type { NostrEvent, NostrProfile } from '../../types';
 import { formatNpub, extractPropertiesFromTags } from '../../utils/nostr';
 import { ChatIcon, MergeIcon, DocumentDuplicateIcon } from '../layout/icons';
+import { Avatar } from '../common/Avatar';
+import { Button } from '../common/Button';
 
 // Extend NostrEvent to include score if available
 export type ScoredNostrEvent = NostrEvent & { score?: number };
@@ -61,10 +63,10 @@ export function NostrEventCard({
       <div className="p-4">
           {/* Header */}
           <div className="flex items-center gap-3 mb-3">
-            <img
-                src={profile?.picture || `https://api.dicebear.com/8.x/bottts-neutral/svg?seed=${event.pubkey}`}
-                alt={profile?.name || ''}
-                className="h-8 w-8 rounded-full bg-gray-700 object-cover border border-gray-600"
+            <Avatar
+              src={profile?.picture}
+              pubkey={event.pubkey}
+              size="sm"
             />
             <div className="min-w-0">
                  <div
@@ -107,32 +109,38 @@ export function NostrEventCard({
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-3 border-t border-gray-700/50 opacity-100 md:opacity-80 group-hover:opacity-100 transition-all">
             {onApplyMatch && properties.length > 0 && (
-                <button
+                <Button
                   onClick={() => onApplyMatch(event)}
-                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-gray-700 hover:bg-purple-600 text-gray-300 hover:text-white rounded-md transition-colors"
+                  variant="secondary"
+                  size="xs"
+                  icon={MergeIcon}
+                  className="hover:bg-purple-600 hover:text-white"
                   title="Apply semantic properties to your note"
                 >
-                  <MergeIcon className="w-3.5 h-3.5" />
                   Apply Match
-                </button>
+                </Button>
             )}
             {onFork && (
-                <button
+                <Button
                     onClick={onFork}
-                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-gray-700 hover:bg-green-600 text-gray-300 hover:text-white rounded-md transition-colors"
+                    variant="secondary"
+                    size="xs"
+                    icon={DocumentDuplicateIcon}
+                    className="hover:bg-green-600 hover:text-white"
                     title="Fork this note to your collection"
                 >
-                    <DocumentDuplicateIcon className="w-3.5 h-3.5" />
                     Fork
-                </button>
+                </Button>
             )}
-            <button
+            <Button
               onClick={handleChat}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-gray-700 hover:bg-blue-600 text-gray-300 hover:text-white rounded-md transition-colors"
+              variant="secondary"
+              size="xs"
+              icon={ChatIcon}
+              className="hover:bg-blue-600 hover:text-white"
             >
-              <ChatIcon className="w-3.5 h-3.5" />
               Chat
-            </button>
+            </Button>
           </div>
       </div>
     </div>
