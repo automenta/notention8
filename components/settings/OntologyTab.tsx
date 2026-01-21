@@ -12,7 +12,7 @@ import {
 } from '../../utils/ontologyHelpers';
 import { TrashIcon, EditIcon, PlusIcon, FolderIcon, TagIcon, MergeIcon, SparklesIcon } from '../layout/icons';
 import { Modal } from '../common/Modal';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../../hooks/useToast';
 
 export const OntologyTab: React.FC = () => {
   const { settings, setSettings } = useSettings();

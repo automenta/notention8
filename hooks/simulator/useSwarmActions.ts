@@ -1,4 +1,4 @@
-import { useSimulatorContext } from '../../components/contexts/SimulatorContext';
+import { useSimulatorContext } from '../useSimulatorContext';
 import { SwarmTemplate, SimulationAgent } from './types';
 
 export function useSwarmActions() {

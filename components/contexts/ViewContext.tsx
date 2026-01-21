@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode, useState } from 'react';
 import { useLocalForage } from '../../hooks/useLocalForage';
-import { useToast } from './ToastContext';
+import { useToast } from '../../hooks/useToast';
 import type { View, SortOrder, NostrEvent } from '../../types';
 
 interface ViewContextType {

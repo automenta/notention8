@@ -5,9 +5,9 @@ import './index.css';
 import App from './App';
 import { SettingsProvider } from './components/contexts/SettingsContext';
 import { NotesProvider } from './components/contexts/NotesContext';
+import { ToastProvider } from './components/contexts/ToastProvider';
 import { ViewProvider } from './components/contexts/ViewContext';
-import { ToastProvider } from './components/contexts/ToastContext';
-import { SimulatorProvider } from './components/contexts/SimulatorContext';
+import { SimulatorProvider } from './components/contexts/SimulatorProvider';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

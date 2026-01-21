@@ -1,6 +1,7 @@
 import React from 'react';
 import { NodeViewWrapper, NodeViewProps } from '@tiptap/react';
-import { TagIcon, ICON_MAP } from '../layout/icons';
+import { TagIcon } from '../layout/icons';
+import { ICON_MAP } from '../layout/iconMap';
 
 export const PropertyChip = (props: NodeViewProps) => {
   const { node } = props;

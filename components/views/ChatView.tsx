@@ -3,7 +3,7 @@ import { useChatView } from '../../hooks/useChatView';
 import { useView } from '../../hooks/useViewContext';
 import { ChatWindow } from '../chat/ChatWindow';
 import { ContactList } from '../chat/ContactList';
-import { useSimulatorContext } from '../contexts/SimulatorContext';
+import { useSimulatorContext } from '../../hooks/useSimulatorContext';
 import type { Contact } from '../../types';
 
 export function ChatView() {

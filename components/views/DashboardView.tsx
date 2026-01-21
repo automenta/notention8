@@ -2,7 +2,7 @@ import React from 'react';
 import { useNotes } from '../../hooks/useNotes';
 import { useView } from '../../hooks/useViewContext';
 import { useSettings } from '../../hooks/useSettingsContext';
-import { useSimulatorContext } from '../contexts/SimulatorContext';
+import { useSimulatorContext } from '../../hooks/useSimulatorContext';
 import { parseProperties } from '../../utils/parsing';
 
 import { DailyPromptWidget } from '../dashboard/DailyPromptWidget';

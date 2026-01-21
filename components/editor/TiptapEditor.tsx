@@ -6,7 +6,7 @@ import { sanitizeHTML } from '../../utils/sanitize';
 import { formatHtmlForDisplay } from '../../utils/editor';
 import { useTiptapConfig } from './useTiptapConfig';
 import { useView } from '../../hooks/useViewContext';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../../hooks/useToast';
 import { useEditorClick } from './useEditorClick';
 import { EditorStatusBar } from './EditorStatusBar';
 import { EditorBubbleMenu } from './EditorBubbleMenu';

@@ -139,10 +139,14 @@ export class WebLLMProvider implements AIProvider {
     const content = response.choices[0]?.message?.content || "[]";
     try {
         const jsonStr = content.replace(/```json/g, '').replace(/```/g, '').trim();
-        const raw = JSON.parse(jsonStr);
-        // Map to expected interface
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return raw.map((r: any) => ({
+        interface RawAttribute {
+            key: string;
+            type: string;
+            description?: string;
+            sampleValues?: string[];
+        }
+        const raw: RawAttribute[] = JSON.parse(jsonStr);
+        return raw.map((r) => ({
             key: r.key,
             type: r.type as OntologyAttribute['type'],
             description: r.description,

@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { TrashIcon, DocumentDuplicateIcon } from '../layout/icons';
 import { useNotes } from '../../hooks/useNotes';
 import { useSettings } from '../../hooks/useSettingsContext';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../../hooks/useToast';
 import localforage from 'localforage';
 import type { Note } from '../../types';
 

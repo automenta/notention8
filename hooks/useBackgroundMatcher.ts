@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useSettings } from './useSettingsContext';
 import { useNotes } from './useNotes';
 import { useView } from './useViewContext';
-import { useToast } from '../components/contexts/ToastContext';
+import { useToast } from './useToast';
 import { DEFAULT_RELAYS, pool, convertEventToNote } from '../utils/nostr';
 import { matchNotes } from '../utils/matching';
 

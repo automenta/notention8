@@ -3,7 +3,7 @@ import { SparklesIcon, CheckIcon, CpuChipIcon } from '../layout/icons';
 import { isGeminiApiKeyAvailable } from '@/services/ai/RemoteProvider';
 import { AVAILABLE_MODELS } from '@/services/ai/WebLLMProvider';
 import type { AppSettings } from '@/types';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../../hooks/useToast';
 import { Toggle } from '../common/Toggle';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';

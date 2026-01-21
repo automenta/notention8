@@ -5,7 +5,7 @@ import { KeyIcon, UserPlusIcon, NetworkIcon, PlusIcon, TrashIcon } from '../layo
 import type { AppSettings } from '@/types';
 import { CopyableField } from '../common/CopyableField';
 import { usePublish } from '@/hooks/usePublish';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../../hooks/useToast';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { IconButton } from '../common/IconButton';

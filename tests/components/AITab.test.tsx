@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { AITab } from '../../components/settings/AITab';
-import { ToastProvider } from '../../components/contexts/ToastContext';
+import { ToastProvider } from '../../components/contexts/ToastProvider';
 import { describe, it, expect, vi } from 'vitest';
 import type { AppSettings } from '../../types';
 
