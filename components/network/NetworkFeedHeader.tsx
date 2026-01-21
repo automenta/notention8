@@ -1,6 +1,8 @@
 import React from 'react';
 import type { NostrEvent } from '../../types';
 import { ArrowLeftIcon } from '../layout/icons';
+import { IconButton } from '../common/IconButton';
+import { Input } from '../common/Input';
 
 interface NetworkFeedHeaderProps {
     matchAgainstTitle?: string;
@@ -21,13 +23,13 @@ export const NetworkFeedHeader: React.FC<NetworkFeedHeaderProps> = ({
         <div className="flex justify-between items-center mb-6 gap-4">
             <div className="flex items-center gap-3 overflow-hidden">
                 {matchAgainstTitle && (
-                    <button
+                    <IconButton
                         onClick={onClearMatch}
-                        className="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors flex-shrink-0"
+                        icon={ArrowLeftIcon}
                         title="Back to Feed"
-                    >
-                        <ArrowLeftIcon className="w-6 h-6" />
-                    </button>
+                        variant="ghost"
+                        size="md"
+                    />
                 )}
                 <h1 className="text-xl font-bold text-white truncate">
                     {matchAgainstTitle
@@ -37,10 +39,10 @@ export const NetworkFeedHeader: React.FC<NetworkFeedHeaderProps> = ({
             </div>
 
             <div className="flex flex-col items-end gap-2">
-                <input
+                <Input
                     type="text"
                     placeholder="Search notes..."
-                    className="bg-gray-900 border border-gray-700 rounded px-3 py-1 text-sm text-gray-200 w-48 flex-shrink-0 focus:border-blue-500 outline-none transition-colors"
+                    className="w-48"
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
                 />

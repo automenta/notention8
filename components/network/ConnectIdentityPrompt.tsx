@@ -1,5 +1,6 @@
 import React from 'react';
 import { KeyIcon, SettingsIcon } from '../layout/icons';
+import { Button } from '../common/Button';
 
 interface ConnectIdentityPromptProps {
     onNavigateToSettings: () => void;
@@ -16,12 +17,14 @@ export const ConnectIdentityPrompt: React.FC<ConnectIdentityPromptProps> = ({ on
                 A Nostr identity is required to publish notes and interact with the
                 network. You can generate one in settings.
             </p>
-            <button
+            <Button
                 onClick={onNavigateToSettings}
-                className="flex items-center justify-center gap-3 mx-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                variant="primary"
+                size="lg"
+                icon={SettingsIcon}
             >
-                <SettingsIcon className="h-5 w-5" /> Go to Settings
-            </button>
+                Go to Settings
+            </Button>
         </div>
     );
 };

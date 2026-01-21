@@ -1,13 +1,9 @@
 import { useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import BubbleMenu from '@tiptap/extension-bubble-menu';
-import Mention from '@tiptap/extension-mention';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { useOntologyIndex } from '../../hooks/useOntologyIndex';
-import { configureSuggestions } from './configureSuggestions';
-import { PropertyExtension } from './PropertyExtension';
 import type { OntologyNode, Template, Note } from '../../types';
 import { useRef, useEffect } from 'react';
+import { getExtensions } from './extensions';
 
 interface UseTiptapConfigProps {
     content: string;
@@ -23,138 +19,76 @@ export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], m
   const { allTags, allProperties } = useOntologyIndex(ontology);
 
   // Use ref to access latest notes in callbacks without re-initializing editor
+  // Note: getExtensions is called inside useEditor, so it uses the current notesRef if passed correctly?
+  // Actually useEditor dependencies array handles re-initialization.
+  // But wait, useEditor doesn't update extensions dynamically well usually.
+  // However, the original code used notesRef inside callbacks.
+  // We need to pass the *ref* or a way to access current notes to getExtensions?
+  // Or just pass notes and let the hook handle it?
+  // The original code passed `notesRef.current` inside the callback functions defined in the extension configuration.
+
+  // The `getExtensions` function returns the array. If we call it here, we pass the *current* values.
+  // If `notes` changes, we might want to update the extension.
+  // But useEditor usually only runs once unless dependencies change.
+  // The dependency array `[ontology, minimal, onOpenPropertyModal]` does NOT include `notes`.
+  // So `notesRef` was used to get fresh notes without re-creating the editor.
+
+  // My `getExtensions` implementation takes `notes` as an array.
+  // If `notes` are stale in the closure, suggestions will be stale.
+  // We need to preserve the "ref" behavior or include notes in dependencies.
+  // Including notes in dependencies might cause editor to reload on every keystroke/save if notes change often.
+  // But strictly speaking, the suggestions configuration needs access to the *latest* notes.
+
+  // Let's modify `getExtensions` to accept a stable getter or similar?
+  // Or just rely on re-rendering?
+  // If I look at `extensions.ts`, it uses `notes` directly.
+
+  // Wait, in `extensions.ts`:
+  // return notes.filter(...)
+
+  // This means `notes` is captured by closure when `getExtensions` is called.
+  // If `useTiptapConfig` only calls `getExtensions` once (because of useEditor deps), then `notes` will be stale.
+
+  // I should probably pass `notesRef.current` to `getExtensions`? No, because `getExtensions` is called at render time.
+  // The original code defined the callbacks *inline*, so they closed over `notesRef`.
+
+  // To keep the ref pattern, `getExtensions` should accept `notesRef`.
+  // But `extensions.ts` shouldn't depend on React.
+  // I can pass a `getNotes` function.
+
   const notesRef = useRef(notes);
   useEffect(() => {
       notesRef.current = notes;
   }, [notes]);
 
+  // We need to pass a way to get notes to extensions.ts
+  // Let's modify extensions.ts to take `() => Note[]` or similar?
+  // Or just accept that we need to re-create extensions when notes change?
+  // Re-creating extensions might be expensive or cause editor reset.
+
+  // Let's verify how useEditor behaves.
+  // If I change extensions, does it break state?
+  // "The editor is re-created when the dependencies change."
+  // If we add `notes` to deps, the editor re-creates on every note save (since notes list updates).
+  // That is bad (cursor jumps, etc).
+
+  // So we MUST use the Ref pattern.
+  // I will modify `extensions.ts` to accept `notes` as `Note[] | (() => Note[])`?
+  // Or simpler: just pass `notes` as `Note[]` but assume it's a reference?
+  // Arrays are references, but `notes` is likely a new array on every render.
+
+  // I will modify `getExtensions` to take `getNotes: () => Note[]`.
+
+  const getNotes = () => notesRef.current;
+
   return useEditor({
-    extensions: [
-      StarterKit,
-      BubbleMenu,
-      PropertyExtension,
-      Mention.configure({
-        HTMLAttributes: {
-          class: 'suggestion-item',
-        },
-        suggestion: configureSuggestions((query) => {
-            const lower = query.toLowerCase();
-            return allProperties
-                .filter(p => p.label.toLowerCase().includes(lower))
-                .slice(0, 5)
-                .map(p => ({ id: p.id, label: p.label, description: p.description }));
-        }, '['),
-      }).extend({ name: 'propertySuggestion' }),
-
-      Mention.configure({
-          HTMLAttributes: {
-            class: 'suggestion-tag',
-          },
-          suggestion: configureSuggestions((query) => {
-              const lower = query.toLowerCase();
-              return allTags
-                  .filter(t => t.label.toLowerCase().includes(lower))
-                  .slice(0, 5)
-                  .map(t => ({ id: t.id, label: t.label, description: t.description }));
-          }, '#'),
-      }).extend({ name: 'tagSuggestion' }),
-
-      Mention.configure({
-          HTMLAttributes: {
-            class: 'suggestion-note',
-          },
-          suggestion: configureSuggestions((query) => {
-              const lower = query.toLowerCase();
-              return notesRef.current
-                  .filter(n => (n.title || 'Untitled').toLowerCase().includes(lower))
-                  .slice(0, 5)
-                  .map(n => ({
-                      id: n.id,
-                      label: n.title || 'Untitled',
-                      description: 'Note'
-                  }));
-          }, '@'),
-      }).extend({ name: 'noteSuggestion' }),
-
-      Mention.configure({
-          HTMLAttributes: {
-            class: 'suggestion-note',
-          },
-          suggestion: {
-              ...configureSuggestions((query) => {
-                  const lower = query.toLowerCase();
-                  return notesRef.current
-                      .filter(n => (n.title || 'Untitled').toLowerCase().includes(lower))
-                      .slice(0, 5)
-                      .map(n => ({
-                          id: n.id,
-                          label: n.title || 'Untitled',
-                          description: 'Note'
-                      }));
-              }, '[['), // Wiki-link style trigger
-              command: ({ editor, range, props }) => {
-                  // Delete the trigger and query
-                  editor.chain().focus().deleteRange(range).run();
-                  // Insert the mention manually or as a link?
-                  // Let's insert the standard mention node but maybe formatted differently?
-                  // For now, reusing the existing note mention structure is easiest
-                  // but we need to ensure it's inserted correctly.
-
-                  editor.chain().focus().insertContent({
-                      type: 'noteSuggestion', // Use the existing note suggestion type
-                      attrs: {
-                          id: props.id,
-                          label: props.label
-                      }
-                  }).insertContent(' ').run();
-              }
-          }
-      }).extend({ name: 'wikiLinkSuggestion' }),
-
-      Mention.configure({
-          HTMLAttributes: {
-            class: 'suggestion-slash',
-          },
-          suggestion: {
-            ...configureSuggestions((query) => {
-                const lower = query.toLowerCase();
-
-                const templateItems = templates
-                    .filter(t => t.label.toLowerCase().includes(lower))
-                    .map(t => ({
-                        id: t.content, // Insert content
-                        label: t.label,
-                        description: 'Template',
-                        type: 'template'
-                    }));
-
-                 const propertyItems = allProperties
-                    .filter(p => p.label.toLowerCase().includes(lower))
-                    .map(p => ({
-                        id: `[${p.label}:is:?]`, // Insert semantic property syntax
-                        label: p.label,
-                        description: 'Property',
-                        type: 'property'
-                    }));
-
-                 return [...templateItems, ...propertyItems].slice(0, 10);
-            }, '/'),
-            command: ({ editor, range, props }) => {
-                // Delete the slash command text
-                editor.chain().focus().deleteRange(range).run();
-
-                if (props.type === 'property' && onOpenPropertyModal) {
-                    onOpenPropertyModal(props.label);
-                    return;
-                }
-
-                // Insert the content
-                const content = props.id;
-                editor.chain().focus().insertContent(content).run();
-            },
-          }
-      }).extend({ name: 'slashCommand' }),
-    ],
+    extensions: getExtensions({
+        allProperties,
+        allTags,
+        getNotes, // Changed this
+        templates,
+        onOpenPropertyModal
+    }),
     content: sanitizeHTML(content),
     editorProps: {
       attributes: {
