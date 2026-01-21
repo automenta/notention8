@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { matchNotes } from '../../utils/matching';
-import type { Note } from '../../types';
+import type { Note, Property } from '../../types';
 
-const createNote = (properties: any[]): Note => ({
+const createNote = (properties: Property[]): Note => ({
   id: '1',
   title: 'Test',
   content: '',

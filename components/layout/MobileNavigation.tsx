@@ -10,7 +10,7 @@ interface MobileNavigationProps {
 export function MobileNavigation({ onOpenPalette }: MobileNavigationProps) {
   const { activeView, setActiveView } = useView();
 
-  const navItems: { view: View; label: string; icon: React.FC<any> }[] = [
+  const navItems: { view: View; label: string; icon: React.FC<React.SVGProps<SVGSVGElement>> }[] = [
     { view: 'dashboard', label: 'Home', icon: HomeIcon },
     { view: 'notes', label: 'Notes', icon: NoteIcon },
     { view: 'chat', label: 'Chat', icon: ChatIcon },

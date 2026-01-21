@@ -52,8 +52,10 @@ describe('useGardener', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useSettings as any).mockReturnValue(mockSettings);
-    (useView as any).mockReturnValue({ showToast: showToastMock });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(useSettings).mockReturnValue(mockSettings as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(useView).mockReturnValue({ showToast: showToastMock } as any);
   });
 
   it('should call evolveOntology and update settings', async () => {

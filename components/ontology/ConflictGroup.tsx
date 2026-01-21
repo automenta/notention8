@@ -44,7 +44,7 @@ export const ConflictGroup: React.FC<ConflictGroupProps> = ({ noteId, conflicts,
                                 </span>
                             </div>
                             <div className="text-sm text-gray-300">
-                                Current value: <span className="text-yellow-300 font-mono bg-yellow-900/20 px-1.5 rounded">"{conflict.actualValue}"</span>
+                                Current value: <span className="text-yellow-300 font-mono bg-yellow-900/20 px-1.5 rounded">&quot;{conflict.actualValue}&quot;</span>
                             </div>
                         </div>
                         <div className="text-xs font-semibold text-red-500 bg-red-900/10 px-2 py-1 rounded border border-red-900/30">

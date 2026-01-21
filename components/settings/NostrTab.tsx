@@ -88,8 +88,9 @@ export const NostrTab: React.FC<NostrTabProps> = ({
       try {
           await publishProfile({ name, about, picture });
           addToast('Profile published to network!', 'success');
-      } catch (e: any) {
-          addToast('Failed to publish profile: ' + e.message, 'error');
+      } catch (e: unknown) {
+          const message = e instanceof Error ? e.message : String(e);
+          addToast('Failed to publish profile: ' + message, 'error');
       }
   };
 

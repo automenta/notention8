@@ -4,6 +4,7 @@ import { useNotes } from '../../hooks/useNotes';
 import { useSettings } from '../../hooks/useSettingsContext';
 import { useToast } from '../contexts/ToastContext';
 import localforage from 'localforage';
+import type { Note } from '../../types';
 
 export const DataTab: React.FC = () => {
   const { notes } = useNotes(); // We need raw data access, useNotes gives notes from state which is synced with localforage on load.
@@ -56,7 +57,7 @@ export const DataTab: React.FC = () => {
 
               // Case 2: Single Note
               if (data.id && data.content) {
-                  const currentNotes = await localforage.getItem<any[]>('notention-notes') || [];
+                  const currentNotes = await localforage.getItem<Note[]>('notention-notes') || [];
                   const existingIndex = currentNotes.findIndex((n) => n.id === data.id);
 
                   if (existingIndex >= 0) {

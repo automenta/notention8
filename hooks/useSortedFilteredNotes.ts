@@ -129,7 +129,7 @@ export const useSortedFilteredNotes = (
 
       return textMatch && tagMatch && simplePropMatch;
     });
-  }, [notes, notesWithMetadata, searchTerm]);
+  }, [notesWithMetadata, searchTerm]);
 
   return useMemo(() => {
     const sorter = sortStrategies[sortOrder];

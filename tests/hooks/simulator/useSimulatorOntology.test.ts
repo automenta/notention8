@@ -1,12 +1,13 @@
 import { renderHook, act } from '@testing-library/react';
 import { useSimulatorOntology } from '../../../hooks/simulator/useSimulatorOntology';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
+import type { OntologyNode } from '../../../types';
 
 describe('useSimulatorOntology', () => {
-    let ontologyRefMock: any;
-    let setOntologyMock: any;
-    let gardenerRefMock: any;
-    let addLogMock: any;
+    let ontologyRefMock: { current: OntologyNode[] };
+    let setOntologyMock: Mock;
+    let gardenerRefMock: { current: { optimizeOntology: Mock } };
+    let addLogMock: Mock;
 
     beforeEach(() => {
         ontologyRefMock = { current: [] };

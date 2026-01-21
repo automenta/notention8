@@ -1,7 +1,7 @@
 import React, { createContext, ReactNode, useState } from 'react';
 import { useLocalForage } from '../../hooks/useLocalForage';
 import { useToast } from './ToastContext';
-import type { View, SortOrder } from '../../types';
+import type { View, SortOrder, NostrEvent } from '../../types';
 
 interface ViewContextType {
   sortOrder: SortOrder;
@@ -30,7 +30,7 @@ interface ViewContextType {
 
 export interface MatchResult {
   localNoteId: string;
-  event: any; // NostrEvent
+  event: NostrEvent;
   score: number;
   timestamp: number;
 }
