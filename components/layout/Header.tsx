@@ -18,6 +18,7 @@ import {
   SidebarIcon,
   ClockIcon,
 } from './icons';
+import { Button } from '../common/Button';
 
 interface HeaderProps {
   onNewNote: () => void;
@@ -85,13 +86,13 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
           className="hidden md:flex"
         />
 
-        <button
-          onClick={onNewNote}
-          title="New Note"
-          className="flex items-center gap-2 px-3 py-1.5 transition-colors rounded-lg bg-blue-600 text-white hover:bg-blue-700 ml-4"
-        >
-          <PlusIcon className="h-5 w-5" />
-        </button>
+        <Button
+            onClick={onNewNote}
+            title="New Note"
+            variant="primary"
+            icon={PlusIcon}
+            className="ml-4"
+        />
 
         <IconButton
             onClick={onOpenPalette}

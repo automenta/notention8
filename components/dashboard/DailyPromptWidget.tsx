@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { SparklesIcon } from '../layout/icons';
+import { SparklesIcon, PencilIcon } from '../layout/icons';
 import { DAILY_PROMPTS } from '../../utils/constants';
+import { Button } from '../common/Button';
 
 interface DailyPromptWidgetProps {
   onCreateNote: () => void;
@@ -24,12 +25,15 @@ export const DailyPromptWidget: React.FC<DailyPromptWidgetProps> = ({ onCreateNo
          <p className="text-xl md:text-2xl font-bold text-white mb-6 relative z-10">
              &quot;{todaysPrompt}&quot;
          </p>
-         <button
+         <Button
             onClick={onCreateNote}
-            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-lg shadow-blue-900/20 relative z-10"
+            variant="primary"
+            size="md"
+            icon={PencilIcon}
+            className="shadow-lg shadow-blue-900/20 relative z-10"
          >
              Write about this
-         </button>
+         </Button>
     </div>
   );
 };

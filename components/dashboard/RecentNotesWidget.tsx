@@ -1,6 +1,7 @@
 import React from 'react';
 import { ClockIcon, PlusIcon } from '../layout/icons';
 import { Badge } from '../common/Badge';
+import { Button } from '../common/Button';
 import type { Note } from '../../types';
 
 interface RecentNotesWidgetProps {
@@ -23,12 +24,14 @@ export const RecentNotesWidget: React.FC<RecentNotesWidgetProps> = ({
                 <ClockIcon className="h-5 w-5 text-gray-400" />
                 Recent Notes
             </h2>
-            <button
+            <Button
                 onClick={onViewAll}
-                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                variant="ghost"
+                size="sm"
+                className="text-blue-400 hover:text-blue-300"
             >
                 View all
-            </button>
+            </Button>
         </div>
 
         {notes.length > 0 ? (
@@ -59,13 +62,13 @@ export const RecentNotesWidget: React.FC<RecentNotesWidgetProps> = ({
         ) : (
             <div className="flex flex-col items-center justify-center py-12 bg-gray-800/30 rounded-2xl border border-gray-800 border-dashed text-center">
                 <p className="text-gray-500 mb-4">No notes yet. Start writing!</p>
-                <button
+                <Button
                     onClick={onCreateNote}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+                    variant="primary"
+                    icon={PlusIcon}
                 >
-                    <PlusIcon className="w-4 h-4" />
                     Create First Note
-                </button>
+                </Button>
             </div>
         )}
     </div>

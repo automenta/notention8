@@ -5,6 +5,8 @@ import { AVAILABLE_MODELS } from '@/services/ai/WebLLMProvider';
 import type { AppSettings } from '@/types';
 import { useToast } from '../contexts/ToastContext';
 import { Toggle } from '../common/Toggle';
+import { Input } from '../common/Input';
+import { Button } from '../common/Button';
 
 interface AITabProps {
   settings: AppSettings;
@@ -72,7 +74,7 @@ export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
           <select
              value={settings.aiProvider || 'remote'}
              onChange={handleProviderChange}
-             className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:border-blue-500 outline-none mb-4"
+             className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all mb-4"
           >
               <option value="remote">Google Gemini (Remote API)</option>
               <option value="webllm">Llama 3.2 (Local Browser Model)</option>
@@ -84,7 +86,7 @@ export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
                 <select
                     value={settings.aiModel || AVAILABLE_MODELS[0].id}
                     onChange={(e) => setSettings(prev => ({ ...prev, aiModel: e.target.value }))}
-                    className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:border-blue-500 outline-none mb-4"
+                    className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all mb-4"
                 >
                     {AVAILABLE_MODELS.map(m => (
                         <option key={m.id} value={m.id}>{m.label}</option>
@@ -102,21 +104,24 @@ export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
               </>
           ) : (
               <>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Google Gemini API Key</label>
-                <div className="flex gap-2">
-                    <input
-                        type="password"
-                        value={keyInput}
-                        onChange={(e) => setKeyInput(e.target.value)}
-                        placeholder="Enter API Key"
-                        className="flex-1 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:border-blue-500 outline-none"
-                    />
-                    <button
+                <div className="flex gap-2 items-end">
+                    <div className="flex-1">
+                        <Input
+                            label="Google Gemini API Key"
+                            type="password"
+                            value={keyInput}
+                            onChange={(e) => setKeyInput(e.target.value)}
+                            placeholder="Enter API Key"
+                        />
+                    </div>
+                    <Button
                         onClick={saveKey}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium flex items-center gap-2"
+                        variant="primary"
+                        icon={CheckIcon}
+                        className="mb-[1px]" // align with input
                     >
-                        <CheckIcon className="w-4 h-4"/> Save
-                    </button>
+                        Save
+                    </Button>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
                     Your key is stored locally in your browser and sent directly to Google. It never touches our servers.

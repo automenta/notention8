@@ -6,6 +6,9 @@ import type { AppSettings } from '@/types';
 import { CopyableField } from '../common/CopyableField';
 import { usePublish } from '@/hooks/usePublish';
 import { useToast } from '../contexts/ToastContext';
+import { Input } from '../common/Input';
+import { Button } from '../common/Button';
+import { IconButton } from '../common/IconButton';
 
 interface NostrTabProps {
   settings: AppSettings;
@@ -156,12 +159,14 @@ export const NostrTab: React.FC<NostrTabProps> = ({
             </p>
             <CopyableField label="Public Key (npub)" value={npub} />
             <CopyableField label="Private Key (nsec)" value={nsec} isSecret />
-            <button
+            <Button
                 onClick={handleLogout}
-                className="w-full mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                variant="danger"
+                className="w-full mt-4"
+                icon={KeyIcon}
             >
-                <KeyIcon className="h-5 w-5" /> Log Out & Clear Private Key
-            </button>
+                Log Out & Clear Private Key
+            </Button>
             </div>
         ) : (
             <div className="text-center py-6 space-y-6">
@@ -169,12 +174,14 @@ export const NostrTab: React.FC<NostrTabProps> = ({
                     <p className="text-gray-400">
                         New to Nostr? Generate a fresh identity.
                     </p>
-                    <button
+                    <Button
                         onClick={handleGenerateKeys}
-                        className="flex items-center justify-center gap-3 mx-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                        variant="primary"
+                        className="mx-auto"
+                        icon={KeyIcon}
                     >
-                        <KeyIcon className="h-5 w-5" /> Generate New Keys
-                    </button>
+                        Generate New Keys
+                    </Button>
                 </div>
 
                 <div className="border-t border-gray-700/50 w-1/2 mx-auto"></div>
@@ -184,19 +191,19 @@ export const NostrTab: React.FC<NostrTabProps> = ({
                         Already have an account? Import your private key.
                     </p>
                     <div className="flex gap-2">
-                        <input
+                        <Input
                             type="password"
                             value={importKey}
                             onChange={(e) => setImportKey(e.target.value)}
                             placeholder="nsec1... or hex key"
-                            className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none text-sm"
+                            className="flex-1"
                         />
-                        <button
+                        <Button
                             onClick={handleImportKey}
-                            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm font-medium"
+                            variant="secondary"
                         >
                             Import
-                        </button>
+                        </Button>
                     </div>
                     {importError && (
                         <p className="text-red-400 text-xs text-left">{importError}</p>
@@ -221,13 +228,14 @@ export const NostrTab: React.FC<NostrTabProps> = ({
                     {currentRelays.map((relay, idx) => (
                         <div key={idx} className="flex justify-between items-center px-4 py-3 border-b border-gray-700 last:border-0 hover:bg-gray-750">
                             <span className="text-gray-300 text-sm font-mono truncate">{relay}</span>
-                            <button
+                            <IconButton
                                 onClick={() => handleRemoveRelay(relay)}
-                                className="text-gray-500 hover:text-red-400 transition-colors p-1"
+                                variant="ghost"
+                                size="sm"
+                                className="text-gray-500 hover:text-red-400"
                                 title="Remove Relay"
-                            >
-                                <TrashIcon className="h-4 w-4" />
-                            </button>
+                                icon={TrashIcon}
+                            />
                         </div>
                     ))}
                     {currentRelays.length === 0 && (
@@ -238,21 +246,21 @@ export const NostrTab: React.FC<NostrTabProps> = ({
                 </div>
 
                 <div className="flex gap-2">
-                    <input
-                        type="text"
+                    <Input
                         value={newRelay}
                         onChange={(e) => setNewRelay(e.target.value)}
                         placeholder="wss://relay.example.com"
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none text-sm"
+                        className="flex-1"
                         onKeyDown={(e) => e.key === 'Enter' && handleAddRelay()}
                     />
-                    <button
+                    <Button
                         onClick={handleAddRelay}
                         disabled={!newRelay}
-                        className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded font-medium disabled:opacity-50 flex items-center gap-2"
+                        className="bg-purple-600 hover:bg-purple-500 text-white"
+                        icon={PlusIcon}
                     >
-                         <PlusIcon className="h-4 w-4" /> Add
-                    </button>
+                         Add
+                    </Button>
                 </div>
             </div>
        </div>
@@ -266,41 +274,38 @@ export const NostrTab: React.FC<NostrTabProps> = ({
             </h2>
             <div className="space-y-4 max-w-lg">
                 <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Name</label>
-                    <input
-                        type="text"
+                    <Input
+                        label="Name"
                         value={name}
                         onChange={e => setName(e.target.value)}
-                        className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none"
                         placeholder="Alice"
                     />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">About</label>
+                    <label className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider">About</label>
                     <textarea
                         value={about}
                         onChange={e => setAbout(e.target.value)}
-                        className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none h-24"
+                        className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder-gray-500 h-24"
                         placeholder="I'm a developer building cool things."
                     />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Picture URL</label>
-                    <input
-                        type="text"
+                    <Input
+                        label="Picture URL"
                         value={picture}
                         onChange={e => setPicture(e.target.value)}
-                        className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none"
                         placeholder="https://example.com/avatar.png"
                     />
                 </div>
-                <button
+                <Button
                     onClick={handleSaveProfile}
                     disabled={isPublishing}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium disabled:opacity-50"
+                    isLoading={isPublishing}
+                    variant="primary"
                 >
                     {isPublishing ? 'Publishing...' : 'Publish Profile'}
-                </button>
+                </Button>
             </div>
           </div>
       )}
