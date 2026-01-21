@@ -1,5 +1,6 @@
 import React from 'react';
 import { SearchIcon, XCircleIcon } from '../layout/icons';
+import { IconButton } from '../common/IconButton';
 
 interface SearchProps {
   searchTerm: string;
@@ -38,14 +39,14 @@ export const Search: React.FC<SearchProps> = ({
         className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg py-2.5 pl-10 pr-10 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-inner"
       />
       {searchTerm && (
-        <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-          <button
+        <div className="absolute inset-y-0 right-0 pr-1.5 flex items-center">
+          <IconButton
             onClick={() => setSearchTerm('')}
-            className="text-gray-500 hover:text-white transition-colors"
             title="Clear search"
-          >
-            <XCircleIcon className="h-4 w-4" />
-          </button>
+            icon={XCircleIcon}
+            size="sm"
+            variant="ghost"
+          />
         </div>
       )}
     </div>

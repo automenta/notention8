@@ -8,6 +8,7 @@ import { TemplateList } from './TemplateList';
 import { SidebarEmptyState } from './SidebarEmptyState';
 import { PlusIcon } from '../layout/icons';
 import { useSidebarLogic } from './useSidebarLogic';
+import { IconButton } from '../common/IconButton';
 
 interface SidebarProps {
   sortedNotes?: Note[];
@@ -38,13 +39,14 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
             <div className="flex-grow">
                 <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             </div>
-             <button
+            <IconButton
                 onClick={() => handleCreateNote()}
-                className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors flex-shrink-0"
                 title="New Note (Ctrl+N)"
-            >
-                <PlusIcon className="h-5 w-5" />
-            </button>
+                icon={PlusIcon}
+                variant="primary"
+                size="lg"
+                className="flex-shrink-0"
+            />
         </div>
 
         <SortSelector sortOrder={sortOrder} onSortChange={setSortOrder} />

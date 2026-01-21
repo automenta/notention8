@@ -4,6 +4,7 @@ import { useSettings } from '../../hooks/useSettingsContext';
 import { useView } from '../../hooks/useViewContext';
 import type { View } from '../../types';
 import { NavButton } from './NavButton';
+import { IconButton } from '../common/IconButton';
 import {
   ChatIcon,
   CubeTransparentIcon,
@@ -75,13 +76,14 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
     <header className="flex-shrink-0 bg-gray-900 h-16 px-4 flex items-center justify-between border-b border-gray-700/50">
       {/* Left Section */}
       <div className="flex items-center gap-4">
-        <button
+        <IconButton
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           title={isSidebarOpen ? "Close Sidebar" : "Open Sidebar"}
-          className="hidden md:block p-2 text-gray-400 hover:text-white transition-colors hover:bg-gray-800 rounded-md"
-        >
-          <SidebarIcon className="h-6 w-6" />
-        </button>
+          icon={SidebarIcon}
+          variant="ghost"
+          size="lg"
+          className="hidden md:flex"
+        />
 
         <button
           onClick={onNewNote}
@@ -90,13 +92,14 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
         >
           <PlusIcon className="h-5 w-5" />
         </button>
-        <button
-          onClick={onOpenPalette}
-          title="Search & Commands (Ctrl+K)"
-          className="p-2 text-gray-400 hover:text-white transition-colors hover:bg-gray-800 rounded-md"
-        >
-          <SearchIcon className="h-6 w-6" />
-        </button>
+
+        <IconButton
+            onClick={onOpenPalette}
+            title="Search & Commands (Ctrl+K)"
+            icon={SearchIcon}
+            variant="ghost"
+            size="lg"
+        />
       </div>
 
       {/* Center Section - Navigation */}
