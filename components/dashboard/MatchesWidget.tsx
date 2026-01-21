@@ -1,8 +1,9 @@
 import React from 'react';
-import { SearchSparkleIcon } from '../layout/icons';
+import { SearchSparkleIcon, ArrowRightIcon } from '../layout/icons';
 import { useView } from '../../hooks/useViewContext';
 import { useNotes } from '../../hooks/useNotes';
 import { Badge } from '../common/Badge';
+import { IconButton } from '../common/IconButton';
 
 export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => void }) => {
     const { matches } = useView();
@@ -31,8 +32,7 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
                         return (
                             <div
                                 key={`${match.event.id}_${match.localNoteId}_${idx}`}
-                                className="p-4 bg-gray-800 hover:bg-gray-750 rounded-xl border border-gray-700/50 hover:border-purple-500/50 cursor-pointer transition-all flex flex-col gap-2 shadow-sm"
-                                onClick={() => onSelectNote(match.localNoteId)}
+                                className="p-4 bg-gray-800 hover:bg-gray-750 rounded-xl border border-gray-700/50 hover:border-purple-500/50 transition-all flex flex-col gap-2 shadow-sm group"
                             >
                                 <div className="flex justify-between items-start">
                                     <h3 className="text-sm font-medium text-purple-300 truncate w-3/4">
@@ -45,6 +45,15 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
                                 <p className="text-sm text-gray-400 line-clamp-2">
                                     {match.event.content}
                                 </p>
+                                <div className="flex justify-end mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                     <IconButton
+                                        onClick={() => onSelectNote(match.localNoteId)}
+                                        icon={ArrowRightIcon}
+                                        title="Go to Note"
+                                        size="xs"
+                                        variant="ghost"
+                                     />
+                                </div>
                             </div>
                         );
                     })
