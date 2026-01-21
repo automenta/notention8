@@ -3,6 +3,7 @@ import type { SimulationAgent } from '../../hooks/simulator/types';
 import { SparklesIcon } from '../layout/icons';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
+import { Textarea } from '../common/Textarea';
 
 interface SimulatorAgentEditorProps {
     agent: SimulationAgent;
@@ -27,12 +28,12 @@ export const SimulatorAgentEditor: React.FC<SimulatorAgentEditorProps> = ({
                 />
             </div>
             <div className="flex-[3]">
-                 <label className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider">Bio</label>
-                 <textarea
-                     className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder-gray-500 resize-none h-[46px]"
+                 <Textarea
+                     label="Bio"
                      value={agent.bio}
                      onChange={e => onUpdate({ bio: e.target.value })}
                      placeholder="Agent Bio"
+                     rows={1}
                  />
             </div>
         </div>

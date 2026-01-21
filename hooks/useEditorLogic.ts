@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import type { Note, Property } from '../types';
-import { usePublish } from './usePublish';
 import { parseProperties, replacePropertyInString } from '../utils/parsing';
 import { useDebouncedSave } from './useDebouncedSave';
 import { useView } from './useViewContext';
@@ -9,6 +8,8 @@ import { useSettings } from './useSettingsContext';
 import { useGardener } from './useGardener';
 import { useOntologyMatching } from './useOntologyMatching';
 import { useEditorMagic } from './useEditorMagic';
+import { useEditorPublishing } from './useEditorPublishing';
+import { useEditorTemplates } from './useEditorTemplates';
 
 interface UseEditorLogicProps {
   note: Note;
@@ -16,10 +17,9 @@ interface UseEditorLogicProps {
 }
 
 export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
-  const { publishNote, isPublishing } = usePublish();
   const { setActiveView, setMatchingNoteId } = useView();
   const { addToast } = useToast();
-  const { settings, setSettings } = useSettings();
+  const { settings } = useSettings();
   const { evolveOntology } = useGardener();
 
   const handlePersist = useCallback((n: Note) => {
@@ -51,6 +51,16 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       properties: dirtyNote.properties,
       ontology: settings.ontology
   });
+
+  const { handlePublish, isPublishing } = useEditorPublishing({
+    dirtyNote,
+    setDirtyNote,
+    onSave,
+    validationErrors,
+    actionLabel
+  });
+
+  const { handleSaveTemplate } = useEditorTemplates({ dirtyNote });
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -85,43 +95,6 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       onContentSave: handleContentSave,
       ontology: settings.ontology
   });
-
-  const handlePublish = async () => {
-    if (!dirtyNote.content) return;
-
-    if (validationErrors.length > 0) {
-        alert(`Cannot ${actionLabel}:\n- ${validationErrors.join('\n- ')}`);
-        return;
-    }
-
-    if (
-      confirm(
-        `Are you sure you want to ${actionLabel.toLowerCase()} to the public Nostr network?`
-      )
-    ) {
-      try {
-        // Evolve ontology before publishing to ensure we capture semantics
-        await evolveOntology([dirtyNote]);
-
-        const eventId = await publishNote(dirtyNote);
-        const now = new Date().toISOString();
-        const updatedNote = {
-          ...dirtyNote,
-          nostrEventId: eventId,
-          publishedAt: now,
-        };
-        setDirtyNote(updatedNote);
-        onSave(updatedNote);
-        addToast(`${actionLabel} successful!`, 'success');
-      } catch (e) {
-        addToast(
-          'Failed to publish: ' +
-            (e instanceof Error ? e.message : String(e)),
-          'error'
-        );
-      }
-    }
-  };
 
   const handleFindMatches = () => {
       setMatchingNoteId(dirtyNote.id);
@@ -169,22 +142,6 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
         handleContentSave(newContent);
     }
 }, [dirtyNote, handleContentSave]);
-
-  const handleSaveTemplate = useCallback((name: string) => {
-      const template = {
-          id: crypto.randomUUID(),
-          label: name,
-          content: dirtyNote.content,
-          icon: '📄' // Default icon
-      };
-
-      setSettings(prev => ({
-          ...prev,
-          customTemplates: [...prev.customTemplates, template]
-      }));
-
-      addToast(`Saved as template: ${name}`, 'success');
-  }, [dirtyNote.content, setSettings, addToast]);
 
   return {
     dirtyNote,

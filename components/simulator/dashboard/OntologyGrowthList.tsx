@@ -1,5 +1,6 @@
 import React from 'react';
 import { SparklesIcon } from '../../layout/icons';
+import { Button } from '../../common/Button';
 
 interface OntologyGrowthListProps {
     newAttributes: { key: string; type: string }[];
@@ -13,14 +14,15 @@ export const OntologyGrowthList: React.FC<OntologyGrowthListProps> = ({ newAttri
                 <span className="w-2 h-2 rounded-full bg-green-500 shadow-green-500/50 shadow-sm"></span>
                 <span className="font-bold text-xs text-gray-300 tracking-wide">ONTOLOGY GROWTH</span>
             </div>
-            <button
+            <Button
                 onClick={optimizeOntology}
-                className="text-[10px] font-bold bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded shadow-lg shadow-blue-900/20 transition-all flex items-center gap-1.5"
+                size="xs"
+                variant="primary"
+                icon={SparklesIcon}
                 title="Optimize Ontology"
             >
-                <SparklesIcon className="w-3 h-3" />
                 Optimize
-            </button>
+            </Button>
         </div>
         <div className="h-1/3 overflow-y-auto p-2 font-mono text-[10px] space-y-1 bg-gray-900">
             {newAttributes.length === 0 && (

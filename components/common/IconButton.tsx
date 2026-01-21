@@ -3,8 +3,8 @@ import React from 'react';
 export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon: React.ComponentType<{ className?: string }>;
   isActive?: boolean;
-  variant?: 'primary' | 'secondary' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
 export const IconButton: React.FC<IconButtonProps> = ({
@@ -20,6 +20,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
   const baseClasses = "rounded-lg transition-all duration-200 flex items-center justify-center";
 
   const sizeClasses = {
+    xs: "p-1",
     sm: "p-1",
     md: "p-1.5",
     lg: "p-2",
@@ -31,12 +32,21 @@ export const IconButton: React.FC<IconButtonProps> = ({
         return "bg-blue-600 hover:bg-blue-700 text-white shadow-sm";
       case 'secondary':
         return "bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700";
+      case 'danger':
+        return "bg-transparent text-gray-400 hover:text-red-400 hover:bg-red-900/30";
       case 'ghost':
       default:
         return isActive
           ? "bg-blue-600/90 text-white shadow-sm"
           : "text-gray-400 hover:text-white hover:bg-gray-800";
     }
+  };
+
+  const iconSizes = {
+    xs: "h-3 w-3",
+    sm: "h-4 w-4",
+    md: "h-4 w-4",
+    lg: "h-5 w-5"
   };
 
   return (
@@ -54,7 +64,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
       aria-pressed={isActive}
       {...props}
     >
-      <Icon className="h-4 w-4" />
+      <Icon className={iconSizes[size]} />
     </button>
   );
 };
