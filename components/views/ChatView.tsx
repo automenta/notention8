@@ -1,14 +1,29 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useChatView } from '../../hooks/useChatView';
 import { useView } from '../../hooks/useViewContext';
 import { ChatWindow } from '../chat/ChatWindow';
 import { ContactList } from '../chat/ContactList';
 import { useSimulatorContext } from '../../hooks/useSimulatorContext';
+import { AgentSettingsModal } from '../simulator/AgentSettingsModal';
 import type { Contact } from '../../types';
+import type { SwarmTemplate } from '../../hooks/simulator/types';
 
 export function ChatView() {
   const { resetChatNotification } = useView();
-  const { agents, agentMessages, sendMessageToAgent } = useSimulatorContext();
+  const {
+      agents,
+      agentMessages,
+      sendMessageToAgent,
+      addAgent,
+      deploySwarm,
+      removeAgent,
+      updateAgent,
+      toggleAgent,
+      randomizeAgent,
+      clearAgentMessages
+  } = useSimulatorContext();
+
+  const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null);
 
   // Clear notifications when entering chat view
   useEffect(() => {
@@ -25,6 +40,18 @@ export function ChatView() {
     addMessage,
     handleSelectContact,
   } = useChatView();
+
+  const handleDeploySwarm = (template: SwarmTemplate) => {
+      const newAgents = template.agents.map(a => ({
+          ...a,
+          id: Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join(''),
+          status: 'Idle',
+          currentDraft: '',
+          isAgent: true,
+          enabled: true
+      }));
+      deploySwarm(newAgents);
+  };
 
   // Merge Agent Contacts
   const agentContacts: Contact[] = agents.map(a => ({
@@ -46,6 +73,8 @@ export function ChatView() {
   const displayMessages = fullSelectedContact?.isAgent
       ? (agentMessages[fullSelectedContact.pubkey] || [])
       : (fullSelectedContact ? messages[fullSelectedContact.pubkey] || [] : []);
+
+  const selectedAgent = settingsAgentId ? agents.find(a => a.id === settingsAgentId) : null;
 
   if (!privkey || !pubkey) {
     return (
@@ -74,6 +103,8 @@ export function ChatView() {
           selectedContact={fullSelectedContact}
           onSelectContact={handleSelectContact}
           isLoading={isLoading}
+          onAddAgent={addAgent}
+          onDeploySwarm={handleDeploySwarm}
         />
       </div>
       <div
@@ -92,8 +123,22 @@ export function ChatView() {
                 addMessage(peerPubkey, event, decryptedContent);
             }
           }}
+          onOpenSettings={fullSelectedContact?.isAgent ? () => setSettingsAgentId(fullSelectedContact.pubkey) : undefined}
+          onClearChat={fullSelectedContact?.isAgent ? () => clearAgentMessages(fullSelectedContact.pubkey) : undefined}
         />
       </div>
+
+      {selectedAgent && (
+          <AgentSettingsModal
+              isOpen={!!selectedAgent}
+              onClose={() => setSettingsAgentId(null)}
+              agent={selectedAgent}
+              onUpdate={(updates) => updateAgent(agents.findIndex(a => a.id === selectedAgent.id), updates)}
+              onDelete={() => removeAgent(selectedAgent.id)}
+              onToggle={() => toggleAgent(selectedAgent.id)}
+              onRandomize={() => randomizeAgent(agents.findIndex(a => a.id === selectedAgent.id))}
+          />
+      )}
     </div>
   );
 }

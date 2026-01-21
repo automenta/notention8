@@ -65,6 +65,8 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
     { view: 'ontology', label: 'Ontology', icon: <OntologyIcon /> },
   ];
 
+  // Simulator is now integrated into Agents/Chat
+  /*
   if (settings.developerMode) {
     navItems.push({
       view: 'simulator',
@@ -72,6 +74,7 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
       icon: <CubeTransparentIcon />,
     });
   }
+  */
 
   return (
     <header className="flex-shrink-0 bg-gray-900 h-16 px-4 flex items-center justify-between border-b border-gray-700/50">

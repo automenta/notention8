@@ -11,6 +11,7 @@ import { RecentNotesWidget } from '../dashboard/RecentNotesWidget';
 import { TemplatesWidget } from '../dashboard/TemplatesWidget';
 import { NetworkPulseWidget } from '../dashboard/NetworkPulseWidget';
 import { DashboardStats } from '../dashboard/DashboardStats';
+import { MatchesWidget } from '../dashboard/MatchesWidget';
 
 interface Widget {
   id: string;
@@ -24,7 +25,7 @@ export function DashboardView() {
   const { setActiveView, setSelectedNoteId } = useView();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { settings } = useSettings();
-  const { logs, active: simulatorActive } = useSimulatorContext();
+  const { logs, active: simulatorActive, setActive } = useSimulatorContext();
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -63,6 +64,16 @@ export function DashboardView() {
         props: { onCreateNote: handleCreateNote }
     },
     {
+        id: 'matches',
+        component: MatchesWidget,
+        props: {
+            onSelectNote: (id: string) => {
+                setSelectedNoteId(id);
+                setActiveView('notes');
+            }
+        }
+    },
+    {
         id: 'quick-actions',
         component: QuickActionsWidget,
         props: { onCreateNote: handleCreateNote, onNavigate: setActiveView }
@@ -97,7 +108,7 @@ export function DashboardView() {
         props: {
             logs,
             simulatorActive,
-            onStartSimulator: () => setActiveView('simulator')
+            onStartSimulator: () => setActive(true)
         }
     },
   ];

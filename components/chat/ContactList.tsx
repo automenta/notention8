@@ -2,8 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { finalizeEvent, nip19 } from 'nostr-tools';
 import { useNostrProfile } from '../../hooks/useNostrProfile';
 import type { Contact } from '../../types';
+import type { SwarmTemplate } from '../../hooks/simulator/types';
+import { SwarmModal } from '../simulator/SwarmModal';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
-import { PlusIcon, SearchIcon, CpuChipIcon } from '../layout/icons';
+import { SearchIcon, CpuChipIcon, UserGroupIcon, UserPlusIcon } from '../layout/icons';
 
 interface ContactListProps {
   privkey: string;
@@ -13,6 +15,8 @@ interface ContactListProps {
   selectedContact: Contact | null;
   onSelectContact: (contact: Contact) => void;
   isLoading: boolean;
+  onAddAgent?: () => void;
+  onDeploySwarm?: (template: SwarmTemplate) => void;
 }
 
 export const ContactList: React.FC<ContactListProps> = ({
@@ -23,11 +27,14 @@ export const ContactList: React.FC<ContactListProps> = ({
   selectedContact,
   onSelectContact,
   isLoading,
+  onAddAgent,
+  onDeploySwarm
 }) => {
   const [newContactNpub, setNewContactNpub] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isAdding, setIsAdding] = useState(false);
+  const [isAddingContact, setIsAddingContact] = useState(false);
+  const [isSwarmModalOpen, setIsSwarmModalOpen] = useState(false);
 
   const contactPubkeys = useMemo(
     () => contacts.map((c) => c.pubkey),
@@ -36,12 +43,18 @@ export const ContactList: React.FC<ContactListProps> = ({
   const contactProfiles = useNostrProfile(contactPubkeys);
 
   const filteredContacts = useMemo(() => {
-      if (!searchTerm) return contacts;
-      return contacts.filter(c => {
-          const profile = contactProfiles[c.pubkey];
-          const name = profile?.name || '';
-          return name.toLowerCase().includes(searchTerm.toLowerCase()) || c.pubkey.includes(searchTerm);
-      });
+      let filtered = contacts;
+      if (searchTerm) {
+          filtered = contacts.filter(c => {
+              const profile = contactProfiles[c.pubkey];
+              const name = profile?.name || c.name || '';
+              return name.toLowerCase().includes(searchTerm.toLowerCase()) || c.pubkey.includes(searchTerm);
+          });
+      }
+      return {
+          agents: filtered.filter(c => c.isAgent),
+          others: filtered.filter(c => !c.isAgent)
+      };
   }, [contacts, searchTerm, contactProfiles]);
 
   const handleAddContact = async (e: React.FormEvent) => {
@@ -57,7 +70,7 @@ export const ContactList: React.FC<ContactListProps> = ({
       if (contacts.some((c) => c.pubkey === newPubkey) || newPubkey === pubkey)
         throw new Error('Contact already exists or is yourself.');
 
-      const currentTags = contacts.map((c) => ['p', c.pubkey]);
+      const currentTags = contacts.filter(c => !c.isAgent).map((c) => ['p', c.pubkey]);
       const newTags = [...currentTags, ['p', newPubkey]];
 
       const event = finalizeEvent(
@@ -74,11 +87,61 @@ export const ContactList: React.FC<ContactListProps> = ({
 
       setContacts((c) => [...c, { pubkey: newPubkey }]);
       setNewContactNpub('');
-      setIsAdding(false);
+      setIsAddingContact(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add contact.');
       console.error(err);
     }
+  };
+
+  const renderContactItem = (contact: Contact) => {
+      const profile = contactProfiles[contact.pubkey];
+      const isSelected = selectedContact?.pubkey === contact.pubkey;
+
+      return (
+        <div
+          key={contact.pubkey}
+          onClick={() => onSelectContact(contact)}
+          className={`
+            flex items-center gap-3 p-3 cursor-pointer transition-colors
+            ${isSelected ? 'bg-blue-900/20 border-r-2 border-blue-500' : 'hover:bg-gray-800/50 border-r-2 border-transparent'}
+          `}
+        >
+          <div className="relative">
+              <img
+                src={
+                  profile?.picture ||
+                  contact.picture ||
+                  `https://api.dicebear.com/8.x/bottts-neutral/svg?seed=${contact.pubkey}`
+                }
+                className="h-10 w-10 rounded-full bg-gray-700 object-cover"
+              />
+              {contact.isAgent && (
+                  <div className="absolute -bottom-1 -right-1 bg-gray-900 rounded-full p-0.5 border border-gray-700" title="AI Agent">
+                      <CpuChipIcon className="w-3 h-3 text-green-400" />
+                  </div>
+              )}
+          </div>
+          <div className="overflow-hidden flex-1 min-w-0">
+            <div className="flex justify-between items-baseline">
+                <p className={`font-semibold truncate text-sm ${isSelected ? 'text-white' : 'text-gray-200'}`}>
+                  {contact.name || profile?.name || (
+                    (() => {
+                        try {
+                            return formatNpub(nip19.npubEncode(contact.pubkey));
+                        } catch {
+                            return contact.pubkey;
+                        }
+                    })()
+                  )}
+                </p>
+            </div>
+            <p className="text-xs text-gray-500 truncate">
+              {contact.about || profile?.about || 'No bio available'}
+            </p>
+          </div>
+        </div>
+      );
   };
 
   return (
@@ -86,16 +149,36 @@ export const ContactList: React.FC<ContactListProps> = ({
       <div className="p-4 border-b border-gray-700/50 space-y-3">
         <h2 className="text-lg font-bold text-white flex justify-between items-center">
             Chats
-            <button
-                onClick={() => setIsAdding(!isAdding)}
-                className="p-1.5 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 hover:text-white transition-colors"
-                title="Add Contact"
-            >
-                <PlusIcon className="h-4 w-4" />
-            </button>
+            <div className="flex gap-1">
+                 {onAddAgent && (
+                    <>
+                        <button
+                            onClick={onAddAgent}
+                            className="p-1.5 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 hover:text-white transition-colors"
+                            title="Add Agent"
+                        >
+                            <CpuChipIcon className="h-4 w-4" />
+                        </button>
+                        <button
+                             onClick={() => setIsSwarmModalOpen(true)}
+                             className="p-1.5 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 hover:text-white transition-colors"
+                             title="Deploy Swarm"
+                        >
+                             <UserGroupIcon className="h-4 w-4" />
+                        </button>
+                    </>
+                 )}
+                 <button
+                    onClick={() => setIsAddingContact(!isAddingContact)}
+                    className="p-1.5 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 hover:text-white transition-colors"
+                    title="Add Contact"
+                >
+                    <UserPlusIcon className="h-4 w-4" />
+                </button>
+            </div>
         </h2>
 
-        {isAdding && (
+        {isAddingContact && (
             <div className="animate-fade-in bg-gray-800/50 p-3 rounded-lg border border-gray-700">
                 <form onSubmit={handleAddContact} className="flex flex-col gap-2">
                   <input
@@ -109,7 +192,7 @@ export const ContactList: React.FC<ContactListProps> = ({
                   <div className="flex justify-end gap-2">
                        <button
                         type="button"
-                        onClick={() => setIsAdding(false)}
+                        onClick={() => setIsAddingContact(false)}
                         className="px-3 py-1 text-xs text-gray-400 hover:text-white"
                       >
                         Cancel
@@ -132,7 +215,7 @@ export const ContactList: React.FC<ContactListProps> = ({
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search contacts..."
+                placeholder="Search..."
                 className="w-full bg-gray-800 border border-gray-700 rounded-full py-1.5 pl-9 pr-4 text-sm text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
         </div>
@@ -144,62 +227,47 @@ export const ContactList: React.FC<ContactListProps> = ({
             Loading...
           </div>
         )}
+
+        {/* Agents Section */}
+        {filteredContacts.agents.length > 0 && (
+            <div>
+                <div className="px-4 py-2 bg-gray-900/80 text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2 sticky top-0 backdrop-blur-sm z-10">
+                    <CpuChipIcon className="w-3 h-3" />
+                    My Agents
+                </div>
+                {filteredContacts.agents.map(renderContactItem)}
+            </div>
+        )}
+
+        {/* Contacts Section */}
+        {filteredContacts.others.length > 0 && (
+            <div>
+                 <div className="px-4 py-2 bg-gray-900/80 text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2 sticky top-0 backdrop-blur-sm z-10">
+                    <UserGroupIcon className="w-3 h-3" />
+                    Network
+                </div>
+                {filteredContacts.others.map(renderContactItem)}
+            </div>
+        )}
+
         {!isLoading && contacts.length === 0 && (
           <div className="p-8 text-center text-gray-500 text-sm">
             <p className="mb-2">No contacts yet.</p>
-            <p>Add someone via npub to start chatting.</p>
+            <p>Add someone via npub or create an Agent to start chatting.</p>
           </div>
         )}
-        {filteredContacts.map((contact) => {
-          const profile = contactProfiles[contact.pubkey];
-          const isSelected = selectedContact?.pubkey === contact.pubkey;
-
-          return (
-            <div
-              key={contact.pubkey}
-              onClick={() => onSelectContact(contact)}
-              className={`
-                flex items-center gap-3 p-3 cursor-pointer transition-colors
-                ${isSelected ? 'bg-blue-900/20 border-r-2 border-blue-500' : 'hover:bg-gray-800/50 border-r-2 border-transparent'}
-              `}
-            >
-              <div className="relative">
-                  <img
-                    src={
-                      profile?.picture ||
-                      contact.picture ||
-                      `https://api.dicebear.com/8.x/bottts-neutral/svg?seed=${contact.pubkey}`
-                    }
-                    className="h-10 w-10 rounded-full bg-gray-700 object-cover"
-                  />
-                  {contact.isAgent && (
-                      <div className="absolute -bottom-1 -right-1 bg-gray-900 rounded-full p-0.5 border border-gray-700" title="AI Agent">
-                          <CpuChipIcon className="w-3 h-3 text-green-400" />
-                      </div>
-                  )}
-              </div>
-              <div className="overflow-hidden flex-1 min-w-0">
-                <div className="flex justify-between items-baseline">
-                    <p className={`font-semibold truncate text-sm ${isSelected ? 'text-white' : 'text-gray-200'}`}>
-                      {contact.name || profile?.name || (
-                        (() => {
-                            try {
-                                return formatNpub(nip19.npubEncode(contact.pubkey));
-                            } catch {
-                                return contact.pubkey;
-                            }
-                        })()
-                      )}
-                    </p>
-                </div>
-                <p className="text-xs text-gray-500 truncate">
-                  {contact.about || profile?.about || 'No bio available'}
-                </p>
-              </div>
-            </div>
-          );
-        })}
       </div>
+
+       {onDeploySwarm && (
+            <SwarmModal
+                isOpen={isSwarmModalOpen}
+                onClose={() => setIsSwarmModalOpen(false)}
+                onDeploy={(template) => {
+                    onDeploySwarm(template);
+                    setIsSwarmModalOpen(false);
+                }}
+            />
+        )}
     </div>
   );
 };

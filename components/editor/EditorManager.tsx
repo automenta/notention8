@@ -15,6 +15,7 @@ import { TemplateSelector } from './TemplateSelector';
 import { SaveTemplateModal } from './SaveTemplateModal';
 import { MapPickerModal } from '../map/MapPickerModal';
 import { TimePickerModal } from '../common/TimePickerModal';
+import { EditorMatches } from './EditorMatches';
 
 interface EditorManagerProps {
   note: Note;
@@ -166,6 +167,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
             notes={notes}
             onPickLocation={handleRequestLocationPick}
           />
+          <EditorMatches note={dirtyNote} />
           {isTemplateSelectorOpen && (
               <TemplateSelector
                   ontology={settings.ontology}
