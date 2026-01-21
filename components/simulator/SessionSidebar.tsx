@@ -1,6 +1,7 @@
 import React from 'react';
 import { PlusIcon } from '../layout/icons';
 import type { Note } from '../../types';
+import { Button } from '../common/Button';
 
 interface SessionSidebarProps {
     notes: Note[];
@@ -18,18 +19,25 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
     return (
         <div className="w-48 bg-gray-950 border-r border-gray-800 flex flex-col flex-shrink-0">
             <div className="p-2 border-b border-gray-800">
-                <button
+                <Button
                     onClick={() => {
                         const n = addNote();
                         setActiveNote(n);
                     }}
-                    className="w-full text-xs font-medium bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white py-1.5 rounded transition-colors border border-gray-700 hover:border-gray-600 flex items-center justify-center gap-1.5"
+                    variant="secondary"
+                    size="xs"
+                    className="w-full"
+                    icon={PlusIcon}
                 >
-                    <PlusIcon className="w-3 h-3" />
                     New Note
-                </button>
+                </Button>
             </div>
             <div className="overflow-y-auto flex-1 p-1 space-y-0.5 custom-scrollbar">
+                {notes.length === 0 && (
+                     <div className="flex flex-col items-center justify-center h-32 text-gray-600 gap-2">
+                         <span className="text-[10px] italic">No notes created.</span>
+                     </div>
+                )}
                 {notes.map(note => (
                     <div
                         key={note.id}

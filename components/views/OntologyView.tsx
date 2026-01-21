@@ -5,6 +5,7 @@ import { OntologyNodeItem } from '../ontology/OntologyNodeItem';
 import { OntologyConflicts } from '../ontology/OntologyConflicts';
 import { useView } from '../../hooks/useViewContext';
 import { Tabs } from '../common/Tabs';
+import { Button } from '../common/Button';
 
 export function OntologyView() {
   const {
@@ -44,21 +45,27 @@ export function OntologyView() {
           <div className="flex items-center gap-4 ml-auto">
              {settings.developerMode && (
                 <>
-                  <button
+                  <Button
                     onClick={handleOptimize}
                     disabled={isEvolving}
-                    className="text-xs font-bold uppercase tracking-wider bg-blue-700/80 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors disabled:opacity-50"
+                    isLoading={isEvolving}
+                    variant="primary"
+                    size="xs"
+                    className="bg-blue-700/80 hover:bg-blue-600"
                   >
-                    {isEvolving ? '...' : 'Optimize'}
-                  </button>
+                    Optimize
+                  </Button>
 
-                  <button
+                  <Button
                     onClick={handleEvolve}
                     disabled={isEvolving}
-                    className="text-xs font-bold uppercase tracking-wider bg-green-700/80 hover:bg-green-600 text-white px-3 py-1.5 rounded transition-colors disabled:opacity-50"
+                    isLoading={isEvolving}
+                    variant="success"
+                    size="xs"
+                    className="bg-green-700/80 hover:bg-green-600"
                   >
                     {isEvolving ? 'Gardening...' : 'Run Gardener'}
-                  </button>
+                  </Button>
                 </>
              )}
 
