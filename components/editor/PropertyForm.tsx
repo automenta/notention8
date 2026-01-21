@@ -12,6 +12,7 @@ import { useToast } from '../contexts/ToastContext';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { IconButton } from '../common/IconButton';
+import { Select } from '../common/Select';
 
 interface PropertyFormProps {
   initialKey: string;
@@ -149,17 +150,17 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
               {description}
           </div>
       )}
-      <select
-        className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+      <Select
         value={op}
         onChange={(e) => setOp(e.target.value)}
-      >
-        <option value="is">is (=)</option>
-        <option value="is not">is not (!=)</option>
-        <option value="greater than">greater than (&gt;)</option>
-        <option value="less than">less than (&lt;)</option>
-        <option value="contains">contains</option>
-      </select>
+        options={[
+            { value: 'is', label: 'is (=)' },
+            { value: 'is not', label: 'is not (!=)' },
+            { value: 'greater than', label: 'greater than (>)' },
+            { value: 'less than', label: 'less than (<)' },
+            { value: 'contains', label: 'contains' },
+        ]}
+      />
       <Input
         placeholder="Value (comma separated)"
         value={value}

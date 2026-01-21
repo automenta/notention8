@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSettings } from './useSettingsContext';
 
-export type SettingsTab = 'ai' | 'nostr' | 'data' | 'ontology' | 'simulator';
+export type SettingsTab = 'ai' | 'nostr' | 'data' | 'ontology';
 
 export const useSettingsView = () => {
   const { settings, setSettings } = useSettings();

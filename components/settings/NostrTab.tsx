@@ -9,6 +9,7 @@ import { useToast } from '../contexts/ToastContext';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { IconButton } from '../common/IconButton';
+import { Textarea } from '../common/Textarea';
 
 interface NostrTabProps {
   settings: AppSettings;
@@ -282,12 +283,12 @@ export const NostrTab: React.FC<NostrTabProps> = ({
                     />
                 </div>
                 <div>
-                    <label className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider">About</label>
-                    <textarea
+                    <Textarea
+                        label="About"
                         value={about}
                         onChange={e => setAbout(e.target.value)}
-                        className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder-gray-500 h-24"
                         placeholder="I'm a developer building cool things."
+                        rows={4}
                     />
                 </div>
                 <div>
