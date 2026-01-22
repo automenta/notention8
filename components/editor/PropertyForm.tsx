@@ -81,6 +81,12 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
 
   const handleSave = () => {
       onSave(key, op, value);
+      // Reset form if adding
+      if (isAdding) {
+          setKey('');
+          setOp('is');
+          setValue('');
+      }
   };
 
   return (
@@ -136,7 +142,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
             placeholder="Key (e.g. price)"
             value={key}
             onChange={(e) => setKey(e.target.value)}
-            autoFocus
+            autoFocus={isAdding} // Autofocus only on add
           />
           {type && (
               <span className="absolute right-2 top-3 text-[10px] uppercase bg-gray-700 text-gray-300 px-1 rounded">

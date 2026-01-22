@@ -70,85 +70,6 @@ export function ChatView() {
       deploySwarm(newAgents);
   };
 
-  const handleAssistantCommand = async (content: string) => {
-        const lower = content.toLowerCase();
-
-        // If it's a specific Gardener command, intercept it
-        if (lower.includes('analyze') || lower.includes('evolve')) {
-             // Inject user message first? No, ChatWindow does that visually, but we need to store it?
-             // Actually, sendMessageToAgent stores user message. But here we are bypassing it.
-             // We need to inject user message into our local "systemMessages" state or rely on the fact
-             // that if we use "sendMessageToAgent" it goes into simulator state.
-
-             // BUT: We want to intercept.
-             // Let's manually add the user message to the agentMessages via a trick?
-             // No, let's just use "sendMessageToAgent" for the user message part?
-             // sendMessageToAgent(SELF_AGENT_ID, content) triggers the LLM response loop.
-             // We want to PREVENT the LLM loop if we are handling it.
-
-             // Solution: We manage the "Assistant" messages entirely here if we intercept?
-             // OR, we use a separate state for "Assistant" messages like we did for Gardener?
-             // But "Assistant" is in `agents`, so its messages are in `agentMessages`.
-             // Ideally we write to `agentMessages`.
-             // But `useSimulatorContext` doesn't expose `setAgentMessages`.
-             // It exposes `sendMessageToAgent`.
-
-             // If we can't write to `agentMessages` directly, we might have a problem unifying them
-             // if we want to mix LLM chat and Command results.
-
-             // HACK: We can use `sendMessageToAgent` but maybe we modify `useAgentInteraction` to support
-             // "system" injection? No, that requires changing hooks.
-
-             // ALTERNATIVE: Just use `sendMessageToAgent` for everything, and if the LLM sees "analyze",
-             // it replies "I will analyze...". But the LLM can't call `evolveOntology`.
-
-             // OK, for now, let's keep "Assistant" messages in `agentMessages` (via `sendMessageToAgent`)
-             // AND inject the "Command Result" as a fake response from the agent?
-             // But `sendMessageToAgent` forces an LLM response.
-
-             // Let's use the `systemMessages` state I added above as an OVERLAY or replacement?
-             // No, that splits history.
-
-             // Let's look at `sendMessageToAgent` in `useAgentInteraction`.
-             // It adds the user message immediately.
-             // Then it waits 1s and adds the agent response.
-
-             // If I call `sendMessageToAgent` with a special prefix or something? No.
-
-             // Maybe I should just modify `useAgentInteraction` to allow passing a custom response handler?
-             // That seems too complex for this step.
-
-             // Simpler approach:
-             // When sending to Assistant:
-             // 1. If it's a command, handle it locally and add messages to a local state `assistantOverrides`.
-             // 2. Render `agentMessages[SELF_AGENT_ID]` merged with `assistantOverrides`.
-             // 3. But `sendMessageToAgent` is the only way to add the USER message to `agentMessages`.
-
-             // Let's just use a local state for the Assistant's conversation view entirely?
-             // No, then we lose the persistence/context if the user switches away.
-
-             // Wait, `sendMessageToAgent` is just:
-             // setAgentMessages(prev => { ... add user msg ... })
-             // setTimeout( ... add agent msg ... )
-
-             // If I use `sendMessageToAgent`, I get an LLM response.
-             // Maybe I can let the LLM respond "Sure, analyzing..." and THEN I inject the actual result?
-             // But I can't inject into `agentMessages` from here.
-
-             // I MUST allow injecting messages into `agentMessages` from outside.
-             // But `useSimulatorContext` doesn't expose `setAgentMessages` or `injectMessage`.
-
-             // Let's look at `hooks/simulator/useSimulator.ts` again.
-             // It returns `...useAgentInteraction(...)`.
-             // `useAgentInteraction` returns `agentMessages` and `sendMessageToAgent`.
-             // It does NOT return `setAgentMessages`.
-
-             // I should expose `injectAgentMessage` from `useAgentInteraction`.
-
-             return; // I need to modify useAgentInteraction first if I want to do this properly.
-        }
-  }
-
   // Merge Agent Contacts
   const agentContacts: Contact[] = agents.map(a => ({
       pubkey: a.id,
@@ -173,17 +94,6 @@ export function ChatView() {
       displayMessages = [...(agentMessages[fullSelectedContact.pubkey] || [])];
       if (fullSelectedContact.pubkey === SELF_AGENT_ID) {
           // Merge in any local system overrides if we implement that
-          // For now, let's assume we can't easily mixed them without modifying hooks.
-          // So let's modify the hooks in the next step?
-          // Or just do a workaround:
-          // If it's a command, we DON'T call sendMessageToAgent. We manage the WHOLE conversation locally for the Assistant?
-          // But then we lose the "Notention AI" simulation background stuff.
-
-          // Let's look at `systemMessages`. If I use that for the Assistant,
-          // I can just append it to `displayMessages`?
-          // But `displayMessages` comes from `agentMessages`.
-          // If I don't call `sendMessageToAgent`, the user message isn't in `agentMessages`.
-          // So I have to put the user message in `systemMessages` too.
           displayMessages = [...displayMessages, ...systemMessages].sort((a,b) => a.created_at - b.created_at);
       }
   } else {

@@ -1,24 +1,24 @@
 import React from 'react';
 import {
-    PlusCircleIcon,
-    PencilIcon,
-    TagIcon,
-    DownloadIcon,
-    ClipboardIcon,
-    HelpIcon,
-    CubeTransparentIcon
+  CodeBracketsIcon,
+  DocumentDuplicateIcon,
+  EditIcon,
+  TagIcon,
+  HelpIcon,
+  ChevronUpIcon,
+  ChevronDownIcon
 } from '../layout/icons';
 import { IconButton } from '../common/IconButton';
 
 interface EditorToolbarProps {
     onSaveTemplate?: () => void;
     onToggleToolbar?: () => void;
-    isToolbarVisible?: boolean;
+    isToolbarVisible: boolean;
     onToggleTags: () => void;
     isTagInputVisible: boolean;
     onExport?: () => void;
     onCopyContent?: () => void;
-    onOpenHelp: () => void;
+    onOpenHelp?: () => void;
     onToggleInspector?: () => void;
     isInspectorOpen?: boolean;
 }
@@ -29,89 +29,69 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
     isToolbarVisible,
     onToggleTags,
     isTagInputVisible,
-    onExport,
     onCopyContent,
     onOpenHelp,
     onToggleInspector,
     isInspectorOpen
 }) => {
     return (
-        <div className="hidden md:flex items-center gap-0.5 bg-gray-800/30 rounded-lg p-0.5 border border-gray-700/30">
+        <div className="flex items-center gap-1 border-r border-gray-700/50 pr-2 mr-2">
+            {onToggleToolbar && (
+                <IconButton
+                    onClick={onToggleToolbar}
+                    title={isToolbarVisible ? "Hide Formatting Toolbar" : "Show Formatting Toolbar"}
+                    icon={isToolbarVisible ? ChevronUpIcon : ChevronDownIcon}
+                    variant="ghost"
+                    size="sm"
+                    className="hidden md:flex"
+                />
+            )}
+             <IconButton
+                onClick={onToggleTags}
+                title="Tags"
+                icon={TagIcon}
+                variant="ghost"
+                isActive={isTagInputVisible}
+                size="sm"
+             />
+             {onToggleInspector && (
+                 <IconButton
+                    onClick={onToggleInspector}
+                    title="Toggle Property Inspector"
+                    icon={CodeBracketsIcon}
+                    variant="ghost"
+                    isActive={isInspectorOpen}
+                    size="sm"
+                 />
+             )}
             {onSaveTemplate && (
                 <IconButton
                     onClick={onSaveTemplate}
                     title="Save as Template"
-                    icon={PlusCircleIcon}
-                    size="md"
+                    icon={DocumentDuplicateIcon}
                     variant="ghost"
-                    className="rounded-md"
+                    size="sm"
                 />
             )}
-
-            {onToggleToolbar && (
-                <IconButton
-                    onClick={onToggleToolbar}
-                    title={isToolbarVisible ? "Hide Toolbar" : "Show Formatting Toolbar"}
-                    icon={PencilIcon}
-                    size="md"
-                    variant="ghost"
-                    isActive={isToolbarVisible}
-                    className="rounded-md"
-                />
-            )}
-
-            <IconButton
-                onClick={onToggleTags}
-                title={isTagInputVisible ? "Hide Tags" : "Add/Edit Tags"}
-                icon={TagIcon}
-                size="md"
-                variant="ghost"
-                isActive={isTagInputVisible}
-                className="rounded-md"
-            />
-
-            {onExport && (
-                <IconButton
-                    onClick={onExport}
-                    title="Export JSON"
-                    icon={DownloadIcon}
-                    size="md"
-                    variant="ghost"
-                    className="rounded-md"
-                />
-            )}
-
-            {onCopyContent && (
+             {onCopyContent && (
                 <IconButton
                     onClick={onCopyContent}
                     title="Copy Content"
-                    icon={ClipboardIcon}
-                    size="md"
+                    icon={EditIcon}
                     variant="ghost"
-                    className="rounded-md"
+                    size="sm"
+                    className="hidden md:flex"
                 />
             )}
-
-            <IconButton
-                onClick={onOpenHelp}
-                title="Help & Syntax"
-                icon={HelpIcon}
-                size="md"
-                variant="ghost"
-                className="rounded-md"
-            />
-
-            {onToggleInspector && (
-                <IconButton
-                    onClick={onToggleInspector}
-                    title={isInspectorOpen ? "Hide Properties" : "Show Properties"}
-                    icon={CubeTransparentIcon}
-                    size="md"
+             {onOpenHelp && (
+                 <IconButton
+                    onClick={onOpenHelp}
+                    title="Help & Shortcuts"
+                    icon={HelpIcon}
                     variant="ghost"
-                    isActive={isInspectorOpen}
-                    className="rounded-md"
+                    size="sm"
                 />
-            )}
+             )}
         </div>
     );
 };
