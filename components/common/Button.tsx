@@ -9,6 +9,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   isLoading?: boolean;
   tooltip?: string;
   tooltipPosition?: 'top' | 'bottom' | 'left' | 'right';
+  containerClassName?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -22,6 +23,7 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   tooltip,
   tooltipPosition = 'top',
+  containerClassName,
   ...props
 }) => {
   const baseClasses = "font-medium rounded-lg transition-all duration-200 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-gray-900";
@@ -69,7 +71,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   if (tooltip) {
     return (
-      <Tooltip content={tooltip} position={tooltipPosition}>
+      <Tooltip content={tooltip} position={tooltipPosition} className={containerClassName}>
         {button}
       </Tooltip>
     );

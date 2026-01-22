@@ -46,7 +46,7 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
                 icon={PlusIcon}
                 variant="primary"
                 size="lg"
-                className="flex-shrink-0"
+                containerClassName="flex-shrink-0"
             />
         </div>
 

@@ -15,10 +15,17 @@ interface TabsProps {
 
 export function Tabs({ tabs, activeTab, onChange, className = '' }: TabsProps) {
   return (
-    <div className={`flex bg-gray-900 rounded-lg p-1 ${className}`}>
+    <div
+        className={`flex bg-gray-900 rounded-lg p-1 ${className}`}
+        role="tablist"
+    >
       {tabs.map((tab) => (
         <button
           key={tab.id}
+          role="tab"
+          aria-selected={activeTab === tab.id}
+          aria-controls={`panel-${tab.id}`}
+          id={`tab-${tab.id}`}
           onClick={() => onChange(tab.id)}
           className={`
             px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-2

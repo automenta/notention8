@@ -8,6 +8,7 @@ export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
   size?: 'xs' | 'sm' | 'md' | 'lg';
   tooltip?: string;
   tooltipPosition?: 'top' | 'bottom' | 'left' | 'right';
+  containerClassName?: string;
 }
 
 export const IconButton: React.FC<IconButtonProps> = ({
@@ -20,6 +21,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
   title,
   tooltip,
   tooltipPosition = 'top',
+  containerClassName,
   ...props
 }) => {
   const baseClasses = "rounded-lg transition-all duration-200 flex items-center justify-center";
@@ -76,7 +78,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
 
   if (tooltip) {
     return (
-      <Tooltip content={tooltip} position={tooltipPosition}>
+      <Tooltip content={tooltip} position={tooltipPosition} className={containerClassName}>
         {button}
       </Tooltip>
     );

@@ -42,26 +42,31 @@ export const DailyPromptWidget: React.FC<DailyPromptWidgetProps> = ({ onUsePromp
   return (
     <Card
         variant="gradient"
-        className="relative overflow-hidden group border-blue-800/30"
+        className="relative group border-blue-800/30"
         title={title}
         headerAction={headerAction}
     >
-         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
-             <SparklesIcon className="w-24 h-24" />
+         {/* Background sparkles container with overflow hidden */}
+         <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none z-0">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <SparklesIcon className="w-24 h-24" />
+            </div>
          </div>
 
-         <p className="text-xl md:text-2xl font-bold text-white mb-6 relative z-10 min-h-[4rem] animate-fade-in">
-             &quot;{prompt}&quot;
-         </p>
-         <Button
-            onClick={() => onUsePrompt(prompt)}
-            variant="primary"
-            size="md"
-            icon={PencilIcon}
-            className="shadow-lg shadow-blue-900/20 relative z-10"
-         >
-             Write about this
-         </Button>
+         <div className="relative z-10">
+            <p className="text-xl md:text-2xl font-bold text-white mb-6 min-h-[4rem] animate-fade-in">
+                &quot;{prompt}&quot;
+            </p>
+            <Button
+                onClick={() => onUsePrompt(prompt)}
+                variant="primary"
+                size="md"
+                icon={PencilIcon}
+                className="shadow-lg shadow-blue-900/20"
+            >
+                Write about this
+            </Button>
+         </div>
     </Card>
   );
 };

@@ -16,7 +16,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({ label,
       )}
       <textarea
         ref={ref}
-        className={`w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder-gray-500 disabled:opacity-50 disabled:cursor-not-allowed custom-scrollbar ${error ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/50' : ''}`}
+        className={`
+            w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white
+            focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50
+            transition-all placeholder-gray-500 disabled:opacity-50 disabled:cursor-not-allowed custom-scrollbar
+            ${error ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/50' : ''}
+        `}
         {...props}
       />
       {error && (

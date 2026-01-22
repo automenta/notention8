@@ -195,6 +195,7 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
             key={item.view}
             icon={item.icon}
             label={item.label}
+            tooltip={item.label}
             isActive={activeView === item.view}
             onClick={() => handleNavClick(item.view)}
             badgeCount={item.badgeCount}
@@ -207,6 +208,7 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
         <NavButton
           icon={<SettingsIcon />}
           label="Settings"
+          tooltip="Settings"
           isActive={activeView === 'settings'}
           onClick={() => setActiveView('settings')}
         />
