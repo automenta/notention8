@@ -1,10 +1,11 @@
 import React, { useRef } from 'react';
-import { TrashIcon, DocumentDuplicateIcon } from '../layout/icons';
+import { TrashIcon, DocumentDuplicateIcon, ArrowDownIcon, ArrowUpIcon } from '../layout/icons';
 import { useNotes } from '../../hooks/useNotes';
 import { useSettings } from '../../hooks/useSettingsContext';
 import { useToast } from '../../hooks/useToast';
 import localforage from 'localforage';
 import type { Note } from '../../types';
+import { Button } from '../common/Button';
 
 export const DataTab: React.FC = () => {
   const { notes } = useNotes(); // We need raw data access, useNotes gives notes from state which is synced with localforage on load.
@@ -94,19 +95,21 @@ export const DataTab: React.FC = () => {
             Backup & Restore
           </h2>
           <div className="flex gap-4">
-              <button
+              <Button
                 onClick={handleExport}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium flex items-center gap-2"
+                variant="primary"
+                icon={ArrowDownIcon}
               >
                   Export Data (JSON)
-              </button>
+              </Button>
 
-              <button
+              <Button
                 onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded font-medium flex items-center gap-2"
+                variant="secondary"
+                icon={ArrowUpIcon}
               >
                   Import Data (JSON)
-              </button>
+              </Button>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -129,8 +132,9 @@ export const DataTab: React.FC = () => {
             Your notes and settings are stored locally in your browser&apos;s
             IndexedDB. Clearing data is irreversible.
         </p>
-        <button
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-red-500 flex items-center gap-2"
+        <Button
+            variant="danger"
+            icon={TrashIcon}
             onClick={() => {
             if (
                 window.confirm(
@@ -143,8 +147,8 @@ export const DataTab: React.FC = () => {
             }
             }}
         >
-            <TrashIcon className="h-5 w-5" /> Clear All Local Data
-        </button>
+            Clear All Local Data
+        </Button>
       </div>
     </div>
   );

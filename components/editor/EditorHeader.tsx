@@ -5,6 +5,7 @@ import { HelpModal } from '../common/HelpModal';
 import { EditorNavigation } from './EditorNavigation';
 import { EditorToolbar } from './EditorToolbar';
 import { EditorNetworkActions } from './EditorNetworkActions';
+import { IconButton } from '../common/IconButton';
 
 interface EditorHeaderProps {
   title: string;
@@ -76,13 +77,14 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
     <div className="flex-shrink-0 bg-gray-900 border-b border-gray-700/50">
       <div className="flex items-center gap-3 p-3">
         {onBack && (
-             <button
-                onClick={onBack}
-                className="md:hidden p-2 text-gray-200 hover:text-white bg-gray-800/50 hover:bg-gray-800 transition-colors rounded-lg mr-1"
-                title="Back to List"
-            >
-                <ArrowLeftIcon className="h-5 w-5" />
-            </button>
+            <div className="md:hidden mr-1">
+                <IconButton
+                    onClick={onBack}
+                    title="Back to List"
+                    icon={ArrowLeftIcon}
+                    variant="secondary"
+                />
+            </div>
         )}
 
         <div className="flex-grow min-w-0 flex items-center">
