@@ -70,26 +70,17 @@ export const TimelineWidget = () => {
     };
 
     const handleCreateEvent = () => {
-        const newNote = addNote({ title: 'New Event' });
         // Add a default deadline for tomorrow
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         tomorrow.setHours(9, 0, 0, 0); // 9 AM
 
-        const dateStr = tomorrow.toISOString().slice(0, 16).replace('T', ' '); // Simple format
+        const dateStr = tomorrow.toISOString().slice(0, 16).replace('T', ' ');
+        const displayDate = tomorrow.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+        const title = `Event - ${displayDate}`;
+        const content = `${title}\n[date:is:${dateStr}]`;
 
-        // We need to parse this properly or just inject the text.
-        // Let's inject text.
-        const content = `New Event\n[date:is:${dateStr}]`;
-
-        // We also need to update properties manually if we bypass the editor
-        // But the system should parse it. The parser is in 'utils/parsing'.
-        // Let's just set content and let the user save or let the system handle it?
-        // Actually `updateNote` takes `properties`. Ideally we use `parseProperties`.
-        // But for now let's just create the note and open it. The parsing happens on save in Editor.
-        // Wait, `DashboardView` uses `parseProperties`. Let's grab it.
-        // But I don't want to add too many deps.
-        // Let's just set the content and open it. The editor will parse it when loaded/saved.
+        const newNote = addNote({ title });
 
         updateNote({
             ...newNote,

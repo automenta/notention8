@@ -41,9 +41,10 @@ def verify_dashboard(page: Page):
     page.wait_for_timeout(2000)
 
     # Expect to be in Editor (Notes view)
-    # Check that we see "New Event" which is the title of the created note
-    # Use first=True to pick the first one (likely sidebar or header) or target the editor content
-    expect(page.locator(".ProseMirror").get_by_text("New Event")).to_be_visible()
+    # Check that we see "Event -" which is the start of the title of the created note
+    # The title is now dynamic like "Event - Sat, Jan 1"
+    # So we check for partial text
+    expect(page.locator(".ProseMirror").get_by_text("Event -")).to_be_visible()
 
     page.screenshot(path="/home/jules/verification/created_event.png")
     print("Event created successfully.")
