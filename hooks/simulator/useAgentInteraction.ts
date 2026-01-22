@@ -11,6 +11,8 @@ interface UseAgentInteractionProps {
     addLog: (msg: string, type: 'info' | 'match' | 'ontology' | 'reuse') => void;
 }
 
+import { useRef, useEffect } from 'react';
+
 export function useAgentInteraction({
     agentsRef,
     aiRef,
@@ -18,6 +20,11 @@ export function useAgentInteraction({
     addLog
 }: UseAgentInteractionProps) {
     const [agentMessages, setAgentMessages] = useState<Record<string, (NostrEvent & { content: string })[]>>({});
+    const messagesRef = useRef(agentMessages);
+
+    useEffect(() => {
+        messagesRef.current = agentMessages;
+    }, [agentMessages]);
 
     const clearAgentMessages = useCallback((agentId: string) => {
         setAgentMessages(prev => {
@@ -72,31 +79,50 @@ export function useAgentInteraction({
             // Try to use AI if available
             if (aiRef.current) {
                 try {
-                    // 1. Intent Classification: Is the user setting a new goal?
-                    const intentPrompt = `
-                        Analyze the following user message to an agent.
-                        User Message: "${content}"
-                        Agent Name: ${agent.name}
-                        Current Goal: ${agent.goal}
+                    const history = (messagesRef.current[agentId] || [])
+                        .map(m => `${m.pubkey === 'user' ? 'User' : 'Agent'}: ${m.content}`)
+                        .join('\n');
 
-                        Does the user explicitly instruct the agent to change their goal or work on something specific?
-                        If yes, reply with "GOAL: <new_goal_summary>".
-                        If no, reply with "CHAT".
-                    `;
-                    const intent = await aiRef.current.generateCompletion(intentPrompt);
-
-                    if (intent.includes("GOAL:")) {
-                        const newGoal = intent.split("GOAL:")[1].trim();
-                        updateAgent(agentsRef.current.findIndex(a => a.id === agentId), { goal: newGoal });
-                        addLog(`🎯 Agent ${agent.name} new goal: ${newGoal}`, 'match');
-
+                    // Quick Action Handlers
+                    if (content.startsWith("Analyze the intent")) {
                         responseText = await aiRef.current.generateCompletion(
-                            `You are ${agent.name}. ${agent.persona}\nUser instructed you to: "${newGoal}".\nReply confirming you will do this.`
+                            `You are an expert systems analyst. The user sent this message: "${content}".\n\nAnalyze the following conversation history and explain what the user seems to want efficiently:\n\n${history}`
+                        );
+                    } else if (content.startsWith("Suggest semantic tags")) {
+                        responseText = await aiRef.current.generateCompletion(
+                            `You are an ontology expert. Suggest 5 semantic tags (e.g. #topic or [key:value]) relevant to the following conversation context:\n\n${history}`
+                        );
+                    } else if (content.startsWith("Summarize")) {
+                         responseText = await aiRef.current.generateCompletion(
+                            `Summarize the key points of this conversation so far in 3 bullet points:\n\n${history}`
                         );
                     } else {
-                        responseText = await aiRef.current.generateCompletion(
-                            `You are ${agent.name}. ${agent.persona}\nUser said: "${content}".\nReply naturally and briefly as if in a chat.`
-                        );
+                        // 1. Intent Classification: Is the user setting a new goal?
+                        const intentPrompt = `
+                            Analyze the following user message to an agent.
+                            User Message: "${content}"
+                            Agent Name: ${agent.name}
+                            Current Goal: ${agent.goal}
+
+                            Does the user explicitly instruct the agent to change their goal or work on something specific?
+                            If yes, reply with "GOAL: <new_goal_summary>".
+                            If no, reply with "CHAT".
+                        `;
+                        const intent = await aiRef.current.generateCompletion(intentPrompt);
+
+                        if (intent.includes("GOAL:")) {
+                            const newGoal = intent.split("GOAL:")[1].trim();
+                            updateAgent(agentsRef.current.findIndex(a => a.id === agentId), { goal: newGoal });
+                            addLog(`🎯 Agent ${agent.name} new goal: ${newGoal}`, 'match');
+
+                            responseText = await aiRef.current.generateCompletion(
+                                `You are ${agent.name}. ${agent.persona}\nUser instructed you to: "${newGoal}".\nReply confirming you will do this.`
+                            );
+                        } else {
+                            responseText = await aiRef.current.generateCompletion(
+                                `You are ${agent.name}. ${agent.persona}\nUser said: "${content}".\nReply naturally and briefly as if in a chat.`
+                            );
+                        }
                     }
                 } catch (e) {
                     console.error("AI generation failed", e);

@@ -13,9 +13,10 @@ interface UseTiptapConfigProps {
     minimal?: boolean;
     notes?: Note[];
     onOpenPropertyModal?: (key: string) => void;
+    onMagic?: () => void;
 }
 
-export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], minimal, notes = [], onOpenPropertyModal }: UseTiptapConfigProps) => {
+export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], minimal, notes = [], onOpenPropertyModal, onMagic }: UseTiptapConfigProps) => {
   const { allTags, allProperties } = useOntologyIndex(ontology);
 
   // Use ref to access latest notes in callbacks without re-initializing editor
@@ -87,7 +88,8 @@ export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], m
         allTags,
         getNotes, // Changed this
         templates,
-        onOpenPropertyModal
+        onOpenPropertyModal,
+        onMagic
     }),
     content: sanitizeHTML(content),
     editorProps: {

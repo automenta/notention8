@@ -71,7 +71,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(({
       templates,
       minimal,
       notes,
-      onOpenPropertyModal: handleOpenPropertyModal
+      onOpenPropertyModal: handleOpenPropertyModal,
+      onMagic
   });
 
   // Sync content from parent
