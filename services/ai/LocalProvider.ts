@@ -157,18 +157,18 @@ export class LocalAIProvider implements AIProvider {
       }
 
       // Intent (Request/Offer)
-      if (lowerText.includes('looking for') || lowerText.includes('want to buy') || lowerText.includes('need') || lowerText.includes('hiring')) {
-          properties.add(`[intent:is:request]`);
-      } else if (lowerText.includes('selling') || lowerText.includes('offering') || lowerText.includes('available for') || lowerText.includes('i am a')) {
-          properties.add(`[intent:is:offer]`);
-      }
+      // We rely on Indefinite properties to imply Request, but explicit tags help for now.
+      // However, per user request, we want to guide them to use properties.
+      // If "looking for", we try to extract indefinite properties.
 
       // Role Extraction (Heuristic)
       const roleReqMatch = text.match(/(?:looking for|hiring|need) (?:a|an)\s+([a-zA-Z\s]+?)(?=(?:[\.,]|\s+(?:for|in|to|with)|$))/i);
       if (roleReqMatch) {
           const role = roleReqMatch[1].trim();
-          if (role.split(' ').length < 4) { // Avoid capturing long sentences
-              properties.add(`[role:is:${role}]`);
+          if (role.split(' ').length < 4) {
+              // "Looking for" implies we want something containing this role description
+              // Use 'contains' to mark it as Indefinite (Imaginary/Request)
+              properties.add(`[role:contains:${role}]`);
           }
       }
 
