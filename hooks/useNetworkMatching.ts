@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
-import type { Note } from '../types';
+import type { Note, Property } from '../types';
 import { matchNotes } from '../utils/matching';
 
 export interface MatchResult {
     source: Note;
     target: Note;
     score: number;
+    satisfied?: Property[];
 }
 
 export function useNetworkMatching(networkNotes: Note[]) {
@@ -21,9 +22,9 @@ export function useNetworkMatching(networkNotes: Note[]) {
                 // Explicitly prevent self-matching if ID check failed
                 if (source.id === target.id) continue;
 
-                const score = matchNotes(source, target);
-                if (score > 0.5) {
-                    found.push({ source, target, score });
+                const result = matchNotes(source, target);
+                if (result.score > 0.5) {
+                    found.push({ source, target, score: result.score, satisfied: result.satisfied });
                 }
             }
         }

@@ -100,8 +100,8 @@ export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
     if (matchAgainst) {
         return filtered.map(event => {
             const offerNote: Note = convertEventToNote(event);
-            const score = matchNotes(matchAgainst, offerNote) * 100;
-            return { event, score };
+            const matchDetails = matchNotes(matchAgainst, offerNote);
+            return { event, score: matchDetails.score * 100, details: matchDetails };
         })
         .sort((a, b) => b.score - a.score)
         .map(item => {

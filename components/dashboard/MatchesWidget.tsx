@@ -97,6 +97,18 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
                                                         {match.event.pubkey.slice(0, 8)}...
                                                     </span>
                                                 </div>
+                                                {match.satisfied && match.satisfied.length > 0 && (
+                                                    <div className="mt-1 flex flex-wrap gap-1">
+                                                        {match.satisfied.slice(0, 2).map((p, i) => (
+                                                            <span key={i} className="text-[10px] px-1 py-0.5 rounded bg-green-900/30 text-green-300 border border-green-900/50">
+                                                                ✅ {p.key}
+                                                            </span>
+                                                        ))}
+                                                        {match.satisfied.length > 2 && (
+                                                            <span className="text-[10px] text-gray-500">+{match.satisfied.length - 2}</span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))}

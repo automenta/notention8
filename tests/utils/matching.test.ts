@@ -16,25 +16,25 @@ describe('matchNotes', () => {
   it('matches exact real property', () => {
     const req = createNote([{ key: 'role', operator: 'is', values: ['Engineer'] }]);
     const offer = createNote([{ key: 'role', operator: 'is', values: ['Engineer'] }]);
-    expect(matchNotes(req, offer)).toBe(1);
+    expect(matchNotes(req, offer).score).toBe(1);
   });
 
   it('fails mismatch real property', () => {
     const req = createNote([{ key: 'role', operator: 'is', values: ['Engineer'] }]);
     const offer = createNote([{ key: 'role', operator: 'is', values: ['Designer'] }]);
-    expect(matchNotes(req, offer)).toBe(0);
+    expect(matchNotes(req, offer).score).toBe(0);
   });
 
   it('matches numeric constraint (less than)', () => {
     const req = createNote([{ key: 'price', operator: 'less than', values: ['100'] }]);
     const offer = createNote([{ key: 'price', operator: 'is', values: ['50'] }]);
-    expect(matchNotes(req, offer)).toBe(1);
+    expect(matchNotes(req, offer).score).toBe(1);
   });
 
   it('fails numeric constraint (less than)', () => {
     const req = createNote([{ key: 'price', operator: 'less than', values: ['100'] }]);
     const offer = createNote([{ key: 'price', operator: 'is', values: ['150'] }]);
-    expect(matchNotes(req, offer)).toBe(0);
+    expect(matchNotes(req, offer).score).toBe(0);
   });
 
   it('calculates partial match score', () => {
@@ -50,6 +50,6 @@ describe('matchNotes', () => {
     // In matchNotes, we iterate *constraints*.
     // Here both are constraints (is is also checked).
     // 1 match out of 2 = 0.5
-    expect(matchNotes(req, offer)).toBe(0.5);
+    expect(matchNotes(req, offer).score).toBe(0.5);
   });
 });

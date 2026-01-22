@@ -1,6 +1,12 @@
 import type { Note, Property } from '../types';
 import { parseGeo, haversineDistance } from './spacetime';
 
+export interface MatchResultDetails {
+    score: number;
+    satisfied: Property[];
+    failed: Property[];
+}
+
 /**
  * Calculates a match score between a Request Note (Query) and an Offer Note (Target).
  *
@@ -13,23 +19,30 @@ import { parseGeo, haversineDistance } from './spacetime';
  *
  * Score = (Satisfied Constraints) / (Total Constraints)
  */
-export const matchNotes = (request: Note, offer: Note): number => {
+export const matchNotes = (request: Note, offer: Note): MatchResultDetails => {
   // All properties in the request are constraints to be satisfied
   const constraints = request.properties;
 
   if (constraints.length === 0) {
-    return 0;
+    return { score: 0, satisfied: [], failed: [] };
   }
 
-  let matches = 0;
+  const satisfied: Property[] = [];
+  const failed: Property[] = [];
 
   for (const constraint of constraints) {
     if (checkConstraint(constraint, offer)) {
-      matches++;
+      satisfied.push(constraint);
+    } else {
+        failed.push(constraint);
     }
   }
 
-  return matches / constraints.length;
+  return {
+      score: satisfied.length / constraints.length,
+      satisfied,
+      failed
+  };
 };
 
 export const checkConstraint = (constraint: Property, target: Note): boolean => {
