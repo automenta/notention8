@@ -2,37 +2,44 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { NetworkFeedHeader } from '../../components/network/NetworkFeedHeader';
+import { OntologyNode } from '../../types';
 
 describe('NetworkFeedHeader', () => {
     const mockSetFilter = vi.fn();
-    const mockSetIntentFilter = vi.fn();
+    const mockSetActiveFilterId = vi.fn();
     const mockOnClearMatch = vi.fn();
+
+    const mockOntology: OntologyNode[] = [
+        { id: 'work', label: 'Work', children: [] },
+        { id: 'event', label: 'Event', children: [] }
+    ];
 
     const defaultProps = {
         filter: '',
         setFilter: mockSetFilter,
         sortedEvents: [],
         onClearMatch: mockOnClearMatch,
-        intentFilter: 'all' as const,
-        setIntentFilter: mockSetIntentFilter
+        ontology: mockOntology,
+        activeFilterId: 'all',
+        setActiveFilterId: mockSetActiveFilterId
     };
 
-    it('renders intent filter buttons', () => {
+    it('renders intent filter buttons based on ontology', () => {
         render(<NetworkFeedHeader {...defaultProps} />);
 
         expect(screen.getByText('All')).toBeInTheDocument();
-        expect(screen.getByText('Requests')).toBeInTheDocument();
-        expect(screen.getByText('Offers')).toBeInTheDocument();
+        expect(screen.getByText('Work')).toBeInTheDocument();
+        expect(screen.getByText('Event')).toBeInTheDocument();
     });
 
-    it('calls setIntentFilter when a filter button is clicked', () => {
+    it('calls setActiveFilterId when a filter button is clicked', () => {
         render(<NetworkFeedHeader {...defaultProps} />);
 
-        fireEvent.click(screen.getByText('Requests'));
-        expect(mockSetIntentFilter).toHaveBeenCalledWith('request');
+        fireEvent.click(screen.getByText('Work'));
+        expect(mockSetActiveFilterId).toHaveBeenCalledWith('work');
 
-        fireEvent.click(screen.getByText('Offers'));
-        expect(mockSetIntentFilter).toHaveBeenCalledWith('offer');
+        fireEvent.click(screen.getByText('Event'));
+        expect(mockSetActiveFilterId).toHaveBeenCalledWith('event');
     });
 
     it('updates search input', () => {

@@ -58,6 +58,28 @@ export const addNode = (
   return newTree;
 };
 
+// --- Traversal Operations ---
+
+/**
+ * Returns a set of all property keys defined within the subtree of a given node.
+ */
+export const getSubtreeKeys = (node: OntologyNode): Set<string> => {
+    const keys = new Set<string>();
+
+    if (node.attributes) {
+        Object.keys(node.attributes).forEach(k => keys.add(k));
+    }
+
+    if (node.children) {
+        node.children.forEach(child => {
+            const childKeys = getSubtreeKeys(child);
+            childKeys.forEach(k => keys.add(k));
+        });
+    }
+
+    return keys;
+};
+
 export const deleteNode = (tree: OntologyNode[], nodeId: string): OntologyNode[] => {
   // Filter from root or recursive children
   const filterNodes = (nodes: OntologyNode[]): OntologyNode[] => {

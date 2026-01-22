@@ -5,6 +5,7 @@ import { IconButton } from '../common/IconButton';
 import { Input } from '../common/Input';
 
 import { Button } from '../common/Button';
+import type { OntologyNode } from '../../types';
 
 interface NetworkFeedHeaderProps {
     matchAgainstTitle?: string;
@@ -12,8 +13,9 @@ interface NetworkFeedHeaderProps {
     filter: string;
     setFilter: (filter: string) => void;
     sortedEvents: NostrEvent[];
-    intentFilter?: 'all' | 'request' | 'offer';
-    setIntentFilter?: (val: 'all' | 'request' | 'offer') => void;
+    ontology?: OntologyNode[];
+    activeFilterId?: string;
+    setActiveFilterId?: (id: string) => void;
 }
 
 export const NetworkFeedHeader: React.FC<NetworkFeedHeaderProps> = ({
@@ -22,8 +24,9 @@ export const NetworkFeedHeader: React.FC<NetworkFeedHeaderProps> = ({
     filter,
     setFilter,
     sortedEvents,
-    intentFilter = 'all',
-    setIntentFilter
+    ontology,
+    activeFilterId = 'all',
+    setActiveFilterId
 }) => {
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
@@ -45,26 +48,23 @@ export const NetworkFeedHeader: React.FC<NetworkFeedHeaderProps> = ({
             </div>
 
             <div className="flex flex-col md:flex-row items-end md:items-center gap-3 w-full md:w-auto">
-                 {setIntentFilter && (
-                    <div className="flex bg-gray-900 rounded-lg p-1 border border-gray-700">
+                 {setActiveFilterId && ontology && (
+                    <div className="flex bg-gray-900 rounded-lg p-1 border border-gray-700 overflow-x-auto max-w-xs md:max-w-md custom-scrollbar">
                         <button
-                            onClick={() => setIntentFilter('all')}
-                            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${intentFilter === 'all' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
+                            onClick={() => setActiveFilterId('all')}
+                            className={`whitespace-nowrap px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeFilterId === 'all' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
                         >
                             All
                         </button>
-                        <button
-                            onClick={() => setIntentFilter('request')}
-                            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${intentFilter === 'request' ? 'bg-purple-900/50 text-purple-200 shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
-                        >
-                            Requests
-                        </button>
-                        <button
-                            onClick={() => setIntentFilter('offer')}
-                            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${intentFilter === 'offer' ? 'bg-green-900/50 text-green-200 shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
-                        >
-                            Offers
-                        </button>
+                        {ontology.map(node => (
+                            <button
+                                key={node.id}
+                                onClick={() => setActiveFilterId(node.id)}
+                                className={`whitespace-nowrap px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeFilterId === node.id ? 'bg-blue-900/50 text-blue-200 shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
+                            >
+                                {node.label}
+                            </button>
+                        ))}
                     </div>
                 )}
                 <Input

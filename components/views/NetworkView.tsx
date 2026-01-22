@@ -13,6 +13,8 @@ interface NetworkViewProps {
 }
 
 import { useState, useMemo } from 'react';
+import { getSubtreeKeys, findNode } from '../../utils/ontologyHelpers';
+import { parseProperties } from '../../utils/parsing';
 
 export function NetworkView({ matchAgainst }: NetworkViewProps) {
   const {
@@ -29,26 +31,32 @@ export function NetworkView({ matchAgainst }: NetworkViewProps) {
     forkNote,
   } = useNetworkView({ matchAgainst });
 
-  const [intentFilter, setIntentFilter] = useState<'all' | 'request' | 'offer'>('all');
+  const [activeFilterId, setActiveFilterId] = useState<string>('all');
+
+  // Derive top-level categories from ontology
+  const rootCategories = useMemo(() => {
+      return settings.ontology || [];
+  }, [settings.ontology]);
 
   const filteredEvents = useMemo(() => {
-      if (intentFilter === 'all') return sortedEvents;
+      if (activeFilterId === 'all') return sortedEvents;
+
+      const selectedNode = findNode(settings.ontology, activeFilterId);
+      if (!selectedNode) return sortedEvents;
+
+      const keysInBranch = getSubtreeKeys(selectedNode);
+
       return sortedEvents.filter(event => {
-          const tags = event.tags;
-          // Look for semantic tag [intent:is:request] or [intent:is:offer]
-          // The format in tags is usually ["i", "intent:is:request", "namespace"] or specific nip tags?
-          // Our system uses simple text search or property extraction.
-          // Let's check raw content or tags if available.
-          // Note: our system often puts these in content as text `[intent:is:...]`.
-          // But `extractPropertiesFromTags` uses regex on tags?
-          // Actually, our parser extracts from content.
-          // But `sortedEvents` are raw Nostr events.
-          // If we published correctly, we might have added "t" tags or custom tags?
-          // Assuming content check for now as it is most reliable with our current architecture.
-          const content = event.content.toLowerCase();
-          return content.includes(`[intent:is:${intentFilter}]`);
+          // Parse properties from content (since they might not be in tags)
+          // Optimization: Check for presence of key strings first before full parse?
+          // Full parse is safer.
+          const props = parseProperties(event.content);
+
+          // Also check explicit tags if we store them there in future
+          // Check if any property key exists in the branch
+          return props.some(p => keysInBranch.has(p.key));
       });
-  }, [sortedEvents, intentFilter]);
+  }, [sortedEvents, activeFilterId, settings.ontology]);
 
   if (!pubkey) {
     return <ConnectIdentityPrompt onNavigateToSettings={onNavigateToSettings} />;
@@ -68,11 +76,12 @@ export function NetworkView({ matchAgainst }: NetworkViewProps) {
             filter={filter}
             setFilter={setFilter}
             sortedEvents={sortedEvents}
-            intentFilter={intentFilter}
-            setIntentFilter={setIntentFilter}
+            ontology={rootCategories}
+            activeFilterId={activeFilterId}
+            setActiveFilterId={setActiveFilterId}
         />
 
-        {!matchAgainst && !filter && intentFilter === 'all' && <SuggestedMatches />}
+        {!matchAgainst && !filter && activeFilterId === 'all' && <SuggestedMatches />}
 
         <NetworkFeedList
             isLoading={isLoading}
