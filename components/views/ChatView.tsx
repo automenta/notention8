@@ -7,18 +7,11 @@ import { useSimulatorContext } from '../../hooks/useSimulatorContext';
 import { AgentSettingsModal } from '../simulator/AgentSettingsModal';
 import { useNotes } from '../../hooks/useNotes';
 import { useGardener } from '../../hooks/useGardener';
+import { SELF_AGENT_ID } from '../../hooks/simulator/types';
 import type { Contact, NostrEvent } from '../../types';
 import type { SwarmTemplate } from '../../hooks/simulator/types';
 
-const GARDENER_ID = 'gardener-system';
-const GARDENER_CONTACT: Contact = {
-    pubkey: GARDENER_ID,
-    name: 'The Gardener',
-    about: 'I help grow your ontology and curate your notes.',
-    picture: 'https://api.dicebear.com/7.x/bottts/svg?seed=gardener',
-    isAgent: true
-};
-
+// Helper to create a local message object
 const createLocalMessage = (content: string, pubkey: string): NostrEvent => ({
     id: Math.random().toString(36),
     pubkey,
@@ -45,7 +38,7 @@ export function ChatView() {
   } = useSimulatorContext();
   const { notes } = useNotes();
   const { evolveOntology, optimizeOntology } = useGardener();
-  const [gardenerMessages, setGardenerMessages] = useState<NostrEvent[]>([]);
+  const [systemMessages, setSystemMessages] = useState<NostrEvent[]>([]);
 
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null);
 
@@ -77,38 +70,84 @@ export function ChatView() {
       deploySwarm(newAgents);
   };
 
-  const handleGardenerMessage = async (content: string) => {
-        // Add user message
-        if (!pubkey) return;
-        const userMsg = createLocalMessage(content, pubkey);
-        setGardenerMessages(prev => [...prev, userMsg]);
-
-        // Logic
-        let response = "I am listening. I can 'analyze' your notes or 'optimize' your ontology.";
+  const handleAssistantCommand = async (content: string) => {
         const lower = content.toLowerCase();
 
-        if (lower.includes('help')) {
-            response = "I can help you organize your notes. Try 'analyze my notes' or 'optimize ontology'.";
-        } else if (lower.includes('analyze') || lower.includes('evolve')) {
-             setGardenerMessages(prev => [...prev, createLocalMessage("Analyzing your notes...", GARDENER_ID)]);
-             const newAttrs = await evolveOntology(notes);
-             if (newAttrs.length > 0) {
-                 response = `I found ${newAttrs.length} new properties: ${newAttrs.map(a => a.key).join(', ')}.`;
-             } else {
-                 response = "Your notes look consistent. I didn't find any new patterns.";
-             }
-        } else if (lower.includes('optimize')) {
-             setGardenerMessages(prev => [...prev, createLocalMessage("Optimizing ontology...", GARDENER_ID)]);
-             const res = await optimizeOntology();
-             response = `Optimization complete. ${res.merged.length} merges proposed.`;
+        // If it's a specific Gardener command, intercept it
+        if (lower.includes('analyze') || lower.includes('evolve')) {
+             // Inject user message first? No, ChatWindow does that visually, but we need to store it?
+             // Actually, sendMessageToAgent stores user message. But here we are bypassing it.
+             // We need to inject user message into our local "systemMessages" state or rely on the fact
+             // that if we use "sendMessageToAgent" it goes into simulator state.
+
+             // BUT: We want to intercept.
+             // Let's manually add the user message to the agentMessages via a trick?
+             // No, let's just use "sendMessageToAgent" for the user message part?
+             // sendMessageToAgent(SELF_AGENT_ID, content) triggers the LLM response loop.
+             // We want to PREVENT the LLM loop if we are handling it.
+
+             // Solution: We manage the "Assistant" messages entirely here if we intercept?
+             // OR, we use a separate state for "Assistant" messages like we did for Gardener?
+             // But "Assistant" is in `agents`, so its messages are in `agentMessages`.
+             // Ideally we write to `agentMessages`.
+             // But `useSimulatorContext` doesn't expose `setAgentMessages`.
+             // It exposes `sendMessageToAgent`.
+
+             // If we can't write to `agentMessages` directly, we might have a problem unifying them
+             // if we want to mix LLM chat and Command results.
+
+             // HACK: We can use `sendMessageToAgent` but maybe we modify `useAgentInteraction` to support
+             // "system" injection? No, that requires changing hooks.
+
+             // ALTERNATIVE: Just use `sendMessageToAgent` for everything, and if the LLM sees "analyze",
+             // it replies "I will analyze...". But the LLM can't call `evolveOntology`.
+
+             // OK, for now, let's keep "Assistant" messages in `agentMessages` (via `sendMessageToAgent`)
+             // AND inject the "Command Result" as a fake response from the agent?
+             // But `sendMessageToAgent` forces an LLM response.
+
+             // Let's use the `systemMessages` state I added above as an OVERLAY or replacement?
+             // No, that splits history.
+
+             // Let's look at `sendMessageToAgent` in `useAgentInteraction`.
+             // It adds the user message immediately.
+             // Then it waits 1s and adds the agent response.
+
+             // If I call `sendMessageToAgent` with a special prefix or something? No.
+
+             // Maybe I should just modify `useAgentInteraction` to allow passing a custom response handler?
+             // That seems too complex for this step.
+
+             // Simpler approach:
+             // When sending to Assistant:
+             // 1. If it's a command, handle it locally and add messages to a local state `assistantOverrides`.
+             // 2. Render `agentMessages[SELF_AGENT_ID]` merged with `assistantOverrides`.
+             // 3. But `sendMessageToAgent` is the only way to add the USER message to `agentMessages`.
+
+             // Let's just use a local state for the Assistant's conversation view entirely?
+             // No, then we lose the persistence/context if the user switches away.
+
+             // Wait, `sendMessageToAgent` is just:
+             // setAgentMessages(prev => { ... add user msg ... })
+             // setTimeout( ... add agent msg ... )
+
+             // If I use `sendMessageToAgent`, I get an LLM response.
+             // Maybe I can let the LLM respond "Sure, analyzing..." and THEN I inject the actual result?
+             // But I can't inject into `agentMessages` from here.
+
+             // I MUST allow injecting messages into `agentMessages` from outside.
+             // But `useSimulatorContext` doesn't expose `setAgentMessages` or `injectMessage`.
+
+             // Let's look at `hooks/simulator/useSimulator.ts` again.
+             // It returns `...useAgentInteraction(...)`.
+             // `useAgentInteraction` returns `agentMessages` and `sendMessageToAgent`.
+             // It does NOT return `setAgentMessages`.
+
+             // I should expose `injectAgentMessage` from `useAgentInteraction`.
+
+             return; // I need to modify useAgentInteraction first if I want to do this properly.
         }
-
-        // Add system response
-        setTimeout(() => {
-             setGardenerMessages(prev => [...prev, createLocalMessage(response, GARDENER_ID)]);
-        }, 1000);
-    };
-
+  }
 
   // Merge Agent Contacts
   const agentContacts: Contact[] = agents.map(a => ({
@@ -119,19 +158,34 @@ export function ChatView() {
       isAgent: true
   }));
 
-  const allContacts = [GARDENER_CONTACT, ...agentContacts, ...contacts];
+  const allContacts = [...agentContacts, ...contacts];
 
-  // Resolve full contact object (to ensure properties like isAgent are present)
+  // Resolve full contact object
   const fullSelectedContact = localSelectedContact
       ? allContacts.find(c => c.pubkey === localSelectedContact.pubkey) || localSelectedContact
       : null;
 
   // Determine messages to display
+  // We need to merge local system messages if we are chatting with Assistant
   let displayMessages: NostrEvent[] = [];
-  if (fullSelectedContact?.pubkey === GARDENER_ID) {
-      displayMessages = gardenerMessages;
-  } else if (fullSelectedContact?.isAgent) {
-      displayMessages = agentMessages[fullSelectedContact.pubkey] || [];
+
+  if (fullSelectedContact?.isAgent) {
+      displayMessages = [...(agentMessages[fullSelectedContact.pubkey] || [])];
+      if (fullSelectedContact.pubkey === SELF_AGENT_ID) {
+          // Merge in any local system overrides if we implement that
+          // For now, let's assume we can't easily mixed them without modifying hooks.
+          // So let's modify the hooks in the next step?
+          // Or just do a workaround:
+          // If it's a command, we DON'T call sendMessageToAgent. We manage the WHOLE conversation locally for the Assistant?
+          // But then we lose the "Notention AI" simulation background stuff.
+
+          // Let's look at `systemMessages`. If I use that for the Assistant,
+          // I can just append it to `displayMessages`?
+          // But `displayMessages` comes from `agentMessages`.
+          // If I don't call `sendMessageToAgent`, the user message isn't in `agentMessages`.
+          // So I have to put the user message in `systemMessages` too.
+          displayMessages = [...displayMessages, ...systemMessages].sort((a,b) => a.created_at - b.created_at);
+      }
   } else {
       displayMessages = fullSelectedContact ? messages[fullSelectedContact.pubkey] || [] : [];
   }
@@ -178,20 +232,54 @@ export function ChatView() {
           selectedContact={fullSelectedContact}
           onBack={() => handleSelectContact(null)}
           messages={displayMessages}
-          onSendMessage={(peerPubkey, event, decryptedContent) => {
-            if (peerPubkey === GARDENER_ID) {
-                handleGardenerMessage(decryptedContent);
+          onSendMessage={async (peerPubkey, event, decryptedContent) => {
+            if (peerPubkey === SELF_AGENT_ID) {
+                const lower = decryptedContent.toLowerCase();
+                // Check for commands
+                if (lower.includes('analyze') || lower.includes('evolve') || lower.includes('optimize') || lower.includes('help')) {
+                    // 1. Add User Message Locally
+                    if (pubkey) {
+                        setSystemMessages(prev => [...prev, createLocalMessage(decryptedContent, pubkey)]);
+                    }
+
+                    // 2. Process Command
+                    if (lower.includes('help')) {
+                         setTimeout(() => {
+                             setSystemMessages(prev => [...prev, createLocalMessage("I can help you organize your notes. Try 'analyze my notes' or 'optimize ontology'.", SELF_AGENT_ID)]);
+                         }, 500);
+                    } else if (lower.includes('analyze') || lower.includes('evolve')) {
+                         setSystemMessages(prev => [...prev, createLocalMessage("Analyzing your notes...", SELF_AGENT_ID)]);
+                         const newAttrs = await evolveOntology(notes);
+                         const response = newAttrs.length > 0
+                            ? `I found ${newAttrs.length} new properties: ${newAttrs.map(a => a.key).join(', ')}.`
+                            : "Your notes look consistent. I didn't find any new patterns.";
+                         setSystemMessages(prev => [...prev, createLocalMessage(response, SELF_AGENT_ID)]);
+                    } else if (lower.includes('optimize')) {
+                         setSystemMessages(prev => [...prev, createLocalMessage("Optimizing ontology...", SELF_AGENT_ID)]);
+                         const res = await optimizeOntology();
+                         const response = `Optimization complete. ${res.merged.length} merges proposed.`;
+                         setSystemMessages(prev => [...prev, createLocalMessage(response, SELF_AGENT_ID)]);
+                    }
+                } else {
+                    // Normal Chat -> Send to Simulator
+                    sendMessageToAgent(peerPubkey, decryptedContent);
+                }
             } else if (fullSelectedContact?.isAgent) {
                 sendMessageToAgent(peerPubkey, decryptedContent);
             } else {
                 addMessage(peerPubkey, event, decryptedContent);
             }
           }}
-          onOpenSettings={fullSelectedContact?.isAgent && fullSelectedContact.pubkey !== GARDENER_ID ? () => setSettingsAgentId(fullSelectedContact.pubkey) : undefined}
+          onOpenSettings={fullSelectedContact?.isAgent ? () => setSettingsAgentId(fullSelectedContact.pubkey) : undefined}
           onClearChat={
-              fullSelectedContact?.pubkey === GARDENER_ID
-                ? () => setGardenerMessages([])
-                : (fullSelectedContact?.isAgent ? () => clearAgentMessages(fullSelectedContact.pubkey) : undefined)
+              fullSelectedContact?.isAgent
+                ? () => {
+                    clearAgentMessages(fullSelectedContact.pubkey);
+                    if (fullSelectedContact.pubkey === SELF_AGENT_ID) {
+                        setSystemMessages([]);
+                    }
+                }
+                : undefined
           }
         />
       </div>

@@ -23,10 +23,10 @@ export const SELF_AGENT_ID = 'self-agent-0000-0000-0000-000000000000';
 export const INITIAL_AGENTS: SimulationAgent[] = [
     {
         id: SELF_AGENT_ID,
-        name: 'Notention AI',
-        persona: 'You are the Notention System AI. You help the user write notes, organize thoughts, and explore the network.',
-        bio: 'System AI Assistant',
-        goal: 'Assist the user.',
+        name: 'The Assistant',
+        persona: 'You are The Assistant, a helpful AI that helps the user write notes, organize thoughts, and explore the network. You also act as The Gardener, helping to evolve and optimize the ontology.',
+        bio: 'Your personal AI Assistant & Gardener.',
+        goal: 'Assist the user with notes and ontology.',
         currentDraft: '',
         status: 'Idle',
         isAgent: true,
