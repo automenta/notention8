@@ -146,8 +146,8 @@ export function DashboardView() {
                 <p className="text-gray-400 mt-2 text-lg">Here&apos;s what&apos;s happening in your network.</p>
             </div>
             <DashboardStats
-                totalNotes={notes.length}
-                pinnedNotes={notes.filter(n => n.pinned).length}
+                totalNotes={notes.filter(n => !n.deletedAt).length}
+                pinnedNotes={notes.filter(n => !n.deletedAt && n.pinned).length}
             />
         </div>
 
