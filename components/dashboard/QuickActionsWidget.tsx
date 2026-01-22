@@ -4,6 +4,7 @@ import { PlusIcon, MapIcon, ChatIcon, CubeIcon } from '../layout/icons';
 interface QuickActionsWidgetProps {
   onCreateNote: () => void;
   onNavigate: (view: string) => void;
+  showSimulator?: boolean;
 }
 
 interface QuickActionBtnProps {
@@ -27,7 +28,7 @@ const QuickActionBtn: React.FC<QuickActionBtnProps> = ({ onClick, icon: Icon, la
     </button>
 );
 
-export const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({ onCreateNote, onNavigate }) => {
+export const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({ onCreateNote, onNavigate, showSimulator }) => {
   return (
     <div>
         <h2 className="text-lg font-semibold text-gray-300 mb-4 px-1">Quick Actions</h2>
@@ -56,14 +57,16 @@ export const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({ onCreate
                 hoverBorder="hover:border-purple-500/50"
                 hoverShadow="hover:shadow-purple-900/10"
             />
-            <QuickActionBtn
-                onClick={() => onNavigate('simulator')}
-                icon={CubeIcon}
-                label="Simulator"
-                colorClass="bg-orange-600/20 text-orange-400 group-hover:bg-orange-600"
-                hoverBorder="hover:border-orange-500/50"
-                hoverShadow="hover:shadow-orange-900/10"
-            />
+            {showSimulator && (
+                <QuickActionBtn
+                    onClick={() => onNavigate('simulator')}
+                    icon={CubeIcon}
+                    label="Simulator"
+                    colorClass="bg-orange-600/20 text-orange-400 group-hover:bg-orange-600"
+                    hoverBorder="hover:border-orange-500/50"
+                    hoverShadow="hover:shadow-orange-900/10"
+                />
+            )}
         </div>
     </div>
   );

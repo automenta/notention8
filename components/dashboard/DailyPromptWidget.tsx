@@ -5,10 +5,10 @@ import { Button } from '../common/Button';
 import { IconButton } from '../common/IconButton';
 
 interface DailyPromptWidgetProps {
-  onCreateNote: () => void;
+  onUsePrompt: (prompt: string) => void;
 }
 
-export const DailyPromptWidget: React.FC<DailyPromptWidgetProps> = ({ onCreateNote }) => {
+export const DailyPromptWidget: React.FC<DailyPromptWidgetProps> = ({ onUsePrompt }) => {
   const [promptIndex, setPromptIndex] = useState(() => {
        const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
        return dayOfYear % DAILY_PROMPTS.length;
@@ -43,7 +43,7 @@ export const DailyPromptWidget: React.FC<DailyPromptWidgetProps> = ({ onCreateNo
              &quot;{prompt}&quot;
          </p>
          <Button
-            onClick={onCreateNote}
+            onClick={() => onUsePrompt(prompt)}
             variant="primary"
             size="md"
             icon={PencilIcon}
