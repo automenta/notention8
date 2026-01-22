@@ -45,6 +45,26 @@ export const matchNotes = (request: Note, offer: Note): MatchResultDetails => {
   };
 };
 
+/**
+ * Calculates a semantic overlap score between two notes based on shared property keys.
+ * This is useful for "See also" or "Related" suggestions where exact constraints might not match.
+ */
+export const calculateSemanticOverlap = (noteA: Note, noteB: Note): number => {
+    const keysA = new Set(noteA.properties.map(p => p.key));
+    const keysB = new Set(noteB.properties.map(p => p.key));
+
+    if (keysA.size === 0 || keysB.size === 0) return 0;
+
+    let overlap = 0;
+    keysA.forEach(key => {
+        if (keysB.has(key)) overlap++;
+    });
+
+    // Jaccard index
+    const union = new Set([...keysA, ...keysB]);
+    return overlap / union.size;
+};
+
 export const checkConstraint = (constraint: Property, target: Note): boolean => {
   // Find corresponding property in target
   // We look for a "Real" property in target with the same key

@@ -212,20 +212,56 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
       label: 'Marketplace',
       children: [
           {
-              id: 'listing',
-              label: 'Marketplace Listing',
-              description: 'An item for sale.',
-              actionLabel: 'List Item',
-              extends: ['item', 'sale'],
-              requiredAttributes: ['item', 'price'],
+              id: 'product',
+              label: 'Product',
+              description: 'A physical or digital item for sale.',
+              actionLabel: 'Sell Product',
+              requiredAttributes: ['name', 'price'],
               attributes: {
-                  item: {
+                  name: {
                       type: 'string',
-                      operators: { real: ['is'], imaginary: ['is not'] }
+                      description: 'Name of the product',
+                      operators: { real: ['is'], imaginary: ['is not', 'contains'] }
                   },
                   price: {
                       type: 'number',
-                      operators: { real: ['is'], imaginary: ['less than'] }
+                      description: 'Price of the product',
+                      operators: { real: ['is'], imaginary: ['less than', 'greater than'] }
+                  },
+                  condition: {
+                      type: 'enum',
+                      options: ['New', 'Used - Like New', 'Used - Good', 'Used - Fair'],
+                      description: 'Condition of the item',
+                      operators: { real: ['is'], imaginary: ['is not'] }
+                  },
+                  category: {
+                      type: 'string',
+                      description: 'Product category',
+                      operators: { real: ['is'], imaginary: ['contains'] }
+                  }
+              }
+          },
+          {
+              id: 'service',
+              label: 'Service',
+              description: 'A service offered for a fee.',
+              actionLabel: 'Offer Service',
+              requiredAttributes: ['serviceType', 'rate'],
+              attributes: {
+                  serviceType: {
+                      type: 'string',
+                      description: 'Type of service (e.g. Plumbing, Design)',
+                      operators: { real: ['is'], imaginary: ['is not', 'contains'] }
+                  },
+                  rate: {
+                      type: 'number',
+                      description: 'Cost per unit (e.g. hour, project)',
+                      operators: { real: ['is'], imaginary: ['less than', 'greater than'] }
+                  },
+                  availability: {
+                      type: 'string',
+                      description: 'When the service is available',
+                      operators: { real: ['is'], imaginary: ['contains'] }
                   }
               }
           }
