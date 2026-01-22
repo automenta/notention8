@@ -14,6 +14,7 @@ import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { IconButton } from '../common/IconButton';
 import { Select } from '../common/Select';
+import { Textarea } from '../common/Textarea';
 import { useGardener } from '../../hooks/useGardener';
 import { parseProperties } from '../../utils/parsing';
 
@@ -43,6 +44,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   const [key, setKey] = useState(initialKey);
   const [op, setOp] = useState(initialOp);
   const [value, setValue] = useState(initialValue);
+  const [showExtraction, setShowExtraction] = useState(false);
+  const [extractionText, setExtractionText] = useState('');
   const { addToast } = useToast();
 
   // Update state if props change (e.g. location picked from parent)
@@ -80,11 +83,10 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   const { alignToOntology } = useGardener();
 
   const handleMagicFill = async () => {
-      const text = window.prompt("Describe the property naturally (e.g. 'budget under 200', 'looking for designer')");
-      if (!text) return;
+      if (!extractionText) return;
 
       try {
-          const results = await alignToOntology(text, ontology);
+          const results = await alignToOntology(extractionText, ontology);
 
           if (results.length > 0) {
               // Take the first one for now
@@ -94,6 +96,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                   setKey(p.key);
                   setOp(p.operator);
                   setValue(p.values.join(','));
+                  setShowExtraction(false);
                   addToast('Property extracted!', 'success');
               } else {
                   addToast('Could not parse extracted property.', 'error');
@@ -129,14 +132,14 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
         <div className="flex gap-1">
           {isAdding && (
               <Button
-                  onClick={handleMagicFill}
-                  variant="secondary"
+                  onClick={() => setShowExtraction(!showExtraction)}
+                  variant={showExtraction ? 'primary' : 'secondary'}
                   size="xs"
                   icon={SearchSparkleIcon}
                   className="text-purple-300 border-purple-900/50 bg-purple-900/20 hover:bg-purple-900/40"
                   title="Extract properties from text"
               >
-                  Extract
+                  Magic
               </Button>
           )}
           {onPickLocation && (isAdding || ['location', 'geo', 'place'].includes(key)) && (
@@ -182,12 +185,33 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
           )}
         </div>
       </div>
+      {showExtraction && (
+        <div className="bg-gray-700/50 p-2 rounded mb-2 border border-purple-500/30">
+            <Textarea
+                placeholder="Describe property (e.g. 'budget < 200')"
+                value={extractionText}
+                onChange={(e) => setExtractionText(e.target.value)}
+                rows={2}
+                autoFocus
+                className="text-sm mb-2"
+            />
+            <Button
+                onClick={handleMagicFill}
+                size="xs"
+                variant="primary"
+                className="w-full bg-purple-600 hover:bg-purple-500"
+            >
+                Extract Property
+            </Button>
+        </div>
+      )}
+
       <div className="relative">
           <Input
             placeholder="Key (e.g. price)"
             value={key}
             onChange={(e) => setKey(e.target.value)}
-            autoFocus={isAdding} // Autofocus only on add
+            autoFocus={isAdding && !showExtraction} // Autofocus only on add if extraction not open
           />
           {type && (
               <span className="absolute right-2 top-3 text-[10px] uppercase bg-gray-700 text-gray-300 px-1 rounded">
