@@ -8,11 +8,11 @@ export class Gardener {
     this.provider = provider;
   }
 
-  async evolveOntology(notes: Note[]): Promise<AttributeDefinition[]> {
+  async evolveOntology(notes: Note[], context?: string): Promise<AttributeDefinition[]> {
     if (notes.length === 0) return [];
 
     try {
-      const attributes = await this.provider.analyzeOntology(notes);
+      const attributes = await this.provider.analyzeOntology(notes, context);
       return attributes;
     } catch (e) {
       console.error('Gardener failed to evolve ontology:', e);

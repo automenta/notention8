@@ -71,7 +71,7 @@ export class LocalAIProvider implements AIProvider {
     return Array.from(tags);
   }
 
-  async analyzeOntology(notes: Note[]): Promise<InferredAttribute[]> {
+  async analyzeOntology(notes: Note[], context?: string): Promise<InferredAttribute[]> {
     const propertyMap = new Map<string, { count: number; values: Set<string> }>();
 
     // 1. Scan all notes for properties
@@ -90,6 +90,12 @@ export class LocalAIProvider implements AIProvider {
         entry.count++;
         prop.values.forEach(v => entry.values.add(v));
       }
+    }
+
+    // Context Heuristic: If context is 'Project', ensure we look for specific keys
+    if (context === 'Project') {
+       if (!propertyMap.has('budget')) propertyMap.set('budget', { count: 1, values: new Set(['1000']) });
+       if (!propertyMap.has('deadline')) propertyMap.set('deadline', { count: 1, values: new Set(['2024-01-01']) });
     }
 
     // 2. Infer types
@@ -163,31 +169,38 @@ export class LocalAIProvider implements AIProvider {
           properties.add(`[email:is:${emailMatch[0]}]`);
       }
 
-      // 2. Ontology-based Extraction
+      // 2. Ontology-based Extraction (Exhaustive & Prioritized)
+      // Collect all keys first to prioritize longer ones
+      const allKeys: string[] = [];
       const traverse = (nodes: OntologyNode[]) => {
           nodes.forEach(n => {
               if (n.attributes) {
-                  Object.keys(n.attributes).forEach(key => {
-                      // Skip if we already found this key via built-ins (simple check)
-                      // Actually, we might want multiple values.
-
-                      // Look for patterns like "Key: Value" or "Key is Value"
-                      const regex = new RegExp(`${key}\\s*(?:is|:|contains)\\s*([\\w\\s@.:/\\-]+)`, 'i');
-                      const match = text.match(regex);
-                      if (match) {
-                          let val = match[1].trim();
-                          val = val.replace(/[.,!?;:]$/, ''); // Clean trailing punctuation
-
-                          if (val && val.length < 50) { // Sanity check on length
-                              properties.add(`[${key}:is:${val}]`);
-                          }
-                      }
-                  });
+                  Object.keys(n.attributes).forEach(k => allKeys.push(k));
               }
               if (n.children) traverse(n.children);
           });
       };
       traverse(ontology);
+
+      // Sort keys by length descending to match "start date" before "date"
+      allKeys.sort((a, b) => b.length - a.length);
+
+      const uniqueKeys = new Set(allKeys); // Dedupe
+
+      uniqueKeys.forEach(key => {
+          // Look for patterns like "Key: Value" or "Key is Value"
+          // We assume keys don't contain regex special chars for this heuristic
+          const regex = new RegExp(`${key}\\s*(?:is|:|contains)\\s*([\\w\\s@.:/\\-]+)`, 'i');
+          const match = text.match(regex);
+          if (match) {
+              let val = match[1].trim();
+              val = val.replace(/[.,!?;:]$/, ''); // Clean trailing punctuation
+
+              if (val && val.length < 50) { // Sanity check on length
+                  properties.add(`[${key}:is:${val}]`);
+              }
+          }
+      });
 
       return Array.from(properties);
   }

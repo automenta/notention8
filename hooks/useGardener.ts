@@ -7,11 +7,28 @@ import { RemoteAIProvider } from '../services/ai/RemoteProvider';
 import { WebLLMProvider } from '../services/ai/WebLLMProvider';
 import type { Note, Property, OntologyNode, OntologyAttribute } from '../types';
 
-// Helper to merge attributes into the "Emergent" node
-const mergeAttributesToEmergent = (ontology: OntologyNode[], newAttributes: Record<string, OntologyAttribute>): OntologyNode[] => {
-    const updatedOntology = [...ontology];
-    let emergentNode = updatedOntology.find(n => n.id === 'emergent');
+// Helper to merge attributes into a target node (or "Emergent" if not found/specified)
+const mergeAttributesToNode = (ontology: OntologyNode[], newAttributes: Record<string, OntologyAttribute>, targetNodeId?: string): OntologyNode[] => {
+    const updatedOntology = JSON.parse(JSON.stringify(ontology)); // Deep clone for safety
 
+    const findAndMerge = (nodes: OntologyNode[]): boolean => {
+        for (const node of nodes) {
+            if (node.id === targetNodeId) {
+                node.attributes = { ...(node.attributes || {}), ...newAttributes };
+                return true;
+            }
+            if (node.children && findAndMerge(node.children)) return true;
+        }
+        return false;
+    };
+
+    if (targetNodeId) {
+        const found = findAndMerge(updatedOntology);
+        if (found) return updatedOntology;
+    }
+
+    // Fallback to "Emergent"
+    let emergentNode = updatedOntology.find((n: OntologyNode) => n.id === 'emergent');
     if (!emergentNode) {
         emergentNode = {
             id: 'emergent',
@@ -22,11 +39,7 @@ const mergeAttributesToEmergent = (ontology: OntologyNode[], newAttributes: Reco
         };
         updatedOntology.push(emergentNode);
     }
-
-    emergentNode.attributes = {
-        ...(emergentNode.attributes || {}),
-        ...newAttributes
-    };
+    emergentNode.attributes = { ...(emergentNode.attributes || {}), ...newAttributes };
 
     return updatedOntology;
 };
@@ -52,8 +65,8 @@ export const useGardener = () => {
     return new Gardener(provider);
   }, [settings.aiEnabled, settings.aiProvider, settings.aiModel, settings.googleGeminiApiKey]);
 
-  const evolveOntology = useCallback(async (notes: Note[]) => {
-    const newAttributes = await gardener.evolveOntology(notes);
+  const evolveOntology = useCallback(async (notes: Note[], targetConceptId?: string) => {
+    const newAttributes = await gardener.evolveOntology(notes, targetConceptId);
 
     if (newAttributes.length === 0) return [];
 
@@ -76,7 +89,7 @@ export const useGardener = () => {
 
         return {
             ...prev,
-            ontology: mergeAttributesToEmergent(currentOntology, newAttrsMap)
+            ontology: mergeAttributesToNode(currentOntology, newAttrsMap, targetConceptId)
         };
     });
 
@@ -126,7 +139,7 @@ export const useGardener = () => {
 
           if (!hasChanges) return prev;
 
-          return { ...prev, ontology: mergeAttributesToEmergent(currentOntology, newAttrsMap) };
+          return { ...prev, ontology: mergeAttributesToNode(currentOntology, newAttrsMap) };
       });
   }, [setSettings, addToast]);
 
