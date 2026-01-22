@@ -113,23 +113,43 @@ export const checkConstraint = (constraint: Property, target: Note): boolean => 
 
   if (!targetProp) return false;
 
-  // We parse constraint values.
-  // Note: Constraint might have multiple values? Usually constraints are single value per property entry.
-  // [key:is:A, B] -> Does this mean is A AND is B? or is A OR is B?
-  // Usually [skill:is:React, Vue] means "I have React and Vue".
-  // If request is [skill:is:React], and target is [skill:is:React, Vue], it's a match.
+  // Optimize 'between' constraint
+  if (constraint.operator === 'between') {
+      if (constraint.values.length === 2) {
+          const min = parseValue(constraint.values[0]);
+          const max = parseValue(constraint.values[1]);
+          // Target matches if ANY of its values fall in range
+          return targetProp.values.some(v => {
+              const tVal = parseValue(v);
+              return tVal >= min && tVal <= max;
+          });
+      }
+      return false;
+  }
 
-  // If request is [skill:is:React, Vue], and target is [skill:is:React], it's NOT a match (missing Vue).
-  // So we iterate ALL constraint values and ensure target has them (AND logic).
+  // Optimize 'is near' constraint
+  if (constraint.operator === 'is near') {
+      // constraint.values[0] is center point
+      // Optional constraint.values[1] could be radius? Not standard yet.
+      const p2 = parseGeo(String(parseValue(constraint.values[0])));
+      if (!p2) return false;
 
+      return targetProp.values.some(v => {
+          const p1 = parseGeo(String(parseValue(v)));
+          if (!p1) return false;
+          const dist = haversineDistance(p1, p2);
+          return dist <= 50; // Hardcoded 50km for now
+      });
+  }
+
+  // Standard constraints iterate all constraint values (AND logic for constraints)
+  // [skill:is:React, Vue] -> requires React AND Vue
   return constraint.values.every(cValStr => {
-
-      // Special handling for 'is near' which needs parsing but we handle inside loop?
-      // No, let's parse inside loop.
-
       const constraintVal = parseValue(cValStr);
 
       // Target must satisfy this specific value constraint
+      // [skill:is:React, Vue] means "I have React OR Vue" (usually properties describe facts)
+      // So if constraint is "React", target needs to have "React".
       return targetProp.values.some(v => {
         const tVal = parseValue(v);
 
@@ -173,54 +193,8 @@ export const checkConstraint = (constraint: Property, target: Note): boolean => 
           case 'is after':
             return tVal > constraintVal;
 
-          case 'between':
-              // Range check
-              // Expects constraint.values to have 2 items: [min, max]
-              // But here we are iterating constraint.values (which is `cValStr` / `constraintVal`)
-              // checkConstraint loop:
-              // return constraint.values.every(cValStr => { ... })
-
-              // Wait, if operator is 'between', constraint.values should be treated as a set of boundaries?
-              // The outer loop iterates `constraint.values`.
-              // If we have `[price:between:100,200]`, parseProperties returns values=['100', '200'].
-              // Then the loop runs for '100', then '200'.
-              // This structure (every) implies AND logic.
-              // But 'between' isn't checking "is 100" AND "is 200".
-
-              // We need to handle 'between' specially outside the standard value loop?
-              // OR we can hack it: if operator is 'between', we expect 2 values.
-              // But the architecture loops values individually.
-
-              // Let's look at `constraint.values`.
-              if (constraint.values.length === 2) {
-                  const min = parseValue(constraint.values[0]);
-                  const max = parseValue(constraint.values[1]);
-                  return tVal >= min && tVal <= max;
-              }
-              return false;
-
           case 'contains':
-            // constraint: [skill contains React]
-            // target value: "React"
-            // If target value is string, does it contain substring?
-            // Or is it set membership?
-            // If targetProp.values is ["React", "Vue"], we already iterate them.
-            // So here tVal is "React". "React" contains "React"? Yes.
-            // "React Developer" contains "React"? Yes.
             return String(tVal).toLowerCase().includes(String(constraintVal).toLowerCase());
-
-          case 'is near':
-              // Spacetime proximity
-              const p1 = parseGeo(String(tVal));
-              const p2 = parseGeo(String(constraintVal));
-              if (!p1 || !p2) return false;
-
-              // Default 50km if not specified?
-              // Ideally constraint would be [location is near 40.7,-74.0, 50km]
-              // But parsing "40.7,-74.0, 50km" in parseGeo is not supported yet.
-              // Let's hardcode 50km for now as "near".
-              const dist = haversineDistance(p1, p2);
-              return dist <= 50;
 
           default:
             return false;
