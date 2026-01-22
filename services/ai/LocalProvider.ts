@@ -157,10 +157,49 @@ export class LocalAIProvider implements AIProvider {
       }
 
       // Intent (Request/Offer)
-      if (lowerText.includes('looking for') || lowerText.includes('want to buy') || lowerText.includes('need')) {
+      if (lowerText.includes('looking for') || lowerText.includes('want to buy') || lowerText.includes('need') || lowerText.includes('hiring')) {
           properties.add(`[intent:is:request]`);
-      } else if (lowerText.includes('selling') || lowerText.includes('offering') || lowerText.includes('available for')) {
+      } else if (lowerText.includes('selling') || lowerText.includes('offering') || lowerText.includes('available for') || lowerText.includes('i am a')) {
           properties.add(`[intent:is:offer]`);
+      }
+
+      // Role Extraction (Heuristic)
+      const roleReqMatch = text.match(/(?:looking for|hiring|need) (?:a|an)\s+([a-zA-Z\s]+?)(?:\s+(?:for|in|to|with|\.|$)|$)/i);
+      if (roleReqMatch) {
+          const role = roleReqMatch[1].trim();
+          if (role.split(' ').length < 4) { // Avoid capturing long sentences
+              properties.add(`[role:is:${role}]`);
+          }
+      }
+
+      const roleOfferMatch = text.match(/i am (?:a|an)\s+([a-zA-Z\s]+?)(?:\s+(?:who|with|looking|\.|$)|$)/i);
+      if (roleOfferMatch) {
+          const role = roleOfferMatch[1].trim();
+          if (role.split(' ').length < 4) {
+              properties.add(`[role:is:${role}]`);
+          }
+      }
+
+      // Price Range (Between)
+      // "between 100 and 200", "$100-$200", "100-200 USD"
+      const rangeMatch = text.match(/(?:between|from)?\s*(\$|€|£)?\s*(\d+)\s*(?:and|to|-)\s*(\$|€|£)?\s*(\d+)\s*(?:usd|eur|gbp)?/i);
+      if (rangeMatch) {
+          const min = rangeMatch[2];
+          const max = rangeMatch[4];
+          if (min && max && Number(max) > Number(min)) {
+              properties.add(`[price:between:${min},${max}]`);
+          }
+      }
+
+      // Dates (Basic Heuristics)
+      if (lowerText.includes('due tomorrow') || lowerText.includes('deadline tomorrow')) {
+          const d = new Date();
+          d.setDate(d.getDate() + 1);
+          properties.add(`[deadline:is:${d.toISOString().split('T')[0]}]`);
+      }
+      if (lowerText.includes('due today') || lowerText.includes('deadline today')) {
+          const d = new Date();
+          properties.add(`[deadline:is:${d.toISOString().split('T')[0]}]`);
       }
 
       // Email

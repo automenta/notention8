@@ -58,9 +58,9 @@ export function useSingleNoteMatch(note: Note) {
             if (offer.nostrEventId === note.nostrEventId) return null;
 
             const result = matchNotes(note, offer);
-            return { event, score: result.score, satisfied: result.satisfied };
+            return { event, score: result.score, satisfied: result.satisfied, failed: result.failed };
         })
-        .filter((m): m is { event: NostrEvent, score: number } => m !== null && m.score > 0.4)
+        .filter((m): m is { event: NostrEvent, score: number, satisfied: any[], failed: any[] } => m !== null && m.score > 0.4)
         .sort((a, b) => b.score - a.score);
     }, [events, note]);
 
