@@ -134,7 +134,7 @@ export const NoteListItem = React.memo(({
                     }}
                     tabIndex={-1}
                     className="text-gray-400 hover:text-green-400 hover:bg-green-900/30"
-                    title="Restore Note"
+                    tooltip="Restore Note"
                     icon={() => <DocumentDuplicateIcon className="h-3.5 w-3.5 transform rotate-180" />}
                     size="sm"
                     variant="ghost"
@@ -148,7 +148,7 @@ export const NoteListItem = React.memo(({
                     }}
                     tabIndex={-1}
                     className={`${note.pinned ? 'text-blue-400' : 'text-gray-400 hover:text-white hover:bg-gray-700/50'}`}
-                    title={note.pinned ? "Unpin Note" : "Pin Note"}
+                    tooltip={note.pinned ? "Unpin Note" : "Pin Note"}
                     icon={PinIcon}
                     size="sm"
                     variant="ghost"
@@ -159,7 +159,7 @@ export const NoteListItem = React.memo(({
                     onClick={handleExport}
                     tabIndex={-1}
                     className="text-gray-400 hover:text-white hover:bg-gray-700/50"
-                    title="Export Note"
+                    tooltip="Export Note"
                     icon={DownloadIcon}
                     size="sm"
                     variant="ghost"
@@ -172,7 +172,7 @@ export const NoteListItem = React.memo(({
                 }}
                 tabIndex={-1}
                 className="text-gray-400 hover:text-red-400 hover:bg-red-900/30"
-                title={isTrash ? "Delete Permanently" : "Move to Trash"}
+                tooltip={isTrash ? "Delete Permanently" : "Move to Trash"}
                 icon={TrashIcon}
                 size="sm"
                 variant="ghost"

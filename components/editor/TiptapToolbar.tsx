@@ -129,7 +129,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
             {onMagic && (
             <IconButton
                 onClick={onMagic}
-                title="Magic Align (Auto-generate semantic properties)"
+                tooltip="Magic Align (Auto-generate semantic properties)"
                 icon={SparklesIcon}
                 isActive={false}
             />
@@ -137,7 +137,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
             {onTemplates && (
             <IconButton
                 onClick={onTemplates}
-                title="Insert Template"
+                tooltip="Insert Template"
                 icon={CubeIcon}
                 isActive={false}
             />
@@ -145,7 +145,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
             {onInsertProperty && (
                 <IconButton
                     onClick={onInsertProperty}
-                    title="Insert Property"
+                    tooltip="Insert Property"
                     icon={TagIcon}
                     isActive={false}
                 />
@@ -169,7 +169,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
               onClick={item.action}
               disabled={item.disabled ? item.disabled() : false}
               isActive={item.isActive ? item.isActive() : false}
-              title={item.title}
+              tooltip={item.title}
               icon={item.icon}
             />
           );
@@ -180,9 +180,10 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
         <IconButton
           onClick={toggleViewMode}
           isActive={viewMode === 'code'}
-          title={
+          tooltip={
             viewMode === 'code' ? 'Switch to Rich Text' : 'Switch to HTML Code'
           }
+          tooltipPosition="left"
           icon={CodeBracketsIcon}
         />
       </div>

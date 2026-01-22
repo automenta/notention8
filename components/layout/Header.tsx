@@ -121,7 +121,8 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
       <div className="flex items-center gap-4">
         <IconButton
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          title={isSidebarOpen ? "Close Sidebar" : "Open Sidebar"}
+          tooltip={isSidebarOpen ? "Close Sidebar" : "Open Sidebar"}
+          tooltipPosition="bottom"
           icon={SidebarIcon}
           variant="ghost"
           size="lg"
@@ -179,7 +180,8 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
 
         <IconButton
             onClick={onOpenPalette}
-            title="Search & Commands (Ctrl+K)"
+            tooltip="Search & Commands (Ctrl+K)"
+            tooltipPosition="bottom"
             icon={SearchIcon}
             variant="ghost"
             size="lg"
