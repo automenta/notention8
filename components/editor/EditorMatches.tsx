@@ -74,22 +74,32 @@ export const EditorMatches = ({ note }: { note: Note }) => {
                          <p className="text-sm text-gray-300 line-clamp-3">{event.content}</p>
 
                          {satisfied && satisfied.length > 0 && (
-                             <div className="mt-2 flex flex-wrap gap-1">
-                                 {satisfied.map((p: any) => (
-                                     <span key={p.key} className="text-[9px] px-1 rounded bg-green-900/30 text-green-400 border border-green-900/50" title={`Matched: ${p.key}`}>
-                                         ✓ {p.key}
-                                     </span>
-                                 ))}
+                             <div className="mt-2 space-y-1">
+                                 <div className="text-[10px] font-semibold text-green-400/80 uppercase">Matched</div>
+                                 <div className="flex flex-wrap gap-1">
+                                     {satisfied.map((p: any, idx: number) => (
+                                         <span key={`${p.key}-${idx}`} className="text-[10px] px-1.5 py-0.5 rounded bg-green-900/30 text-green-300 border border-green-900/50 flex items-center gap-1">
+                                             <span className="opacity-50">✓</span>
+                                             <span className="font-mono">{p.key}</span>
+                                             <span className="opacity-60 text-[9px]">{p.operator === 'is' ? ':' : p.operator} {p.values.join(', ')}</span>
+                                         </span>
+                                     ))}
+                                 </div>
                              </div>
                          )}
 
                          {failed && failed.length > 0 && (
-                             <div className="mt-1 flex flex-wrap gap-1">
-                                 {failed.map((p: any) => (
-                                     <span key={p.key} className="text-[9px] px-1 rounded bg-red-900/20 text-red-400 border border-red-900/30 opacity-70" title={`Missing/Mismatch: ${p.key}`}>
-                                         ✗ {p.key}
-                                     </span>
-                                 ))}
+                             <div className="mt-2 space-y-1">
+                                <div className="text-[10px] font-semibold text-red-400/80 uppercase">Unsatisfied</div>
+                                <div className="flex flex-wrap gap-1">
+                                     {failed.map((p: any, idx: number) => (
+                                         <span key={`${p.key}-${idx}`} className="text-[10px] px-1.5 py-0.5 rounded bg-red-900/20 text-red-300 border border-red-900/30 opacity-80 flex items-center gap-1">
+                                             <span className="opacity-50">✗</span>
+                                             <span className="font-mono">{p.key}</span>
+                                             <span className="opacity-60 text-[9px]">{p.operator === 'is' ? ':' : p.operator} {p.values.join(', ')}</span>
+                                         </span>
+                                     ))}
+                                 </div>
                              </div>
                          )}
 

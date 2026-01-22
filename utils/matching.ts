@@ -1,6 +1,7 @@
 import type { Note, Property } from '../types';
 import { parseGeo, haversineDistance } from './spacetime';
 import { parseQuantity, compareQuantities } from './quantities';
+import { normalizeTerm } from './synonyms';
 
 export interface MatchResultDetails {
     score: number;
@@ -144,14 +145,23 @@ export const checkConstraint = (constraint: Property, target: Note): boolean => 
   }
 
   // Standard constraints iterate all constraint values (AND logic for constraints)
-  // [skill:is:React, Vue] -> requires React AND Vue
+  // [skill:is:React, Vue] -> requires React AND Vue (if constraint is strict subset)
+
+  // However, traditionally:
+  // [key:is:A] matches [key:is:A, B] (subset match)
+  // [key:is:A, B] matches [key:is:A, B, C]
+  // [key:is:A, B] does NOT match [key:is:A] (B missing)
+
+  // What if constraint uses 'contains'?
+  // [skill:contains:React] matches "React Native"
+  // [skill:contains:React, Vue] matches "React Native" AND "Vue.js" ? Yes.
+
   return constraint.values.every(cValStr => {
       const constraintVal = parseValue(cValStr);
       const constraintQty = parseQuantity(cValStr);
 
       // Target must satisfy this specific value constraint
-      // [skill:is:React, Vue] means "I have React OR Vue" (usually properties describe facts)
-      // So if constraint is "React", target needs to have "React".
+      // We look for ONE value in target that satisfies this constraint value
       return targetProp.values.some(v => {
         const tVal = parseValue(v);
         const tQty = parseQuantity(v);
@@ -178,29 +188,42 @@ export const checkConstraint = (constraint: Property, target: Note): boolean => 
             // Exact match (string or number equality) or soft semantic match
             // Handle simple variations: trim, lower case, removing common punctuation
             if (typeof tVal === 'string' && typeof constraintVal === 'string') {
-                const cleanT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
-                const cleanC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const cleanT = normalizeTerm(tVal);
+                const cleanC = normalizeTerm(constraintVal);
+
+                // Check exact match on normalized terms (handles synonyms)
+                if (cleanT === cleanC) return true;
+
+                // Fallback to fuzzy logic on original raw strings if synonym match fails
+                // (e.g. slight typos not in synonym dict)
+                const rawT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const rawC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
 
                 // Fuzzy Match
-                const dist = levenshteinDistance(cleanT, cleanC);
-                const maxLen = Math.max(cleanT.length, cleanC.length);
+                const dist = levenshteinDistance(rawT, rawC);
+                const maxLen = Math.max(rawT.length, rawC.length);
                 // Allow 1 edit for length 4-7, 2 edits for length 8+
                 const allowedDist = maxLen > 7 ? 2 : maxLen > 3 ? 1 : 0;
 
-                return cleanT === cleanC || cleanT.includes(cleanC) || cleanC.includes(cleanT) || dist <= allowedDist;
+                return rawT === rawC || rawT.includes(rawC) || rawC.includes(rawT) || dist <= allowedDist;
             }
             return tVal == constraintVal; // loose equality for "100" == 100
 
           case 'is not':
             if (typeof tVal === 'string' && typeof constraintVal === 'string') {
-                const cleanT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
-                const cleanC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const cleanT = normalizeTerm(tVal);
+                const cleanC = normalizeTerm(constraintVal);
+
+                if (cleanT === cleanC) return false;
+
+                const rawT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const rawC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
                 // It is NOT a match if they ARE equal (or soft equal)
-                const dist = levenshteinDistance(cleanT, cleanC);
-                const maxLen = Math.max(cleanT.length, cleanC.length);
+                const dist = levenshteinDistance(rawT, rawC);
+                const maxLen = Math.max(rawT.length, rawC.length);
                 const allowedDist = maxLen > 7 ? 2 : maxLen > 3 ? 1 : 0;
 
-                const isSoftEqual = cleanT === cleanC || cleanT.includes(cleanC) || cleanC.includes(cleanT) || dist <= allowedDist;
+                const isSoftEqual = rawT === rawC || rawT.includes(rawC) || rawC.includes(rawT) || dist <= allowedDist;
                 return !isSoftEqual;
             }
             return tVal != constraintVal;
@@ -214,6 +237,11 @@ export const checkConstraint = (constraint: Property, target: Note): boolean => 
             return tVal > constraintVal;
 
           case 'contains':
+            // Check normalized contains
+            const normT = normalizeTerm(String(tVal));
+            const normC = normalizeTerm(String(constraintVal));
+            if (normT.includes(normC)) return true;
+
             return String(tVal).toLowerCase().includes(String(constraintVal).toLowerCase());
 
           default:
