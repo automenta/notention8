@@ -29,14 +29,19 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
     }, [matches]);
 
     return (
-        <DashboardCard title="Intentional Opportunities" icon={SearchSparkleIcon}>
+        <DashboardCard title="Network Matches" icon={SearchSparkleIcon}>
             <div className="space-y-4">
                 {groupedMatches.length === 0 ? (
-                    <div className="p-6 bg-gray-800/30 rounded-xl border border-gray-800 border-dashed text-center">
-                        <p className="text-gray-500 text-sm mb-2">No active matches found.</p>
-                        <p className="text-xs text-gray-600">
-                            Create a note with constraints (e.g. <code>[price &lt; 100]</code>) to find matches.
-                        </p>
+                    <div className="p-6 bg-gray-800/30 rounded-xl border border-gray-800 border-dashed text-center flex flex-col items-center gap-3">
+                        <div className="bg-gray-800 p-3 rounded-full">
+                            <SearchSparkleIcon className="w-6 h-6 text-purple-400" />
+                        </div>
+                        <div>
+                            <p className="text-gray-300 text-sm font-medium mb-1">No active opportunities.</p>
+                            <p className="text-xs text-gray-500 max-w-[250px] mx-auto leading-relaxed">
+                                Express your intent clearly. Try adding constraints like <code className="bg-gray-800 px-1 py-0.5 rounded text-purple-300">[price &lt; 100]</code> or <code className="bg-gray-800 px-1 py-0.5 rounded text-blue-300">[skill:coding]</code>.
+                            </p>
+                        </div>
                     </div>
                 ) : (
                     groupedMatches.map(([noteId, groupMatches]) => {

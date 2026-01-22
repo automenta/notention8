@@ -105,41 +105,51 @@ export class LocalAIProvider implements AIProvider {
 
   async alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]> {
       // Heuristic: Check for known ontology keys in the text
-      // This is a very basic "alignment" for local/offline mode.
       const properties = new Set<string>();
       const lowerText = text.toLowerCase();
 
+      // 1. Common Semantic Patterns (Built-in Heuristics)
+
+      // Price / Cost
+      const priceMatch = text.match(/(\$|€|£)\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)/);
+      if (priceMatch) {
+          properties.add(`[price:is:${priceMatch[2]}]`); // normalized to just number
+      } else {
+          const currencyMatch = text.match(/(\d+(?:,\d{3})*(?:\.\d{1,2})?)\s*(USD|EUR|GBP|sats)/i);
+          if (currencyMatch) {
+              properties.add(`[price:is:${currencyMatch[1]}]`);
+          }
+      }
+
+      // Intent (Request/Offer)
+      if (lowerText.includes('looking for') || lowerText.includes('want to buy') || lowerText.includes('need')) {
+          properties.add(`[intent:is:request]`);
+      } else if (lowerText.includes('selling') || lowerText.includes('offering') || lowerText.includes('available for')) {
+          properties.add(`[intent:is:offer]`);
+      }
+
+      // Email
+      const emailMatch = text.match(/[\w.-]+@[\w.-]+\.\w+/);
+      if (emailMatch) {
+          properties.add(`[email:is:${emailMatch[0]}]`);
+      }
+
+      // 2. Ontology-based Extraction
       const traverse = (nodes: OntologyNode[]) => {
           nodes.forEach(n => {
               if (n.attributes) {
                   Object.keys(n.attributes).forEach(key => {
-                      // If the key appears in the text, assume it's relevant
-                      // e.g. "I am an expert in React" -> "expert" is not a key usually.
-                      // But if key is "skill" and text contains "React", how do we map?
-                      // Heuristic: If key is present as a word, maybe suggest it?
-                      // Better: If we have values in ontology (enums), check for those values.
+                      // Skip if we already found this key via built-ins (simple check)
+                      // Actually, we might want multiple values.
 
-                      // For now, simple keyword match: if "skill" is in text, suggest [skill:is:?]
-                      // This is too weak.
-
-                      // Better heuristic:
                       // Look for patterns like "Key: Value" or "Key is Value"
-                      // Regex: /key\s*(?:is|:)\s*(\w+)/
-                      // Capture everything until a newline or punctuation (.,!?) but allow @ and . inside emails/urls
-                      // Logic: Capture alphanumeric, spaces, @, ., /, : (for urls)
-
                       const regex = new RegExp(`${key}\\s*(?:is|:|contains)\\s*([\\w\\s@.:/\\-]+)`, 'i');
-                      const match = lowerText.match(regex);
+                      const match = text.match(regex);
                       if (match) {
-                          // Clean value: trim and remove trailing punctuation
                           let val = match[1].trim();
-                          // Remove trailing dots or commas if they were captured at the end of a sentence
-                          val = val.replace(/[.,!?;:]$/, '');
+                          val = val.replace(/[.,!?;:]$/, ''); // Clean trailing punctuation
 
-                          if (val) {
-                              // Basic type check heuristic
-                              // If ontology expects 'number' but val is not number, skip?
-                              // For now, let's just align.
+                          if (val && val.length < 50) { // Sanity check on length
                               properties.add(`[${key}:is:${val}]`);
                           }
                       }
