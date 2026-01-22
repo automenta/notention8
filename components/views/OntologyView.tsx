@@ -90,7 +90,7 @@ export function OntologyView() {
                     size="xs"
                     className="bg-green-700/80 hover:bg-green-600"
                   >
-                    {isEvolving ? 'Gardening...' : 'Run Gardener'}
+                    {isEvolving ? 'Updating...' : 'Update Ontology'}
                   </Button>
                 </>
              )}
@@ -114,7 +114,7 @@ export function OntologyView() {
                      <h3 className="font-bold text-white mb-1">The Ontology</h3>
                      <p className="text-sm text-gray-400">
                       This graph represents the shared vocabulary of your network.
-                      As you write notes with properties (e.g., <code>[price:is:100]</code>), the Gardener automatically updates this structure.
+                      As you write notes with properties (e.g., <code>[price:is:100]</code>), the Semantic Engine automatically updates this structure.
                     </p>
                 </div>
             </div>

@@ -134,9 +134,9 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                   size="xs"
                   icon={SearchSparkleIcon}
                   className="text-purple-300 border-purple-900/50 bg-purple-900/20 hover:bg-purple-900/40"
-                  title="Magic Fill (AI)"
+                  title="Extract properties from text"
               >
-                  Magic
+                  Extract
               </Button>
           )}
           {onPickLocation && (isAdding || ['location', 'geo', 'place'].includes(key)) && (

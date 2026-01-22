@@ -164,7 +164,7 @@ export class LocalAIProvider implements AIProvider {
       }
 
       // Role Extraction (Heuristic)
-      const roleReqMatch = text.match(/(?:looking for|hiring|need) (?:a|an)\s+([a-zA-Z\s]+?)(?:\s+(?:for|in|to|with|\.|$)|$)/i);
+      const roleReqMatch = text.match(/(?:looking for|hiring|need) (?:a|an)\s+([a-zA-Z\s]+?)(?=(?:[\.,]|\s+(?:for|in|to|with)|$))/i);
       if (roleReqMatch) {
           const role = roleReqMatch[1].trim();
           if (role.split(' ').length < 4) { // Avoid capturing long sentences
@@ -172,7 +172,7 @@ export class LocalAIProvider implements AIProvider {
           }
       }
 
-      const roleOfferMatch = text.match(/i am (?:a|an)\s+([a-zA-Z\s]+?)(?:\s+(?:who|with|looking|\.|$)|$)/i);
+      const roleOfferMatch = text.match(/i am (?:a|an)\s+([a-zA-Z\s]+?)(?=(?:[\.,]|\s+(?:who|with|looking)|$))/i);
       if (roleOfferMatch) {
           const role = roleOfferMatch[1].trim();
           if (role.split(' ').length < 4) {

@@ -3,10 +3,11 @@ import { useSingleNoteMatch } from '../../hooks/useSingleNoteMatch';
 import { useNotes } from '../../hooks/useNotes';
 import type { Note } from '../../types';
 import { Badge } from '../common/Badge';
-import { SearchSparkleIcon, PlusIcon } from '../layout/icons';
+import { SearchSparkleIcon, PlusIcon, ChatIcon } from '../layout/icons';
 import { parseProperties } from '../../utils/parsing';
 import { useToast } from '../../hooks/useToast';
 import { useGardener } from '../../hooks/useGardener';
+import { useView } from '../../hooks/useViewContext';
 import { useEffect, useRef } from 'react';
 import { convertEventToNote } from '../../utils/nostr';
 
@@ -15,6 +16,7 @@ export const EditorMatches = ({ note }: { note: Note }) => {
     const { addNote } = useNotes();
     const { addToast } = useToast();
     const { learnFromProperties } = useGardener();
+    const { setActiveView, setSelectedChatPubkey } = useView();
     const learnedRef = useRef(new Set<string>());
 
     // Passive Learning: When matches appear, learn from their properties
@@ -91,7 +93,18 @@ export const EditorMatches = ({ note }: { note: Note }) => {
                              </div>
                          )}
 
-                         <div className="mt-2 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                         <div className="mt-2 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <button
+                                onClick={() => {
+                                    setSelectedChatPubkey(event.pubkey);
+                                    setActiveView('chat');
+                                }}
+                                className="text-xs flex items-center gap-1 text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
+                                title="Chat with author"
+                             >
+                                 <ChatIcon className="w-3 h-3" />
+                                 Chat
+                             </button>
                              <button
                                 onClick={() => handleReply(event.content)}
                                 className="text-xs flex items-center gap-1 text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
