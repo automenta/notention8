@@ -46,21 +46,28 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
                 ) : (
                     groupedMatches.map(([noteId, groupMatches]) => {
                         const note = notes.find(n => n.id === noteId);
-                        const noteTitle = note?.title || 'Untitled Intent';
+                        const noteTitle = note?.title || 'Untitled Note';
+
+                        // Infer category from note content or tags
+                        // Simple heuristic for now: check for intent tag
+                        const isRequest = note?.content.includes('[intent:is:request]');
+                        const isOffer = note?.content.includes('[intent:is:offer]');
+                        const categoryLabel = isRequest ? 'Your Request' : isOffer ? 'Your Offer' : 'Your Note';
+                        const categoryColor = isRequest ? 'bg-purple-500' : isOffer ? 'bg-green-500' : 'bg-blue-500';
 
                         return (
                             <div key={noteId} className="bg-gray-900/50 rounded-lg border border-gray-700/50 overflow-hidden">
-                                {/* Header: The Intent */}
+                                {/* Header */}
                                 <div className="p-3 bg-gray-800 flex justify-between items-center border-b border-gray-700/50 cursor-pointer hover:bg-gray-750 transition-colors"
                                      onClick={() => onSelectNote(noteId)}>
                                     <div className="flex items-center gap-2 overflow-hidden">
-                                        <div className="w-1 h-8 bg-purple-500 rounded-full flex-shrink-0" />
+                                        <div className={`w-1 h-8 ${categoryColor} rounded-full flex-shrink-0`} />
                                         <div className="min-w-0">
                                             <h4 className="text-sm font-bold text-gray-200 truncate">{noteTitle}</h4>
                                             <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                <span>Your Request</span>
+                                                <span>{categoryLabel}</span>
                                                 <span>•</span>
-                                                <span className="text-purple-400">{groupMatches.length} Candidates</span>
+                                                <span className="text-purple-400">{groupMatches.length} Matches</span>
                                             </div>
                                         </div>
                                     </div>

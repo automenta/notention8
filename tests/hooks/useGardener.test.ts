@@ -16,7 +16,7 @@ vi.mock('../../hooks/useViewContext', () => ({
 }));
 
 // Mock useToast
-vi.mock('../../components/contexts/ToastContext', () => ({
+vi.mock('../../hooks/useToast', () => ({
     useToast: () => ({
         addToast: vi.fn(),
     }),
