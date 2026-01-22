@@ -80,12 +80,7 @@ export const TimelineWidget = () => {
         const title = `Event - ${displayDate}`;
         const content = `${title}\n[date:is:${dateStr}]`;
 
-        const newNote = addNote({ title });
-
-        updateNote({
-            ...newNote,
-            content
-        });
+        const newNote = addNote({ title, content });
 
         setSelectedNoteId(newNote.id);
         setActiveView('notes');

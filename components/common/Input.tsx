@@ -14,12 +14,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   className = '',
   leftIcon,
   rightIcon,
+  id,
   ...props
 }, ref) => {
+  const inputId = id || (label ? `input-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined);
+
   return (
     <div className={className}>
       {label && (
-        <label className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider">
+        <label htmlFor={inputId} className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider">
           {label}
         </label>
       )}
@@ -31,6 +34,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
           )}
           <input
             ref={ref}
+            id={inputId}
             className={`
                 w-full bg-gray-900/50 border border-gray-700/50 rounded-lg py-2.5 text-white
                 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50
