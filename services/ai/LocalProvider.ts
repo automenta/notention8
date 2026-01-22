@@ -54,6 +54,20 @@ export class LocalAIProvider implements AIProvider {
         tags.add('link');
     }
 
+    // Project-specific heuristics
+    if (lower.includes('project')) {
+        tags.add('project');
+        // If it looks like a project update, suggest status
+        if (lower.includes('done') || lower.includes('wip') || lower.includes('blocked')) {
+            tags.add('[status:is:Active]');
+        }
+        if (lower.includes('due') || lower.includes('deadline')) {
+            // Try to extract date?
+            // For now just suggest the property key to prompt user
+            tags.add('[deadline:is:?]');
+        }
+    }
+
     return Array.from(tags);
   }
 
