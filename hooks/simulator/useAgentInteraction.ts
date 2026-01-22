@@ -86,16 +86,27 @@ export function useAgentInteraction({
                     // Quick Action Handlers
                     if (content.startsWith("Analyze the intent")) {
                         responseText = await aiRef.current.generateCompletion(
-                            `You are an expert systems analyst. The user sent this message: "${content}".\n\nAnalyze the following conversation history and explain what the user seems to want efficiently:\n\n${history}`
+                            `You are an expert systems analyst. The user sent this message: "${content}".\n\nAnalyze the following conversation history between User and ${agent.name} (${agent.persona}) and explain what the user seems to want efficiently:\n\n${history}`
                         );
                     } else if (content.startsWith("Suggest semantic tags")) {
                         responseText = await aiRef.current.generateCompletion(
-                            `You are an ontology expert. Suggest 5 semantic tags (e.g. #topic or [key:value]) relevant to the following conversation context:\n\n${history}`
+                            `You are an ontology expert assisting ${agent.name} (${agent.persona}). Suggest 5 semantic tags (e.g. #topic or [key:value]) relevant to the following conversation context:\n\n${history}`
                         );
                     } else if (content.startsWith("Summarize")) {
                          responseText = await aiRef.current.generateCompletion(
-                            `Summarize the key points of this conversation so far in 3 bullet points:\n\n${history}`
+                            `Summarize the key points of this conversation between User and ${agent.name} (${agent.persona}) so far in 3 bullet points:\n\n${history}`
                         );
+                    } else if (content.startsWith("Remember this:")) {
+                        const fact = content.replace("Remember this:", "").trim();
+                        if (fact) {
+                            const currentMemory = agent.memory || [];
+                            const newMemory = [...currentMemory, fact];
+                            updateAgent(agentsRef.current.findIndex(a => a.id === agentId), { memory: newMemory });
+                            addLog(`🧠 Agent ${agent.name} memorized: "${fact}"`, 'info');
+                            responseText = `I've stored that in my memory.`;
+                        } else {
+                            responseText = "What should I remember?";
+                        }
                     } else {
                         // 1. Intent Classification: Is the user setting a new goal?
                         const intentPrompt = `

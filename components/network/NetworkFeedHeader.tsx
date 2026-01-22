@@ -4,12 +4,16 @@ import { ArrowLeftIcon } from '../layout/icons';
 import { IconButton } from '../common/IconButton';
 import { Input } from '../common/Input';
 
+import { Button } from '../common/Button';
+
 interface NetworkFeedHeaderProps {
     matchAgainstTitle?: string;
     onClearMatch: () => void;
     filter: string;
     setFilter: (filter: string) => void;
     sortedEvents: NostrEvent[];
+    intentFilter?: 'all' | 'request' | 'offer';
+    setIntentFilter?: (val: 'all' | 'request' | 'offer') => void;
 }
 
 export const NetworkFeedHeader: React.FC<NetworkFeedHeaderProps> = ({
@@ -17,10 +21,12 @@ export const NetworkFeedHeader: React.FC<NetworkFeedHeaderProps> = ({
     onClearMatch,
     filter,
     setFilter,
-    sortedEvents
+    sortedEvents,
+    intentFilter = 'all',
+    setIntentFilter
 }) => {
     return (
-        <div className="flex justify-between items-center mb-6 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div className="flex items-center gap-3 overflow-hidden">
                 {matchAgainstTitle && (
                     <IconButton
@@ -38,11 +44,33 @@ export const NetworkFeedHeader: React.FC<NetworkFeedHeaderProps> = ({
                 </h1>
             </div>
 
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-col md:flex-row items-end md:items-center gap-3 w-full md:w-auto">
+                 {setIntentFilter && (
+                    <div className="flex bg-gray-900 rounded-lg p-1 border border-gray-700">
+                        <button
+                            onClick={() => setIntentFilter('all')}
+                            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${intentFilter === 'all' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
+                        >
+                            All
+                        </button>
+                        <button
+                            onClick={() => setIntentFilter('request')}
+                            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${intentFilter === 'request' ? 'bg-purple-900/50 text-purple-200 shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
+                        >
+                            Requests
+                        </button>
+                        <button
+                            onClick={() => setIntentFilter('offer')}
+                            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${intentFilter === 'offer' ? 'bg-green-900/50 text-green-200 shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
+                        >
+                            Offers
+                        </button>
+                    </div>
+                )}
                 <Input
                     type="text"
                     placeholder="Search notes..."
-                    className="w-48"
+                    className="w-full md:w-48"
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
                 />

@@ -300,6 +300,27 @@ export function ChatWindow({
               >
                   Summarize
               </button>
+               <button
+                  type="button"
+                   onClick={() => {
+                      const fact = prompt("What should I remember?");
+                      if (!fact) return;
+                      const msg = `Remember this: ${fact}`;
+                      const dummyEvent = {
+                         id: 'local-' + Date.now(),
+                         pubkey: pubkey,
+                         created_at: Math.floor(Date.now() / 1000),
+                         kind: 1,
+                         tags: [],
+                         content: msg,
+                         sig: ''
+                      };
+                      onSendMessage(selectedContact.pubkey, dummyEvent, msg);
+                  }}
+                  className="whitespace-nowrap px-3 py-1 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-full text-xs text-yellow-300 transition-colors"
+              >
+                  Remember This
+              </button>
           </div>
         )}
         <form onSubmit={handleSendMessage} className="flex gap-2 max-w-4xl mx-auto">

@@ -6,6 +6,7 @@ const SAVE_DEBOUNCE_MS = 1000;
 
 export const useDebouncedSave = (note: Note, onSave: (note: Note) => void) => {
   const [dirtyNote, setDirtyNote] = useState<Note>(note);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
 
   // Refs for unmount safety
   const dirtyNoteRef = useRef(dirtyNote);
@@ -37,9 +38,22 @@ export const useDebouncedSave = (note: Note, onSave: (note: Note) => void) => {
   // Debounced save effect
   useEffect(() => {
     // Only save if dirtyNote differs from the current upstream note
-    if (areNotesEqual(dirtyNote, note)) return;
+    if (areNotesEqual(dirtyNote, note)) {
+        setSaveStatus('saved');
+        return;
+    }
 
-    const handler = setTimeout(() => onSave(dirtyNote), SAVE_DEBOUNCE_MS);
+    setSaveStatus('saving');
+    const handler = setTimeout(() => {
+        try {
+            onSave(dirtyNote);
+            setSaveStatus('saved');
+        } catch (e) {
+            console.error("Auto-save failed", e);
+            setSaveStatus('error');
+        }
+    }, SAVE_DEBOUNCE_MS);
+
     return () => clearTimeout(handler);
   }, [dirtyNote, onSave, note]);
 
@@ -52,5 +66,5 @@ export const useDebouncedSave = (note: Note, onSave: (note: Note) => void) => {
     };
   }, []);
 
-  return { dirtyNote, setDirtyNote };
+  return { dirtyNote, setDirtyNote, saveStatus };
 };
