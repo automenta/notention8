@@ -208,11 +208,19 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
 
       <div className="relative">
           <Input
+            list="property-keys"
             placeholder="Key (e.g. price)"
             value={key}
             onChange={(e) => setKey(e.target.value)}
             autoFocus={isAdding && !showExtraction} // Autofocus only on add if extraction not open
           />
+          <datalist id="property-keys">
+              {ontology.flatMap(n =>
+                  n.attributes ? Object.keys(n.attributes) : []
+              ).map(k => (
+                  <option key={k} value={k} />
+              ))}
+          </datalist>
           {type && (
               <span className="absolute right-2 top-3 text-[10px] uppercase bg-gray-700 text-gray-300 px-1 rounded">
                   {type}
