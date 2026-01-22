@@ -5,8 +5,29 @@ import { ChatWindow } from '../chat/ChatWindow';
 import { ContactList } from '../chat/ContactList';
 import { useSimulatorContext } from '../../hooks/useSimulatorContext';
 import { AgentSettingsModal } from '../simulator/AgentSettingsModal';
-import type { Contact } from '../../types';
+import { useNotes } from '../../hooks/useNotes';
+import { useGardener } from '../../hooks/useGardener';
+import type { Contact, NostrEvent } from '../../types';
 import type { SwarmTemplate } from '../../hooks/simulator/types';
+
+const GARDENER_ID = 'gardener-system';
+const GARDENER_CONTACT: Contact = {
+    pubkey: GARDENER_ID,
+    name: 'The Gardener',
+    about: 'I help grow your ontology and curate your notes.',
+    picture: 'https://api.dicebear.com/7.x/bottts/svg?seed=gardener',
+    isAgent: true
+};
+
+const createLocalMessage = (content: string, pubkey: string): NostrEvent => ({
+    id: Math.random().toString(36),
+    pubkey,
+    created_at: Math.floor(Date.now() / 1000),
+    kind: 4,
+    tags: [],
+    content,
+    sig: 'local'
+});
 
 export function ChatView() {
   const { resetChatNotification } = useView();
@@ -22,6 +43,9 @@ export function ChatView() {
       randomizeAgent,
       clearAgentMessages
   } = useSimulatorContext();
+  const { notes } = useNotes();
+  const { evolveOntology, optimizeOntology } = useGardener();
+  const [gardenerMessages, setGardenerMessages] = useState<NostrEvent[]>([]);
 
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null);
 
@@ -53,6 +77,39 @@ export function ChatView() {
       deploySwarm(newAgents);
   };
 
+  const handleGardenerMessage = async (content: string) => {
+        // Add user message
+        if (!pubkey) return;
+        const userMsg = createLocalMessage(content, pubkey);
+        setGardenerMessages(prev => [...prev, userMsg]);
+
+        // Logic
+        let response = "I am listening. I can 'analyze' your notes or 'optimize' your ontology.";
+        const lower = content.toLowerCase();
+
+        if (lower.includes('help')) {
+            response = "I can help you organize your notes. Try 'analyze my notes' or 'optimize ontology'.";
+        } else if (lower.includes('analyze') || lower.includes('evolve')) {
+             setGardenerMessages(prev => [...prev, createLocalMessage("Analyzing your notes...", GARDENER_ID)]);
+             const newAttrs = await evolveOntology(notes);
+             if (newAttrs.length > 0) {
+                 response = `I found ${newAttrs.length} new properties: ${newAttrs.map(a => a.key).join(', ')}.`;
+             } else {
+                 response = "Your notes look consistent. I didn't find any new patterns.";
+             }
+        } else if (lower.includes('optimize')) {
+             setGardenerMessages(prev => [...prev, createLocalMessage("Optimizing ontology...", GARDENER_ID)]);
+             const res = await optimizeOntology();
+             response = `Optimization complete. ${res.merged.length} merges proposed.`;
+        }
+
+        // Add system response
+        setTimeout(() => {
+             setGardenerMessages(prev => [...prev, createLocalMessage(response, GARDENER_ID)]);
+        }, 1000);
+    };
+
+
   // Merge Agent Contacts
   const agentContacts: Contact[] = agents.map(a => ({
       pubkey: a.id,
@@ -62,7 +119,7 @@ export function ChatView() {
       isAgent: true
   }));
 
-  const allContacts = [...agentContacts, ...contacts];
+  const allContacts = [GARDENER_CONTACT, ...agentContacts, ...contacts];
 
   // Resolve full contact object (to ensure properties like isAgent are present)
   const fullSelectedContact = localSelectedContact
@@ -70,9 +127,14 @@ export function ChatView() {
       : null;
 
   // Determine messages to display
-  const displayMessages = fullSelectedContact?.isAgent
-      ? (agentMessages[fullSelectedContact.pubkey] || [])
-      : (fullSelectedContact ? messages[fullSelectedContact.pubkey] || [] : []);
+  let displayMessages: NostrEvent[] = [];
+  if (fullSelectedContact?.pubkey === GARDENER_ID) {
+      displayMessages = gardenerMessages;
+  } else if (fullSelectedContact?.isAgent) {
+      displayMessages = agentMessages[fullSelectedContact.pubkey] || [];
+  } else {
+      displayMessages = fullSelectedContact ? messages[fullSelectedContact.pubkey] || [] : [];
+  }
 
   const selectedAgent = settingsAgentId ? agents.find(a => a.id === settingsAgentId) : null;
 
@@ -117,14 +179,20 @@ export function ChatView() {
           onBack={() => handleSelectContact(null)}
           messages={displayMessages}
           onSendMessage={(peerPubkey, event, decryptedContent) => {
-            if (fullSelectedContact?.isAgent) {
+            if (peerPubkey === GARDENER_ID) {
+                handleGardenerMessage(decryptedContent);
+            } else if (fullSelectedContact?.isAgent) {
                 sendMessageToAgent(peerPubkey, decryptedContent);
             } else {
                 addMessage(peerPubkey, event, decryptedContent);
             }
           }}
-          onOpenSettings={fullSelectedContact?.isAgent ? () => setSettingsAgentId(fullSelectedContact.pubkey) : undefined}
-          onClearChat={fullSelectedContact?.isAgent ? () => clearAgentMessages(fullSelectedContact.pubkey) : undefined}
+          onOpenSettings={fullSelectedContact?.isAgent && fullSelectedContact.pubkey !== GARDENER_ID ? () => setSettingsAgentId(fullSelectedContact.pubkey) : undefined}
+          onClearChat={
+              fullSelectedContact?.pubkey === GARDENER_ID
+                ? () => setGardenerMessages([])
+                : (fullSelectedContact?.isAgent ? () => clearAgentMessages(fullSelectedContact.pubkey) : undefined)
+          }
         />
       </div>
 

@@ -10,6 +10,7 @@ import { QuickActionsWidget } from '../dashboard/QuickActionsWidget';
 import { RecentNotesWidget } from '../dashboard/RecentNotesWidget';
 import { TemplatesWidget } from '../dashboard/TemplatesWidget';
 import { NetworkPulseWidget } from '../dashboard/NetworkPulseWidget';
+import { TimelineWidget } from '../dashboard/TimelineWidget';
 import { DashboardStats } from '../dashboard/DashboardStats';
 import { MatchesWidget } from '../dashboard/MatchesWidget';
 
@@ -94,6 +95,11 @@ export function DashboardView() {
   ];
 
   const rightWidgets: Widget[] = [
+    {
+        id: 'timeline',
+        component: TimelineWidget,
+        props: {}
+    },
     {
         id: 'templates',
         component: TemplatesWidget,
