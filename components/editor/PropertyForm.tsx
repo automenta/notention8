@@ -14,7 +14,7 @@ import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { IconButton } from '../common/IconButton';
 import { Select } from '../common/Select';
-import { LocalAIProvider } from '../../services/ai/LocalProvider';
+import { useGardener } from '../../hooks/useGardener';
 import { parseProperties } from '../../utils/parsing';
 
 interface PropertyFormProps {
@@ -77,13 +77,14 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
       }
   };
 
+  const { alignToOntology } = useGardener();
+
   const handleMagicFill = async () => {
       const text = window.prompt("Describe the property naturally (e.g. 'budget under 200', 'looking for designer')");
       if (!text) return;
 
       try {
-          const provider = new LocalAIProvider();
-          const results = await provider.alignToOntology(text, ontology);
+          const results = await alignToOntology(text, ontology);
 
           if (results.length > 0) {
               // Take the first one for now

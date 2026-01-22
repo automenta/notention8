@@ -7,9 +7,16 @@ import {
   TagIcon,
   TrashIcon,
   XIcon,
+  SearchSparkleIcon
 } from '../layout/icons';
 import { PropertyForm } from './PropertyForm';
 import { IconButton } from '../common/IconButton';
+import { useGardener } from '../../hooks/useGardener';
+import { parseProperties } from '../../utils/parsing';
+import { Button } from '../common/Button';
+import { useToast } from '../../hooks/useToast';
+import { useNotes } from '../../hooks/useNotes';
+import { useView } from '../../hooks/useViewContext';
 
 interface PropertyInspectorProps {
   properties: Property[];
@@ -29,6 +36,13 @@ export function PropertyInspector({
   ontology = [],
   onClose
 }: PropertyInspectorProps) {
+  const { alignToOntology } = useGardener();
+  const { addToast } = useToast();
+  const { notes } = useNotes();
+  const { selectedNoteId } = useView();
+
+  // Find current note content for scanning
+  const currentNote = notes.find(n => n.id === selectedNoteId);
   const [isAdding, setIsAdding] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
@@ -42,6 +56,41 @@ export function PropertyInspector({
     setEditKey('');
     setEditOp('is');
     setEditValue('');
+  };
+
+  const handleAutoScan = async () => {
+      if (!currentNote || !currentNote.content) {
+          addToast("No content to scan.", "info");
+          return;
+      }
+
+      addToast("Scanning note for properties...", "info");
+      const results = await alignToOntology(currentNote.content, ontology);
+
+      if (results.length === 0) {
+          addToast("No new properties found.", "info");
+          return;
+      }
+
+      let addedCount = 0;
+      results.forEach(tag => {
+          const parsed = parseProperties(tag);
+          if (parsed.length > 0) {
+              const p = parsed[0];
+              // Check for duplicate
+              const exists = properties.some(ex => ex.key === p.key && ex.operator === p.operator && ex.values.join(',') === p.values.join(','));
+              if (!exists) {
+                  onUpdateText(null, p);
+                  addedCount++;
+              }
+          }
+      });
+
+      if (addedCount > 0) {
+          addToast(`Added ${addedCount} properties from scan.`, "success");
+      } else {
+          addToast("All found properties already exist.", "info");
+      }
   };
 
   const startEdit = (prop: Property, idx: number) => {
@@ -195,10 +244,36 @@ export function PropertyInspector({
                 <TagIcon className="w-6 h-6" />
             </div>
             <p className="font-medium text-sm mb-1">No properties</p>
-            <p className="text-xs max-w-[200px]">
+            <p className="text-xs max-w-[200px] mb-4">
               Type <code className="bg-gray-800 px-1 py-0.5 rounded text-blue-300">[key:val]</code> in the editor to add them automatically.
             </p>
+            {currentNote && currentNote.content && currentNote.content.length > 10 && (
+                <Button
+                    onClick={handleAutoScan}
+                    size="xs"
+                    variant="secondary"
+                    icon={SearchSparkleIcon}
+                    className="border-dashed"
+                >
+                    Auto-Scan Content
+                </Button>
+            )}
           </div>
+        )}
+
+        {properties.length > 0 && currentNote && currentNote.content && currentNote.content.length > 10 && !isAdding && (
+            <div className="pt-2 border-t border-gray-800 flex justify-center">
+                 <Button
+                    onClick={handleAutoScan}
+                    size="xs"
+                    variant="ghost"
+                    icon={SearchSparkleIcon}
+                    className="text-gray-500 hover:text-purple-400"
+                    title="Scan content for missing properties"
+                >
+                    Scan for more
+                </Button>
+            </div>
         )}
       </div>
     </div>

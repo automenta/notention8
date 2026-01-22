@@ -6,11 +6,31 @@ import { Badge } from '../common/Badge';
 import { SearchSparkleIcon, PlusIcon } from '../layout/icons';
 import { parseProperties } from '../../utils/parsing';
 import { useToast } from '../../hooks/useToast';
+import { useGardener } from '../../hooks/useGardener';
+import { useEffect, useRef } from 'react';
+import { convertEventToNote } from '../../utils/nostr';
 
 export const EditorMatches = ({ note }: { note: Note }) => {
     const { matches } = useSingleNoteMatch(note);
     const { addNote } = useNotes();
     const { addToast } = useToast();
+    const { learnFromProperties } = useGardener();
+    const learnedRef = useRef(new Set<string>());
+
+    // Passive Learning: When matches appear, learn from their properties
+    useEffect(() => {
+        if (matches.length > 0) {
+            matches.slice(0, 5).forEach(({ event }) => {
+                if (learnedRef.current.has(event.id)) return;
+
+                const note = convertEventToNote(event);
+                if (note.properties.length > 0) {
+                    learnFromProperties(note.properties);
+                    learnedRef.current.add(event.id);
+                }
+            });
+        }
+    }, [matches, learnFromProperties]);
 
     if (matches.length === 0) return null;
 
