@@ -1,5 +1,5 @@
 import React from 'react';
-import { PencilIcon, NetworkIcon, ChatIcon, CubeIcon } from '../layout/icons';
+import { PencilIcon, NetworkIcon, ChatIcon, CpuChipIcon, ClockIcon } from '../layout/icons';
 
 interface QuickActionsWidgetProps {
   onCreateNote: () => void;
@@ -57,10 +57,18 @@ export const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({ onCreate
                 hoverBorder="hover:border-purple-500/50"
                 hoverShadow="hover:shadow-purple-900/10"
             />
+             <QuickActionBtn
+                onClick={() => onNavigate('time')}
+                icon={ClockIcon}
+                label="Calendar"
+                colorClass="bg-cyan-600/20 text-cyan-400 group-hover:bg-cyan-600"
+                hoverBorder="hover:border-cyan-500/50"
+                hoverShadow="hover:shadow-cyan-900/10"
+            />
             {showSimulator && (
                 <QuickActionBtn
                     onClick={() => onNavigate('simulator')}
-                    icon={CubeIcon}
+                    icon={CpuChipIcon}
                     label="Simulator"
                     colorClass="bg-orange-600/20 text-orange-400 group-hover:bg-orange-600"
                     hoverBorder="hover:border-orange-500/50"
