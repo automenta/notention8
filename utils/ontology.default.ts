@@ -10,7 +10,14 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
         id: 'person',
         label: 'Person',
         description: 'An individual human being.',
+        requiredAttributes: ['name'],
         attributes: {
+          name: {
+            type: 'string',
+            description: 'Full name.',
+            icon: 'user',
+            operators: { real: ['is'], imaginary: ['is not'] },
+          },
           email: {
             type: 'string',
             description: 'Email address',

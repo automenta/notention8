@@ -66,10 +66,23 @@ export const checkConstraint = (constraint: Property, target: Note): boolean => 
 
         switch (constraint.operator) {
           case 'is':
-            // Exact match (string or number equality)
+            // Exact match (string or number equality) or soft semantic match
+            // Handle simple variations: trim, lower case, removing common punctuation
+            if (typeof tVal === 'string' && typeof constraintVal === 'string') {
+                const cleanT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const cleanC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                return cleanT === cleanC || cleanT.includes(cleanC) || cleanC.includes(cleanT);
+            }
             return tVal == constraintVal; // loose equality for "100" == 100
 
           case 'is not':
+            if (typeof tVal === 'string' && typeof constraintVal === 'string') {
+                const cleanT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const cleanC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                // It is NOT a match if they ARE equal (or soft equal)
+                const isSoftEqual = cleanT === cleanC || cleanT.includes(cleanC) || cleanC.includes(cleanT);
+                return !isSoftEqual;
+            }
             return tVal != constraintVal;
 
           case 'less than':
