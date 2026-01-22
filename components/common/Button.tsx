@@ -1,4 +1,5 @@
 import React from 'react';
+import { Tooltip } from './Tooltip';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'success';
@@ -6,6 +7,8 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   icon?: React.ComponentType<{ className?: string }>;
   iconPosition?: 'left' | 'right';
   isLoading?: boolean;
+  tooltip?: string;
+  tooltipPosition?: 'top' | 'bottom' | 'left' | 'right';
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -17,6 +20,8 @@ export const Button: React.FC<ButtonProps> = ({
   isLoading = false,
   className = '',
   disabled,
+  tooltip,
+  tooltipPosition = 'top',
   ...props
 }) => {
   const baseClasses = "font-medium rounded-lg transition-all duration-200 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-gray-900";
@@ -37,7 +42,7 @@ export const Button: React.FC<ButtonProps> = ({
     outline: "bg-transparent border border-gray-600 text-gray-300 hover:text-white hover:border-gray-500 focus:ring-gray-500",
   };
 
-  return (
+  const button = (
     <button
       className={`
         ${baseClasses}
@@ -47,6 +52,7 @@ export const Button: React.FC<ButtonProps> = ({
         ${className}
       `}
       disabled={disabled || isLoading}
+      title={tooltip ? undefined : props.title}
       {...props}
     >
       {isLoading && (
@@ -60,4 +66,14 @@ export const Button: React.FC<ButtonProps> = ({
       {!isLoading && Icon && iconPosition === 'right' && <Icon className={`w-4 h-4 ${children ? 'ml-2' : ''}`} />}
     </button>
   );
+
+  if (tooltip) {
+    return (
+      <Tooltip content={tooltip} position={tooltipPosition}>
+        {button}
+      </Tooltip>
+    );
+  }
+
+  return button;
 };

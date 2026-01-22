@@ -1,4 +1,5 @@
 import React from 'react';
+import { Tooltip } from '../common/Tooltip';
 
 export interface NavButtonProps {
   icon: React.ReactElement<{ className?: string }>;
@@ -6,6 +7,8 @@ export interface NavButtonProps {
   isActive: boolean;
   onClick: () => void;
   badgeCount?: number;
+  tooltip?: string;
+  tooltipPosition?: 'top' | 'bottom' | 'left' | 'right';
 }
 
 export const NavButton: React.FC<NavButtonProps> = ({
@@ -14,11 +17,16 @@ export const NavButton: React.FC<NavButtonProps> = ({
   isActive,
   onClick,
   badgeCount,
+  tooltip,
+  tooltipPosition = 'bottom'
 }) => {
-  return (
+  // Use label as default tooltip if not suppressed (e.g. by explicitly passing empty string if we wanted that, but here we assume label is good default)
+  const tooltipContent = tooltip ?? label;
+
+  const button = (
     <button
       onClick={onClick}
-      title={label}
+      aria-label={label}
       aria-pressed={isActive}
       className={`relative p-2 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
         isActive
@@ -33,5 +41,11 @@ export const NavButton: React.FC<NavButtonProps> = ({
         </span>
       )}
     </button>
+  );
+
+  return (
+    <Tooltip content={tooltipContent} position={tooltipPosition}>
+      {button}
+    </Tooltip>
   );
 };
