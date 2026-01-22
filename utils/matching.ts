@@ -1,5 +1,6 @@
 import type { Note, Property } from '../types';
 import { parseGeo, haversineDistance } from './spacetime';
+import { parseQuantity, compareQuantities } from './quantities';
 
 export interface MatchResultDetails {
     score: number;
@@ -146,12 +147,31 @@ export const checkConstraint = (constraint: Property, target: Note): boolean => 
   // [skill:is:React, Vue] -> requires React AND Vue
   return constraint.values.every(cValStr => {
       const constraintVal = parseValue(cValStr);
+      const constraintQty = parseQuantity(cValStr);
 
       // Target must satisfy this specific value constraint
       // [skill:is:React, Vue] means "I have React OR Vue" (usually properties describe facts)
       // So if constraint is "React", target needs to have "React".
       return targetProp.values.some(v => {
         const tVal = parseValue(v);
+        const tQty = parseQuantity(v);
+
+        // Try quantity comparison first if both are parseable as quantities
+        // BUT strictness: only if compareQuantities returns non-null (meaning compatible units)
+        // If one is "100" (unitless) and other is "100 USD", compareQuantities returns null.
+        if (constraintQty && tQty) {
+            const cmp = compareQuantities(tQty, constraintQty);
+            if (cmp !== null) {
+                switch (constraint.operator) {
+                    case 'is': return cmp === 0;
+                    case 'is not': return cmp !== 0;
+                    case 'less than': return cmp === -1;
+                    case 'greater than': return cmp === 1;
+                    // 'is before' and 'is after' usually for dates, handled by string/number fallback or maybe quantities if time?
+                    // But 'time' units in quantities are durations (1 hr), not points in time.
+                }
+            }
+        }
 
         switch (constraint.operator) {
           case 'is':

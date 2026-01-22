@@ -3,6 +3,7 @@ import type { Note, OntologyNode } from '../../types';
 import { parseProperties } from '../../utils/parsing';
 import { getTextFromHtml } from '../../utils/nostr';
 import { addDays, format } from 'date-fns';
+import { parseQuantity } from '../../utils/quantities';
 
 export class LocalAIProvider implements AIProvider {
   name = 'Local (Heuristic)';
@@ -117,26 +118,42 @@ export class LocalAIProvider implements AIProvider {
 
       // --- Price / Cost (Refined) ---
       // "under 500", "below 500"
-      const lessThanMatch = text.match(/(?:under|below|less than)\s*(\$|€|£)?\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)/i);
+      const lessThanMatch = text.match(/(?:under|below|less than)\s*([$€£])?\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)(?:\s*(usd|eur|gbp|sats))?/i);
       if (lessThanMatch) {
-          properties.add(`[price:less than:${lessThanMatch[2]}]`);
+          const symbol = lessThanMatch[1] || '';
+          const amount = lessThanMatch[2];
+          const suffix = lessThanMatch[3] || '';
+          const raw = `${symbol}${amount} ${suffix}`.trim();
+          const q = parseQuantity(raw);
+          const val = q ? `${q.value} ${q.unit}` : amount;
+          properties.add(`[price:less than:${val.trim()}]`);
       }
 
       // "over 500", "above 500"
-      const greaterThanMatch = text.match(/(?:over|above|more than)\s*(\$|€|£)?\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)/i);
+      const greaterThanMatch = text.match(/(?:over|above|more than)\s*([$€£])?\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)(?:\s*(usd|eur|gbp|sats))?/i);
       if (greaterThanMatch) {
-          properties.add(`[price:greater than:${greaterThanMatch[2]}]`);
+          const symbol = greaterThanMatch[1] || '';
+          const amount = greaterThanMatch[2];
+          const suffix = greaterThanMatch[3] || '';
+          const raw = `${symbol}${amount} ${suffix}`.trim();
+          const q = parseQuantity(raw);
+          const val = q ? `${q.value} ${q.unit}` : amount;
+          properties.add(`[price:greater than:${val.trim()}]`);
       }
 
       // Exact price: "$500", "500 USD"
       if (!lessThanMatch && !greaterThanMatch) {
-          const priceMatch = text.match(/(\$|€|£)\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)/);
+          const priceMatch = text.match(/([$€£])\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)/);
           if (priceMatch) {
-              properties.add(`[price:is:${priceMatch[2]}]`);
+              const q = parseQuantity(`${priceMatch[1]}${priceMatch[2]}`);
+              const val = q ? `${q.value} ${q.unit}` : priceMatch[2];
+              properties.add(`[price:is:${val}]`);
           } else {
               const currencyMatch = text.match(/(\d+(?:,\d{3})*(?:\.\d{1,2})?)\s*(USD|EUR|GBP|sats)/i);
               if (currencyMatch) {
-                  properties.add(`[price:is:${currencyMatch[1]}]`);
+                  const q = parseQuantity(`${currencyMatch[1]} ${currencyMatch[2]}`);
+                  const val = q ? `${q.value} ${q.unit}` : currencyMatch[1];
+                  properties.add(`[price:is:${val}]`);
               }
           }
       }
@@ -226,6 +243,12 @@ export class LocalAIProvider implements AIProvider {
                   if (operatorStr.includes('contains')) op = 'contains';
                   else if (['under', 'below', 'less than'].some(s => operatorStr.includes(s))) op = 'less than';
                   else if (['over', 'above', 'more than', 'greater than'].some(s => operatorStr.includes(s))) op = 'greater than';
+
+                  // Try to normalize quantity
+                  const q = parseQuantity(val);
+                  if (q && q.unit) {
+                      val = `${q.value} ${q.unit}`;
+                  }
 
                   properties.add(`[${key}:${op}:${val}]`);
               }
