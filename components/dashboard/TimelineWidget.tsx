@@ -5,6 +5,7 @@ import { ClockIcon, ArrowRightIcon, PlusIcon } from '../layout/icons';
 import { Button } from '../common/Button';
 import { Card } from '../common/Card';
 import { Tabs } from '../common/Tabs';
+import { EmptyState } from '../common/EmptyState';
 import { useTimelineEvents } from '../../hooks/useTimelineEvents';
 import { TimelineEventItem } from './TimelineEventItem';
 
@@ -60,18 +61,17 @@ export const TimelineWidget = () => {
                 </div>
 
                 {displayedEvents.length === 0 ? (
-                    <div className="text-center text-gray-500 py-6 text-sm border border-gray-800 border-dashed rounded-lg bg-gray-800/30">
-                        {activeTab === 'upcoming' ? (
-                            <>
-                                <p className="mb-2">No upcoming events.</p>
+                    <EmptyState
+                         title={activeTab === 'upcoming' ? "No upcoming events." : "No past events found."}
+                         className="bg-gray-800/30 border border-gray-800 border-dashed rounded-lg py-6"
+                         action={
+                             activeTab === 'upcoming' ? (
                                 <Button size="xs" variant="secondary" onClick={handleCreateEvent} icon={PlusIcon}>
                                     Add Event
                                 </Button>
-                            </>
-                        ) : (
-                            <p>No past events found.</p>
-                        )}
-                    </div>
+                             ) : undefined
+                         }
+                    />
                 ) : (
                     displayedEvents.map((evt, idx) => (
                         <TimelineEventItem

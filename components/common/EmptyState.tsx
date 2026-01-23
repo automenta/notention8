@@ -6,6 +6,7 @@ interface EmptyStateProps {
   description?: React.ReactNode;
   action?: React.ReactNode;
   className?: string;
+  iconClassName?: string;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
@@ -13,13 +14,14 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   description,
   action,
-  className = ''
+  className = '',
+  iconClassName = 'h-8 w-8 text-gray-500'
 }) => {
   return (
     <div className={`flex flex-col items-center justify-center py-12 px-4 text-center ${className}`}>
       {Icon && (
         <div className="bg-gray-800 p-4 rounded-full mb-4">
-          <Icon className="h-8 w-8 text-gray-500" />
+          <Icon className={iconClassName} />
         </div>
       )}
       <h3 className="text-gray-300 mb-2 font-medium text-lg">{title}</h3>

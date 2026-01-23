@@ -2,6 +2,7 @@ import React from 'react';
 import { ClockIcon, PlusIcon } from '../layout/icons';
 import { Button } from '../common/Button';
 import { Card } from '../common/Card';
+import { EmptyState } from '../common/EmptyState';
 import { RecentNoteItem } from './RecentNoteItem';
 import type { Note } from '../../types';
 
@@ -41,16 +42,19 @@ export const RecentNotesWidget: React.FC<RecentNotesWidgetProps> = ({
                 ))}
             </div>
         ) : (
-            <div className="flex flex-col items-center justify-center py-12 bg-gray-800/30 rounded-2xl border border-gray-800 border-dashed text-center">
-                <p className="text-gray-500 mb-4">No notes yet. Start writing!</p>
-                <Button
-                    onClick={onCreateNote}
-                    variant="primary"
-                    icon={PlusIcon}
-                >
-                    Create First Note
-                </Button>
-            </div>
+            <EmptyState
+                title="No notes yet. Start writing!"
+                className="bg-gray-800/30 rounded-2xl border border-gray-800 border-dashed"
+                action={
+                    <Button
+                        onClick={onCreateNote}
+                        variant="primary"
+                        icon={PlusIcon}
+                    >
+                        Create First Note
+                    </Button>
+                }
+            />
         )}
     </Card>
   );
