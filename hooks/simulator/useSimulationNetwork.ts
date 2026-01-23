@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import type { Note, OntologyNode, OntologyAttribute } from '../../types';
 import type { Gardener } from '../../services/gardener';
 import { parseProperties } from '../../utils/parsing';
-import { matchNotes } from '../../utils/matching';
+import { matchingService } from '../../services/MatchingService';
 import { addAttribute } from '../../utils/ontologyHelpers';
 
 export interface Log {
@@ -36,10 +36,10 @@ export const useSimulationNetwork = (
           // 2. Run Matching Logic
           // Only match against OTHER notes
           filtered.forEach(otherNote => {
-             const score1 = matchNotes(enrichedNote, otherNote);
-             const score2 = matchNotes(otherNote, enrichedNote);
+             const result1 = matchingService.matchNotes(enrichedNote, otherNote);
+             const result2 = matchingService.matchNotes(otherNote, enrichedNote);
 
-             if (score1 > 0.5 || score2 > 0.5) {
+             if (result1.score > 0.5 || result2.score > 0.5) {
                  addLog(`MATCH: ${enrichedNote.id.slice(0,4)} <-> ${otherNote.id.slice(0,4)}`, 'match');
 
                  // Simulate "Contact" action

@@ -4,7 +4,7 @@ import { useNotes } from './useNotes';
 import { useView } from './useViewContext';
 import { useToast } from './useToast';
 import { DEFAULT_RELAYS, pool, convertEventToNote } from '../utils/nostr';
-import { matchNotes } from '../utils/matching';
+import { matchingService } from '../services/MatchingService';
 
 export const useBackgroundMatcher = () => {
   const { settings } = useSettings();
@@ -37,17 +37,18 @@ export const useBackgroundMatcher = () => {
           notes.forEach(localNote => {
              // Only match if local note has semantic properties?
              // Or if it has any content.
-             const score = matchNotes(localNote, offerNote);
+             const result = matchingService.matchNotes(localNote, offerNote);
 
-             if (score > 0.6) { // Threshold
+             if (result.score > 0.6) { // Threshold
                  addMatch({
                      localNoteId: localNote.id,
                      event,
-                     score,
-                     timestamp: Date.now()
+                     score: result.score,
+                     timestamp: Date.now(),
+                     satisfied: result.satisfied
                  });
                  // Optional: Toast for high relevance
-                 if (score > 0.8) {
+                 if (result.score > 0.8) {
                     // Only toast if it's REALLY good, and the throttle in ViewContext handles spam
                     addToast(`New match found for "${localNote.title || 'Note'}"!`, 'info');
                  }

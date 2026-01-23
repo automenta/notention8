@@ -17,6 +17,7 @@ import { MapPickerModal } from '../map/MapPickerModal';
 import { TimePickerModal } from '../common/TimePickerModal';
 import { EditorMatches } from './EditorMatches';
 import { ContextPanel } from './ContextPanel';
+import { SuggestionPanel } from './SuggestionPanel';
 
 interface EditorManagerProps {
   note: Note;
@@ -117,6 +118,12 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
       }
   };
 
+  const handleApplySuggestions = (suggestions: string[]) => {
+      const additions = suggestions.map(s => `<p>${s}</p>`).join('');
+      const newContent = dirtyNote.content + additions;
+      handleContentSave(newContent);
+  };
+
   return (
     <div className="flex flex-col h-full relative">
       <EditorHeader
@@ -148,6 +155,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         missingProperties={missingProperties}
         onAddProperty={handleAddPropertyHint}
       />
+      <SuggestionPanel noteId={note.id} onApply={handleApplySuggestions} />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col relative">
           <TiptapEditor

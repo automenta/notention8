@@ -3,14 +3,15 @@ import { useGardener } from './useGardener';
 import { useSettings } from './useSettingsContext';
 import { useNotes } from './useNotes';
 import { useView } from './useViewContext';
-import { parseProperties } from '../utils/parsing';
+import { useSuggestions } from '../components/contexts/SuggestionContext';
 
 export const useSmartInput = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const { alignToOntology } = useGardener();
     const { settings } = useSettings();
-    const { addNote, updateNote } = useNotes();
+    const { addNote } = useNotes();
     const { setActiveView, setSelectedNoteId } = useView();
+    const { addSuggestions } = useSuggestions();
 
     const processInput = async (text: string) => {
         if (!text.trim()) return;
@@ -27,24 +28,16 @@ export const useSmartInput = () => {
                 content: text
             });
 
-            // 2. Try to align
-            const results = await alignToOntology(text, settings.ontology);
-
-            let finalContent = text;
-            if (results && results.length > 0) {
-                 finalContent += '\n\n' + results.join('\n');
-            }
-
-            // 3. Update note
-            updateNote({
-                ...note,
-                content: finalContent,
-                properties: parseProperties(finalContent)
-            });
-
-            // 4. Navigate
+            // 2. Navigate immediately
             setSelectedNoteId(note.id);
             setActiveView('notes');
+
+            // 3. Try to align
+            const results = await alignToOntology(text, settings.ontology);
+
+            if (results && results.length > 0) {
+                 addSuggestions(note.id, results);
+            }
         } catch (e) {
             console.error(e);
         } finally {

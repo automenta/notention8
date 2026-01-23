@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSettings } from './useSettingsContext';
 import { DEFAULT_RELAYS, pool, convertEventToNote } from '../utils/nostr';
-import { matchNotes } from '../utils/matching';
+import { matchingService } from '../services/MatchingService';
 import type { Note, NostrEvent } from '../types';
 
 export function useSingleNoteMatch(note: Note) {
@@ -57,7 +57,7 @@ export function useSingleNoteMatch(note: Note) {
             // Don't match with self (if published)
             if (offer.nostrEventId === note.nostrEventId) return null;
 
-            const result = matchNotes(note, offer);
+            const result = matchingService.matchNotes(note, offer);
             return { event, score: result.score, satisfied: result.satisfied, failed: result.failed };
         })
         .filter((m): m is { event: NostrEvent, score: number, satisfied: any[], failed: any[] } => m !== null && m.score > 0.4)

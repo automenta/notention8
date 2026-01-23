@@ -8,6 +8,7 @@ import { NotesProvider } from './components/contexts/NotesContext';
 import { ToastProvider } from './components/contexts/ToastProvider';
 import { ViewProvider } from './components/contexts/ViewContext';
 import { SimulatorProvider } from './components/contexts/SimulatorProvider';
+import { SuggestionProvider } from './components/contexts/SuggestionContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -22,7 +23,9 @@ root.render(
         <ToastProvider>
           <ViewProvider>
             <SimulatorProvider>
-              <App />
+              <SuggestionProvider>
+                <App />
+              </SuggestionProvider>
             </SimulatorProvider>
           </ViewProvider>
         </ToastProvider>
