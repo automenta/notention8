@@ -2,7 +2,7 @@ import type { Property } from '../types';
 import { arePropertiesEqual } from './properties';
 
 // Map symbolic operators to canonical operator names
-const SYMBOL_TO_OP: Record<string, string> = {
+export const SYMBOL_TO_OP: Record<string, string> = {
   '<': 'less than',
   '>': 'greater than',
   '=': 'is',
@@ -12,17 +12,19 @@ const SYMBOL_TO_OP: Record<string, string> = {
   '∋': 'contains',
 };
 
-// Inverse map for canonical to preferred symbol (for display/canonicalization if needed)
-// But for parsing, we just need to know what < means.
+export interface ExtractedProperty {
+    property: Property;
+    index: number;
+    length: number;
+    originalText: string;
+}
 
 /**
- * Parses a raw text string and extracts semantic properties.
+ * Parses a raw text string and extracts semantic properties from bracket syntax.
  * Supports standard format [key:op:value] and symbolic format [key < value].
  */
-export const parseProperties = (text: string): Property[] => {
-  const properties: Property[] = [];
-
-  // 1. Parse standard [...] bracket syntax
+export const extractProperties = (text: string): ExtractedProperty[] => {
+  const extracted: ExtractedProperty[] = [];
   const bracketRegex = /\[([^\]]+)\]/g;
   let match;
 
@@ -30,9 +32,28 @@ export const parseProperties = (text: string): Property[] => {
     const content = match[1];
     const parsed = parsePropertyBlock(content);
     if (parsed) {
-      properties.push(parsed);
+      extracted.push({
+          property: parsed,
+          index: match.index,
+          length: match[0].length,
+          originalText: match[0]
+      });
     }
   }
+  return extracted;
+};
+
+/**
+ * Parses a raw text string and extracts semantic properties.
+ * Supports standard format [key:op:value] and symbolic format [key < value].
+ * Also supports parsing HTML Chip syntax for backward compatibility or processing.
+ */
+export const parseProperties = (text: string): Property[] => {
+  const properties: Property[] = [];
+
+  // 1. Parse standard [...] bracket syntax
+  const extracted = extractProperties(text);
+  properties.push(...extracted.map(e => e.property));
 
   // 2. Parse HTML Chip syntax: <span data-type="property" ...>
   // We use a regex that is robust enough for simple attributes
@@ -104,7 +125,7 @@ const parsePropertyBlock = (content: string): Property | null => {
 /**
  * Formats a property into its standard string representation.
  */
-const formatPropertyTag = (prop: Property): string => {
+export const formatPropertyTag = (prop: Property): string => {
   const vals = prop.values.join(',');
   return `[${prop.key}:${prop.operator}:${vals}]`;
 };
@@ -163,4 +184,3 @@ export const replacePropertyInString = (
 
   return text;
 };
-

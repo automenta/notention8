@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Property } from '../types';
-import { getNoteSemantics } from '../utils/noteSemantics';
+import { getNoteSemantics } from '../utils/htmlSemantics';
 
 export const useNoteSemantics = (htmlContent: string) => {
   const [tags, setTags] = useState<string[]>([]);

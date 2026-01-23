@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getNoteSemantics } from '@/utils/noteSemantics.ts';
+import { getNoteSemantics } from '@/utils/htmlSemantics';
 
 describe('getNoteSemantics', () => {
   it('should return empty arrays and isImaginary false for content with no semantics', () => {
@@ -41,12 +41,12 @@ describe('getNoteSemantics', () => {
     expect(isImaginary).toBe(false);
   });
 
-  it('should extract a property with a non-"is" operator and set isImaginary to true', () => {
+  it('should extract a property with a non-"is" operator and set isImaginary to true (normalizing symbol)', () => {
     const html =
       '<p>Test <span class="widget property" data-key="price" data-operator="<" data-values=\'["100"]\'>[price < 100]</span></p>';
     const { properties, isImaginary } = getNoteSemantics(html);
     expect(properties).toEqual([
-      { key: 'price', operator: '<', values: ['100'] },
+      { key: 'price', operator: 'less than', values: ['100'] },
     ]);
     expect(isImaginary).toBe(true);
   });
