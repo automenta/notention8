@@ -178,7 +178,11 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
             topContent={
                 <>
                     <SuggestionPanel noteId={note.id} onApply={handleApplySuggestions} />
-                    <ContextPanel note={dirtyNote} />
+                    <ContextPanel
+                        note={dirtyNote}
+                        onPickLocation={() => setIsMapPickerOpen(true)}
+                        onPickTime={handlePickTime}
+                    />
                 </>
             }
           >
