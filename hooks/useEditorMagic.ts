@@ -3,8 +3,7 @@ import type { OntologyNode } from '../types';
 import { useGardener } from './useGardener';
 import { useAutoTagging } from './useAutoTagging';
 import { useToast } from './useToast';
-import { getTextFromHtml } from '../utils/htmlSemantics';
-import { parseProperties, replacePropertyInString } from '../utils/parsing';
+import { parseProperties, replacePropertyInString, getTextFromHtml } from '../utils/parsing';
 import { parseNaturalDate } from '../utils/dateParsing';
 
 interface UseEditorMagicProps {

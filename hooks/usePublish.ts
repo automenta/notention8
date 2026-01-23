@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { finalizeEvent } from 'nostr-tools';
 import { useSettings } from './useSettingsContext';
 import { pool, DEFAULT_RELAYS, hexToBytes } from '../utils/nostr';
-import { getTextFromHtml } from '../utils/htmlSemantics';
+import { getTextFromHtml } from '../utils/parsing';
 import type { Note } from '../types';
 
 export const usePublish = () => {
