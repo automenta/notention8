@@ -1,6 +1,4 @@
-import React from 'react';
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 import { useOntologyView, OntologyTab } from '../../hooks/useOntologyView';
 import { OntologyNodeItem } from '../ontology/OntologyNodeItem';
@@ -10,6 +8,8 @@ import { Tabs } from '../common/Tabs';
 import { Button } from '../common/Button';
 import { Toggle } from '../common/Toggle';
 import { EditIcon } from '../layout/icons';
+import { InputModal } from '../common/InputModal';
+import { ConfirmationModal } from '../common/ConfirmationModal';
 
 export function OntologyView() {
   const {
@@ -29,21 +29,45 @@ export function OntologyView() {
   const { setSelectedNoteId, setActiveView } = useView();
   const [isEditing, setIsEditing] = useState(false);
 
+  // Modal States
+  const [inputModalOpen, setInputModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'addRoot' | 'addChild'>('addRoot');
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
+  const [nodeToDelete, setNodeToDelete] = useState<string | null>(null);
+
   const handleSelectNote = (noteId: string) => {
       setSelectedNoteId(noteId);
       setActiveView('notes');
   };
 
-  const onAddChild = (parentId: string) => {
-      const name = prompt("Enter name for new child node:");
-      if (name) {
-          handleAddNode(parentId, name);
+  const openAddChildModal = (parentId: string) => {
+      setSelectedParentId(parentId);
+      setModalType('addChild');
+      setInputModalOpen(true);
+  };
+
+  const openAddRootModal = () => {
+      setModalType('addRoot');
+      setInputModalOpen(true);
+  };
+
+  const handleInputConfirm = (name: string) => {
+      if (modalType === 'addRoot') {
+          handleAddNode(null, name);
+      } else if (selectedParentId) {
+          handleAddNode(selectedParentId, name);
       }
   };
 
-  const onDeleteNode = (nodeId: string) => {
-      if (confirm("Are you sure you want to delete this node and all its children?")) {
-          handleDeleteNode(nodeId);
+  const openDeleteModal = (nodeId: string) => {
+      setNodeToDelete(nodeId);
+      setConfirmModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+      if (nodeToDelete) {
+          handleDeleteNode(nodeToDelete);
       }
   };
 
@@ -122,10 +146,7 @@ export function OntologyView() {
             {isEditing && (
                 <div className="mb-4 flex justify-end">
                     <Button
-                        onClick={() => {
-                            const name = prompt("Enter name for new root node:");
-                            if (name) handleAddNode(null, name);
-                        }}
+                        onClick={openAddRootModal}
                         variant="secondary"
                         size="sm"
                         icon={EditIcon}
@@ -149,8 +170,8 @@ export function OntologyView() {
                         level={0}
                         usageStats={usageStats}
                         isEditing={isEditing}
-                        onAddChild={onAddChild}
-                        onDeleteNode={onDeleteNode}
+                        onAddChild={openAddChildModal}
+                        onDeleteNode={openDeleteModal}
                     />
                   ))
               )}
@@ -158,6 +179,26 @@ export function OntologyView() {
           </>
         )}
       </div>
+
+      <InputModal
+          isOpen={inputModalOpen}
+          onClose={() => setInputModalOpen(false)}
+          onConfirm={handleInputConfirm}
+          title={modalType === 'addRoot' ? "Add Root Node" : "Add Child Node"}
+          label="Concept Name"
+          placeholder="e.g. Project, Task, Person"
+          confirmLabel="Add Concept"
+      />
+
+      <ConfirmationModal
+          isOpen={confirmModalOpen}
+          onClose={() => setConfirmModalOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          title="Delete Concept"
+          message="Are you sure you want to delete this concept and all its descendants? This cannot be undone."
+          confirmLabel="Delete"
+          isDestructive
+      />
     </div>
   );
 }

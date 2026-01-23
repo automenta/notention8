@@ -36,16 +36,12 @@ export function SettingsView() {
         </div>
 
         <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-gray-900/50 px-3 py-2 rounded-lg border border-gray-700/50">
-              <span className="text-gray-400 text-xs uppercase tracking-wider font-bold">
-                Dev Mode
-              </span>
-              <Toggle
+            <Toggle
+                label="Developer Mode"
                 checked={settings.developerMode}
                 onChange={toggleDeveloperMode}
                 ariaLabel="Toggle Developer Mode"
-              />
-            </div>
+            />
         </div>
       </div>
 
