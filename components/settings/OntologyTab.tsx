@@ -15,6 +15,9 @@ import { Modal } from '../common/Modal';
 import { useToast } from '../../hooks/useToast';
 import { InputModal } from '../common/InputModal';
 import { ConfirmationModal } from '../common/ConfirmationModal';
+import { IconButton } from '../common/IconButton';
+import { Button } from '../common/Button';
+import { Input } from '../common/Input';
 
 export const OntologyTab: React.FC = () => {
   const { settings, setSettings } = useSettings();
@@ -208,19 +211,39 @@ export const OntologyTab: React.FC = () => {
           <span className={`font-medium ${isEmergent ? 'text-purple-300' : 'text-gray-200'}`}>{node.label}</span>
           <span className="text-xs text-gray-500 font-mono">({node.id})</span>
 
-          <div className="hidden group-hover:flex gap-2 ml-4">
-            <button onClick={() => handleRenameNode(node.id, node.label)} title="Rename">
-                <EditIcon className="w-4 h-4 text-gray-400 hover:text-white" />
-            </button>
-            <button onClick={() => handleAddNode(node.id)} title="Add Child">
-                <PlusIcon className="w-4 h-4 text-green-400 hover:text-green-300" />
-            </button>
-            <button onClick={() => handleDeleteNode(node.id)} title="Delete">
-                <TrashIcon className="w-4 h-4 text-red-400 hover:text-red-300" />
-            </button>
-            <button onClick={() => handleAddAttribute(node.id)} title="Add Attribute">
-                <TagIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" />
-            </button>
+          <div className="hidden group-hover:flex gap-1 ml-4">
+             <IconButton
+                onClick={() => handleRenameNode(node.id, node.label)}
+                tooltip="Rename"
+                icon={EditIcon}
+                variant="ghost"
+                size="xs"
+                className="text-gray-400 hover:text-white"
+             />
+             <IconButton
+                onClick={() => handleAddNode(node.id)}
+                tooltip="Add Child"
+                icon={PlusIcon}
+                variant="ghost"
+                size="xs"
+                className="text-green-400 hover:text-green-300"
+             />
+             <IconButton
+                onClick={() => handleDeleteNode(node.id)}
+                tooltip="Delete"
+                icon={TrashIcon}
+                variant="ghost"
+                size="xs"
+                className="text-red-400 hover:text-red-300"
+             />
+             <IconButton
+                onClick={() => handleAddAttribute(node.id)}
+                tooltip="Add Attribute"
+                icon={TagIcon}
+                variant="ghost"
+                size="xs"
+                className="text-yellow-400 hover:text-yellow-300"
+             />
           </div>
         </div>
 
@@ -234,16 +257,31 @@ export const OntologyTab: React.FC = () => {
                     <span className="text-xs text-gray-500">({attr.type})</span>
                     {isEmergent && <span className="text-xs text-purple-400 border border-purple-500/50 px-1 rounded">inferred</span>}
 
-                    <div className="hidden group-hover/attr:flex gap-2 ml-4">
-                        <button onClick={() => handleRenameAttribute(node.id, key)} title="Rename">
-                            <EditIcon className="w-3 h-3 text-gray-400 hover:text-white" />
-                        </button>
-                        <button onClick={() => handleMergeAttribute(node.id, key)} title="Merge/Alias (Conflict Resolution)">
-                            <MergeIcon className="w-3 h-3 text-purple-400 hover:text-purple-300" />
-                        </button>
-                        <button onClick={() => handleDeleteAttribute(node.id, key)} title="Delete">
-                            <TrashIcon className="w-3 h-3 text-red-400 hover:text-red-300" />
-                        </button>
+                    <div className="hidden group-hover/attr:flex gap-1 ml-4">
+                        <IconButton
+                            onClick={() => handleRenameAttribute(node.id, key)}
+                            tooltip="Rename"
+                            icon={EditIcon}
+                            variant="ghost"
+                            size="xs"
+                            className="text-gray-400 hover:text-white"
+                        />
+                        <IconButton
+                            onClick={() => handleMergeAttribute(node.id, key)}
+                            tooltip="Merge/Alias (Conflict Resolution)"
+                            icon={MergeIcon}
+                            variant="ghost"
+                            size="xs"
+                            className="text-purple-400 hover:text-purple-300"
+                        />
+                         <IconButton
+                            onClick={() => handleDeleteAttribute(node.id, key)}
+                            tooltip="Delete"
+                            icon={TrashIcon}
+                            variant="ghost"
+                            size="xs"
+                            className="text-red-400 hover:text-red-300"
+                        />
                     </div>
                 </div>
             ))}
@@ -264,12 +302,14 @@ export const OntologyTab: React.FC = () => {
     <div className="p-4 bg-gray-900/50 rounded-lg text-sm">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-gray-200">Ontology Graph</h2>
-        <button
+        <Button
             onClick={() => handleAddNode(null)}
-            className="flex items-center gap-2 px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-white"
+            variant="primary"
+            icon={PlusIcon}
+            size="sm"
         >
-            <PlusIcon className="w-4 h-4" /> Add Root Node
-        </button>
+            Add Root Node
+        </Button>
       </div>
       <p className="text-gray-400 mb-4 text-xs">
         Manage the semantic structure of your network.
@@ -294,29 +334,27 @@ export const OntologyTab: React.FC = () => {
                     This will delete <b>{mergingAttr.sourceKey}</b> and alias it to the target.
                 </p>
                 <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Target Attribute Key</label>
-                    <input
-                        type="text"
+                    <Input
+                        label="Target Attribute Key"
                         value={targetMergeKey}
                         onChange={(e) => setTargetMergeKey(e.target.value)}
-                        className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:border-blue-500 outline-none"
                         placeholder="e.g. 'price'"
                     />
                 </div>
                 <div className="flex justify-end gap-3 mt-6">
-                    <button
+                    <Button
                         onClick={() => setMergingAttr(null)}
-                        className="px-4 py-2 text-gray-400 hover:text-white"
+                        variant="secondary"
                     >
                         Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={executeMerge}
                         disabled={!targetMergeKey}
-                        className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded"
+                        variant="primary"
                     >
                         Merge Attributes
-                    </button>
+                    </Button>
                 </div>
                 <div className="mt-4 p-3 bg-gray-900/50 rounded border border-gray-700/50">
                     <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Upcoming Feature: Voting</h4>
