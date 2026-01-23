@@ -83,6 +83,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 <div className="border-t border-gray-700/50 pt-5">
                     <h3 className="font-bold text-white mb-3 text-sm uppercase tracking-wider">Tips</h3>
                     <ul className="text-sm text-gray-400 space-y-2">
+                        <li className="flex gap-2"><span className="text-blue-500">•</span> Press <strong className="text-gray-300">Ctrl+K</strong> to open the Command Palette anywhere.</li>
                         <li className="flex gap-2"><span className="text-blue-500">•</span> Use <strong className="text-gray-300">#hashtags</strong> for general categorization.</li>
                         <li className="flex gap-2"><span className="text-blue-500">•</span> Click <strong className="text-gray-300">Publish</strong> to save to Nostr.</li>
                         <li className="flex gap-2"><span className="text-blue-500">•</span> Click <strong className="text-gray-300">Find Matches</strong> to search the network.</li>

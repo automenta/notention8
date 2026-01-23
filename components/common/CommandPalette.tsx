@@ -52,11 +52,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   if (!isOpen) return null;
 
   const filteredNotes = notes
-    .filter(
-      (note) =>
-        note.title.toLowerCase().includes(query.toLowerCase()) ||
-        note.content.toLowerCase().includes(query.toLowerCase())
-    )
+    .filter((note) => {
+        const q = query.toLowerCase();
+        if (q.startsWith('#')) {
+            const tagQuery = q.slice(1);
+            return note.tags.some(tag => tag.toLowerCase().includes(tagQuery));
+        }
+        return (
+            note.title.toLowerCase().includes(q) ||
+            note.content.toLowerCase().includes(q)
+        );
+    })
     .slice(0, 10); // Limit results
 
   const filteredCommands = query
