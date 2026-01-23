@@ -1,62 +1,17 @@
 import React, { useState } from 'react';
-import { useGardener } from '../../hooks/useGardener';
-import { useSettings } from '../../hooks/useSettingsContext';
-import { useNotes } from '../../hooks/useNotes';
-import { useView } from '../../hooks/useViewContext';
 import { Button } from '../common/Button';
 import { Textarea } from '../common/Textarea';
 import { Card } from '../common/Card';
 import { SparklesIcon, SendIcon } from '../layout/icons';
-import { parseProperties } from '../../utils/parsing';
+import { useSmartInput } from '../../hooks/useSmartInput';
 
 export const SmartInputWidget: React.FC = () => {
     const [text, setText] = useState('');
-    const [isProcessing, setIsProcessing] = useState(false);
-    const { alignToOntology } = useGardener();
-    const { settings } = useSettings();
-    const { addNote, updateNote } = useNotes();
-    const { setActiveView, setSelectedNoteId } = useView();
+    const { processInput, isProcessing } = useSmartInput();
 
     const handleSubmit = async () => {
-        if (!text.trim()) return;
-        setIsProcessing(true);
-
-        try {
-            // 1. Create initial note
-            const title = text.length < 50
-                ? text
-                : text.slice(0, 40) + '...';
-
-            const note = addNote({
-                title: title,
-                content: text
-            });
-
-            // 2. Try to align
-            const results = await alignToOntology(text, settings.ontology);
-
-            let finalContent = text;
-            if (results && results.length > 0) {
-                 finalContent += '\n\n' + results.join('\n');
-            }
-
-            // 3. Update note
-            updateNote({
-                ...note,
-                content: finalContent,
-                properties: parseProperties(finalContent)
-            });
-
-            // 4. Navigate
-            setSelectedNoteId(note.id);
-            setActiveView('notes');
-            setText('');
-
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setIsProcessing(false);
-        }
+        await processInput(text);
+        setText('');
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
