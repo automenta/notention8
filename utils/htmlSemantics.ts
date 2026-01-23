@@ -97,6 +97,28 @@ export function getTextFromHtml(content: string): string {
   return div.textContent || '';
 }
 
+/**
+ * Prepares HTML for display in code view (pretty printing).
+ * Adds newlines before block tags to make it more readable.
+ */
+export const prettyPrintHtml = (html: string) => {
+  if (!html) return '';
+  const blockTags = [
+    'p',
+    'h1',
+    'h2',
+    'h3',
+    'hr',
+    'ul',
+    'ol',
+    'li',
+    'blockquote',
+    'pre',
+  ];
+  const regex = new RegExp(`(<(?:${blockTags.join('|')})[^>]*>)`, 'g');
+  return html.replace(regex, '\n$1').trim();
+};
+
 export const getNoteSemantics = (htmlContent: string) => {
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = htmlContent;
