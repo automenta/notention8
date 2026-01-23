@@ -1,16 +1,22 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { useLocalForage } from '../../hooks/useLocalForage';
 
 interface SuggestionContextType {
     suggestions: Record<string, string[]>;
     addSuggestions: (noteId: string, newSuggestions: string[]) => void;
     clearSuggestions: (noteId: string) => void;
     removeSuggestion: (noteId: string, suggestion: string) => void;
+    loading: boolean;
 }
 
 const SuggestionContext = createContext<SuggestionContextType | undefined>(undefined);
 
 export const SuggestionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [suggestions, setSuggestions] = useState<Record<string, string[]>>({});
+    // Persist suggestions to LocalForage so they survive reloads
+    const [suggestions, setSuggestions, loading] = useLocalForage<Record<string, string[]>>(
+        'notention-suggestions',
+        {}
+    );
 
     const addSuggestions = (noteId: string, newSuggestions: string[]) => {
         setSuggestions(prev => {
@@ -44,7 +50,7 @@ export const SuggestionProvider: React.FC<{ children: ReactNode }> = ({ children
     };
 
     return (
-        <SuggestionContext.Provider value={{ suggestions, addSuggestions, clearSuggestions, removeSuggestion }}>
+        <SuggestionContext.Provider value={{ suggestions, addSuggestions, clearSuggestions, removeSuggestion, loading }}>
             {children}
         </SuggestionContext.Provider>
     );

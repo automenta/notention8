@@ -58,7 +58,7 @@ export function useEditorMagic({ noteId, content, tags, onTagsChange, onContentS
         if (suggestions.length > 0) {
             // Instead of modifying content directly, queue suggestions
             addSuggestions(noteId, suggestions);
-            addToast(`Magic: ${suggestions.length} suggestions found. Review them above.`, 'info');
+            addToast(`Magic: ${suggestions.length} suggestions found. Review them below.`, 'info');
         } else if (convertedCount === 0) {
             addToast('Magic: No new properties or dates found.', 'info');
         }
