@@ -6,6 +6,7 @@ import type { OntologyAttribute, OntologyNode } from '../../types';
 import { findAttributeDef } from '../../utils/ontologyHelpers';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
+import { PropertyValueInput } from './PropertyValueInput';
 
 interface InsertPropertyModalProps {
   isOpen: boolean;
@@ -62,116 +63,6 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
 
   const preview = key && value ? `[${key}:${operator}:${value}]` : '...';
 
-  const renderValueInput = () => {
-    if (activeDef?.type === 'enum' && activeDef.options) {
-      return (
-        <select
-          className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          autoFocus={!!activeDef}
-        >
-          <option value="">Select an option...</option>
-          {activeDef.options.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
-      );
-    }
-
-    if (activeDef?.type === 'date') {
-      return (
-        <Input
-          type="date"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          autoFocus={!!activeDef}
-        />
-      );
-    }
-
-    if (activeDef?.type === 'number') {
-      return (
-        <Input
-          type="number"
-          placeholder="e.g. 100"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          autoFocus={!!activeDef}
-        />
-      );
-    }
-
-    if (activeDef?.type === 'datetime') {
-      return (
-        <Input
-          type="datetime-local"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          autoFocus={!!activeDef}
-        />
-      );
-    }
-
-    if (activeDef?.type === 'boolean') {
-      return (
-        <select
-          className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          autoFocus={!!activeDef}
-        >
-          <option value="">Select...</option>
-          <option value="true">True</option>
-          <option value="false">False</option>
-        </select>
-      );
-    }
-
-    if (activeDef?.type === 'geo') {
-        return (
-            <div className="flex gap-2">
-                <Input
-                    type="text"
-                    className="flex-1"
-                    placeholder="lat,lng"
-                    value={value}
-                    onChange={(e) => setValue(e.target.value)}
-                    autoFocus={!!activeDef}
-                />
-                {onPickLocation && (
-                    <Button
-                        type="button"
-                        onClick={async () => {
-                            const loc = await onPickLocation();
-                            if (loc) setValue(loc);
-                        }}
-                        variant="secondary"
-                        icon={MapIcon}
-                        title="Pick from Map"
-                    />
-                )}
-            </div>
-        );
-    }
-
-    return (
-      <Input
-        type="text"
-        placeholder={
-          activeDef?.description
-            ? `e.g. for ${activeDef.description}`
-            : 'e.g. Active, 100, 2024-01-01'
-        }
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        autoFocus={!!activeDef}
-      />
-    );
-  };
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? "Edit Property" : "Insert Property"}>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -221,7 +112,12 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
           <label className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider">
             Value
           </label>
-          {renderValueInput()}
+          <PropertyValueInput
+              value={value}
+              onChange={setValue}
+              attributeDef={activeDef}
+              onPickLocation={onPickLocation}
+          />
         </div>
 
         <div className="bg-gray-900/50 p-3 rounded border border-gray-700/50 flex items-center justify-between">
