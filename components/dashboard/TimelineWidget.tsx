@@ -5,59 +5,15 @@ import { ClockIcon, ArrowRightIcon, PlusIcon } from '../layout/icons';
 import { Button } from '../common/Button';
 import { Card } from '../common/Card';
 import { Tabs } from '../common/Tabs';
-import type { Note } from '../../types';
-
-interface TimelineEvent {
-    note: Note;
-    date: Date;
-    label: string;
-}
+import { useTimelineEvents } from '../../hooks/useTimelineEvents';
+import { TimelineEventItem } from './TimelineEventItem';
 
 export const TimelineWidget = () => {
-    const { notes, addNote, updateNote } = useNotes();
+    const { notes, addNote } = useNotes();
     const { setActiveView, setSelectedNoteId } = useView();
     const [activeTab, setActiveTab] = useState<'upcoming' | 'history'>('upcoming');
 
-    const { upcomingEvents, pastEvents } = useMemo(() => {
-        const upcoming: TimelineEvent[] = [];
-        const past: TimelineEvent[] = [];
-        const now = new Date();
-
-        notes.forEach(note => {
-            note.properties.forEach(p => {
-                const key = p.key.toLowerCase();
-                const val = p.values[0];
-                if (!val) return;
-
-                if (['date', 'time', 'deadline', 'start', 'end', 'due'].some(k => key.includes(k))) {
-                    const d = new Date(val);
-                    if (!isNaN(d.getTime())) {
-                        const evt = {
-                            note,
-                            date: d,
-                            label: p.key
-                        };
-                        if (d > now) {
-                            upcoming.push(evt);
-                        } else {
-                            past.push(evt);
-                        }
-                    }
-                }
-            });
-        });
-
-        // Sort upcoming by date ascending (nearest first)
-        upcoming.sort((a, b) => a.date.getTime() - b.date.getTime());
-
-        // Sort past by date descending (most recent first)
-        past.sort((a, b) => b.date.getTime() - a.date.getTime());
-
-        return {
-            upcomingEvents: upcoming,
-            pastEvents: past
-        };
-    }, [notes]);
+    const { upcomingEvents, pastEvents } = useTimelineEvents(notes);
 
     const displayedEvents = useMemo(() => {
         const list = activeTab === 'upcoming' ? upcomingEvents : pastEvents;
@@ -118,23 +74,12 @@ export const TimelineWidget = () => {
                     </div>
                 ) : (
                     displayedEvents.map((evt, idx) => (
-                        <div
+                        <TimelineEventItem
                             key={`${evt.note.id}-${idx}`}
-                            className="flex items-center gap-3 p-2 hover:bg-gray-800 rounded cursor-pointer transition-colors group"
-                            onClick={() => handleViewNote(evt.note.id)}
-                        >
-                            <div className={`flex-shrink-0 flex flex-col items-center min-w-[3rem] border rounded p-1 ${activeTab === 'upcoming' ? 'bg-gray-800 border-gray-700' : 'bg-gray-800/50 border-gray-800 opacity-60'}`}>
-                                <span className={`text-xs font-bold uppercase ${activeTab === 'upcoming' ? 'text-red-400' : 'text-gray-500'}`}>{evt.date.toLocaleString('default', { month: 'short' })}</span>
-                                <span className={`text-lg font-bold ${activeTab === 'upcoming' ? 'text-gray-200' : 'text-gray-500'}`}>{evt.date.getDate()}</span>
-                            </div>
-                            <div className="flex-grow min-w-0">
-                                <h4 className={`text-sm font-medium truncate ${activeTab === 'upcoming' ? 'text-gray-200' : 'text-gray-500'}`}>{evt.note.title || 'Untitled Note'}</h4>
-                                <p className="text-xs text-gray-500 truncate flex items-center gap-1">
-                                    <span className="opacity-70">{evt.label}:</span>
-                                    {evt.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </p>
-                            </div>
-                        </div>
+                            event={evt}
+                            activeTab={activeTab}
+                            onClick={handleViewNote}
+                        />
                     ))
                 )}
 

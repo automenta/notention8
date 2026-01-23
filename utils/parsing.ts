@@ -102,6 +102,32 @@ const parsePropertyBlock = (content: string): Property | null => {
 }
 
 /**
+ * Formats a property into its standard string representation.
+ */
+const formatPropertyTag = (prop: Property): string => {
+  const vals = prop.values.join(',');
+  return `[${prop.key}:${prop.operator}:${vals}]`;
+};
+
+/**
+ * Finds the index and length of a property in the text.
+ */
+const findPropertyInText = (text: string, prop: Property): { index: number; length: number } | null => {
+  const bracketRegex = /\[([^\]]+)\]/g;
+  let match;
+
+  while ((match = bracketRegex.exec(text)) !== null) {
+    const content = match[1];
+    const parsed = parsePropertyBlock(content);
+
+    if (parsed && arePropertiesEqual(parsed, prop)) {
+      return { index: match.index, length: match[0].length };
+    }
+  }
+  return null;
+};
+
+/**
  * Replaces a property in a text string (or HTML string) with a new one.
  * If oldProp is provided, it attempts to find and replace it.
  * If newProp is null, it removes the found property.
@@ -114,60 +140,25 @@ export const replacePropertyInString = (
 ): string => {
   if (!oldProp && !newProp) return text;
 
-  // Format new tag
-  let newTag = '';
-  if (newProp) {
-    const vals = newProp.values.join(',');
-    // Prefer standard format
-    newTag = `[${newProp.key}:${newProp.operator}:${vals}]`;
-  }
+  const newTag = newProp ? formatPropertyTag(newProp) : '';
 
+  // Case 1: Append (no old property to replace)
   if (!oldProp) {
-    // Append
     return text + (text.trim().endsWith('</p>') ? `<p>${newTag}</p>` : ` ${newTag}`);
   }
 
-  // Find and replace
-  const bracketRegex = /\[([^\]]+)\]/g;
-  let match;
+  // Case 2: Find and Replace/Delete
+  const match = findPropertyInText(text, oldProp);
 
-  // We need to find the specific instance of oldProp.
-  // We iterate matches. If a match parses to match oldProp, we replace it.
-  // To handle multiple matches, we might need to be careful.
-  // For now, replace the FIRST match that corresponds to oldProp.
-
-  // We need to re-run regex because replacing invalidates indices if we did it in loop?
-  // Actually, we can just find the match index first.
-
-  let matchIndex = -1;
-  let matchLength = 0;
-
-  while ((match = bracketRegex.exec(text)) !== null) {
-      const content = match[1];
-      const parsed = parsePropertyBlock(content);
-
-      if (parsed && arePropertiesEqual(parsed, oldProp)) {
-          matchIndex = match.index;
-          matchLength = match[0].length;
-          break;
-      }
+  if (match) {
+    const prefix = text.substring(0, match.index);
+    const suffix = text.substring(match.index + match.length);
+    return prefix + newTag + suffix;
   }
 
-  if (matchIndex !== -1) {
-      const prefix = text.substring(0, matchIndex);
-      const suffix = text.substring(matchIndex + matchLength);
-
-      // If deleting (newProp is null), we might want to clean up surrounding whitespace/tags?
-      // E.g. <p>[prop]</p> -> <p></p> or remove <p>?
-      // For now, simple replacement.
-      return prefix + newTag + suffix;
-  }
-
-  // If not found, append if newProp exists?
-  // Or do nothing?
-  // Let's append if it was a "replace" attempt but we couldn't find the old one (maybe it was modified textually).
-  if (newProp) {
-      return text + (text.trim().endsWith('</p>') ? `<p>${newTag}</p>` : ` ${newTag}`);
+  // Case 3: Old property not found, but we have a new one (Fallback: Append)
+  if (newTag) {
+     return text + (text.trim().endsWith('</p>') ? `<p>${newTag}</p>` : ` ${newTag}`);
   }
 
   return text;
