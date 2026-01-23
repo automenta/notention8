@@ -20,12 +20,13 @@ def test_ui_refactor(page: Page):
     page.screenshot(path="/home/jules/verification/home.png")
 
     header = page.locator("header")
-    expect(header.get_by_title("Notes")).to_be_visible()
+    # NavButton uses aria-label, not title attribute
+    expect(header.get_by_label("Notes")).to_be_visible()
 
     # 4. Check Dashboard Matches Widget (First)
     print("Navigating to Dashboard (Home)...")
     # Click Notes button twice to ensure dashboard
-    notes_btn = header.get_by_title("Notes")
+    notes_btn = header.get_by_label("Notes")
     notes_btn.click()
     page.wait_for_timeout(500)
     notes_btn.click()
@@ -40,12 +41,12 @@ def test_ui_refactor(page: Page):
 
     # 1. Verify Simulator Tab is GONE
     print("Checking Header for Simulator...")
-    expect(header.get_by_title("Simulator")).not_to_be_visible()
+    expect(header.get_by_label("Simulator")).not_to_be_visible()
     print("Simulator tab is correctly missing.")
 
     # 2. Go to Chat (Check for login prompt if not logged in)
     print("Navigating to Chat...")
-    header.get_by_title("Chat").click()
+    header.get_by_label("Chat").click()
     page.wait_for_timeout(1000)
     page.screenshot(path="/home/jules/verification/chat.png")
 
@@ -54,7 +55,8 @@ def test_ui_refactor(page: Page):
     else:
         # 3. Verify 'My Agents' section and 'Add Agent' button
         print("Checking Contact List for Agents...")
-        expect(page.get_by_title("Add Agent")).to_be_visible()
+        # Add Agent is likely an IconButton, which might use aria-label
+        expect(page.get_by_label("Add Agent")).to_be_visible()
         print("Add Agent button is visible.")
         expect(page.get_by_text("My Agents")).to_be_visible()
         print("My Agents section is visible.")
