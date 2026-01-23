@@ -2,15 +2,9 @@ import { useMemo, useRef } from 'react';
 import type { Note, SortOrder } from '../types';
 import { getTextFromHtml, parseProperties } from '../utils/parsing';
 import { checkConstraint } from '../utils/matching';
-
-const sortStrategies: Record<SortOrder, (a: Note, b: Note) => number> = {
-  updatedAt_desc: (a, b) => b.updatedAt.localeCompare(a.updatedAt),
-  updatedAt_asc: (a, b) => a.updatedAt.localeCompare(b.updatedAt),
-  createdAt_desc: (a, b) => b.createdAt.localeCompare(a.createdAt),
-  createdAt_asc: (a, b) => a.createdAt.localeCompare(b.createdAt),
-  title_asc: (a, b) => a.title.localeCompare(b.title),
-  title_desc: (a, b) => b.title.localeCompare(a.title),
-};
+import { GeoCoords, haversineDistance, parseGeoFromValues } from '../utils/spacetime';
+import { isSpatialKey, isTemporalKey } from '../utils/properties';
+import { parseDateFromValues } from '../utils/dateParsing';
 
 interface NoteMetadata {
   textContent: string;
@@ -18,13 +12,64 @@ interface NoteMetadata {
   lowerTags: string[];
   lowerProps: { key: string; values: string[] }[];
   updatedAt: string;
+  minDateTimestamp: number | null;
+  location: GeoCoords | null;
 }
+
+// Helper to get sort metadata
+const augmentNote = (note: Note): NoteMetadata => {
+  const textContent = getTextFromHtml(note.content).toLowerCase();
+  const lowerTitle = note.title.toLowerCase();
+  const lowerTags = note.tags.map((t) => t.toLowerCase());
+  const lowerProps =
+    note.properties?.map((p) => ({
+      key: p.key.toLowerCase(),
+      values: p.values.map((v) => v.toLowerCase()),
+    })) || [];
+
+  // Extract Temporal Data
+  let minDateTimestamp: number | null = null;
+  const temporalProps = note.properties?.filter(p => isTemporalKey(p.key));
+  if (temporalProps && temporalProps.length > 0) {
+      const timestamps = temporalProps
+          .map(p => parseDateFromValues(p.values)?.getTime())
+          .filter((t): t is number => t !== undefined && !isNaN(t));
+      if (timestamps.length > 0) {
+          minDateTimestamp = Math.min(...timestamps);
+      }
+  }
+
+  // Extract Spatial Data
+  let location: GeoCoords | null = null;
+  const spatialProps = note.properties?.filter(p => isSpatialKey(p.key));
+  if (spatialProps && spatialProps.length > 0) {
+      // Use the first valid location found
+      for (const p of spatialProps) {
+          const loc = parseGeoFromValues(p.values);
+          if (loc) {
+              location = loc;
+              break;
+          }
+      }
+  }
+
+  return {
+    textContent,
+    lowerTitle,
+    lowerTags,
+    lowerProps,
+    updatedAt: note.updatedAt,
+    minDateTimestamp,
+    location
+  };
+};
 
 export const useSortedFilteredNotes = (
   notes: Note[],
   searchTerm: string,
   sortOrder: SortOrder,
-  showTrash: boolean = false
+  showTrash: boolean = false,
+  userLocation: GeoCoords | null = null
 ) => {
   const cacheRef = useRef<Record<string, NoteMetadata>>({});
 
@@ -41,22 +86,7 @@ export const useSortedFilteredNotes = (
         return { ...note, ...cached };
       }
 
-      const textContent = getTextFromHtml(note.content).toLowerCase();
-      const lowerTitle = note.title.toLowerCase();
-      const lowerTags = note.tags.map((t) => t.toLowerCase());
-      const lowerProps =
-        note.properties?.map((p) => ({
-          key: p.key.toLowerCase(),
-          values: p.values.map((v) => v.toLowerCase()),
-        })) || [];
-
-      const metadata: NoteMetadata = {
-        textContent,
-        lowerTitle,
-        lowerTags,
-        lowerProps,
-        updatedAt: note.updatedAt,
-      };
+      const metadata = augmentNote(note);
       cache[note.id] = metadata;
 
       return { ...note, ...metadata };
@@ -131,14 +161,61 @@ export const useSortedFilteredNotes = (
   }, [notesWithMetadata, searchTerm]);
 
   return useMemo(() => {
-    const sorter = sortStrategies[sortOrder];
-    // Return sorted original notes (stripping metadata for cleanliness, though not strictly necessary in JS)
-    // Actually we can just return the objects from filteredNotes which are augmented.
-    // Consumers of this hook expect Note[]. The augmented object is a valid Note.
+    // Return sorted original notes
     return [...filteredNotes].sort((a, b) => {
         if (a.pinned && !b.pinned) return -1;
         if (!a.pinned && b.pinned) return 1;
-        return sorter(a, b);
+
+        switch (sortOrder) {
+            case 'updatedAt_desc':
+                return b.updatedAt.localeCompare(a.updatedAt);
+            case 'updatedAt_asc':
+                return a.updatedAt.localeCompare(b.updatedAt);
+            case 'createdAt_desc':
+                return b.createdAt.localeCompare(a.createdAt);
+            case 'createdAt_asc':
+                return a.createdAt.localeCompare(b.createdAt);
+            case 'title_asc':
+                return a.title.localeCompare(b.title);
+            case 'title_desc':
+                return b.title.localeCompare(a.title);
+            case 'soonest': {
+                // Notes with future dates come first, sorted by nearness to now.
+                // Notes with past dates come after future dates? Or just abs diff?
+                // Usually "soonest" means upcoming.
+                // Let's sort by timestamp ascending.
+                // If a has no date, push to end.
+                if (a.minDateTimestamp !== null && b.minDateTimestamp !== null) {
+                    return a.minDateTimestamp - b.minDateTimestamp;
+                }
+                if (a.minDateTimestamp !== null) return -1;
+                if (b.minDateTimestamp !== null) return 1;
+                return b.updatedAt.localeCompare(a.updatedAt); // fallback
+            }
+            case 'nearest': {
+                if (!userLocation) return b.updatedAt.localeCompare(a.updatedAt);
+                // Calculate distance
+                const distA = a.location ? haversineDistance(userLocation, a.location) : Infinity;
+                const distB = b.location ? haversineDistance(userLocation, b.location) : Infinity;
+
+                if (distA !== distB) {
+                     return distA - distB;
+                }
+                return b.updatedAt.localeCompare(a.updatedAt);
+            }
+            case 'tags': {
+                // Sort by tag count desc, then alpha
+                const countA = a.tags.length;
+                const countB = b.tags.length;
+                if (countA !== countB) return countB - countA;
+                return a.title.localeCompare(b.title);
+            }
+            case 'relevance':
+                // Fallback for now if not searching
+                return b.updatedAt.localeCompare(a.updatedAt);
+            default:
+                return b.updatedAt.localeCompare(a.updatedAt);
+        }
     });
-  }, [filteredNotes, sortOrder]);
+  }, [filteredNotes, sortOrder, userLocation]);
 };

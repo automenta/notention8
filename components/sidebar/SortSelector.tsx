@@ -14,6 +14,9 @@ const SORT_OPTIONS = [
     { value: "createdAt_asc", label: "Sort: Created (Oldest)" },
     { value: "title_asc", label: "Sort: Title (A-Z)" },
     { value: "title_desc", label: "Sort: Title (Z-A)" },
+    { value: "soonest", label: "Sort: Soonest (Date)" },
+    { value: "nearest", label: "Sort: Nearest (Location)" },
+    { value: "tags", label: "Sort: Tags (Count)" },
 ];
 
 export const SortSelector: React.FC<SortSelectorProps> = ({

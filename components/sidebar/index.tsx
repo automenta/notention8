@@ -4,6 +4,9 @@ import { ConfirmationModal } from '../common/ConfirmationModal';
 import { NoteListItem } from './NoteListItem';
 import { Search } from './Search';
 import { SortSelector } from './SortSelector';
+import { ViewSelector } from './ViewSelector';
+import { NoteGridItem } from './NoteGridItem';
+import { TagCloud } from './TagCloud';
 import { TemplateList } from './TemplateList';
 import { SidebarEmptyState } from './SidebarEmptyState';
 import { PlusIcon } from '../layout/icons';
@@ -29,8 +32,22 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
       handleDeleteConfirmed,
       handleRestore,
       handleCreateNote,
-      handleTogglePin
+      handleTogglePin,
+      sidebarViewMode,
+      setSidebarViewMode,
+      userLocation,
+      refreshUserLocation
   } = useSidebarLogic(sortedNotes);
+
+  React.useEffect(() => {
+    if (sortOrder === 'nearest' && !userLocation) {
+        refreshUserLocation();
+    }
+  }, [sortOrder, userLocation, refreshUserLocation]);
+
+  const handleTagClick = (tag: string) => {
+      setSearchTerm(`#${tag}`);
+  };
 
   return (
     <div className="bg-gray-900 flex flex-col h-full">
@@ -50,25 +67,45 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
             />
         </div>
 
-        <SortSelector sortOrder={sortOrder} onSortChange={setSortOrder} />
+        <div className="flex gap-2">
+            <div className="flex-grow">
+                <SortSelector sortOrder={sortOrder} onSortChange={setSortOrder} />
+            </div>
+            <ViewSelector viewMode={sidebarViewMode} onViewChange={setSidebarViewMode} />
+        </div>
 
         <TemplateList />
       </div>
 
       <div className="flex-grow p-2 overflow-y-auto custom-scrollbar">
         {sortedNotes.length > 0 ? (
-          sortedNotes.map((note) => (
-            <NoteListItem
-              key={note.id}
-              note={note}
-              isSelected={selectedNoteId === note.id}
-              onSelect={() => setSelectedNoteId(note.id)}
-              onDelete={() => handleDeleteRequest(note.id)}
-              onPin={!isTrashView ? () => handleTogglePin(note) : undefined}
-              isTrash={isTrashView}
-              onRestore={() => handleRestore(note.id)}
-            />
-          ))
+          sidebarViewMode === 'list' ? (
+              sortedNotes.map((note) => (
+                <NoteListItem
+                  key={note.id}
+                  note={note}
+                  isSelected={selectedNoteId === note.id}
+                  onSelect={() => setSelectedNoteId(note.id)}
+                  onDelete={() => handleDeleteRequest(note.id)}
+                  onPin={!isTrashView ? () => handleTogglePin(note) : undefined}
+                  isTrash={isTrashView}
+                  onRestore={() => handleRestore(note.id)}
+                />
+              ))
+          ) : sidebarViewMode === 'grid' ? (
+              <div className="grid grid-cols-2 gap-2">
+                  {sortedNotes.map((note) => (
+                    <NoteGridItem
+                      key={note.id}
+                      note={note}
+                      isSelected={selectedNoteId === note.id}
+                      onSelect={() => setSelectedNoteId(note.id)}
+                    />
+                  ))}
+              </div>
+          ) : (
+              <TagCloud notes={sortedNotes} onTagClick={handleTagClick} />
+          )
         ) : (
           <SidebarEmptyState
               searchTerm={searchTerm}

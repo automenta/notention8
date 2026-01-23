@@ -23,12 +23,13 @@ function App() {
     searchTerm,
     sortOrder,
     isSidebarOpen,
+    userLocation,
   } = useView();
 
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
-  const sortedNotes = useSortedFilteredNotes(notes, searchTerm, sortOrder, activeView === 'trash');
+  const sortedNotes = useSortedFilteredNotes(notes, searchTerm, sortOrder, activeView === 'trash', userLocation);
 
   useUrlRouting({
       activeView,

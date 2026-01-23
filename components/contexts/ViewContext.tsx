@@ -1,7 +1,8 @@
 import React, { createContext, ReactNode, useState } from 'react';
 import { useLocalForage } from '../../hooks/useLocalForage';
 import { useToast } from '../../hooks/useToast';
-import type { View, SortOrder, NostrEvent } from '../../types';
+import type { View, SortOrder, NostrEvent, SidebarViewMode } from '../../types';
+import { getCurrentPosition, GeoCoords } from '../../utils/spacetime';
 
 import type { Property } from '../../types';
 
@@ -18,6 +19,10 @@ export interface ViewContextType {
   setSortOrder: (order: SortOrder) => void;
   activeView: View;
   setActiveView: (view: View) => void;
+  sidebarViewMode: SidebarViewMode;
+  setSidebarViewMode: (mode: SidebarViewMode) => void;
+  userLocation: GeoCoords | null;
+  refreshUserLocation: () => Promise<void>;
   selectedNoteId: string | null;
   setSelectedNoteId: (id: string | null) => void;
   matchingNoteId: string | null;
@@ -47,11 +52,16 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
     'notention-sort-order',
     'updatedAt_desc'
   );
+  const [sidebarViewMode, setSidebarViewMode] = useLocalForage<SidebarViewMode>(
+      'notention-sidebar-view-mode',
+      'list'
+  );
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeView, setActiveView] = useState<View>('notes');
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [matchingNoteId, setMatchingNoteId] = useState<string | null>(null);
   const [selectedChatPubkey, setSelectedChatPubkey] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<GeoCoords | null>(null);
   const { addToast } = useToast();
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -87,11 +97,25 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
   const incrementChatNotification = () => setChatNotificationCount(c => c + 1);
   const resetChatNotification = () => setChatNotificationCount(0);
 
+  const refreshUserLocation = async () => {
+      try {
+          const loc = await getCurrentPosition();
+          setUserLocation(loc);
+      } catch (e) {
+          console.error("Failed to get location", e);
+          addToast("Could not access location for 'Nearest' sort", 'error');
+      }
+  };
+
   return (
     <ViewContext.Provider
       value={{
         activeView,
         setActiveView,
+        sidebarViewMode,
+        setSidebarViewMode,
+        userLocation,
+        refreshUserLocation,
         selectedNoteId,
         setSelectedNoteId,
         matchingNoteId,
