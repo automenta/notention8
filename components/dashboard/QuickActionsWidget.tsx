@@ -1,5 +1,6 @@
 import React from 'react';
 import { PencilIcon, NetworkIcon, ChatIcon, CpuChipIcon, ClockIcon } from '../layout/icons';
+import { Card } from '../common/Card';
 
 interface QuickActionsWidgetProps {
   onCreateNote: () => void;
@@ -30,8 +31,7 @@ const QuickActionBtn: React.FC<QuickActionBtnProps> = ({ onClick, icon: Icon, la
 
 export const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({ onCreateNote, onNavigate, showSimulator }) => {
   return (
-    <div>
-        <h2 className="text-lg font-semibold text-gray-300 mb-4 px-1">Quick Actions</h2>
+    <Card title="Quick Actions" className="border-none bg-transparent p-0">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <QuickActionBtn
                 onClick={onCreateNote}
@@ -76,6 +76,6 @@ export const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({ onCreate
                 />
             )}
         </div>
-    </div>
+    </Card>
   );
 };

@@ -3,7 +3,7 @@ import { SearchSparkleIcon, ArrowRightIcon, ChatIcon } from '../layout/icons';
 import { useView } from '../../hooks/useViewContext';
 import { useNotes } from '../../hooks/useNotes';
 import { IconButton } from '../common/IconButton';
-import { DashboardCard } from './DashboardCard';
+import { Card } from '../common/Card';
 import { inferNoteIntent } from '../../utils/semantics';
 import type { MatchResult } from '../../components/contexts/ViewContext';
 
@@ -30,7 +30,7 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
     }, [matches]);
 
     return (
-        <DashboardCard title="Network Matches" icon={SearchSparkleIcon}>
+        <Card title="Network Matches" icon={SearchSparkleIcon}>
             <div className="space-y-4">
                 {groupedMatches.length === 0 ? (
                     <div className="p-6 bg-gray-800/30 rounded-xl border border-gray-800 border-dashed text-center flex flex-col items-center gap-3">
@@ -137,6 +137,6 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
                     })
                 )}
             </div>
-        </DashboardCard>
+        </Card>
     );
 };
