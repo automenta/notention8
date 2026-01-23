@@ -29,13 +29,15 @@ body {
 }
 
 /* Rich-Text Content Styles */
-.note-content a {
+.note-content a,
+.suggestion-note {
   color: #60a5fa; /* blue-400 */
   text-decoration: underline;
   cursor: pointer;
 }
 
-.note-content a:hover {
+.note-content a:hover,
+.suggestion-note:hover {
   color: #93c5fd; /* blue-300 */
 }
 

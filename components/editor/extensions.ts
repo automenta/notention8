@@ -28,13 +28,27 @@ export const getExtensions = ({ allProperties, allTags, getNotes, templates, onO
         HTMLAttributes: {
           class: 'suggestion-item',
         },
-        suggestion: configureSuggestions((query) => {
-            const lower = query.toLowerCase();
-            return allProperties
-                .filter(p => p.label.toLowerCase().includes(lower))
-                .slice(0, 5)
-                .map(p => ({ id: p.id, label: p.label, description: p.description }));
-        }, '['),
+        suggestion: {
+            ...configureSuggestions((query) => {
+                const lower = query.toLowerCase();
+                return allProperties
+                    .filter(p => p.label.toLowerCase().includes(lower))
+                    .slice(0, 5)
+                    .map(p => ({ id: p.id, label: p.label, description: p.description }));
+            }, '['),
+            command: ({ editor, range, props }) => {
+                // Delete the trigger and query
+                editor.chain().focus().deleteRange(range).run();
+
+                // Open modal if available
+                if (onOpenPropertyModal) {
+                    onOpenPropertyModal(props.label || '');
+                } else {
+                    // Fallback to inserting text template
+                    editor.chain().focus().insertContent(`[${props.label}:is:?]`).run();
+                }
+            }
+        }
       }).extend({ name: 'propertySuggestion' }),
 
       Mention.configure({
