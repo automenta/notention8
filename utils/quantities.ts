@@ -8,7 +8,7 @@ const UNIT_ALIASES: Record<string, string> = {
     // Currency
     '$': 'USD', 'dollar': 'USD', 'dollars': 'USD', 'usd': 'USD',
     '€': 'EUR', 'euro': 'EUR', 'euros': 'EUR', 'eur': 'EUR',
-    '£': 'GBP', 'pound': 'GBP', 'pounds': 'GBP', 'gbp': 'GBP',
+    '£': 'GBP', 'gbp': 'GBP',
     'sats': 'sats', 'satoshis': 'sats', 'btc': 'BTC',
 
     // Distance

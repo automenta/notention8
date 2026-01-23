@@ -18,14 +18,8 @@ export const createNote = (overrides?: Partial<Note>): Note => {
 export const sortNotesByDate = (notes: Note[]) =>
   [...notes].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
-const areStringArraysEqual = (a: string[], b: string[]) => {
-  if (a === b) return true;
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-};
+export const areStringArraysEqual = (a: string[], b: string[]) =>
+  a === b || (a.length === b.length && a.every((val, i) => val === b[i]));
 
 export const areNotesEqual = (a: Note, b: Note) => {
   if (a === b) return true;
