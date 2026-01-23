@@ -1,6 +1,6 @@
 import StarterKit from '@tiptap/starter-kit';
 import BubbleMenu from '@tiptap/extension-bubble-menu';
-import Mention from '@tiptap/extension-mention';
+import Mention, { MentionNodeAttrs } from '@tiptap/extension-mention';
 import { PropertyExtension } from './PropertyExtension';
 import { configureSuggestions } from './configureSuggestions';
 import type { Template, Note } from '../../types';
@@ -12,6 +12,11 @@ interface GetExtensionsProps {
     templates: Template[];
     onOpenPropertyModal?: (key: string) => void;
     onMagic?: () => void;
+}
+
+// Extend default MentionNodeAttrs to include our custom type
+interface SlashCommandAttrs extends MentionNodeAttrs {
+    type?: string;
 }
 
 export const getExtensions = ({ allProperties, allTags, getNotes, templates, onOpenPropertyModal, onMagic }: GetExtensionsProps) => {
@@ -145,18 +150,23 @@ export const getExtensions = ({ allProperties, allTags, getNotes, templates, onO
                      });
                  }
 
-                 return [...commandItems, ...templateItems, ...propertyItems].slice(0, 10);
+                 return [...commandItems, ...templateItems, ...propertyItems].slice(0, 10).map(item => ({
+                     ...item,
+                     type: item.type as "tag" | "property" | "template" | undefined
+                 }));
             }, '/'),
             command: ({ editor, range, props }) => {
                 // Delete the slash command text
                 editor.chain().focus().deleteRange(range).run();
 
-                if (props.type === 'property' && onOpenPropertyModal) {
-                    onOpenPropertyModal(props.label);
+                const slashProps = props as unknown as SlashCommandAttrs;
+
+                if (slashProps.type === 'property' && onOpenPropertyModal) {
+                    onOpenPropertyModal(props.label || '');
                     return;
                 }
 
-                if (props.type === 'command') {
+                if (slashProps.type === 'command') {
                     if (props.id === 'magic' && onMagic) {
                         onMagic();
                     } else if (props.id === 'date') {
@@ -168,7 +178,7 @@ export const getExtensions = ({ allProperties, allTags, getNotes, templates, onO
                 }
 
                 // Insert the content
-                const content = props.id;
+                const content = props.id || '';
                 editor.chain().focus().insertContent(content).run();
             },
           }

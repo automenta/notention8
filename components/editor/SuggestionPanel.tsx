@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSuggestions } from '../../components/contexts/SuggestionContext';
 import { useNotes } from '../../hooks/useNotes';
 import { Button } from '../common/Button';
 import { SparklesIcon, CheckIcon, XMarkIcon } from '../layout/icons';
 import { parseProperties } from '../../utils/parsing';
+import { useToast } from '../../hooks/useToast';
 
 interface SuggestionPanelProps {
     noteId: string;
@@ -13,8 +14,31 @@ interface SuggestionPanelProps {
 export const SuggestionPanel = ({ noteId, onApply }: SuggestionPanelProps) => {
     const { suggestions, clearSuggestions, removeSuggestion } = useSuggestions();
     const { notes, updateNote } = useNotes();
+    const { addToast } = useToast();
 
     const noteSuggestions = suggestions[noteId];
+
+    // Keyboard shortcuts
+    useEffect(() => {
+        if (!noteSuggestions || noteSuggestions.length === 0) return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.altKey && e.key.toLowerCase() === 'a') {
+                e.preventDefault();
+                handleAccept();
+                addToast('Accepted all suggestions', 'success');
+            }
+            if (e.altKey && e.key.toLowerCase() === 'd') {
+                e.preventDefault();
+                clearSuggestions(noteId);
+                addToast('Dismissed suggestions', 'info');
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [noteSuggestions, noteId]);
+
     if (!noteSuggestions || noteSuggestions.length === 0) return null;
 
     const handleAccept = (suggestion?: string) => {
@@ -50,7 +74,10 @@ export const SuggestionPanel = ({ noteId, onApply }: SuggestionPanelProps) => {
             <div className="flex items-center gap-2 mb-3">
                 <SparklesIcon className="w-5 h-5 text-purple-400" />
                 <h3 className="font-semibold text-purple-200 text-sm">AI Suggestions</h3>
-                <div className="ml-auto flex gap-2">
+                <div className="ml-auto flex gap-2 items-center">
+                    <span className="text-xs text-gray-500 mr-2 hidden md:inline">
+                         <kbd className="bg-gray-800 px-1 rounded">Alt+A</kbd> Accept All
+                    </span>
                     <Button size="xs" variant="ghost" onClick={() => clearSuggestions(noteId)} className="text-gray-400 hover:text-white">
                         Dismiss All
                     </Button>
