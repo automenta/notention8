@@ -6,6 +6,17 @@ import { ViewContext } from '../../components/contexts/ViewContext';
 import { SettingsContext } from '../../components/contexts/SettingsContext';
 import type { Note } from '../../types';
 
+// Mock SuggestionContext
+vi.mock('../../components/contexts/SuggestionContext', () => ({
+  useSuggestions: () => ({
+    suggestions: {},
+    addSuggestions: vi.fn(),
+    clearSuggestions: vi.fn(),
+    removeSuggestion: vi.fn(),
+    loading: false
+  }),
+}));
+
 // Mock TiptapEditor
 vi.mock('../../components/editor/TiptapEditor', () => {
   const MockEditor = React.forwardRef((_props, _ref) => <div data-testid="mock-editor">Editor</div>);
