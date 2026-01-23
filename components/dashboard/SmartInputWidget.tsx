@@ -5,6 +5,7 @@ import { useNotes } from '../../hooks/useNotes';
 import { useView } from '../../hooks/useViewContext';
 import { Button } from '../common/Button';
 import { Textarea } from '../common/Textarea';
+import { Card } from '../common/Card';
 import { SparklesIcon, SendIcon } from '../layout/icons';
 import { parseProperties } from '../../utils/parsing';
 
@@ -65,15 +66,15 @@ export const SmartInputWidget: React.FC = () => {
     }
 
     return (
-        <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700/50 shadow-xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+        <Card
+            title="What's on your mind?"
+            icon={SparklesIcon}
+            className="shadow-xl relative overflow-hidden group"
+            variant="default"
+        >
+             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
                 <SparklesIcon className="w-24 h-24 text-purple-500 transform rotate-12" />
             </div>
-
-            <h2 className="text-xl font-semibold text-gray-200 mb-4 flex items-center gap-2">
-                <SparklesIcon className="w-5 h-5 text-purple-400" />
-                <span>What's on your mind?</span>
-            </h2>
 
             <div className="relative z-10">
                 <Textarea
@@ -99,6 +100,6 @@ export const SmartInputWidget: React.FC = () => {
                     </Button>
                 </div>
             </div>
-        </div>
+        </Card>
     );
 };

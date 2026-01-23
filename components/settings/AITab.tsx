@@ -117,7 +117,6 @@ export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
                         onClick={saveKey}
                         variant="primary"
                         icon={CheckIcon}
-                        className="mb-[1px]" // align with input
                     >
                         Save
                     </Button>
