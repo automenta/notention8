@@ -4,6 +4,7 @@ import { useView } from '../../hooks/useViewContext';
 import { ClockIcon, ArrowRightIcon, PlusIcon } from '../layout/icons';
 import { Button } from '../common/Button';
 import { DashboardWidget } from './DashboardWidget';
+import { EmptyState } from '../common/EmptyState';
 import { Tabs } from '../common/Tabs';
 import { useTimelineEvents } from '../../hooks/useTimelineEvents';
 import { TimelineEventItem } from './TimelineEventItem';
@@ -51,16 +52,6 @@ export const TimelineWidget = () => {
         <DashboardWidget
             title="Timeline"
             icon={ClockIcon}
-            isEmpty={displayedEvents.length === 0}
-            emptyState={{
-                title: activeTab === 'upcoming' ? "No upcoming events." : "No past events found.",
-                className: "bg-gray-800/30 border border-gray-800 border-dashed rounded-lg",
-                action: activeTab === 'upcoming' ? (
-                    <Button size="xs" variant="secondary" onClick={handleCreateEvent} icon={PlusIcon}>
-                        Add Event
-                    </Button>
-                ) : undefined
-            }}
         >
              <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -72,14 +63,26 @@ export const TimelineWidget = () => {
                     />
                 </div>
 
-                {displayedEvents.map((evt, idx) => (
-                    <TimelineEventItem
-                        key={`${evt.note.id}-${idx}`}
-                        event={evt}
-                        activeTab={activeTab}
-                        onClick={handleViewNote}
+                {displayedEvents.length === 0 ? (
+                    <EmptyState
+                        title={activeTab === 'upcoming' ? "No upcoming events." : "No past events found."}
+                        className="bg-gray-800/30 border border-gray-800 border-dashed rounded-lg py-6"
+                        action={activeTab === 'upcoming' ? (
+                            <Button size="xs" variant="secondary" onClick={handleCreateEvent} icon={PlusIcon}>
+                                Add Event
+                            </Button>
+                        ) : undefined}
                     />
-                ))}
+                ) : (
+                    displayedEvents.map((evt, idx) => (
+                        <TimelineEventItem
+                            key={`${evt.note.id}-${idx}`}
+                            event={evt}
+                            activeTab={activeTab}
+                            onClick={handleViewNote}
+                        />
+                    ))
+                )}
 
                 <div className="pt-2 border-t border-gray-800 flex justify-between items-center">
                     <Button
