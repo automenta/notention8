@@ -1,26 +1,29 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { TrashIcon, DocumentDuplicateIcon, ArrowDownIcon, ArrowUpIcon } from '../layout/icons';
 import { useNotes } from '../../hooks/useNotes';
 import { useSettings } from '../../hooks/useSettingsContext';
 import { useToast } from '../../hooks/useToast';
 import localforage from 'localforage';
-import type { Note } from '../../types';
+import type { Note, AppSettings } from '../../types';
 import { Button } from '../common/Button';
 import { ConfirmationModal } from '../common/ConfirmationModal';
-import { useState } from 'react';
+
+interface PendingImport {
+    type: 'full' | 'note';
+    data: any;
+    message: string;
+}
 
 export const DataTab: React.FC = () => {
   const { notes } = useNotes();
   const { settings } = useSettings();
   const { addToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
 
   const handleExport = async () => {
-      // Create a JSON object with notes and settings
-      // We should probably read directly from localforage to be safe, but state is source of truth too.
-      // Let's rely on state since it's what the user sees.
-
       const exportData = {
           version: 1,
           timestamp: new Date().toISOString(),
@@ -38,7 +41,7 @@ export const DataTab: React.FC = () => {
       addToast('Data exported successfully', 'success');
   };
 
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
 
@@ -50,12 +53,11 @@ export const DataTab: React.FC = () => {
 
               // Case 1: Full Backup (notes + settings)
               if (data.notes && data.settings) {
-                  if (confirm(`Found backup with ${data.notes.length} notes. This will OVERWRITE your current data. Continue?`)) {
-                      await localforage.setItem('notention-notes', data.notes);
-                      await localforage.setItem('notention-settings', data.settings);
-                      addToast("Import successful! Reloading...", "success");
-                      setTimeout(() => window.location.reload(), 1500);
-                  }
+                  setPendingImport({
+                      type: 'full',
+                      data,
+                      message: `Found backup with ${data.notes.length} notes. This will OVERWRITE your current data. Continue?`
+                  });
                   return;
               }
 
@@ -65,15 +67,18 @@ export const DataTab: React.FC = () => {
                   const existingIndex = currentNotes.findIndex((n) => n.id === data.id);
 
                   if (existingIndex >= 0) {
-                      if (!confirm(`Note "${data.title}" already exists. Overwrite?`)) return;
-                      currentNotes[existingIndex] = data;
+                      setPendingImport({
+                          type: 'note',
+                          data,
+                          message: `Note "${data.title}" already exists. Overwrite?`
+                      });
                   } else {
+                      // No conflict, just import
                       currentNotes.push(data);
+                      await localforage.setItem('notention-notes', currentNotes);
+                      addToast(`Imported note: ${data.title}`, "success");
+                      setTimeout(() => window.location.reload(), 1000);
                   }
-
-                  await localforage.setItem('notention-notes', currentNotes);
-                  addToast(`Imported note: ${data.title}`, "success");
-                  setTimeout(() => window.location.reload(), 1000); // Reload to refresh state
                   return;
               }
 
@@ -81,11 +86,45 @@ export const DataTab: React.FC = () => {
           } catch (err: unknown) {
               const message = err instanceof Error ? err.message : String(err);
               addToast("Import failed: " + message, 'error', 5000);
+          } finally {
+              // Reset input
+              if (fileInputRef.current) fileInputRef.current.value = '';
           }
       };
       reader.readAsText(file);
-      // Reset input
-      if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const executeImport = async () => {
+      if (!pendingImport) return;
+
+      try {
+          if (pendingImport.type === 'full') {
+              const { data } = pendingImport;
+              await localforage.setItem('notention-notes', data.notes);
+              await localforage.setItem('notention-settings', data.settings);
+              addToast("Import successful! Reloading...", "success");
+              setTimeout(() => window.location.reload(), 1500);
+          } else if (pendingImport.type === 'note') {
+               const { data } = pendingImport;
+               const currentNotes = await localforage.getItem<Note[]>('notention-notes') || [];
+               const existingIndex = currentNotes.findIndex((n) => n.id === data.id);
+
+               if (existingIndex >= 0) {
+                   currentNotes[existingIndex] = data;
+               } else {
+                   currentNotes.push(data);
+               }
+
+               await localforage.setItem('notention-notes', currentNotes);
+               addToast(`Imported note: ${data.title}`, "success");
+               setTimeout(() => window.location.reload(), 1000);
+          }
+      } catch (err) {
+          console.error(err);
+          addToast("Import execution failed.", "error");
+      } finally {
+          setPendingImport(null);
+      }
   };
 
   return (
@@ -118,7 +157,7 @@ export const DataTab: React.FC = () => {
                 ref={fileInputRef}
                 className="hidden"
                 accept=".json"
-                onChange={handleImport}
+                onChange={handleImportFile}
               />
           </div>
           <p className="text-sm text-gray-400 mt-2">
@@ -156,6 +195,16 @@ export const DataTab: React.FC = () => {
         message="Are you sure you want to delete all data? This action cannot be undone."
         confirmLabel="Clear Everything"
         isDestructive
+      />
+
+      <ConfirmationModal
+          isOpen={!!pendingImport}
+          onClose={() => setPendingImport(null)}
+          onConfirm={executeImport}
+          title={pendingImport?.type === 'full' ? "Restore Backup?" : "Overwrite Note?"}
+          message={pendingImport?.message || "Are you sure?"}
+          confirmLabel={pendingImport?.type === 'full' ? "Restore & Overwrite" : "Overwrite"}
+          isDestructive={pendingImport?.type === 'full'} // Full restore is destructive
       />
     </div>
   );
