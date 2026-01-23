@@ -36,62 +36,74 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
 }) => {
     return (
         <div className="flex items-center gap-1 border-r border-gray-700/50 pr-2 mr-2">
-            {onToggleToolbar && (
+            <div className="flex items-center gap-0.5">
+                {onToggleToolbar && (
+                    <IconButton
+                        onClick={onToggleToolbar}
+                        title={isToolbarVisible ? "Hide Formatting Toolbar" : "Show Formatting Toolbar"}
+                        icon={isToolbarVisible ? ChevronUpIcon : ChevronDownIcon}
+                        variant="ghost"
+                        size="sm"
+                        className="hidden md:flex"
+                    />
+                )}
+                {onToggleInspector && (
+                    <IconButton
+                        onClick={onToggleInspector}
+                        title="Toggle Property Inspector"
+                        icon={CodeBracketsIcon}
+                        variant="ghost"
+                        isActive={isInspectorOpen}
+                        size="sm"
+                    />
+                )}
+            </div>
+
+            <div className="w-px h-4 bg-gray-700/50 mx-1 hidden sm:block"></div>
+
+            <div className="flex items-center gap-0.5">
                 <IconButton
-                    onClick={onToggleToolbar}
-                    title={isToolbarVisible ? "Hide Formatting Toolbar" : "Show Formatting Toolbar"}
-                    icon={isToolbarVisible ? ChevronUpIcon : ChevronDownIcon}
+                    onClick={onToggleTags}
+                    title="Tags"
+                    icon={TagIcon}
                     variant="ghost"
-                    size="sm"
-                    className="hidden md:flex"
-                />
-            )}
-             <IconButton
-                onClick={onToggleTags}
-                title="Tags"
-                icon={TagIcon}
-                variant="ghost"
-                isActive={isTagInputVisible}
-                size="sm"
-             />
-             {onToggleInspector && (
-                 <IconButton
-                    onClick={onToggleInspector}
-                    title="Toggle Property Inspector"
-                    icon={CodeBracketsIcon}
-                    variant="ghost"
-                    isActive={isInspectorOpen}
-                    size="sm"
-                 />
-             )}
-            {onSaveTemplate && (
-                <IconButton
-                    onClick={onSaveTemplate}
-                    title="Save as Template"
-                    icon={DocumentDuplicateIcon}
-                    variant="ghost"
+                    isActive={isTagInputVisible}
                     size="sm"
                 />
-            )}
-             {onCopyContent && (
-                <IconButton
-                    onClick={onCopyContent}
-                    title="Copy Content"
-                    icon={EditIcon}
-                    variant="ghost"
-                    size="sm"
-                    className="hidden md:flex"
-                />
-            )}
-             {onOpenHelp && (
-                 <IconButton
-                    onClick={onOpenHelp}
-                    title="Help & Shortcuts"
-                    icon={HelpIcon}
-                    variant="ghost"
-                    size="sm"
-                />
-             )}
+                {onSaveTemplate && (
+                    <IconButton
+                        onClick={onSaveTemplate}
+                        title="Save as Template"
+                        icon={DocumentDuplicateIcon}
+                        variant="ghost"
+                        size="sm"
+                    />
+                )}
+            </div>
+
+            <div className="w-px h-4 bg-gray-700/50 mx-1 hidden sm:block"></div>
+
+             <div className="flex items-center gap-0.5">
+                {onCopyContent && (
+                    <IconButton
+                        onClick={onCopyContent}
+                        title="Copy Content"
+                        icon={EditIcon}
+                        variant="ghost"
+                        size="sm"
+                        className="hidden md:flex"
+                    />
+                )}
+                 {onOpenHelp && (
+                     <IconButton
+                        onClick={onOpenHelp}
+                        title="Help & Shortcuts"
+                        icon={HelpIcon}
+                        variant="ghost"
+                        size="sm"
+                    />
+                 )}
+             </div>
         </div>
     );
 };

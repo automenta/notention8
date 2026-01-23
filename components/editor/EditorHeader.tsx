@@ -87,18 +87,20 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
             </div>
         )}
 
-        <div className="flex-grow min-w-0 flex items-center">
-            <input
-              id="note-title-input"
-              type="text"
-              value={title || ''}
-              onChange={onTitleChange}
-              placeholder="Untitled Note"
-              autoFocus={!title && !readOnly}
-              readOnly={readOnly}
-              disabled={readOnly}
-              className={`w-full bg-transparent text-white text-xl font-bold focus:outline-none placeholder-gray-700 transition-colors focus:placeholder-gray-600 ${readOnly ? 'cursor-not-allowed opacity-75' : ''}`}
-            />
+        <div className="flex-grow min-w-0 flex items-center mr-2">
+            <div className="relative w-full">
+                <input
+                    id="note-title-input"
+                    type="text"
+                    value={title || ''}
+                    onChange={onTitleChange}
+                    placeholder="Untitled Note"
+                    autoFocus={!title && !readOnly}
+                    readOnly={readOnly}
+                    disabled={readOnly}
+                    className={`w-full bg-transparent text-white text-xl font-bold focus:outline-none placeholder-gray-700 transition-colors focus:placeholder-gray-600 py-1 ${readOnly ? 'cursor-not-allowed opacity-75' : ''}`}
+                />
+            </div>
             {readOnly && <LockIcon className="h-4 w-4 text-gray-500 ml-2 flex-shrink-0" />}
         </div>
 
