@@ -70,10 +70,10 @@ export const SuggestionPanel = ({ noteId, onApply }: SuggestionPanelProps) => {
     };
 
     return (
-        <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4 mb-4">
+        <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4 mt-4 mb-4">
             <div className="flex items-center gap-2 mb-3">
                 <SparklesIcon className="w-5 h-5 text-purple-400" />
-                <h3 className="font-semibold text-purple-200 text-sm">AI Suggestions</h3>
+                <h3 className="font-semibold text-purple-200 text-sm">Suggestions</h3>
                 <div className="ml-auto flex gap-2 items-center">
                     <span className="text-xs text-gray-500 mr-2 hidden md:inline">
                          <kbd className="bg-gray-800 px-1 rounded">Alt+A</kbd> Accept All

@@ -25,6 +25,7 @@ interface TiptapEditorProps {
   notes?: Note[];
   onPickLocation?: () => Promise<string>;
   saveStatus?: 'saved' | 'saving' | 'error';
+  children?: React.ReactNode;
 }
 
 export interface TiptapEditorRef {
@@ -42,7 +43,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(({
   onTemplates,
   notes = [],
   onPickLocation,
-  saveStatus
+  saveStatus,
+  children
 }, ref) => {
   const [viewMode, setViewMode] = useState<'rich' | 'code'>('rich');
 
@@ -144,6 +146,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(({
             placeholder="Enter HTML..."
           />
         )}
+        {children}
       </div>
       {!minimal && <EditorStatusBar editor={editor} saveStatus={saveStatus} />}
     </div>

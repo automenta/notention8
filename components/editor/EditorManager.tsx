@@ -155,7 +155,6 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         missingProperties={missingProperties}
         onAddProperty={handleAddPropertyHint}
       />
-      <SuggestionPanel noteId={note.id} onApply={handleApplySuggestions} />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col relative">
           <TiptapEditor
@@ -176,9 +175,12 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
             notes={notes}
             onPickLocation={handleRequestLocationPick}
             saveStatus={saveStatus}
-          />
-          <ContextPanel note={dirtyNote} />
-          <EditorMatches note={dirtyNote} />
+          >
+              <SuggestionPanel noteId={note.id} onApply={handleApplySuggestions} />
+              <ContextPanel note={dirtyNote} />
+              <EditorMatches note={dirtyNote} />
+          </TiptapEditor>
+
           {isTemplateSelectorOpen && (
               <TemplateSelector
                   ontology={settings.ontology}
