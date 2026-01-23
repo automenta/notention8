@@ -4,7 +4,8 @@ import { useSettings } from '../../hooks/useSettingsContext';
 import { useView } from '../../hooks/useViewContext';
 import { useNotes } from '../../hooks/useNotes';
 import { parseProperties } from '../../utils/parsing';
-import type { View } from '../../types';
+import { DEFAULT_TEMPLATES } from '../../utils/templates';
+import type { View, Template } from '../../types';
 import { NavButton } from './NavButton';
 import { IconButton } from '../common/IconButton';
 import {
@@ -70,6 +71,22 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
       setActiveView('notes');
   };
 
+  const handleCreateFromTemplate = (template: Template) => {
+      const newNote = addNote();
+      const properties = parseProperties(template.content);
+
+      updateNote({
+          ...newNote,
+          content: template.content,
+          properties
+      });
+
+      setSelectedNoteId(newNote.id);
+      setActiveView('notes');
+  };
+
+  const allTemplates = [...DEFAULT_TEMPLATES, ...settings.customTemplates];
+
   const navItems: {
     view: View;
     label: string;
@@ -112,7 +129,12 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
           className="hidden md:flex"
         />
 
-        <NewNoteButton onNewNote={onNewNote} onCreateIntent={handleCreateIntent} />
+        <NewNoteButton
+            onNewNote={onNewNote}
+            onCreateIntent={handleCreateIntent}
+            templates={allTemplates}
+            onCreateFromTemplate={handleCreateFromTemplate}
+        />
 
         <IconButton
             onClick={onOpenPalette}

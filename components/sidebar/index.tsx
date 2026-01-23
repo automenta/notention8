@@ -7,7 +7,6 @@ import { SortSelector } from './SortSelector';
 import { ViewSelector } from './ViewSelector';
 import { NoteGridItem } from './NoteGridItem';
 import { TagCloud } from './TagCloud';
-import { TemplateList } from './TemplateList';
 import { SidebarEmptyState } from './SidebarEmptyState';
 import { PlusIcon } from '../layout/icons';
 import { useSidebarLogic } from './useSidebarLogic';
@@ -73,8 +72,6 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
             </div>
             <ViewSelector viewMode={sidebarViewMode} onViewChange={setSidebarViewMode} />
         </div>
-
-        <TemplateList />
       </div>
 
       <div className="flex-grow p-2 overflow-y-auto custom-scrollbar">
