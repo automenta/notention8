@@ -3,6 +3,29 @@ import type { Property } from '../types';
 export const TEMPORAL_KEYS = ['date', 'time', 'deadline', 'start', 'end', 'due'];
 export const SPATIAL_KEYS = ['location', 'geo', 'place', 'coords'];
 
+const INDEFINITE_OPS = new Set([
+  'greater than',
+  'less than',
+  'between',
+  'is not',
+  'contains',
+  'is near',
+  // Symbolic fallbacks if not normalized
+  '<',
+  '>',
+  '!=',
+  '≈',
+  '∋',
+]);
+
+export const isIndefiniteOperator = (operator: string): boolean => {
+  return INDEFINITE_OPS.has(operator);
+};
+
+export const isIndefiniteProperty = (prop: Property): boolean => {
+  return isIndefiniteOperator(prop.operator);
+};
+
 /**
  * Checks if a property key represents a temporal concept (date/time).
  */
