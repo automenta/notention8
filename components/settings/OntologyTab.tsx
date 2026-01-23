@@ -13,14 +13,29 @@ import {
 import { TrashIcon, EditIcon, PlusIcon, FolderIcon, TagIcon, MergeIcon, SparklesIcon } from '../layout/icons';
 import { Modal } from '../common/Modal';
 import { useToast } from '../../hooks/useToast';
+import { InputModal } from '../common/InputModal';
+import { ConfirmationModal } from '../common/ConfirmationModal';
 
 export const OntologyTab: React.FC = () => {
   const { settings, setSettings } = useSettings();
   const { addToast } = useToast();
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
-  // Removed unused state vars: editingNodeId, setEditingNodeId, editingAttrKey, setEditingAttrKey
-  // These were likely intended for inline editing which is not fully implemented or replaced by prompts/modals.
+  // Modal State
+  const [inputModal, setInputModal] = useState<{
+      isOpen: boolean;
+      title: string;
+      label?: string;
+      defaultValue?: string;
+      onConfirm: (val: string) => void;
+  }>({ isOpen: false, title: '', onConfirm: () => {} });
+
+  const [confirmModal, setConfirmModal] = useState<{
+      isOpen: boolean;
+      title: string;
+      message: string;
+      onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
 
   // Merge state
   const [mergingAttr, setMergingAttr] = useState<{ nodeId: string, sourceKey: string } | null>(null);
@@ -36,79 +51,111 @@ export const OntologyTab: React.FC = () => {
   // --- Actions ---
 
   const handleAddNode = (parentId: string | null) => {
-    const id = prompt('Enter new node ID:');
-    if (!id) return;
-    const label = prompt('Enter node label:', id);
-    if (!label) return;
-
-    const newNode: OntologyNode = { id, label };
-    setSettings(prev => ({
-      ...prev,
-      ontology: addNode(prev.ontology, parentId, newNode)
-    }));
-    if (parentId) {
-        const newExpanded = new Set(expandedNodes);
-        newExpanded.add(parentId);
-        setExpandedNodes(newExpanded);
-    }
+      setInputModal({
+          isOpen: true,
+          title: "Add Node",
+          label: "Node ID (Label will match ID initially)",
+          onConfirm: (id) => {
+              if (!id) return;
+              const newNode: OntologyNode = { id, label: id };
+              setSettings(prev => ({
+                  ...prev,
+                  ontology: addNode(prev.ontology, parentId, newNode)
+              }));
+              if (parentId) {
+                  const newExpanded = new Set(expandedNodes);
+                  newExpanded.add(parentId);
+                  setExpandedNodes(newExpanded);
+              }
+          }
+      });
   };
 
   const handleDeleteNode = (id: string) => {
-    if (!confirm('Are you sure you want to delete this node and all its children?')) return;
-    setSettings(prev => ({
-      ...prev,
-      ontology: deleteNode(prev.ontology, id)
-    }));
+      setConfirmModal({
+          isOpen: true,
+          title: "Delete Node",
+          message: "Are you sure you want to delete this node and all its children?",
+          onConfirm: () => {
+              setSettings(prev => ({
+                  ...prev,
+                  ontology: deleteNode(prev.ontology, id)
+              }));
+          }
+      });
   };
 
   const handleRenameNode = (id: string, currentLabel: string) => {
-    const newLabel = prompt('Enter new label:', currentLabel);
-    if (newLabel && newLabel !== currentLabel) {
-      setSettings(prev => ({
-        ...prev,
-        ontology: renameNode(prev.ontology, id, newLabel)
-      }));
-    }
+      setInputModal({
+          isOpen: true,
+          title: "Rename Node",
+          label: "New Label",
+          defaultValue: currentLabel,
+          onConfirm: (newLabel) => {
+              if (newLabel && newLabel !== currentLabel) {
+                  setSettings(prev => ({
+                      ...prev,
+                      ontology: renameNode(prev.ontology, id, newLabel)
+                  }));
+              }
+          }
+      });
   };
 
   const handleAddAttribute = (nodeId: string) => {
-    const key = prompt('Enter attribute key:');
-    if (!key) return;
-
-    // Default attribute structure
-    const newAttr: OntologyAttribute = {
-        type: 'string',
-        description: '',
-        operators: { real: ['is'], imaginary: ['is not'] }
-    };
-
-    setSettings(prev => ({
-      ...prev,
-      ontology: addAttribute(prev.ontology, nodeId, key, newAttr)
-    }));
+      setInputModal({
+          isOpen: true,
+          title: "Add Attribute",
+          label: "Attribute Key",
+          onConfirm: (key) => {
+              if (!key) return;
+              const newAttr: OntologyAttribute = {
+                  type: 'string',
+                  description: '',
+                  operators: { real: ['is'], imaginary: ['is not'] }
+              };
+              setSettings(prev => ({
+                  ...prev,
+                  ontology: addAttribute(prev.ontology, nodeId, key, newAttr)
+              }));
+          }
+      });
   };
 
   const handleDeleteAttribute = (nodeId: string, key: string) => {
-    if (!confirm(`Delete attribute '${key}'?`)) return;
-    setSettings(prev => ({
-      ...prev,
-      ontology: deleteAttribute(prev.ontology, nodeId, key)
-    }));
+      setConfirmModal({
+          isOpen: true,
+          title: "Delete Attribute",
+          message: `Delete attribute '${key}'?`,
+          onConfirm: () => {
+              setSettings(prev => ({
+                  ...prev,
+                  ontology: deleteAttribute(prev.ontology, nodeId, key)
+              }));
+          }
+      });
   };
 
   const handleRenameAttribute = (nodeId: string, oldKey: string) => {
-    const newKey = prompt('Enter new key:', oldKey);
-    if (newKey && newKey !== oldKey) {
-        try {
-            setSettings(prev => ({
-                ...prev,
-                ontology: renameAttribute(prev.ontology, nodeId, oldKey, newKey)
-            }));
-        } catch (e: unknown) {
-            const message = e instanceof Error ? e.message : String(e);
-            addToast(message, 'error');
-        }
-    }
+      setInputModal({
+          isOpen: true,
+          title: "Rename Attribute",
+          label: "New Key",
+          defaultValue: oldKey,
+          onConfirm: (newKey) => {
+              if (newKey && newKey !== oldKey) {
+                  try {
+                      setSettings(prev => ({
+                          ...prev,
+                          ontology: renameAttribute(prev.ontology, nodeId, oldKey, newKey)
+                      }));
+                  } catch (e: unknown) {
+                      const message = e instanceof Error ? e.message : String(e);
+                      addToast(message, 'error');
+                  }
+              }
+          }
+      });
   };
 
   const handleMergeAttribute = (nodeId: string, sourceKey: string) => {
@@ -280,6 +327,24 @@ export const OntologyTab: React.FC = () => {
             </div>
         </Modal>
       )}
+
+      <InputModal
+        isOpen={inputModal.isOpen}
+        onClose={() => setInputModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={inputModal.onConfirm}
+        title={inputModal.title}
+        label={inputModal.label}
+        defaultValue={inputModal.defaultValue}
+      />
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        isDestructive
+      />
     </div>
   );
 };
