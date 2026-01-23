@@ -17,6 +17,7 @@ import { Button } from '../common/Button';
 import { useToast } from '../../hooks/useToast';
 import { useNotes } from '../../hooks/useNotes';
 import { useView } from '../../hooks/useViewContext';
+import { ConfirmationModal } from '../common/ConfirmationModal';
 
 interface PropertyInspectorProps {
   properties: Property[];
@@ -49,6 +50,8 @@ export function PropertyInspector({
   const [editKey, setEditKey] = useState('');
   const [editOp, setEditOp] = useState('is');
   const [editValue, setEditValue] = useState('');
+
+  const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
 
   const startAdd = () => {
     setIsAdding(true);
@@ -126,9 +129,10 @@ export function PropertyInspector({
     cancelEdit();
   };
 
-  const handleDelete = (prop: Property) => {
-    if (confirm(`Delete property [${prop.key}]?`)) {
-      onUpdateText(prop, null);
+  const confirmDelete = () => {
+    if (propertyToDelete) {
+      onUpdateText(propertyToDelete, null);
+      setPropertyToDelete(null);
     }
   };
 
@@ -162,7 +166,7 @@ export function PropertyInspector({
               size="md"
               variant="ghost"
               className="text-blue-400 hover:bg-blue-900/50"
-              title="Add Property"
+              tooltip="Add Property"
             />
             {onClose && (
                 <IconButton
@@ -170,7 +174,7 @@ export function PropertyInspector({
                   icon={XIcon}
                   size="md"
                   variant="danger"
-                  title="Close Inspector"
+                  tooltip="Close Inspector"
                 />
             )}
         </div>
@@ -217,12 +221,14 @@ export function PropertyInspector({
                   size="xs"
                   variant="ghost"
                   className="hover:text-yellow-400"
+                  tooltip="Edit"
                 />
                 <IconButton
-                  onClick={() => handleDelete(prop)}
+                  onClick={() => setPropertyToDelete(prop)}
                   icon={TrashIcon}
                   size="xs"
                   variant="danger"
+                  tooltip="Delete"
                 />
               </div>
             </div>
@@ -277,6 +283,16 @@ export function PropertyInspector({
             </div>
         )}
       </div>
+
+      <ConfirmationModal
+        isOpen={!!propertyToDelete}
+        onClose={() => setPropertyToDelete(null)}
+        onConfirm={confirmDelete}
+        title="Delete Property?"
+        message={`Are you sure you want to delete the property '${propertyToDelete?.key}'?`}
+        confirmLabel="Delete"
+        isDestructive
+      />
     </div>
   );
 }
