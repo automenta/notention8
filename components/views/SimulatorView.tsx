@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { SwarmModal } from './SwarmModal';
-import { SimulatorSidebar } from './SimulatorSidebar';
-import { SimulatorOverview } from './SimulatorOverview';
-import { SimulatorAgentView } from './SimulatorAgentView';
+import { SwarmModal } from '../simulator/SwarmModal';
+import { SimulatorSidebar } from '../simulator/SimulatorSidebar';
+import { SimulatorOverview } from '../simulator/SimulatorOverview';
+import { SimulatorAgentView } from '../simulator/SimulatorAgentView';
 import { useSimulatorContext } from '../../hooks/useSimulatorContext';
 import { useSwarmActions } from '../../hooks/simulator/useSwarmActions';
 

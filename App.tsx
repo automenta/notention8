@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
 
-import { Header } from './components/layout/Header';
 import { MainView } from './components/layout/MainView';
-import { MobileNavigation } from './components/layout/MobileNavigation';
 import { Sidebar } from './components/sidebar';
 import { useNotes } from './hooks/useNotes';
 import { useSortedFilteredNotes } from './hooks/useSortedFilteredNotes';
 import { useView } from './hooks/useViewContext';
 import { useUrlRouting } from './hooks/useUrlRouting';
-import { CommandPalette } from './components/common/CommandPalette';
-import { HelpModal } from './components/common/HelpModal';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 import { useCommands } from './hooks/useCommands';
+import { Layout } from './components/layout/Layout';
 
 function App() {
   const { notes, addNote } = useNotes();
@@ -60,44 +57,28 @@ function App() {
       onCommandPalette: () => setIsPaletteOpen(true)
   });
 
-  const sidebarClasses = [
-    'flex-shrink-0 bg-gray-900 border-r border-gray-700/50',
-    'transition-all duration-300 ease-in-out',
-    activeView === 'notes' && !selectedNoteId ? 'w-full block' : 'hidden md:block',
-    isSidebarOpen ? 'md:w-[320px]' : 'md:w-0 md:border-r-0 overflow-hidden'
-  ].filter(Boolean).join(' ');
-
-  const mainClasses = [
-    'flex-1 p-3 overflow-hidden pb-20 md:pb-3',
-    activeView === 'notes' && !selectedNoteId ? 'hidden md:block' : 'block'
-  ].filter(Boolean).join(' ');
-
   return (
-    <div className="flex flex-col h-screen bg-gray-800 text-gray-200">
-      <Header onNewNote={handleNewNote} onOpenPalette={() => setIsPaletteOpen(true)} />
-      <div className="flex flex-1 overflow-hidden">
-        <div className={sidebarClasses}>
-          <Sidebar sortedNotes={sortedNotes} />
-        </div>
-
-        <main className={mainClasses}>
-          <MainView sortedNotes={sortedNotes} />
-        </main>
-      </div>
-      <MobileNavigation onOpenPalette={() => setIsPaletteOpen(true)} />
-      <CommandPalette
-          isOpen={isPaletteOpen}
-          onClose={() => setIsPaletteOpen(false)}
-          notes={sortedNotes}
-          onSelectNote={(id) => {
-              setSelectedNoteId(id);
-              setActiveView('notes');
-          }}
-          onCreateNote={handleCreateNote}
-          commands={commands}
-      />
-      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-    </div>
+    <Layout
+      activeView={activeView}
+      selectedNoteId={selectedNoteId}
+      isSidebarOpen={isSidebarOpen}
+      onNewNote={handleNewNote}
+      onOpenPalette={() => setIsPaletteOpen(true)}
+      isPaletteOpen={isPaletteOpen}
+      setIsPaletteOpen={setIsPaletteOpen}
+      isHelpOpen={isHelpOpen}
+      setIsHelpOpen={setIsHelpOpen}
+      notes={sortedNotes}
+      onSelectNote={(id) => {
+          setSelectedNoteId(id);
+          setActiveView('notes');
+      }}
+      onCreateNote={handleCreateNote}
+      commands={commands}
+      sidebar={<Sidebar sortedNotes={sortedNotes} />}
+    >
+        <MainView sortedNotes={sortedNotes} />
+    </Layout>
   );
 }
 
