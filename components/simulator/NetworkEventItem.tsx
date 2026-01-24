@@ -10,7 +10,7 @@ interface NetworkEventItemProps {
     onSaveNote?: (note: Note) => void;
 }
 
-export const NetworkEventItem: React.FC<NetworkEventItemProps> = ({ note, relatedMatches, onSaveNote }) => {
+export function NetworkEventItem({ note, relatedMatches, onSaveNote }: NetworkEventItemProps) {
     const isMatch = relatedMatches.length > 0;
 
     return (

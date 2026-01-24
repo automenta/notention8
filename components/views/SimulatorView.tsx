@@ -6,7 +6,7 @@ import { SimulatorAgentView } from '../simulator/SimulatorAgentView';
 import { useSimulatorContext } from '../../hooks/useSimulatorContext';
 import { useSwarmActions } from '../../hooks/simulator/useSwarmActions';
 
-export const SimulatorView: React.FC = () => {
+export function SimulatorView() {
   const {
       agents,
       updateAgent,

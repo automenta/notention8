@@ -10,7 +10,7 @@ interface SwarmModalProps {
     onDeploy: (template: SwarmTemplate) => void;
 }
 
-export const SwarmModal: React.FC<SwarmModalProps> = ({ isOpen, onClose, onDeploy }) => {
+export function SwarmModal({ isOpen, onClose, onDeploy }: SwarmModalProps) {
     return (
         <Modal
             isOpen={isOpen}

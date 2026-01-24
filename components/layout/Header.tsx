@@ -2,8 +2,7 @@ import React from 'react';
 
 import { useSettings } from '../../hooks/useSettingsContext';
 import { useView } from '../../hooks/useViewContext';
-import { useNotes } from '../../hooks/useNotes';
-import { parseProperties } from '../../utils/parsing';
+import { useNoteActions } from '../../hooks/useNoteActions';
 import { DEFAULT_TEMPLATES } from '../../utils/templates';
 import type { View, Template } from '../../types';
 import { NavButton } from './NavButton';
@@ -32,7 +31,7 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
       setSelectedNoteId
   } = useView();
   const { settings } = useSettings();
-  const { addNote, updateNote } = useNotes();
+  const { createNoteAndNavigate } = useNoteActions();
 
   const handleNavClick = (view: View) => {
       if (view === 'notes' && activeView === 'notes' && selectedNoteId) {
@@ -48,33 +47,14 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
         ? `#request\n[intent:is:request]\n[status:is:open]\n\nI am looking for...`
         : `#offer\n[intent:is:offer]\n[status:is:available]\n\nI can provide...`;
 
-      const newNote = addNote({
-          title: isRequest ? 'New Request' : 'New Offer'
-      });
-
-      const properties = parseProperties(content);
-      updateNote({
-          ...newNote,
-          content,
-          properties
-      });
-
-      setSelectedNoteId(newNote.id);
-      setActiveView('notes');
+      createNoteAndNavigate(
+          isRequest ? 'New Request' : 'New Offer',
+          content
+      );
   };
 
   const handleCreateFromTemplate = (template: Template) => {
-      const newNote = addNote();
-      const properties = parseProperties(template.content);
-
-      updateNote({
-          ...newNote,
-          content: template.content,
-          properties
-      });
-
-      setSelectedNoteId(newNote.id);
-      setActiveView('notes');
+      createNoteAndNavigate(undefined, template.content);
   };
 
   const allTemplates = [...DEFAULT_TEMPLATES, ...settings.customTemplates];
