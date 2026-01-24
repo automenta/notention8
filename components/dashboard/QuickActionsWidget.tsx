@@ -11,8 +11,8 @@ interface QuickActionsWidgetProps {
 
 export const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({ onCreateNote, onNavigate, showSimulator }) => {
   return (
-    <Card title="Quick Actions" className="border-none bg-transparent p-0">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <Card title="Quick Actions">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <QuickActionBtn
                 onClick={onCreateNote}
                 icon={PencilIcon}
