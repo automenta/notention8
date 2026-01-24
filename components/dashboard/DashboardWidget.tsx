@@ -8,6 +8,7 @@ export interface DashboardWidgetProps extends CardProps {
   isEmpty?: boolean;
   emptyState?: Omit<EmptyStateProps, 'className'> & { className?: string };
   onRefresh?: () => void;
+  subHeader?: React.ReactNode;
 }
 
 export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
@@ -15,6 +16,7 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
   emptyState,
   onRefresh,
   headerAction,
+  subHeader,
   children,
   ...cardProps
 }) => {
@@ -35,6 +37,7 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
 
   return (
     <Card {...cardProps} headerAction={combinedHeaderAction}>
+      {subHeader}
       {isEmpty && emptyState ? (
         <EmptyState
           {...emptyState}
