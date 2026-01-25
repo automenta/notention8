@@ -3,12 +3,8 @@ import { useView } from '../../hooks/useViewContext';
 import { SearchIcon } from '../common/icons';
 import { NAV_ITEMS } from '../../utils/navigation';
 
-interface MobileNavigationProps {
-    onOpenPalette: () => void;
-}
-
-export function MobileNavigation({ onOpenPalette }: MobileNavigationProps) {
-  const { activeView, setActiveView } = useView();
+export function MobileNavigation() {
+  const { activeView, setActiveView, setIsPaletteOpen } = useView();
 
   const mobileNavItems = NAV_ITEMS.filter(item => item.showInMobile);
 
@@ -28,7 +24,7 @@ export function MobileNavigation({ onOpenPalette }: MobileNavigationProps) {
           </button>
         ))}
         <button
-          onClick={onOpenPalette}
+          onClick={() => setIsPaletteOpen(true)}
           className="flex flex-col items-center justify-center w-full h-full space-y-1 text-gray-500 hover:text-gray-300 transition-colors"
         >
           <SearchIcon className="h-6 w-6" />

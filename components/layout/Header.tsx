@@ -16,10 +16,9 @@ import { NAV_ITEMS, SETTINGS_VIEW } from '../../utils/navigation';
 
 interface HeaderProps {
   onNewNote: () => void;
-  onOpenPalette?: () => void;
 }
 
-export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
+export function Header({ onNewNote }: HeaderProps) {
   const {
       activeView,
       setActiveView,
@@ -28,7 +27,8 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
       setIsSidebarOpen,
       chatNotificationCount,
       selectedNoteId,
-      setSelectedNoteId
+      setSelectedNoteId,
+      setIsPaletteOpen
   } = useView();
   const { settings } = useSettings();
   const { createNoteAndNavigate } = useNoteActions();
@@ -86,7 +86,7 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
         />
 
         <IconButton
-            onClick={onOpenPalette}
+            onClick={() => setIsPaletteOpen(true)}
             tooltip="Search & Commands (Ctrl+K)"
             tooltipPosition="bottom"
             icon={SearchIcon}

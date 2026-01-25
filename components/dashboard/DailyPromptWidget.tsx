@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { SparklesIcon, PencilIcon, ArrowPathIcon } from '../common/icons';
+import { SparklesIcon, PencilIcon } from '../common/icons';
 import { DAILY_PROMPTS } from '../../utils/constants';
 import { Button } from '../common/Button';
-import { IconButton } from '../common/IconButton';
-import { Card } from '../common/Card';
+import { DashboardWidget } from './DashboardWidget';
 
 interface DailyPromptWidgetProps {
   onUsePrompt: (prompt: string) => void;
@@ -21,17 +20,6 @@ export function DailyPromptWidget({ onUsePrompt }: DailyPromptWidgetProps) {
       setPromptIndex(prev => (prev + 1) % DAILY_PROMPTS.length);
   };
 
-  const headerAction = (
-     <IconButton
-        onClick={handleRefresh}
-        icon={ArrowPathIcon}
-        variant="ghost"
-        size="sm"
-        tooltip="New Prompt"
-        className="text-blue-300 hover:text-white hover:bg-blue-800/30"
-     />
-  );
-
   const title = (
      <span className="text-blue-300 font-semibold flex items-center gap-2">
          <SparklesIcon className="w-5 h-5" />
@@ -40,11 +28,11 @@ export function DailyPromptWidget({ onUsePrompt }: DailyPromptWidgetProps) {
   );
 
   return (
-    <Card
+    <DashboardWidget
         variant="gradient"
         className="relative group border-blue-800/30"
         title={title}
-        headerAction={headerAction}
+        onRefresh={handleRefresh}
     >
          {/* Background sparkles container with overflow hidden */}
          <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none z-0">
@@ -67,6 +55,6 @@ export function DailyPromptWidget({ onUsePrompt }: DailyPromptWidgetProps) {
                 Write about this
             </Button>
          </div>
-    </Card>
+    </DashboardWidget>
   );
 };

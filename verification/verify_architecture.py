@@ -18,6 +18,9 @@ def verify_architecture():
         ("components/layout/icons.tsx", False),
         ("components/MainView.tsx", True),
         ("components/layout/MainView.tsx", False),
+        ("components/AppShell.tsx", True),
+        ("components/layout/Layout.tsx", False),
+        ("App.tsx", True)
     ]
 
     all_passed = True

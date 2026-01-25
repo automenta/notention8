@@ -41,6 +41,10 @@ export interface ViewContextType {
   chatNotificationCount: number;
   incrementChatNotification: () => void;
   resetChatNotification: () => void;
+  isPaletteOpen: boolean;
+  setIsPaletteOpen: (isOpen: boolean) => void;
+  isHelpOpen: boolean;
+  setIsHelpOpen: (isOpen: boolean) => void;
 }
 
 const ViewContext = createContext<ViewContextType | undefined>(undefined);
@@ -57,6 +61,8 @@ export function ViewProvider({
       'list'
   );
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [activeView, setActiveView] = useState<View>('notes');
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [matchingNoteId, setMatchingNoteId] = useState<string | null>(null);
@@ -135,7 +141,11 @@ export function ViewProvider({
         setIsSidebarOpen,
         chatNotificationCount,
         incrementChatNotification,
-        resetChatNotification
+        resetChatNotification,
+        isPaletteOpen,
+        setIsPaletteOpen,
+        isHelpOpen,
+        setIsHelpOpen
       }}
     >
       {children}
