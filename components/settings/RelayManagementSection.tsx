@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NetworkIcon, PlusIcon, TrashIcon } from '../layout/icons';
+import { NetworkIcon, PlusIcon, TrashIcon } from '../common/icons';
 import { Button } from '../common/Button';
 import { IconButton } from '../common/IconButton';
 import { Input } from '../common/Input';

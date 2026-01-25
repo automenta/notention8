@@ -1,5 +1,5 @@
 import React from 'react';
-import { ClockIcon, PlusIcon } from '../layout/icons';
+import { ClockIcon, PlusIcon } from '../common/icons';
 import { Button } from '../common/Button';
 import { DashboardWidget } from './DashboardWidget';
 import { RecentNoteItem } from './RecentNoteItem';

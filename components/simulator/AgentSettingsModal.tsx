@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal } from '../common/Modal';
 import { SimulatorAgentEditor } from './SimulatorAgentEditor';
 import { Button } from '../common/Button';
-import { TrashIcon, PauseIcon, PlayIcon } from '../layout/icons';
+import { TrashIcon, PauseIcon, PlayIcon } from '../common/icons';
 import type { SimulationAgent } from '../../hooks/simulator/types';
 import { SELF_AGENT_ID } from '../../hooks/simulator/types';
 

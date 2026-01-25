@@ -1,6 +1,6 @@
 import React from 'react';
 import { useView } from '../../hooks/useViewContext';
-import { SearchIcon } from './icons';
+import { SearchIcon } from '../common/icons';
 import { NAV_ITEMS } from '../../utils/navigation';
 
 interface MobileNavigationProps {

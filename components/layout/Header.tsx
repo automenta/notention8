@@ -10,7 +10,7 @@ import { IconButton } from '../common/IconButton';
 import {
   SidebarIcon,
   SearchIcon
-} from './icons';
+} from '../common/icons';
 import { NewNoteButton } from './NewNoteButton';
 import { NAV_ITEMS, SETTINGS_VIEW } from '../../utils/navigation';
 

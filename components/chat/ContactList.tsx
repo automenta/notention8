@@ -5,7 +5,7 @@ import type { Contact } from '../../types';
 import type { SwarmTemplate } from '../../hooks/simulator/types';
 import { SwarmModal } from '../simulator/SwarmModal';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
-import { SearchIcon, CpuChipIcon, UserGroupIcon, UserPlusIcon } from '../layout/icons';
+import { SearchIcon, CpuChipIcon, UserGroupIcon, UserPlusIcon } from '../common/icons';
 import { Avatar } from '../common/Avatar';
 import { IconButton } from '../common/IconButton';
 import { Button } from '../common/Button';

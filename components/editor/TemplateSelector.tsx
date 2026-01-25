@@ -1,6 +1,6 @@
 import React from 'react';
 import type { OntologyNode } from '../../types';
-import { CubeIcon } from '../layout/icons';
+import { CubeIcon } from '../common/icons';
 
 interface TemplateSelectorProps {
   ontology: OntologyNode[];

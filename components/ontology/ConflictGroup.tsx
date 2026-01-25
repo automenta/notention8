@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRightIcon } from '../layout/icons';
+import { ArrowRightIcon } from '../common/icons';
 
 export interface Conflict {
     noteId: string;

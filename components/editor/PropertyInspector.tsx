@@ -8,7 +8,7 @@ import {
   TrashIcon,
   XIcon,
   SearchSparkleIcon
-} from '../layout/icons';
+} from '../common/icons';
 import { PropertyForm } from './PropertyForm';
 import { IconButton } from '../common/IconButton';
 import { useGardener } from '../../hooks/useGardener';

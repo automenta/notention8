@@ -1,21 +1,21 @@
 import React from 'react';
-import type { Note } from '../../types';
+import type { Note } from '../types';
 
-import { useNotes } from '../../hooks/useNotes';
-import { useSettings } from '../../hooks/useSettingsContext';
-import { useView } from '../../hooks/useViewContext';
-import { useBackgroundMatcher } from '../../hooks/useBackgroundMatcher';
-import { useChatNotifications } from '../../hooks/useChatNotifications';
-import { LoadingSpinner } from './icons';
-import { SimulatorView } from '../views/SimulatorView';
-import { ChatView } from '../views/ChatView';
-import { MapView } from '../views/MapView';
-import { TimeView } from '../views/TimeView';
-import { NetworkView } from '../views/NetworkView';
-import { NotesView } from '../views/NotesView';
-import { OntologyView } from '../views/OntologyView';
-import { SettingsView } from '../views/SettingsView';
-import { DashboardView } from '../views/DashboardView';
+import { useNotes } from '../hooks/useNotes';
+import { useSettings } from '../hooks/useSettingsContext';
+import { useView } from '../hooks/useViewContext';
+import { useBackgroundMatcher } from '../hooks/useBackgroundMatcher';
+import { useChatNotifications } from '../hooks/useChatNotifications';
+import { LoadingSpinner } from './common/icons';
+import { SimulatorView } from './views/SimulatorView';
+import { ChatView } from './views/ChatView';
+import { MapView } from './views/MapView';
+import { TimeView } from './views/TimeView';
+import { NetworkView } from './views/NetworkView';
+import { NotesView } from './views/NotesView';
+import { OntologyView } from './views/OntologyView';
+import { SettingsView } from './views/SettingsView';
+import { DashboardView } from './views/DashboardView';
 
 interface MainViewProps {
   sortedNotes?: Note[];

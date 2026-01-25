@@ -1,6 +1,6 @@
 import React from 'react';
 import type { SidebarViewMode } from '../../types';
-import { ListUlIcon, CubeIcon, TagIcon } from '../layout/icons';
+import { ListUlIcon, CubeIcon, TagIcon } from '../common/icons';
 import { IconButton } from '../common/IconButton';
 
 interface ViewSelectorProps {

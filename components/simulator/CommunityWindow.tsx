@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Note } from '../../types';
-import { WorldIcon } from '../layout/icons';
+import { WorldIcon } from '../common/icons';
 import { useNetworkMatching } from '../../hooks/useNetworkMatching';
 import { NetworkEventItem } from './NetworkEventItem';
 import { Badge } from '../common/Badge';

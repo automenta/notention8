@@ -1,6 +1,6 @@
 import React from 'react';
 import type { SimulationAgent } from '../../hooks/simulator/types';
-import { SparklesIcon } from '../layout/icons';
+import { SparklesIcon } from '../common/icons';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { Textarea } from '../common/Textarea';

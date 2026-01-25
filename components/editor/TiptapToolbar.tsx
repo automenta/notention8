@@ -17,7 +17,7 @@ import {
   SparklesIcon,
   CubeIcon,
   KeyIcon,
-} from '../layout/icons';
+} from '../common/icons';
 
 interface TiptapToolbarProps {
   editor: Editor | null;

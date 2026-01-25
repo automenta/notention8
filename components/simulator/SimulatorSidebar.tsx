@@ -1,5 +1,5 @@
 import React from 'react';
-import { CubeIcon, CpuChipIcon, PlusIcon, UserGroupIcon, DownloadIcon } from "../layout/icons";
+import { CubeIcon, CpuChipIcon, PlusIcon, UserGroupIcon, DownloadIcon } from "../common/icons";
 import { Badge } from '../common/Badge';
 import { IconButton } from '../common/IconButton';
 import { Button } from '../common/Button';

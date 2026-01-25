@@ -2,7 +2,7 @@ import React from 'react';
 import { TiptapEditor } from '../editor/TiptapEditor';
 import type { Note } from '../../types';
 import { useAgentSessionLogic } from '../../hooks/simulator/useAgentSessionLogic';
-import { CpuChipIcon } from '../layout/icons';
+import { CpuChipIcon } from '../common/icons';
 import { SessionSidebar } from './SessionSidebar';
 import { SessionHeader } from './SessionHeader';
 

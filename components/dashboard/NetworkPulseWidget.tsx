@@ -1,5 +1,5 @@
 import React from 'react';
-import { NetworkIcon, CubeIcon } from '../layout/icons';
+import { NetworkIcon, CubeIcon } from '../common/icons';
 import { getLogStyle } from '../../utils/ui';
 import { DashboardWidget } from './DashboardWidget';
 import { Button } from '../common/Button';

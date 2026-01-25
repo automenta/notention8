@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import type { Note } from '../../types';
 import { parseGeoFromValues } from '../../utils/spacetime';
-import { MapPinIcon, ClockIcon, PencilIcon } from '../layout/icons';
+import { MapPinIcon, ClockIcon, PencilIcon } from '../common/icons';
 
 // Simple "static" map preview using a placeholder or a very simple iframe/image if possible.
 // For now, we'll just show a visual representation of the coordinates.

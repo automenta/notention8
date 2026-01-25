@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SparklesIcon, CheckIcon, CpuChipIcon } from '../layout/icons';
+import { SparklesIcon, CheckIcon, CpuChipIcon } from '../common/icons';
 import { isGeminiApiKeyAvailable } from '@/services/ai/RemoteProvider';
 import { AVAILABLE_MODELS } from '@/services/ai/WebLLMProvider';
 import type { AppSettings } from '@/types';

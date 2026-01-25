@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Note } from '../../types';
 import type { MatchResult } from '../../hooks/useNetworkMatching';
-import { DownloadIcon } from '../layout/icons';
+import { DownloadIcon } from '../common/icons';
 import { IconButton } from '../common/IconButton';
 
 interface NetworkEventItemProps {

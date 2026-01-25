@@ -6,7 +6,7 @@ import {
   ClockIcon,
   InformationCircleIcon,
   SearchSparkleIcon
-} from '../layout/icons';
+} from '../common/icons';
 import type { OntologyNode } from '../../types';
 import { getCurrentPosition } from '../../utils/spacetime';
 import { useToast } from '../../hooks/useToast';

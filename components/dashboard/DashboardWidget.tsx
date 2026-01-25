@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardProps } from '../common/Card';
 import { EmptyState, EmptyStateProps } from '../common/EmptyState';
 import { IconButton } from '../common/IconButton';
-import { ArrowPathIcon } from '../layout/icons';
+import { ArrowPathIcon } from '../common/icons';
 
 export interface DashboardWidgetProps extends CardProps {
   isEmpty?: boolean;

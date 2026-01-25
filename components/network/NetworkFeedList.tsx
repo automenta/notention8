@@ -1,7 +1,7 @@
 import React from 'react';
 import type { NostrEvent, NostrProfile } from '../../types';
 import { NostrEventCard } from './NostrEventCard';
-import { LoadingSpinner } from '../layout/icons';
+import { LoadingSpinner } from '../common/icons';
 
 interface NetworkFeedListProps {
     isLoading: boolean;

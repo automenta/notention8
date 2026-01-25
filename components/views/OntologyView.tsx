@@ -7,7 +7,7 @@ import { useView } from '../../hooks/useViewContext';
 import { Tabs } from '../common/Tabs';
 import { Button } from '../common/Button';
 import { Toggle } from '../common/Toggle';
-import { EditIcon } from '../layout/icons';
+import { EditIcon } from '../common/icons';
 import { InputModal } from '../common/InputModal';
 import { ConfirmationModal } from '../common/ConfirmationModal';
 

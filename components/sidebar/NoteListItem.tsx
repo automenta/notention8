@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import type { Note } from '../../types';
-import { TrashIcon, WorldIcon, DownloadIcon, MapPinIcon, ClockIcon, PinIcon, DocumentDuplicateIcon } from '../layout/icons';
+import { TrashIcon, WorldIcon, DownloadIcon, MapPinIcon, ClockIcon, PinIcon, DocumentDuplicateIcon } from '../common/icons';
 import { getTextFromHtml } from '../../utils/parsing';
 import { IconButton } from '../common/IconButton';
 import { Badge } from '../common/Badge';

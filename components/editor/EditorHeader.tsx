@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
     ArrowLeftIcon,
     LockIcon
-} from '../layout/icons';
+} from '../common/icons';
 import { TagInput } from './TagInput';
 import { IconButton } from '../common/IconButton';
 import { EditorControls } from './EditorControls';

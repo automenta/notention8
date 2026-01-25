@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useSuggestions } from '../../components/contexts/SuggestionContext';
 import { useNotes } from '../../hooks/useNotes';
 import { Button } from '../common/Button';
-import { SparklesIcon, CheckIcon, XMarkIcon } from '../layout/icons';
+import { SparklesIcon, CheckIcon, XMarkIcon } from '../common/icons';
 import { parseProperties } from '../../utils/parsing';
 import { useToast } from '../../hooks/useToast';
 

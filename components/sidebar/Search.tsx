@@ -1,5 +1,5 @@
 import React from 'react';
-import { SearchIcon, XCircleIcon } from '../layout/icons';
+import { SearchIcon, XCircleIcon } from '../common/icons';
 import { IconButton } from '../common/IconButton';
 import { Input } from '../common/Input';
 

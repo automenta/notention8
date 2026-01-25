@@ -1,5 +1,5 @@
 import React from 'react';
-import { NoteIcon, HomeIcon } from '../layout/icons';
+import { NoteIcon, HomeIcon } from '../common/icons';
 import { Card } from '../common/Card';
 
 interface DashboardStatsProps {

@@ -7,7 +7,7 @@ import { useToast } from '../../hooks/useToast';
 import type { Contact, NostrEvent } from '../../types';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
 import { parseProperties } from '../../utils/parsing';
-import { ArrowLeftIcon, SendIcon, DocumentDuplicateIcon, SettingsIcon, TrashIcon } from '../layout/icons';
+import { ArrowLeftIcon, SendIcon, DocumentDuplicateIcon, SettingsIcon, TrashIcon } from '../common/icons';
 import { Avatar } from '../common/Avatar';
 import { IconButton } from '../common/IconButton';
 import { SELF_AGENT_ID } from '../../hooks/simulator/types';

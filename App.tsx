@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { MainView } from './components/layout/MainView';
+import { MainView } from './components/MainView';
 import { Sidebar } from './components/sidebar';
 import { useNotes } from './hooks/useNotes';
 import { useSortedFilteredNotes } from './hooks/useSortedFilteredNotes';

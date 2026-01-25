@@ -2,7 +2,7 @@ import React from 'react';
 import type { OntologyAttribute } from '../../types';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
-import { MapIcon } from '../layout/icons';
+import { MapIcon } from '../common/icons';
 
 interface PropertyValueInputProps {
   value: string;

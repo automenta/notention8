@@ -1,5 +1,5 @@
 import React from 'react';
-import { KeyIcon, SettingsIcon } from '../layout/icons';
+import { KeyIcon, SettingsIcon } from '../common/icons';
 import { Button } from '../common/Button';
 
 interface ConnectIdentityPromptProps {

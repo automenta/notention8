@@ -1,5 +1,5 @@
 import React from 'react';
-import { SparklesIcon } from '../../layout/icons';
+import { SparklesIcon } from '../../common/icons';
 import { Button } from '../../common/Button';
 
 interface OntologyGrowthListProps {

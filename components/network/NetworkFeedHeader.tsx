@@ -1,6 +1,6 @@
 import React from 'react';
 import type { NostrEvent } from '../../types';
-import { ArrowLeftIcon } from '../layout/icons';
+import { ArrowLeftIcon } from '../common/icons';
 import { IconButton } from '../common/IconButton';
 import { Input } from '../common/Input';
 

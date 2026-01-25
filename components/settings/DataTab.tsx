@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrashIcon } from '../layout/icons';
+import { TrashIcon } from '../common/icons';
 import { useNotes } from '../../hooks/useNotes';
 import { useSettings } from '../../hooks/useSettingsContext';
 import { Button } from '../common/Button';

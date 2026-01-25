@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ClipboardIcon } from '../layout/icons';
+import { ClipboardIcon } from '../common/icons';
 import { useToast } from '../../hooks/useToast';
 import { Input } from './Input';
 

@@ -8,7 +8,7 @@ import { ViewSelector } from './ViewSelector';
 import { NoteGridItem } from './NoteGridItem';
 import { TagCloud } from './TagCloud';
 import { SidebarEmptyState } from './SidebarEmptyState';
-import { PlusIcon } from '../layout/icons';
+import { PlusIcon } from '../common/icons';
 import { useSidebarLogic } from './useSidebarLogic';
 import { IconButton } from '../common/IconButton';
 

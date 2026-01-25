@@ -18,7 +18,7 @@ import {
     DocumentDuplicateIcon,
     DownloadIcon,
     HomeIcon
-} from '../components/layout/icons';
+} from '../components/common/icons';
 
 interface UseCommandsProps {
     setIsHelpOpen: (isOpen: boolean) => void;

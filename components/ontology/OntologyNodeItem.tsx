@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { OntologyNode } from '../../types';
-import { ChevronDownIcon, PlusIcon, TrashIcon } from '../layout/icons';
+import { ChevronDownIcon, PlusIcon, TrashIcon } from '../common/icons';
 import { AttributeList } from './AttributeList';
 import { IconButton } from '../common/IconButton';
 

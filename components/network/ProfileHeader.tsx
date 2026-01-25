@@ -3,7 +3,7 @@ import { finalizeEvent, nip19 } from 'nostr-tools';
 
 import type { AppSettings, NostrProfile } from '../../types';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
-import { EditIcon } from '../layout/icons';
+import { EditIcon } from '../common/icons';
 import { Avatar } from '../common/Avatar';
 import { IconButton } from '../common/IconButton';
 import { Button } from '../common/Button';

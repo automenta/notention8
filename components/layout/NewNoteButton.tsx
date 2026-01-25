@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Template } from '../../types';
-import { PlusIcon, ChevronDownIcon, SparklesIcon, CubeTransparentIcon } from './icons';
+import { PlusIcon, ChevronDownIcon, SparklesIcon, CubeTransparentIcon } from '../common/icons';
 
 interface NewNoteButtonProps {
     onNewNote: () => void;

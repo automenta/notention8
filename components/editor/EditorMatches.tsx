@@ -3,7 +3,7 @@ import { useSingleNoteMatch } from '../../hooks/useSingleNoteMatch';
 import { useNotes } from '../../hooks/useNotes';
 import type { Note } from '../../types';
 import { Badge } from '../common/Badge';
-import { SearchSparkleIcon, PlusIcon, ChatIcon } from '../layout/icons';
+import { SearchSparkleIcon, PlusIcon, ChatIcon } from '../common/icons';
 import { parseProperties } from '../../utils/parsing';
 import { useToast } from '../../hooks/useToast';
 import { useGardener } from '../../hooks/useGardener';

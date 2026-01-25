@@ -4,7 +4,7 @@ import { nip19 } from 'nostr-tools';
 import { useView } from '../../hooks/useViewContext';
 import type { NostrEvent, NostrProfile } from '../../types';
 import { formatNpub, extractPropertiesFromTags } from '../../utils/nostr';
-import { ChatIcon, MergeIcon, DocumentDuplicateIcon } from '../layout/icons';
+import { ChatIcon, MergeIcon, DocumentDuplicateIcon } from '../common/icons';
 import { Avatar } from '../common/Avatar';
 import { Button } from '../common/Button';
 

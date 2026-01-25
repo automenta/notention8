@@ -10,7 +10,7 @@ import {
   renameAttribute,
   mergeAttributes
 } from '../../utils/ontologyHelpers';
-import { PlusIcon, SparklesIcon } from '../layout/icons';
+import { PlusIcon, SparklesIcon } from '../common/icons';
 import { Modal } from '../common/Modal';
 import { useToast } from '../../hooks/useToast';
 import { InputModal } from '../common/InputModal';

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNotes } from '../../hooks/useNotes';
 import { useView } from '../../hooks/useViewContext';
-import { ClockIcon, ArrowRightIcon, PlusIcon } from '../layout/icons';
+import { ClockIcon, ArrowRightIcon, PlusIcon } from '../common/icons';
 import { Button } from '../common/Button';
 import { DashboardWidget } from './DashboardWidget';
 import { EmptyState } from '../common/EmptyState';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { DocumentDuplicateIcon } from '../layout/icons';
+import { DocumentDuplicateIcon } from '../common/icons';
 import { DEFAULT_TEMPLATES } from '../../utils/templates';
 import { DashboardWidget } from './DashboardWidget';
 

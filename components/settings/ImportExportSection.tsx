@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { DocumentDuplicateIcon, ArrowDownIcon, ArrowUpIcon } from '../layout/icons';
+import { DocumentDuplicateIcon, ArrowDownIcon, ArrowUpIcon } from '../common/icons';
 import { Button } from '../common/Button';
 import { ConfirmationModal } from '../common/ConfirmationModal';
 import { useToast } from '../../hooks/useToast';

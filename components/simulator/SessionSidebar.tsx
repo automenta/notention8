@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlusIcon } from '../layout/icons';
+import { PlusIcon } from '../common/icons';
 import type { Note } from '../../types';
 import { Button } from '../common/Button';
 

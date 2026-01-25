@@ -3,7 +3,7 @@ import L from 'leaflet';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
-import { SearchIcon, LoadingSpinner } from '../layout/icons';
+import { SearchIcon, LoadingSpinner } from '../common/icons';
 
 interface MapPickerModalProps {
   isOpen: boolean;

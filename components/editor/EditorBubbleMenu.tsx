@@ -8,7 +8,7 @@ import {
   CodeBracketsIcon,
   LinkIcon,
   QuoteIcon
-} from '../layout/icons';
+} from '../common/icons';
 
 interface EditorBubbleMenuProps {
   editor: Editor | null;

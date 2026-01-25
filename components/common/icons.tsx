@@ -1,40 +1,7 @@
 import React from 'react';
+import { OutlineIcon, SolidIcon, BaseIcon, IconProps } from './Icon';
 
-type IconProps = React.SVGProps<SVGSVGElement>;
-
-const OutlineIcon: React.FC<IconProps & { children: React.ReactNode }> = ({
-  className,
-  children,
-  ...props
-}) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    {...props}
-  >
-    {children}
-  </svg>
-);
-
-const SolidIcon: React.FC<IconProps & { children: React.ReactNode }> = ({
-  className,
-  children,
-  ...props
-}) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    {...props}
-  >
-    {children}
-  </svg>
-);
+export type { IconProps };
 
 export const NoteIcon = (props: IconProps) => (
   <OutlineIcon {...props}>
@@ -202,11 +169,8 @@ export const SparklesIcon = (props: IconProps) => (
 );
 
 export const LoadingSpinner = ({ className, ...props }: IconProps) => (
-  <svg
+  <BaseIcon
     className={`animate-spin ${className || ''}`}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
     {...props}
   >
     <circle
@@ -222,7 +186,7 @@ export const LoadingSpinner = ({ className, ...props }: IconProps) => (
       fill="currentColor"
       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
     ></path>
-  </svg>
+  </BaseIcon>
 );
 
 export const KeyIcon = (props: IconProps) => (
@@ -325,7 +289,6 @@ export const ArrowDownIcon = (props: IconProps) => (
     />
   </OutlineIcon>
 );
-
 
 export const ChevronDownIcon = (props: IconProps) => (
   <OutlineIcon {...props}>

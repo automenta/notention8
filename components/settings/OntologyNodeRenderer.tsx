@@ -1,6 +1,6 @@
 import React from 'react';
 import { OntologyNode } from '../../types';
-import { FolderIcon, EditIcon, PlusIcon, TrashIcon, TagIcon, MergeIcon, SparklesIcon } from '../layout/icons';
+import { FolderIcon, EditIcon, PlusIcon, TrashIcon, TagIcon, MergeIcon, SparklesIcon } from '../common/icons';
 import { IconButton } from '../common/IconButton';
 
 interface OntologyNodeRendererProps {

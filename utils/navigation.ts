@@ -10,7 +10,7 @@ import {
   ClockIcon,
   HomeIcon,
   CpuChipIcon
-} from '../components/layout/icons';
+} from '../components/common/icons';
 
 export interface ViewConfig {
   id: View;

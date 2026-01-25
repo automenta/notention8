@@ -1,5 +1,5 @@
 import React from 'react';
-import { PencilIcon, NetworkIcon, ChatIcon, CpuChipIcon, ClockIcon } from '../layout/icons';
+import { PencilIcon, NetworkIcon, ChatIcon, CpuChipIcon, ClockIcon } from '../common/icons';
 import { Card } from '../common/Card';
 import { QuickActionBtn } from './QuickActionBtn';
 

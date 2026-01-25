@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Note } from '../../types';
-import { NoteIcon } from '../layout/icons';
+import { NoteIcon } from '../common/icons';
 
 interface NoteGridItemProps {
   note: Note;

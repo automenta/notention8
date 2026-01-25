@@ -47,7 +47,7 @@ import {
   SearchSparkleIcon,
   SidebarIcon,
   DownloadIcon,
-} from './icons';
+} from '../common/icons';
 
 type IconProps = React.SVGProps<SVGSVGElement>;
 

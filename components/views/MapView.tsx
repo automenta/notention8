@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useMapView } from '../../hooks/useMapView';
-import { MapPinIcon } from '../layout/icons';
+import { MapPinIcon } from '../common/icons';
 import { EmptyState } from '../common/EmptyState';
 
 export function MapView() {

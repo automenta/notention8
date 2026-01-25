@@ -9,7 +9,7 @@ import {
     HelpIcon,
     SearchSparkleIcon,
     SendIcon
-} from '../layout/icons';
+} from '../common/icons';
 import { IconButton } from '../common/IconButton';
 import { Button } from '../common/Button';
 import { HelpModal } from '../common/HelpModal';

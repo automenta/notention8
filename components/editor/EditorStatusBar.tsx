@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Editor } from '@tiptap/react';
 
-import { CheckCircleIcon, LoadingSpinner, ExclamationTriangleIcon } from '../layout/icons';
+import { CheckCircleIcon, LoadingSpinner, ExclamationTriangleIcon } from '../common/icons';
 
 interface EditorStatusBarProps {
   editor: Editor | null;

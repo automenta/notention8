@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { SearchSparkleIcon, ArrowRightIcon, ChatIcon } from '../layout/icons';
+import { SearchSparkleIcon, ArrowRightIcon, ChatIcon } from '../common/icons';
 import { useView } from '../../hooks/useViewContext';
 import { useNotes } from '../../hooks/useNotes';
 import { IconButton } from '../common/IconButton';

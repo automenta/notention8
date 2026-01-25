@@ -1,5 +1,5 @@
 import React from 'react';
-import { NoteIcon, PlusIcon } from '../layout/icons';
+import { NoteIcon, PlusIcon } from '../common/icons';
 import { Button } from '../common/Button';
 import { EmptyState } from '../common/EmptyState';
 

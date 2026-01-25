@@ -4,7 +4,7 @@ import {
   SearchIcon,
   NoteIcon,
   PlusIcon,
-} from '../layout/icons';
+} from '../common/icons';
 
 interface CommandItem {
   id: string;

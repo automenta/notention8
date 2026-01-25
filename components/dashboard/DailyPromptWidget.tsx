@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SparklesIcon, PencilIcon, ArrowPathIcon } from '../layout/icons';
+import { SparklesIcon, PencilIcon, ArrowPathIcon } from '../common/icons';
 import { DAILY_PROMPTS } from '../../utils/constants';
 import { Button } from '../common/Button';
 import { IconButton } from '../common/IconButton';

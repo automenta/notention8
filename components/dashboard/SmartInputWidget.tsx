@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '../common/Button';
 import { Textarea } from '../common/Textarea';
 import { Card } from '../common/Card';
-import { SparklesIcon, SendIcon } from '../layout/icons';
+import { SparklesIcon, SendIcon } from '../common/icons';
 import { useSmartInput } from '../../hooks/useSmartInput';
 
 export function SmartInputWidget() {
