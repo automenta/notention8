@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { useSimulator } from '../../hooks/simulator/useSimulator';
 import { SimulatorContext } from './SimulatorContext';
 
-export const SimulatorProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export function SimulatorProvider({ children }: { children: ReactNode }) {
   const simulator = useSimulator();
 
   return (

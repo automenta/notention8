@@ -9,7 +9,7 @@ interface SidebarEmptyStateProps {
     onCreateNote: (term?: string) => void;
 }
 
-export const SidebarEmptyState: React.FC<SidebarEmptyStateProps> = ({ searchTerm, isTrashView, onCreateNote }) => {
+export function SidebarEmptyState({ searchTerm, isTrashView, onCreateNote }: SidebarEmptyStateProps) {
     return (
         <EmptyState
             icon={NoteIcon}

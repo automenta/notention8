@@ -9,7 +9,8 @@ export interface QuickActionBtnProps {
     hoverShadow: string;
 }
 
-export const QuickActionBtn: React.FC<QuickActionBtnProps> = ({ onClick, icon: Icon, label, colorClass, hoverBorder, hoverShadow }) => (
+export function QuickActionBtn({ onClick, icon: Icon, label, colorClass, hoverBorder, hoverShadow }: QuickActionBtnProps) {
+  return (
     <button
         onClick={onClick}
         className={`group p-4 bg-gray-900/50 hover:bg-gray-800 rounded-xl flex flex-col items-center gap-3 transition-all border border-gray-700/50 ${hoverBorder} ${hoverShadow}`}
@@ -19,4 +20,5 @@ export const QuickActionBtn: React.FC<QuickActionBtnProps> = ({ onClick, icon: I
         </div>
         <span className="font-medium text-sm text-gray-300 group-hover:text-white">{label}</span>
     </button>
-);
+  );
+}

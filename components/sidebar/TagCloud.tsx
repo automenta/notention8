@@ -6,7 +6,7 @@ interface TagCloudProps {
   onTagClick: (tag: string) => void;
 }
 
-export const TagCloud: React.FC<TagCloudProps> = ({ notes, onTagClick }) => {
+export function TagCloud({ notes, onTagClick }: TagCloudProps) {
   const tags = useMemo(() => {
     const counts: Record<string, number> = {};
     notes.forEach(note => {

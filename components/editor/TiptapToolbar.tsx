@@ -39,14 +39,14 @@ type ToolbarItem =
       type?: undefined;
     };
 
-export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
+export function TiptapToolbar({
   editor,
   viewMode,
   toggleViewMode,
   onMagic,
   onTemplates,
   onInsertProperty,
-}) => {
+}: TiptapToolbarProps) {
   if (!editor) return null;
 
   const actions: ToolbarItem[] = [

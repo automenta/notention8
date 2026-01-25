@@ -8,10 +8,10 @@ interface SearchProps {
   setSearchTerm: (term: string) => void;
 }
 
-export const Search: React.FC<SearchProps> = ({
+export function Search({
   searchTerm,
   setSearchTerm,
-}) => {
+}: SearchProps) {
   return (
     <div className="relative">
         <Input

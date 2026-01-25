@@ -6,7 +6,7 @@ interface ConnectIdentityPromptProps {
     onNavigateToSettings: () => void;
 }
 
-export const ConnectIdentityPrompt: React.FC<ConnectIdentityPromptProps> = ({ onNavigateToSettings }) => {
+export function ConnectIdentityPrompt({ onNavigateToSettings }: ConnectIdentityPromptProps) {
     return (
         <div className="p-8 h-full flex flex-col items-center justify-center text-center bg-gray-800/50 rounded-lg">
             <KeyIcon className="h-16 w-16 text-yellow-500 mb-4" />

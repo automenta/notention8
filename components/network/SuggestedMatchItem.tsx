@@ -12,7 +12,7 @@ interface SuggestedMatchItemProps {
     onSelect: (noteId: string) => void;
 }
 
-export const SuggestedMatchItem: React.FC<SuggestedMatchItemProps> = ({ match, onSelect }) => {
+export function SuggestedMatchItem({ match, onSelect }: SuggestedMatchItemProps) {
     return (
         <div
             className="bg-gray-700/50 p-3 rounded-lg border border-gray-600/50 hover:bg-gray-700 transition cursor-pointer"

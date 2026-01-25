@@ -19,7 +19,7 @@ import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import { OntologyNodeRenderer } from './OntologyNodeRenderer';
 
-export const OntologyTab: React.FC = () => {
+export function OntologyTab() {
   const { settings, setSettings } = useSettings();
   const { addToast } = useToast();
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());

@@ -5,7 +5,7 @@ import { Card } from '../common/Card';
 import { SparklesIcon, SendIcon } from '../layout/icons';
 import { useSmartInput } from '../../hooks/useSmartInput';
 
-export const SmartInputWidget: React.FC = () => {
+export function SmartInputWidget() {
     const [text, setText] = useState('');
     const { processInput, isProcessing } = useSmartInput();
 

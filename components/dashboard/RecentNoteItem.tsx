@@ -7,7 +7,7 @@ interface RecentNoteItemProps {
   onClick: (noteId: string) => void;
 }
 
-export const RecentNoteItem: React.FC<RecentNoteItemProps> = ({ note, onClick }) => {
+export function RecentNoteItem({ note, onClick }: RecentNoteItemProps) {
   return (
     <button
       type="button"

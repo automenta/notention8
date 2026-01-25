@@ -9,7 +9,7 @@ interface QuickActionsWidgetProps {
   showSimulator?: boolean;
 }
 
-export const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({ onCreateNote, onNavigate, showSimulator }) => {
+export function QuickActionsWidget({ onCreateNote, onNavigate, showSimulator }: QuickActionsWidgetProps) {
   return (
     <Card title="Quick Actions">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

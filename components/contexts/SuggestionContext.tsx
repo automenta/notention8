@@ -11,7 +11,7 @@ interface SuggestionContextType {
 
 const SuggestionContext = createContext<SuggestionContextType | undefined>(undefined);
 
-export const SuggestionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export function SuggestionProvider({ children }: { children: ReactNode }) {
     // Persist suggestions to LocalForage so they survive reloads
     const [suggestions, setSuggestions, loading] = useLocalForage<Record<string, string[]>>(
         'notention-suggestions',

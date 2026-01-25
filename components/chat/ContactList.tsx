@@ -23,7 +23,7 @@ interface ContactListProps {
   onDeploySwarm?: (template: SwarmTemplate) => void;
 }
 
-export const ContactList: React.FC<ContactListProps> = ({
+export function ContactList({
   privkey,
   pubkey,
   contacts,
@@ -33,7 +33,7 @@ export const ContactList: React.FC<ContactListProps> = ({
   isLoading,
   onAddAgent,
   onDeploySwarm
-}) => {
+}: ContactListProps) {
   const [newContactNpub, setNewContactNpub] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');

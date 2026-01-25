@@ -19,14 +19,16 @@ const SORT_OPTIONS = [
     { value: "tags", label: "Sort: Tags (Count)" },
 ];
 
-export const SortSelector: React.FC<SortSelectorProps> = ({
+export function SortSelector({
   sortOrder,
   onSortChange,
-}) => (
-  <Select
-    value={sortOrder}
-    onChange={(e) => onSortChange(e.target.value as SortOrder)}
-    options={SORT_OPTIONS}
-    className="w-full"
-  />
-);
+}: SortSelectorProps) {
+  return (
+    <Select
+      value={sortOrder}
+      onChange={(e) => onSortChange(e.target.value as SortOrder)}
+      options={SORT_OPTIONS}
+      className="w-full"
+    />
+  );
+}

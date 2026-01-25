@@ -39,7 +39,7 @@ const BubbleButton = ({
   </button>
 );
 
-export const EditorBubbleMenu: React.FC<EditorBubbleMenuProps> = ({ editor }) => {
+export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
   if (!editor) return null;
 
   return (

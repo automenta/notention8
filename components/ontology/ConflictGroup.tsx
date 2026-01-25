@@ -16,7 +16,7 @@ interface ConflictGroupProps {
     onSelectNote: (noteId: string) => void;
 }
 
-export const ConflictGroup: React.FC<ConflictGroupProps> = ({ noteId, conflicts, onSelectNote }) => {
+export function ConflictGroup({ noteId, conflicts, onSelectNote }: ConflictGroupProps) {
     return (
         <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden text-left shadow-lg">
             <div className="bg-gray-900/50 p-3 border-b border-gray-700 flex justify-between items-center">

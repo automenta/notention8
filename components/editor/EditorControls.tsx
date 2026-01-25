@@ -36,7 +36,7 @@ export interface EditorControlsProps {
     actionLabel: string;
 }
 
-export const EditorControls: React.FC<EditorControlsProps> = ({
+export function EditorControls({
     onNext,
     onPrevious,
     hasNext,
@@ -56,7 +56,7 @@ export const EditorControls: React.FC<EditorControlsProps> = ({
     isPublishing,
     isPublished,
     actionLabel
-}) => {
+}: EditorControlsProps) {
     const [isHelpOpen, setIsHelpOpen] = useState(false);
 
     return (

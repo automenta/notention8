@@ -13,7 +13,7 @@ interface RelayManagementSectionProps {
     setSettings: (updater: (settings: AppSettings) => AppSettings) => void;
 }
 
-export const RelayManagementSection: React.FC<RelayManagementSectionProps> = ({ settings, setSettings }) => {
+export function RelayManagementSection({ settings, setSettings }: RelayManagementSectionProps) {
     const { addToast } = useToast();
     const [newRelay, setNewRelay] = useState('');
     const [relayToRemove, setRelayToRemove] = useState<string | null>(null);

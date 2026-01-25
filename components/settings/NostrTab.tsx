@@ -17,10 +17,10 @@ interface NostrTabProps {
   setSettings: (updater: (settings: AppSettings) => AppSettings) => void;
 }
 
-export const NostrTab: React.FC<NostrTabProps> = ({
+export function NostrTab({
   settings,
   setSettings,
-}) => {
+}: NostrTabProps) {
   const { publishProfile, isPublishing } = usePublish();
   const { addToast } = useToast();
 

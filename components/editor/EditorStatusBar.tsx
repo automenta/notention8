@@ -8,7 +8,7 @@ interface EditorStatusBarProps {
   saveStatus?: 'saved' | 'saving' | 'error';
 }
 
-export const EditorStatusBar: React.FC<EditorStatusBarProps> = ({ editor, saveStatus }) => {
+export function EditorStatusBar({ editor, saveStatus }: EditorStatusBarProps) {
   if (!editor) return null;
 
   const text = editor.getText();

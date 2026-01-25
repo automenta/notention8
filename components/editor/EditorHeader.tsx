@@ -37,7 +37,7 @@ interface EditorHeaderProps {
   onAddProperty?: (key: string) => void;
 }
 
-export const EditorHeader: React.FC<EditorHeaderProps> = ({
+export function EditorHeader({
   title,
   onTitleChange,
   onPublish,
@@ -65,7 +65,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   actionLabel = 'Publish',
   missingProperties = [],
   onAddProperty
-}) => {
+}: EditorHeaderProps) {
   const [isTagInputVisible, setIsTagInputVisible] = useState(tags.length > 0);
 
   const handleToggleTags = () => {

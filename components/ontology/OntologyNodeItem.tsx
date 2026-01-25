@@ -13,14 +13,14 @@ interface OntologyNodeProps {
   onDeleteNode?: (nodeId: string) => void;
 }
 
-export const OntologyNodeItem: React.FC<OntologyNodeProps> = ({
+export function OntologyNodeItem({
     node,
     level,
     usageStats,
     isEditing,
     onAddChild,
     onDeleteNode
-}) => {
+}: OntologyNodeProps) {
   const [isOpen, setIsOpen] = useState(level < 2); // Auto-expand first few levels
   const hasChildren = node.children && node.children.length > 0;
 

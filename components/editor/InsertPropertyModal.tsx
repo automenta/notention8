@@ -21,7 +21,7 @@ interface InsertPropertyModalProps {
   onPickLocation?: () => Promise<string>;
 }
 
-export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
+export function InsertPropertyModal({
   isOpen,
   onClose,
   onInsert,
@@ -32,7 +32,7 @@ export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
   ontology,
   isEditing = false,
   onPickLocation
-}) => {
+}: InsertPropertyModalProps) {
   const [key, setKey] = useState(initialKey);
   const [operator, setOperator] = useState(initialOperator);
   const [value, setValue] = useState(initialValue);
