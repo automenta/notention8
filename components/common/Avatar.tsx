@@ -19,13 +19,13 @@ const sizeClasses: Record<AvatarSize, string> = {
   '2xl': 'h-24 w-24',
 };
 
-export const Avatar: React.FC<AvatarProps> = ({
+export function Avatar({
   src,
   pubkey,
   alt = 'Avatar',
   size = 'md',
   className = '',
-}) => {
+}: AvatarProps) {
   const finalSrc =
     src ||
     (pubkey

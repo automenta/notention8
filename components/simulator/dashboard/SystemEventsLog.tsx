@@ -6,7 +6,8 @@ export interface Log {
     msg: string;
 }
 
-export const SystemEventsLog: React.FC<{ logs: Log[] }> = ({ logs }) => (
+export function SystemEventsLog({ logs }: { logs: Log[] }) {
+  return (
     <>
         <div className="bg-gray-800 px-3 py-2 border-b border-gray-700 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-blue-500 shadow-blue-500/50 shadow-sm"></span>
@@ -23,4 +24,5 @@ export const SystemEventsLog: React.FC<{ logs: Log[] }> = ({ logs }) => (
             ))}
         </div>
     </>
-);
+  );
+}

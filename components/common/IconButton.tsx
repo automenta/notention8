@@ -11,7 +11,7 @@ export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
   containerClassName?: string;
 }
 
-export const IconButton: React.FC<IconButtonProps> = ({
+export function IconButton({
   icon: Icon,
   isActive = false,
   variant = 'ghost',
@@ -23,7 +23,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
   tooltipPosition = 'top',
   containerClassName,
   ...props
-}) => {
+}: IconButtonProps) {
   const baseClasses = "rounded-lg transition-all duration-200 flex items-center justify-center";
 
   const sizeClasses = {

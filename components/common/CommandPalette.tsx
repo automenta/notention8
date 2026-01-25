@@ -28,14 +28,14 @@ interface CommandPaletteProps {
   }[];
 }
 
-export const CommandPalette: React.FC<CommandPaletteProps> = ({
+export function CommandPalette({
   isOpen,
   onClose,
   notes,
   onSelectNote,
   onCreateNote,
   commands,
-}) => {
+}: CommandPaletteProps) {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);

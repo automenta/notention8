@@ -9,11 +9,11 @@ interface CopyableFieldProps {
   isSecret?: boolean;
 }
 
-export const CopyableField: React.FC<CopyableFieldProps> = ({
+export function CopyableField({
   label,
   value,
   isSecret = false,
-}) => {
+}: CopyableFieldProps) {
   const { addToast } = useToast();
   const [visible, setVisible] = useState(!isSecret);
 

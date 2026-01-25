@@ -9,14 +9,14 @@ interface EmptyStateProps {
   iconClassName?: string;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
+export function EmptyState({
   icon: Icon,
   title,
   description,
   action,
   className = '',
   iconClassName = 'h-8 w-8 text-gray-500'
-}) => {
+}: EmptyStateProps) {
   return (
     <div className={`flex flex-col items-center justify-center py-12 px-4 text-center ${className}`}>
       {Icon && (

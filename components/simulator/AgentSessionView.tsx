@@ -16,7 +16,7 @@ interface Props {
   minimal?: boolean;
 }
 
-export const AgentSessionView: React.FC<Props> = ({
+export function AgentSessionView({
     agentName,
     currentDraft,
     onDraftChange,
@@ -24,7 +24,7 @@ export const AgentSessionView: React.FC<Props> = ({
     onPublish,
     notifications,
     minimal = false
-}) => {
+}: Props) {
   const {
       notes,
       addNote,

@@ -13,7 +13,7 @@ interface ConfirmationModalProps {
   isDestructive?: boolean;
 }
 
-export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
+export function ConfirmationModal({
   isOpen,
   onClose,
   onConfirm,
@@ -22,7 +22,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   isDestructive = false,
-}) => {
+}: ConfirmationModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <div className="space-y-6">

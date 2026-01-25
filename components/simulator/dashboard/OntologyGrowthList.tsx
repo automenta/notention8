@@ -7,7 +7,8 @@ interface OntologyGrowthListProps {
     optimizeOntology: () => void;
 }
 
-export const OntologyGrowthList: React.FC<OntologyGrowthListProps> = ({ newAttributes, optimizeOntology }) => (
+export function OntologyGrowthList({ newAttributes, optimizeOntology }: OntologyGrowthListProps) {
+  return (
     <>
         <div className="bg-gray-800 px-3 py-2 border-t border-gray-700 flex justify-between items-center">
             <div className="flex items-center gap-2">
@@ -37,4 +38,5 @@ export const OntologyGrowthList: React.FC<OntologyGrowthListProps> = ({ newAttri
             ))}
         </div>
     </>
-);
+  );
+}

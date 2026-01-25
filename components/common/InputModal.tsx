@@ -15,7 +15,7 @@ interface InputModalProps {
   cancelLabel?: string;
 }
 
-export const InputModal: React.FC<InputModalProps> = ({
+export function InputModal({
   isOpen,
   onClose,
   onConfirm,
@@ -25,7 +25,7 @@ export const InputModal: React.FC<InputModalProps> = ({
   placeholder = '',
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
-}) => {
+}: InputModalProps) {
   const [value, setValue] = useState(defaultValue);
 
   useEffect(() => {

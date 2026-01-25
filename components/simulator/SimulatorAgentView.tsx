@@ -15,7 +15,7 @@ interface SimulatorAgentViewProps {
     ontology: OntologyNode[];
 }
 
-export const SimulatorAgentView: React.FC<SimulatorAgentViewProps> = ({
+export function SimulatorAgentView({
     agent,
     isActive,
     onUpdateAgent,
@@ -23,7 +23,7 @@ export const SimulatorAgentView: React.FC<SimulatorAgentViewProps> = ({
     onPublish,
     notifications,
     ontology
-}) => {
+}: SimulatorAgentViewProps) {
     return (
         <div className="h-full flex flex-col gap-2">
             {!isActive && (

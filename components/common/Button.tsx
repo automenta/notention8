@@ -12,7 +12,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   containerClassName?: string;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+export function Button({
   children,
   variant = 'primary',
   size = 'md',
@@ -25,7 +25,7 @@ export const Button: React.FC<ButtonProps> = ({
   tooltipPosition = 'top',
   containerClassName,
   ...props
-}) => {
+}: ButtonProps) {
   const baseClasses = "font-medium rounded-lg transition-all duration-200 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-gray-900";
 
   const sizeClasses = {

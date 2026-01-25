@@ -10,12 +10,12 @@ interface SessionSidebarProps {
     addNote: () => Note;
 }
 
-export const SessionSidebar: React.FC<SessionSidebarProps> = ({
+export function SessionSidebar({
     notes,
     activeNote,
     setActiveNote,
     addNote
-}) => {
+}: SessionSidebarProps) {
     return (
         <div className="w-48 bg-gray-950 border-r border-gray-800 flex flex-col flex-shrink-0">
             <div className="p-2 border-b border-gray-800">

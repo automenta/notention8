@@ -7,7 +7,7 @@ interface HelpModalProps {
     onClose: () => void;
 }
 
-export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
+export function HelpModal({ isOpen, onClose }: HelpModalProps) {
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Notention Help">
             <div className="space-y-6 text-gray-300">

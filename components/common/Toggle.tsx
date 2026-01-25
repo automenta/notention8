@@ -9,14 +9,15 @@ interface ToggleProps {
   label?: string;
 }
 
-export const Toggle: React.FC<ToggleProps> = ({
+export function Toggle({
   checked,
   onChange,
   disabled = false,
   id,
   ariaLabel,
   label
-}) => (
+}: ToggleProps) {
+  return (
   <div className="flex items-center gap-3">
     <button
         id={id}
@@ -50,4 +51,5 @@ export const Toggle: React.FC<ToggleProps> = ({
         </span>
     )}
   </div>
-);
+  );
+}
