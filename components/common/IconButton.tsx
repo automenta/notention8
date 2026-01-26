@@ -1,10 +1,14 @@
 import React from 'react';
+import { Tooltip } from './Tooltip';
 
 export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon: React.ComponentType<{ className?: string }>;
   isActive?: boolean;
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   size?: 'xs' | 'sm' | 'md' | 'lg';
+  tooltip?: string;
+  tooltipPosition?: 'top' | 'bottom' | 'left' | 'right';
+  containerClassName?: string;
 }
 
 export const IconButton: React.FC<IconButtonProps> = ({
@@ -15,6 +19,9 @@ export const IconButton: React.FC<IconButtonProps> = ({
   className = '',
   disabled,
   title,
+  tooltip,
+  tooltipPosition = 'top',
+  containerClassName,
   ...props
 }) => {
   const baseClasses = "rounded-lg transition-all duration-200 flex items-center justify-center";
@@ -49,7 +56,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
     lg: "h-5 w-5"
   };
 
-  return (
+  const button = (
     <button
       className={`
         ${baseClasses}
@@ -59,7 +66,8 @@ export const IconButton: React.FC<IconButtonProps> = ({
         ${className}
       `}
       disabled={disabled}
-      title={title}
+      title={tooltip ? undefined : title} // Use native title only if no custom tooltip
+      aria-label={props['aria-label'] || title || tooltip}
       type="button"
       aria-pressed={isActive}
       {...props}
@@ -67,4 +75,14 @@ export const IconButton: React.FC<IconButtonProps> = ({
       <Icon className={iconSizes[size]} />
     </button>
   );
+
+  if (tooltip) {
+    return (
+      <Tooltip content={tooltip} position={tooltipPosition} className={containerClassName}>
+        {button}
+      </Tooltip>
+    );
+  }
+
+  return button;
 };

@@ -41,11 +41,12 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
             </div>
             <IconButton
                 onClick={() => handleCreateNote()}
-                title="New Note (Ctrl+N)"
+                tooltip="New Note (Ctrl+N)"
+                tooltipPosition="bottom"
                 icon={PlusIcon}
                 variant="primary"
                 size="lg"
-                className="flex-shrink-0"
+                containerClassName="flex-shrink-0"
             />
         </div>
 

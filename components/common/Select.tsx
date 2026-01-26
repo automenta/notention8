@@ -10,9 +10,18 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
   error?: string;
   options?: SelectOption[];
   className?: string;
+  leftIcon?: React.ReactNode;
 }
 
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(({ label, error, options, children, className = '', ...props }, ref) => {
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
+  label,
+  error,
+  options,
+  children,
+  className = '',
+  leftIcon,
+  ...props
+}, ref) => {
   return (
     <div className={className}>
       {label && (
@@ -21,9 +30,20 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({ label, error
         </label>
       )}
       <div className="relative">
+        {leftIcon && (
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              {leftIcon}
+            </div>
+        )}
         <select
           ref={ref}
-          className={`w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed ${error ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/50' : ''}`}
+          className={`
+            w-full bg-gray-900/50 border border-gray-700/50 rounded-lg py-2.5 text-white
+            focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50
+            transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed
+            ${leftIcon ? 'pl-10' : 'px-3'} pr-10
+            ${error ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/50' : ''}
+          `}
           {...props}
         >
           {options ? (
