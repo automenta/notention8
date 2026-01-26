@@ -22,11 +22,10 @@ export const RecentNotesWidget: React.FC<RecentNotesWidgetProps> = ({
     <DashboardWidget
       title="Recent Notes"
       icon={ClockIcon}
-      className="border-none bg-transparent p-0"
       isEmpty={notes.length === 0}
       emptyState={{
           title: "No notes yet. Start writing!",
-          className: "bg-gray-800/30 rounded-2xl border border-gray-800 border-dashed",
+          className: "bg-gray-800/30 rounded-xl border border-gray-800 border-dashed py-12",
           action: (
             <Button
                 onClick={onCreateNote}
@@ -48,7 +47,7 @@ export const RecentNotesWidget: React.FC<RecentNotesWidgetProps> = ({
         </Button>
       }
     >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {notes.map(note => (
                 <RecentNoteItem key={note.id} note={note} onClick={onSelectNote} />
             ))}

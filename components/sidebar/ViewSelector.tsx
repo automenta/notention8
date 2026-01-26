@@ -1,6 +1,7 @@
 import React from 'react';
 import type { SidebarViewMode } from '../../types';
 import { ListUlIcon, CubeIcon, TagIcon } from '../layout/icons';
+import { IconButton } from '../common/IconButton';
 
 interface ViewSelectorProps {
   viewMode: SidebarViewMode;
@@ -17,18 +18,15 @@ export const ViewSelector: React.FC<ViewSelectorProps> = ({ viewMode, onViewChan
   return (
     <div className="flex items-center bg-gray-800 rounded-lg p-1 border border-gray-700">
       {options.map((option) => (
-        <button
+        <IconButton
           key={option.mode}
           onClick={() => onViewChange(option.mode)}
-          className={`p-1.5 rounded-md flex-1 flex justify-center items-center transition-colors ${
-            viewMode === option.mode
-              ? 'bg-gray-700 text-blue-400'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
-          }`}
-          title={`View as ${option.label}`}
-        >
-          <option.icon className="h-4 w-4" />
-        </button>
+          icon={option.icon}
+          isActive={viewMode === option.mode}
+          tooltip={`View as ${option.label}`}
+          variant="ghost"
+          className="flex-1"
+        />
       ))}
     </div>
   );
