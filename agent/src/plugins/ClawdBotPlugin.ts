@@ -23,11 +23,24 @@ export class ClawdBotPlugin implements Plugin {
   private extensionManager: any; // Will be passed in
   private uiIntegrationSystem: UIIntegrationSystem;
   private uiReplacementSystem: any; // Will be passed in
+  private stateManager: any; // Will be passed in
+  private errorHandler: any; // Will be passed in
+  private configManager: any; // Will be passed in
 
-  constructor(gateway: any, extensionManager?: any, uiReplacementSystem?: any) {
+  constructor(
+    gateway: any,
+    extensionManager?: any,
+    uiReplacementSystem?: any,
+    stateManager?: any,
+    errorHandler?: any,
+    configManager?: any
+  ) {
     this.gateway = gateway;
     this.extensionManager = extensionManager || null;
     this.uiReplacementSystem = uiReplacementSystem || null;
+    this.stateManager = stateManager || null;
+    this.errorHandler = errorHandler || null;
+    this.configManager = configManager || null;
     this.strategyManager = new StrategyManager();
     this.uiIntegrationSystem = new UIIntegrationSystem();
 

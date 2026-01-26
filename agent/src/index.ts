@@ -20,6 +20,9 @@ import { ExtensionManager } from './extensions/ExtensionSystem';
 import { SemanticPropertyExtension } from './extensions/SemanticPropertyExtension';
 import { MonitoringExtension } from './extensions/MonitoringExtension';
 import { ComprehensiveUIReplacementSystem } from './ui-replacement/ComprehensiveUIReplacementSystem';
+import { ComprehensiveStateManager } from './state-management/ComprehensiveStateManager';
+import { TransparentErrorHandler } from './error-handling/ErrorHandler';
+import { ComprehensiveConfigurationManager } from './error-handling/ConfigurationManager';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -225,6 +228,8 @@ wss.on('connection', (ws) => {
           // Let plugins handle custom message types
           await pluginManager.broadcastMessage(message);
 
+          // If no plugin handled the message, it will be caught by the switch statement above
+
           // Handle specific UI integration messages that aren't handled by plugins
           switch(message.type) {
             case 'show_agent_creation_ui':
@@ -272,6 +277,111 @@ wss.on('connection', (ws) => {
               }));
               break;
 
+            case 'refresh_agents':
+              // Refresh agent state
+              try {
+                const state = await stateManager.getState();
+                ws.send(JSON.stringify({
+                  type: 'agents_refreshed',
+                  payload: {
+                    agents: state.activeAgents,
+                    timestamp: new Date().toISOString()
+                  }
+                }));
+              } catch (error) {
+                console.error('Error refreshing agents:', error);
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  message: 'Error refreshing agents'
+                }));
+              }
+              break;
+
+            case 'show_agent_editor':
+              // Show agent editor
+              try {
+                const agentId = message.payload.agentId;
+                const agentState = await stateManager.getAgentState(agentId);
+
+                ws.send(JSON.stringify({
+                  type: 'show_agent_editor_response',
+                  payload: {
+                    agent: agentState,
+                    success: !!agentState
+                  }
+                }));
+              } catch (error) {
+                console.error('Error showing agent editor:', error);
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  message: 'Error showing agent editor'
+                }));
+              }
+              break;
+
+            case 'resolve_error':
+              // Resolve an error
+              try {
+                const errorId = message.payload.errorId;
+                errorHandler.resolveError(errorId, 'Resolved via UI');
+
+                ws.send(JSON.stringify({
+                  type: 'error_resolved',
+                  payload: {
+                    errorId,
+                    success: true
+                  }
+                }));
+              } catch (error) {
+                console.error('Error resolving error:', error);
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  message: 'Error resolving error'
+                }));
+              }
+              break;
+
+            case 'refresh_error_report':
+              // Refresh error report
+              try {
+                const stats = errorHandler.getErrorStats();
+                const unresolved = errorHandler.getUnresolvedErrors();
+
+                ws.send(JSON.stringify({
+                  type: 'error_report_refreshed',
+                  payload: {
+                    stats,
+                    unresolved: unresolved.slice(0, 10), // Top 10 unresolved
+                    timestamp: new Date().toISOString()
+                  }
+                }));
+              } catch (error) {
+                console.error('Error refreshing error report:', error);
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  message: 'Error refreshing error report'
+                }));
+              }
+              break;
+
+            case 'generate_error_report':
+              // Generate full error report
+              try {
+                const report = errorHandler.generateErrorReport();
+
+                ws.send(JSON.stringify({
+                  type: 'full_error_report',
+                  payload: report
+                }));
+              } catch (error) {
+                console.error('Error generating error report:', error);
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  message: 'Error generating error report'
+                }));
+              }
+              break;
+
             default:
               // If none of the plugins handled this message, send error
               console.log('Unknown message type from UI:', message.type);
@@ -305,6 +415,9 @@ wss.on('connection', (ws) => {
 const pluginManager = new PluginManager();
 const extensionManager = new ExtensionManager();
 const uiReplacementSystem = new ComprehensiveUIReplacementSystem();
+const stateManager = new ComprehensiveStateManager(null); // Will be initialized with gateway
+const errorHandler = new TransparentErrorHandler();
+const configManager = new ComprehensiveConfigurationManager();
 
 // Initialize and register extensions
 async function initializeExtensions() {
@@ -333,13 +446,38 @@ try {
   initializeExtensions();
 
   // Create and register the ClawdBot plugin
-  const clawdBotPlugin = new ClawdBotPlugin(gateway, extensionManager, uiReplacementSystem);
+  const clawdBotPlugin = new ClawdBotPlugin(
+    gateway,
+    extensionManager,
+    uiReplacementSystem,
+    stateManager,
+    errorHandler,
+    configManager
+  );
   pluginManager.register(clawdBotPlugin);
+
+  // Initialize the state manager with the gateway
+  stateManager.initialize().catch(err => {
+    console.error('Error initializing state manager:', err);
+  });
+
+  // Initialize the configuration manager
+  configManager.initialize().catch(err => {
+    console.error('Error initializing configuration manager:', err);
+  });
 
   // Start ClawdBot
   gateway.start()
     .then(() => {
       console.log('ClawdBot gateway started successfully');
+
+      // Update state manager with initial state
+      stateManager.updateState({
+        status: 'running',
+        version: gateway.version || 'unknown'
+      }).catch(err => {
+        console.error('Error updating state:', err);
+      });
 
       // Set up event listeners for ClawdBot events
       // and forward them to connected UI clients
@@ -349,6 +487,8 @@ try {
     })
     .catch(err => {
       console.error('Failed to start ClawdBot gateway:', err);
+      // Log the error using the error handler
+      errorHandler.handleError(err, { source: 'ClawdBotGateway', action: 'start' });
     });
 } catch (error) {
   console.error('Failed to initialize ClawdBot gateway:', error);
