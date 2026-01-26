@@ -1,5 +1,7 @@
 import type { Note, Property } from '../types';
 import { parseGeo, haversineDistance } from './spacetime';
+import { parseQuantity, compareQuantities } from './quantities';
+import { normalizeTerm } from './synonyms';
 
 export interface MatchResultDetails {
     score: number;
@@ -113,54 +115,115 @@ export const checkConstraint = (constraint: Property, target: Note): boolean => 
 
   if (!targetProp) return false;
 
-  // We parse constraint values.
-  // Note: Constraint might have multiple values? Usually constraints are single value per property entry.
-  // [key:is:A, B] -> Does this mean is A AND is B? or is A OR is B?
-  // Usually [skill:is:React, Vue] means "I have React and Vue".
-  // If request is [skill:is:React], and target is [skill:is:React, Vue], it's a match.
+  // Optimize 'between' constraint
+  if (constraint.operator === 'between') {
+      if (constraint.values.length === 2) {
+          const min = parseValue(constraint.values[0]);
+          const max = parseValue(constraint.values[1]);
+          // Target matches if ANY of its values fall in range
+          return targetProp.values.some(v => {
+              const tVal = parseValue(v);
+              return tVal >= min && tVal <= max;
+          });
+      }
+      return false;
+  }
 
-  // If request is [skill:is:React, Vue], and target is [skill:is:React], it's NOT a match (missing Vue).
-  // So we iterate ALL constraint values and ensure target has them (AND logic).
+  // Optimize 'is near' constraint
+  if (constraint.operator === 'is near') {
+      // constraint.values[0] is center point
+      // Optional constraint.values[1] could be radius? Not standard yet.
+      const p2 = parseGeo(String(parseValue(constraint.values[0])));
+      if (!p2) return false;
+
+      return targetProp.values.some(v => {
+          const p1 = parseGeo(String(parseValue(v)));
+          if (!p1) return false;
+          const dist = haversineDistance(p1, p2);
+          return dist <= 50; // Hardcoded 50km for now
+      });
+  }
+
+  // Standard constraints iterate all constraint values (AND logic for constraints)
+  // [skill:is:React, Vue] -> requires React AND Vue (if constraint is strict subset)
+
+  // However, traditionally:
+  // [key:is:A] matches [key:is:A, B] (subset match)
+  // [key:is:A, B] matches [key:is:A, B, C]
+  // [key:is:A, B] does NOT match [key:is:A] (B missing)
+
+  // What if constraint uses 'contains'?
+  // [skill:contains:React] matches "React Native"
+  // [skill:contains:React, Vue] matches "React Native" AND "Vue.js" ? Yes.
 
   return constraint.values.every(cValStr => {
-
-      // Special handling for 'is near' which needs parsing but we handle inside loop?
-      // No, let's parse inside loop.
-
       const constraintVal = parseValue(cValStr);
+      const constraintQty = parseQuantity(cValStr);
 
       // Target must satisfy this specific value constraint
+      // We look for ONE value in target that satisfies this constraint value
       return targetProp.values.some(v => {
         const tVal = parseValue(v);
+        const tQty = parseQuantity(v);
+
+        // Try quantity comparison first if both are parseable as quantities
+        // BUT strictness: only if compareQuantities returns non-null (meaning compatible units)
+        // If one is "100" (unitless) and other is "100 USD", compareQuantities returns null.
+        if (constraintQty && tQty) {
+            const cmp = compareQuantities(tQty, constraintQty);
+            if (cmp !== null) {
+                switch (constraint.operator) {
+                    case 'is': return cmp === 0;
+                    case 'is not': return cmp !== 0;
+                    case 'less than': return cmp === -1;
+                    case 'greater than': return cmp === 1;
+                    // 'is before' and 'is after' usually for dates, handled by string/number fallback or maybe quantities if time?
+                    // But 'time' units in quantities are durations (1 hr), not points in time.
+                }
+            }
+        }
 
         switch (constraint.operator) {
           case 'is':
             // Exact match (string or number equality) or soft semantic match
             // Handle simple variations: trim, lower case, removing common punctuation
             if (typeof tVal === 'string' && typeof constraintVal === 'string') {
-                const cleanT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
-                const cleanC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const cleanT = normalizeTerm(tVal);
+                const cleanC = normalizeTerm(constraintVal);
+
+                // Check exact match on normalized terms (handles synonyms)
+                if (cleanT === cleanC) return true;
+
+                // Fallback to fuzzy logic on original raw strings if synonym match fails
+                // (e.g. slight typos not in synonym dict)
+                const rawT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const rawC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
 
                 // Fuzzy Match
-                const dist = levenshteinDistance(cleanT, cleanC);
-                const maxLen = Math.max(cleanT.length, cleanC.length);
+                const dist = levenshteinDistance(rawT, rawC);
+                const maxLen = Math.max(rawT.length, rawC.length);
                 // Allow 1 edit for length 4-7, 2 edits for length 8+
                 const allowedDist = maxLen > 7 ? 2 : maxLen > 3 ? 1 : 0;
 
-                return cleanT === cleanC || cleanT.includes(cleanC) || cleanC.includes(cleanT) || dist <= allowedDist;
+                return rawT === rawC || rawT.includes(rawC) || rawC.includes(rawT) || dist <= allowedDist;
             }
             return tVal == constraintVal; // loose equality for "100" == 100
 
           case 'is not':
             if (typeof tVal === 'string' && typeof constraintVal === 'string') {
-                const cleanT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
-                const cleanC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const cleanT = normalizeTerm(tVal);
+                const cleanC = normalizeTerm(constraintVal);
+
+                if (cleanT === cleanC) return false;
+
+                const rawT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const rawC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
                 // It is NOT a match if they ARE equal (or soft equal)
-                const dist = levenshteinDistance(cleanT, cleanC);
-                const maxLen = Math.max(cleanT.length, cleanC.length);
+                const dist = levenshteinDistance(rawT, rawC);
+                const maxLen = Math.max(rawT.length, rawC.length);
                 const allowedDist = maxLen > 7 ? 2 : maxLen > 3 ? 1 : 0;
 
-                const isSoftEqual = cleanT === cleanC || cleanT.includes(cleanC) || cleanC.includes(cleanT) || dist <= allowedDist;
+                const isSoftEqual = rawT === rawC || rawT.includes(rawC) || rawC.includes(rawT) || dist <= allowedDist;
                 return !isSoftEqual;
             }
             return tVal != constraintVal;
@@ -173,54 +236,13 @@ export const checkConstraint = (constraint: Property, target: Note): boolean => 
           case 'is after':
             return tVal > constraintVal;
 
-          case 'between':
-              // Range check
-              // Expects constraint.values to have 2 items: [min, max]
-              // But here we are iterating constraint.values (which is `cValStr` / `constraintVal`)
-              // checkConstraint loop:
-              // return constraint.values.every(cValStr => { ... })
-
-              // Wait, if operator is 'between', constraint.values should be treated as a set of boundaries?
-              // The outer loop iterates `constraint.values`.
-              // If we have `[price:between:100,200]`, parseProperties returns values=['100', '200'].
-              // Then the loop runs for '100', then '200'.
-              // This structure (every) implies AND logic.
-              // But 'between' isn't checking "is 100" AND "is 200".
-
-              // We need to handle 'between' specially outside the standard value loop?
-              // OR we can hack it: if operator is 'between', we expect 2 values.
-              // But the architecture loops values individually.
-
-              // Let's look at `constraint.values`.
-              if (constraint.values.length === 2) {
-                  const min = parseValue(constraint.values[0]);
-                  const max = parseValue(constraint.values[1]);
-                  return tVal >= min && tVal <= max;
-              }
-              return false;
-
           case 'contains':
-            // constraint: [skill contains React]
-            // target value: "React"
-            // If target value is string, does it contain substring?
-            // Or is it set membership?
-            // If targetProp.values is ["React", "Vue"], we already iterate them.
-            // So here tVal is "React". "React" contains "React"? Yes.
-            // "React Developer" contains "React"? Yes.
+            // Check normalized contains
+            const normT = normalizeTerm(String(tVal));
+            const normC = normalizeTerm(String(constraintVal));
+            if (normT.includes(normC)) return true;
+
             return String(tVal).toLowerCase().includes(String(constraintVal).toLowerCase());
-
-          case 'is near':
-              // Spacetime proximity
-              const p1 = parseGeo(String(tVal));
-              const p2 = parseGeo(String(constraintVal));
-              if (!p1 || !p2) return false;
-
-              // Default 50km if not specified?
-              // Ideally constraint would be [location is near 40.7,-74.0, 50km]
-              // But parsing "40.7,-74.0, 50km" in parseGeo is not supported yet.
-              // Let's hardcode 50km for now as "near".
-              const dist = haversineDistance(p1, p2);
-              return dist <= 50;
 
           default:
             return false;

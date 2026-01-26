@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlusIcon, MapIcon, ChatIcon, CubeIcon } from '../layout/icons';
+import { PencilIcon, NetworkIcon, ChatIcon, CubeIcon } from '../layout/icons';
 
 interface QuickActionsWidgetProps {
   onCreateNote: () => void;
@@ -35,16 +35,16 @@ export const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({ onCreate
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <QuickActionBtn
                 onClick={onCreateNote}
-                icon={PlusIcon}
-                label="New Note"
+                icon={PencilIcon}
+                label="Write"
                 colorClass="bg-blue-600/20 text-blue-400 group-hover:bg-blue-600"
                 hoverBorder="hover:border-blue-500/50"
                 hoverShadow="hover:shadow-blue-900/10"
             />
             <QuickActionBtn
-                onClick={() => onNavigate('map')}
-                icon={MapIcon}
-                label="Map View"
+                onClick={() => onNavigate('network')}
+                icon={NetworkIcon}
+                label="Network"
                 colorClass="bg-green-600/20 text-green-400 group-hover:bg-green-600"
                 hoverBorder="hover:border-green-500/50"
                 hoverShadow="hover:shadow-green-900/10"

@@ -13,6 +13,7 @@ import { NetworkPulseWidget } from '../dashboard/NetworkPulseWidget';
 import { TimelineWidget } from '../dashboard/TimelineWidget';
 import { DashboardStats } from '../dashboard/DashboardStats';
 import { MatchesWidget } from '../dashboard/MatchesWidget';
+import { SmartInputWidget } from '../dashboard/SmartInputWidget';
 
 interface Widget {
   id: string;
@@ -149,6 +150,8 @@ export function DashboardView() {
                 pinnedNotes={notes.filter(n => n.pinned).length}
             />
         </div>
+
+        <SmartInputWidget />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column (2/3) */}
