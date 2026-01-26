@@ -1,53 +1,80 @@
-# Notention - The Decentralized Super App
+# Notention + ClawdBot Monorepo
 
-Notention is a "Tool for Thought" that evolves into a **Peer-to-Peer Coordination Network**. It starts as a private semantic notebook and scales to a global marketplace for intent (Requests) and capacity (Offers).
+This is a monorepo containing three main packages:
 
-## Core Philosophy
+- `ui/` - Notention front-end (offline-first PWA)
+- `agent/` - ClawdBot wrapper that serves enhanced UI and connects to ClawdBot
+- `core/` - Common code shared between ui and agent
 
-1.  **Everything is a Note:** A project, a task, a product for sale, a job offer - all are just Notes.
-2.  **Semantic Properties:** We use a simple syntax to make text machine-readable.
-    *   **Facts (Real):** `[role:is:Engineer]`, `[price:is:100]`
-    *   **Constraints (Imaginary):** `[role:is:Engineer]`, `[price < 200]`, `[skill contains React]`
-3.  **Matching Engine:** The app connects "Requests" (Imaginary) with "Offers" (Real) purely by semantic overlap. No central server required.
+## Project Structure
 
-## Features
+```
+notention-monorepo/
+├── ui/                 # Notention front-end
+│   ├── components/     # React components
+│   ├── hooks/          # React hooks
+│   ├── services/       # Service implementations
+│   ├── types/          # Shared types (moved to core/)
+│   ├── utils/          # Utility functions (some moved to core/)
+│   └── ...
+├── agent/              # ClawdBot wrapper and server
+│   ├── src/            # Server source code
+│   └── ...
+├── core/               # Shared code
+│   ├── src/
+│   │   ├── types/      # Shared TypeScript types
+│   │   ├── nostr.ts    # Nostr utilities
+│   │   ├── properties.ts # Property utilities
+│   │   └── ...
+│   └── ...
+└── package.json        # Workspace configuration
+```
 
-### 📝 Semantic Editor
-Just type naturally. The editor automatically parses your intent.
--   **Properties:** `[key:op:value]` (e.g., `[status:is:Active]`)
--   **Logic:** `[budget < 500]`, `[deadline > 2025-01-01]`
--   **Tags:** `#project`, `#idea`
+## Setup
 
-### ⚡️ P2P Network (Nostr)
-Publish your notes to the censorship-resistant Nostr network.
--   **Publish:** Notes are signed events. Semantic data is published as tags.
--   **Discover:** Click **"Find Matches"** on any note to scan the network for compatible offers/requests.
+1. Install dependencies:
+```bash
+npm install
+```
 
-### 🧠 The Gardener (AI)
-The Ontology (schema) is not hardcoded. It emerges from usage.
--   **Local AI:** Scans your notes and infers types (Number, Date, Enum).
--   **Evolution:** As you write, the "Gardener" updates the schema automatically.
--   **Conflict Resolution:** (Coming Soon) Vote on shared definitions with peers.
+2. To develop the UI:
+```bash
+cd ui
+npm install
+npm run dev
+```
 
-### 🧪 Simulator (Developer Mode)
-A "God Mode" for testing economic and social dynamics.
--   **Agents:** Spawn virtual users (Freelancers, Clients, Merchants).
--   **Cycles:** Run simulation cycles to watch agents post notes and find matches.
--   **Verification:** Prove that the ontology works before deploying to the mainnet.
+3. To build the UI for production:
+```bash
+cd ui
+npm run build
+```
 
-## Getting Started
+4. To run the agent server (requires built UI):
+```bash
+cd agent
+npm install
+npm run start
+```
 
-1.  **Write:** Create a note. Type `[skill:is:React]`.
-2.  **Publish:** Click the "Publish" (Send) icon.
-3.  **Match:** Create another note: `[skill contains React]`. Click the "Find Matches" (Search) icon.
-4.  **Develop:** Go to Settings -> Toggle **Developer Mode** to access the Simulator and Ontology Graph.
+5. To develop with both running:
+```bash
+# Terminal 1: Run the UI in development mode
+cd ui && npm run dev
 
-## Tech Stack
--   **Frontend:** React, Vite, TailwindCSS
--   **Editor:** Tiptap
--   **Storage:** LocalForage (IndexedDB)
--   **Network:** Nostr (`nostr-tools`)
--   **AI:** Google Gemini (Optional) or Local Heuristics
+# Terminal 2: Run the agent server
+cd agent && npm run start
+```
 
-## Architecture
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for deep dive into the matching logic, parser details, and P2P protocol.
+## Configuration
+
+The agent server will automatically create a `./config` directory for ClawdBot's configuration files. This directory is added to `.gitignore` to keep it local to each deployment.
+
+## How It Works
+
+1. The `core` package contains shared types and utilities used by both the UI and agent
+2. The `ui` package is the Notention front-end that works as an offline-first PWA
+3. The `agent` package wraps ClawdBot and provides:
+   - A server that serves the UI
+   - WebSocket communication between UI and ClawdBot
+   - ClawdBot integration with a relative config directory
