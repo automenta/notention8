@@ -1,4 +1,4 @@
-import type { Note } from '../types';
+import type { Note } from './types';
 import { arePropertyArraysEqual, isIndefiniteProperty } from './properties';
 
 export type NoteIntent = 'Real' | 'Imaginary' | 'Ambiguous';

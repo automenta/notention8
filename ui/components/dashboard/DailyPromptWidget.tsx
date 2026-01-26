@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SparklesIcon, PencilIcon } from '../common/icons';
-import { DAILY_PROMPTS } from '../../utils/constants';
+import { DAILY_PROMPTS } from '@notention/core';
 import { Button } from '../common/Button';
 import { DashboardWidget } from './DashboardWidget';
 

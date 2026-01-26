@@ -1,4 +1,4 @@
-import type { Property } from '../types';
+import type { Property } from './types';
 import { arePropertiesEqual } from './properties';
 
 // Map symbolic operators to canonical operator names

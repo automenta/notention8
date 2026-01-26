@@ -1,4 +1,4 @@
-import { Note, OntologyNode, OntologyAttribute } from '@notention/core';
+import { Note, OntologyNode, OntologyAttribute } from './types/index.js';
 
 export interface Conflict {
     noteId: string;

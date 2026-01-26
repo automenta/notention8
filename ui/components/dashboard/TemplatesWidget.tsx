@@ -1,6 +1,6 @@
 import React from 'react';
 import { DocumentDuplicateIcon } from '../common/icons';
-import { DEFAULT_TEMPLATES } from '../../utils/templates';
+import { DEFAULT_TEMPLATES } from '@notention/core';
 import { DashboardWidget } from './DashboardWidget';
 
 interface TemplatesWidgetProps {

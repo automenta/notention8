@@ -1,4 +1,4 @@
-import { OntologyNode, OntologyAttribute } from '../types';
+import { OntologyNode, OntologyAttribute } from './types';
 
 /**
  * Pure functions for manipulating the Ontology tree.
