@@ -1,64 +1,104 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { SearchSparkleIcon, ArrowRightIcon } from '../layout/icons';
 import { useView } from '../../hooks/useViewContext';
 import { useNotes } from '../../hooks/useNotes';
-import { Badge } from '../common/Badge';
 import { IconButton } from '../common/IconButton';
+import { DashboardCard } from './DashboardCard';
+import type { MatchResult } from '../../components/contexts/ViewContext';
 
 export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => void }) => {
     const { matches } = useView();
     const { notes } = useNotes();
 
-    const recentMatches = matches.slice(0, 4);
+    // Group matches by localNoteId
+    const groupedMatches = useMemo(() => {
+        const groups: Record<string, MatchResult[]> = {};
+        matches.forEach(m => {
+            if (!groups[m.localNoteId]) {
+                groups[m.localNoteId] = [];
+            }
+            groups[m.localNoteId].push(m);
+        });
+
+        // Sort groups by most recent match in the group
+        return Object.entries(groups).sort(([, matchesA], [, matchesB]) => {
+            const maxA = Math.max(...matchesA.map(m => m.timestamp || 0));
+            const maxB = Math.max(...matchesB.map(m => m.timestamp || 0));
+            return maxB - maxA;
+        });
+    }, [matches]);
 
     return (
-        <div>
-            <div className="flex items-center justify-between mb-4 px-1">
-                <h2 className="text-lg font-semibold text-gray-300 flex items-center gap-2">
-                    <SearchSparkleIcon className="h-5 w-5 text-purple-400" />
-                    Opportunities
-                    {matches.length > 0 && <Badge variant="default">{matches.length}</Badge>}
-                </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {recentMatches.length === 0 ? (
-                    <div className="col-span-full p-8 bg-gray-800/30 rounded-xl border border-gray-800 border-dashed text-center text-gray-500">
-                        Scanning network for semantic matches...
+        <DashboardCard title="Intentional Opportunities" icon={SearchSparkleIcon}>
+            <div className="space-y-4">
+                {groupedMatches.length === 0 ? (
+                    <div className="p-6 bg-gray-800/30 rounded-xl border border-gray-800 border-dashed text-center">
+                        <p className="text-gray-500 text-sm mb-2">No active matches found.</p>
+                        <p className="text-xs text-gray-600">
+                            Create a note with constraints (e.g. <code>[price &lt; 100]</code>) to find matches.
+                        </p>
                     </div>
                 ) : (
-                    recentMatches.map((match, idx) => {
-                        const localNote = notes.find(n => n.id === match.localNoteId);
+                    groupedMatches.map(([noteId, groupMatches]) => {
+                        const note = notes.find(n => n.id === noteId);
+                        const noteTitle = note?.title || 'Untitled Intent';
+
                         return (
-                            <div
-                                key={`${match.event.id}_${match.localNoteId}_${idx}`}
-                                className="p-4 bg-gray-800 hover:bg-gray-750 rounded-xl border border-gray-700/50 hover:border-purple-500/50 transition-all flex flex-col gap-2 shadow-sm group"
-                            >
-                                <div className="flex justify-between items-start">
-                                    <h3 className="text-sm font-medium text-purple-300 truncate w-3/4">
-                                        Re: {localNote?.title || 'Untitled'}
-                                    </h3>
-                                    <span className="text-xs font-mono text-gray-500">
-                                        {Math.round(match.score * 100)}%
-                                    </span>
-                                </div>
-                                <p className="text-sm text-gray-400 line-clamp-2">
-                                    {match.event.content}
-                                </p>
-                                <div className="flex justify-end mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                     <IconButton
-                                        onClick={() => onSelectNote(match.localNoteId)}
+                            <div key={noteId} className="bg-gray-900/50 rounded-lg border border-gray-700/50 overflow-hidden">
+                                {/* Header: The Intent */}
+                                <div className="p-3 bg-gray-800 flex justify-between items-center border-b border-gray-700/50 cursor-pointer hover:bg-gray-750 transition-colors"
+                                     onClick={() => onSelectNote(noteId)}>
+                                    <div className="flex items-center gap-2 overflow-hidden">
+                                        <div className="w-1 h-8 bg-purple-500 rounded-full flex-shrink-0" />
+                                        <div className="min-w-0">
+                                            <h4 className="text-sm font-bold text-gray-200 truncate">{noteTitle}</h4>
+                                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                <span>Your Request</span>
+                                                <span>•</span>
+                                                <span className="text-purple-400">{groupMatches.length} Candidates</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <IconButton
                                         icon={ArrowRightIcon}
-                                        title="Go to Note"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onSelectNote(noteId);
+                                        }}
                                         size="xs"
                                         variant="ghost"
-                                     />
+                                        title="View Details"
+                                    />
+                                </div>
+
+                                {/* Body: Top Matches */}
+                                <div className="p-2 space-y-2">
+                                    {groupMatches.slice(0, 3).map((match, idx) => (
+                                        <div key={`${match.event.id}-${idx}`} className="flex items-start gap-3 p-2 hover:bg-gray-800 rounded transition-colors group">
+                                            <div className={`mt-1 text-xs font-bold px-1.5 py-0.5 rounded ${match.score > 0.8 ? 'bg-green-900 text-green-300' : 'bg-blue-900 text-blue-300'}`}>
+                                                {Math.round(match.score * 100)}%
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm text-gray-300 line-clamp-2">{match.event.content}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] text-gray-600 font-mono truncate max-w-[100px]">
+                                                        {match.event.pubkey.slice(0, 8)}...
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {groupMatches.length > 3 && (
+                                        <div className="text-center py-1">
+                                            <span className="text-xs text-gray-500 italic">+{groupMatches.length - 3} more opportunities...</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         );
                     })
                 )}
             </div>
-        </div>
+        </DashboardCard>
     );
 };

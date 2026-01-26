@@ -16,6 +16,7 @@ import { SaveTemplateModal } from './SaveTemplateModal';
 import { MapPickerModal } from '../map/MapPickerModal';
 import { TimePickerModal } from '../common/TimePickerModal';
 import { EditorMatches } from './EditorMatches';
+import { ContextPanel } from './ContextPanel';
 
 interface EditorManagerProps {
   note: Note;
@@ -167,6 +168,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
             notes={notes}
             onPickLocation={handleRequestLocationPick}
           />
+          <ContextPanel note={dirtyNote} />
           <EditorMatches note={dirtyNote} />
           {isTemplateSelectorOpen && (
               <TemplateSelector
