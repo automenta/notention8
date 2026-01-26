@@ -18,26 +18,40 @@ export const SimulatorAgentEditor: React.FC<SimulatorAgentEditorProps> = ({
 }) => {
   return (
     <div className="bg-gray-900 p-4 rounded-lg border border-gray-800 shadow-sm flex flex-col gap-3 shrink-0">
-        <div className="flex gap-4">
-            <div className="flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
                 <Input
                     label="Name"
                     value={agent.name}
                     onChange={e => onUpdate({ name: e.target.value })}
                     placeholder="Agent Name"
                 />
-            </div>
-            <div className="flex-[3]">
                  <Textarea
                      label="Bio"
                      value={agent.bio}
                      onChange={e => onUpdate({ bio: e.target.value })}
-                     placeholder="Agent Bio"
-                     rows={1}
+                     placeholder="Brief description..."
+                     rows={2}
                  />
             </div>
+            <div className="space-y-3">
+                <Textarea
+                    label="Persona (System Prompt)"
+                    value={agent.persona}
+                    onChange={e => onUpdate({ persona: e.target.value })}
+                    placeholder="You are..."
+                    rows={2}
+                />
+                <Textarea
+                    label="Goal"
+                    value={agent.goal}
+                    onChange={e => onUpdate({ goal: e.target.value })}
+                    placeholder="Current objective..."
+                    rows={1}
+                />
+            </div>
         </div>
-        <div className="flex justify-end">
+        <div className="flex justify-end border-t border-gray-800 pt-3">
             <Button
                 onClick={onRandomize}
                 variant="secondary"

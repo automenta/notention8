@@ -22,8 +22,12 @@ export const SmartInputWidget: React.FC = () => {
 
         try {
             // 1. Create initial note
+            const title = text.length < 50
+                ? text
+                : text.slice(0, 40) + '...';
+
             const note = addNote({
-                title: 'New Note', // Or maybe infer title?
+                title: title,
                 content: text
             });
 
