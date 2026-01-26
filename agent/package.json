@@ -16,11 +16,13 @@
     "@notention/ui": "*",
     "clawdbot": "^2026.1.24-3",
     "express": "^4.21.2",
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "http-proxy-middleware": "^2.0.6"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/ws": "^8.18.0",
+    "@types/http-proxy-middleware": "^1.0.0",
     "tsx": "^4.19.2",
     "typescript": "~5.9.2"
   }
