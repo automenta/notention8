@@ -1,4 +1,10 @@
 import { Plugin } from './PluginInterface';
+import { StrategyManager } from '../strategies/StrategyManager';
+import { LMAgentTranslationStrategy } from '../strategies/LMAgentTranslationStrategy';
+import { HeuristicTranslationStrategy } from '../strategies/HeuristicTranslationStrategy';
+import { PatternMatchingStrategy } from '../strategies/PatternMatchingStrategy';
+import { TranslationContext } from '../strategies/NoteTranslationStrategy';
+import { UIIntegrationSystem } from '../ui-representation/UIIntegrationSystem';
 
 interface ClawdBotGateway {
   sendAction(action: any): Promise<any>;
@@ -10,12 +16,25 @@ export class ClawdBotPlugin implements Plugin {
   name = 'ClawdBot Integration';
   description = 'Integrates ClawdBot execution capabilities with Notention';
   version = '1.0.0';
-  
+
   private gateway: ClawdBotGateway | null = null;
   private wsClients: Set<any> = new Set();
-  
-  constructor(gateway: any) {
+  private strategyManager: StrategyManager;
+  private extensionManager: any; // Will be passed in
+  private uiIntegrationSystem: UIIntegrationSystem;
+  private uiReplacementSystem: any; // Will be passed in
+
+  constructor(gateway: any, extensionManager?: any, uiReplacementSystem?: any) {
     this.gateway = gateway;
+    this.extensionManager = extensionManager || null;
+    this.uiReplacementSystem = uiReplacementSystem || null;
+    this.strategyManager = new StrategyManager();
+    this.uiIntegrationSystem = new UIIntegrationSystem();
+
+    // Register default strategies
+    this.strategyManager.registerStrategy(new LMAgentTranslationStrategy());
+    this.strategyManager.registerStrategy(new HeuristicTranslationStrategy());
+    this.strategyManager.registerStrategy(new PatternMatchingStrategy());
   }
   
   initialize(): void {
@@ -26,16 +45,16 @@ export class ClawdBotPlugin implements Plugin {
     console.log('ClawdBot plugin destroyed');
   }
   
-  onNoteCreated(note: any): void {
+  async onNoteCreated(note: any): Promise<void> {
     console.log('Note created:', note.id);
     // Trigger ClawdBot workflows based on note content
-    this.processNoteForExecution(note);
+    await this.processNoteForExecution(note);
   }
 
-  onNoteUpdated(note: any): void {
+  async onNoteUpdated(note: any): Promise<void> {
     console.log('Note updated:', note.id);
     // Trigger ClawdBot workflows based on note changes
-    this.processNoteForExecution(note);
+    await this.processNoteForExecution(note);
   }
   
   onNoteDeleted(noteId: string): void {
@@ -74,7 +93,7 @@ export class ClawdBotPlugin implements Plugin {
               console.warn('No connection to ClawdBot gateway');
             }
           },
-          
+
           getStatus: function() {
             if (window.uiWebSocket && window.uiWebSocket.readyState === WebSocket.OPEN) {
               window.uiWebSocket.send(JSON.stringify({
@@ -82,24 +101,184 @@ export class ClawdBotPlugin implements Plugin {
               }));
             }
           },
-          
+
+          // Get available automation metaphors
+          getAvailableMetaphors: function() {
+            if (window.uiWebSocket && window.uiWebSocket.readyState === WebSocket.OPEN) {
+              window.uiWebSocket.send(JSON.stringify({
+                type: 'get_available_metaphors'
+              }));
+            }
+          },
+
+          // Create an agent from a note
+          createAgentFromNote: function(noteId) {
+            if (window.uiWebSocket && window.uiWebSocket.readyState === WebSocket.OPEN) {
+              window.uiWebSocket.send(JSON.stringify({
+                type: 'create_agent_from_note',
+                payload: { noteId }
+              }));
+            }
+          },
+
+          // Control an existing agent
+          controlAgent: function(agentId, action) {
+            if (window.uiWebSocket && window.uiWebSocket.readyState === WebSocket.OPEN) {
+              window.uiWebSocket.send(JSON.stringify({
+                type: 'agent_control',
+                payload: { agentId, action }
+              }));
+            }
+          },
+
+          // Get active agents overview
+          getActiveAgents: function() {
+            if (window.uiWebSocket && window.uiWebSocket.readyState === WebSocket.OPEN) {
+              window.uiWebSocket.send(JSON.stringify({
+                type: 'get_active_agents'
+              }));
+            }
+          },
+
           // Listen for ClawdBot events
           onClawdBotEvent: function(callback) {
             // Implementation would depend on how UI receives messages
           }
         };
-        
+
+        // Add UI enhancement functions
+        window.ClawdBotUI = {
+          showAutomationSuggestions: function(noteId) {
+            // Show automation suggestions for a note
+            if (document.getElementById('automation-suggestions-' + noteId)) {
+              document.getElementById('automation-suggestions-' + noteId).style.display = 'block';
+            }
+          },
+
+          hideAutomationSuggestions: function(noteId) {
+            // Hide automation suggestions for a note
+            if (document.getElementById('automation-suggestions-' + noteId)) {
+              document.getElementById('automation-suggestions-' + noteId).style.display = 'none';
+            }
+          },
+
+          // Function to update UI with replacement components
+          updateWithReplacements: function(context) {
+            if (window.uiWebSocket && window.uiWebSocket.readyState === WebSocket.OPEN) {
+              window.uiWebSocket.send(JSON.stringify({
+                type: 'get_ui_replacements',
+                payload: context
+              }));
+            }
+          }
+        };
+
+        // Initialize UI replacement system when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+          // Request UI replacements for current context
+          setTimeout(function() {
+            window.ClawdBotUI.updateWithReplacements({
+              currentPage: window.location.pathname,
+              selectedNote: null, // Would be populated by Notention
+              clawdBotStatus: 'active'
+            });
+          }, 1000); // Small delay to let Notention load
+        });
+
         console.log('ClawdBot integration loaded in UI');
       </script>
     `;
   }
   
+  async handleMessage(message: any): Promise<void> {
+    console.log('ClawdBot plugin received message:', message.type);
+
+    switch(message.type) {
+      case 'clawdbot_execute':
+        await this.executeClawdBotAction(message.payload);
+        break;
+      case 'clawdbot_status':
+        await this.getClawdBotStatus();
+        break;
+      case 'get_available_metaphors':
+        await this.handleGetMetaphors();
+        break;
+      case 'create_agent_from_note':
+        await this.handleCreateAgentFromNote(message.payload);
+        break;
+      case 'agent_control':
+        await this.handleAgentControl(message.payload);
+        break;
+      case 'get_active_agents':
+        await this.handleGetActiveAgents();
+        break;
+      default:
+        console.log('Unknown message type for ClawdBot plugin:', message.type);
+    }
+  }
+
   getAPI(): any {
     return {
       executeAction: this.executeClawdBotAction.bind(this),
       getStatus: this.getClawdBotStatus.bind(this),
       analyzeNote: this.analyzeNoteForAutomation.bind(this)
     };
+  }
+
+  private async handleGetMetaphors(): Promise<void> {
+    const metaphors = this.uiIntegrationSystem.getAvailableMetaphors();
+
+    // Broadcast to UI clients
+    this.broadcastToUI({
+      type: 'available_metaphors',
+      payload: metaphors
+    });
+  }
+
+  private async handleCreateAgentFromNote(payload: any): Promise<void> {
+    console.log('Creating agent from note:', payload.noteId);
+
+    // In a real implementation, this would create an actual agent
+    // For now, we'll just simulate the process
+
+    this.broadcastToUI({
+      type: 'agent_creation_initiated',
+      payload: {
+        noteId: payload.noteId,
+        status: 'success',
+        message: 'Agent creation initiated'
+      }
+    });
+  }
+
+  private async handleAgentControl(payload: any): Promise<void> {
+    console.log('Controlling agent:', payload);
+
+    // In a real implementation, this would control the actual agent
+    // For now, we'll just simulate the process
+
+    this.broadcastToUI({
+      type: 'agent_control_response',
+      payload: {
+        agentId: payload.agentId,
+        action: payload.action,
+        status: 'executed'
+      }
+    });
+  }
+
+  private async handleGetActiveAgents(): Promise<void> {
+    // In a real implementation, this would fetch actual agents from ClawdBot
+    // For now, we'll return empty list
+
+    this.broadcastToUI({
+      type: 'active_agents_overview',
+      payload: {
+        agents: [],
+        count: 0,
+        message: 'No active agents'
+      }
+    });
   }
   
   private async executeClawdBotAction(payload: any): Promise<void> {
@@ -158,157 +337,109 @@ export class ClawdBotPlugin implements Plugin {
     }
   }
   
-  private processNoteForExecution(note: any): void {
-    // Analyze the note content to see if it represents executable intent
-    // This is where the "intent recognition" happens to turn notes into actions
+  private async processNoteForExecution(note: any): Promise<void> {
+    // Use the strategy system to translate the note into ClawdBot actions
+    console.log(`Processing note for execution: ${note.id}`);
 
-    const content = note.content || '';
-    const title = note.title || '';
-    const fullText = (title + ' ' + content).toLowerCase();
+    const context: TranslationContext = {
+      note,
+      gateway: this.gateway,
+      pluginManager: this, // or however plugin manager is accessed
+      logger: console
+    };
 
-    // Look for intent patterns that should trigger ClawdBot execution
-    const intentPatterns = [
-      { pattern: /want\s+(.+)/i, type: 'desire' },
-      { pattern: /need\s+(.+)/i, type: 'need' },
-      { pattern: /should\s+(.+)/i, type: 'obligation' },
-      { pattern: /must\s+(.+)/i, type: 'requirement' },
-      { pattern: /remind.*me.*to/i, type: 'reminder' },
-      { pattern: /when.*then/i, type: 'conditional' },
-      { pattern: /if.*then/i, type: 'conditional' },
-      { pattern: /schedule.*for/i, type: 'scheduling' },
-      { pattern: /contact.*about/i, type: 'communication' },
-      { pattern: /buy|purchase|order/i, type: 'acquisition' }
-    ];
+    try {
+      // First, run extensions to preprocess the note
+      if (this.extensionManager) {
+        const extensionContext = {
+          request: { note },
+          gateway: this.gateway,
+          strategyManager: this.strategyManager,
+          pluginManager: this,
+          logger: console
+        };
 
-    // Check for property-based intents (like [want:quiet evening], [after:18:00], etc.)
-    const propertyPattern = /\[(.*?)\]/g;
-    const properties = [];
-    let match;
-    while ((match = propertyPattern.exec(content)) !== null) {
-      properties.push(match[1]);
-    }
+        await this.extensionManager.executeExtensions(extensionContext);
+      }
 
-    if (properties.length > 0) {
-      console.log('Semantic properties detected in note:', properties);
+      // Then use the strategy manager to translate the note
+      const result = await this.strategyManager.translateNote(context);
 
-      // Create a ClawdBot agent based on the note's semantic properties
-      this.createAgentFromNote(note, properties);
-    }
+      if (result) {
+        console.log(`Note translation successful for: ${note.id}`, result);
 
-    // Check for intent patterns
-    for (const intent of intentPatterns) {
-      if (intent.pattern.test(fullText)) {
-        console.log(`Intent pattern matched: ${intent.type} in note:`, note.id);
+        // Execute the translated actions/configurations
+        await this.executeTranslatedResult(result, note);
 
-        // Create appropriate ClawdBot agent based on intent
-        this.createAgentFromIntent(note, intent.type);
-
-        // Notify UI about the created agent
+        // Notify UI about the created agents/actions
         this.broadcastToUI({
-          type: 'execution_agent_created',
+          type: 'execution_agents_created',
           payload: {
             noteId: note.id,
-            intentType: intent.type,
-            message: `Created execution agent for "${intent.type}" intent`
+            result: result,
+            message: `Created execution agents from note: ${note.title || 'Untitled'}`
           }
         });
+      } else {
+        console.log(`No translation result for note: ${note.id}. Using monitoring fallback.`);
 
-        break; // Only process first match to avoid duplicates
+        // Set up monitoring for future changes
+        this.setupMonitoringForNote(note);
       }
+    } catch (error) {
+      console.error(`Error processing note with strategies:`, error);
+
+      // Fallback: set up basic monitoring
+      this.setupMonitoringForNote(note);
+
+      this.broadcastToUI({
+        type: 'execution_error',
+        payload: {
+          noteId: note.id,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          message: 'Error processing note, set up basic monitoring'
+        }
+      });
     }
   }
 
-  private createAgentFromNote(note: any, properties: string[]): void {
-    // Create a ClawdBot agent based on the semantic properties of the note
-    console.log(`Creating agent from note ${note.id} with properties:`, properties);
+  private async executeTranslatedResult(result: any, note: any): Promise<void> {
+    // Execute the translated actions/configurations
+    console.log(`Executing translated result for note: ${note.id}`);
 
-    // Example: if note has [when:after 18:00] [if:stress > 6] [action:dim lights]
-    // Create an agent that monitors stress levels and dims lights after 6 PM when stressed
+    // In a real implementation, this would send the actions/configurations to ClawdBot
+    // For now, we'll just log what would be executed
 
-    // Parse properties to extract conditions and actions
-    const conditions = properties.filter(prop =>
-      prop.startsWith('if:') || prop.includes('when') || prop.includes('after') || prop.includes('before')
-    );
-
-    const actions = properties.filter(prop =>
-      prop.startsWith('action:') || prop.startsWith('do:') || prop.includes('execute')
-    );
-
-    if (conditions.length > 0 && actions.length > 0) {
-      // In a real implementation, this would create an actual ClawdBot agent
-      console.log(`Setting up conditional agent: if ${conditions.join(', ')} then ${actions.join(', ')}`);
-
-      // This is where the note becomes executable
-      this.setupConditionalExecution(note.id, conditions, actions);
-    }
-  }
-
-  private createAgentFromIntent(note: any, intentType: string): void {
-    // Create a ClawdBot agent based on the intent type
-    console.log(`Creating ${intentType} agent for note:`, note.id);
-
-    // Based on the intent type, create appropriate ClawdBot behavior
-    switch (intentType) {
-      case 'reminder':
-        this.setupReminderAgent(note);
-        break;
-      case 'conditional':
-        this.setupConditionalAgent(note);
-        break;
-      case 'communication':
-        this.setupCommunicationAgent(note);
-        break;
-      case 'scheduling':
-        this.setupSchedulingAgent(note);
-        break;
-      default:
-        console.log(`Setting up generic ${intentType} agent for note:`, note.id);
-        // Generic agent setup
-        break;
-    }
-  }
-
-  private setupConditionalExecution(noteId: string, conditions: string[], actions: string[]): void {
-    // This is where a note becomes executable code
-    console.log(`Setting up conditional execution for note ${noteId}`);
-
-    // In a real implementation, this would register with ClawdBot to monitor conditions
-    // and execute actions when conditions are met
-
-    // For demo purposes, we'll just log what would happen
-    console.log(`Agent monitoring: ${conditions.join(' AND ')}`);
-    console.log(`Agent will execute: ${actions.join(' THEN ')}`);
-
-    // Broadcast to UI that execution is set up
-    this.broadcastToUI({
-      type: 'execution_setup_complete',
-      payload: {
-        noteId,
-        conditions,
-        actions,
-        status: 'monitoring'
+    if (Array.isArray(result)) {
+      for (const item of result) {
+        await this.executeSingleResult(item, note);
       }
-    });
+    } else {
+      await this.executeSingleResult(result, note);
+    }
   }
 
-  private setupReminderAgent(note: any): void {
-    console.log(`Setting up reminder agent for note:`, note.id);
-    // Implementation would parse time expressions and set up reminders
+  private async executeSingleResult(item: any, note: any): Promise<void> {
+    console.log(`Executing item:`, item);
+
+    // In a real implementation, this would send the action/configuration to ClawdBot
+    // For now, we'll just log what would be executed
+    if (item.type === 'lm_generated_workflow' || item.type === 'pattern_based_workflow') {
+      console.log(`Setting up workflow: ${item.id}`);
+      // Execute the workflow configuration
+      for (const action of item.actions) {
+        console.log(`Scheduling action: ${action.description}`);
+      }
+    } else {
+      console.log(`Executing action: ${item.description || item.type}`);
+    }
   }
 
-  private setupConditionalAgent(note: any): void {
-    console.log(`Setting up conditional agent for note:`, note.id);
-    // Implementation would set up if/then logic
-  }
+  private setupMonitoringForNote(note: any): void {
+    console.log(`Setting up basic monitoring for note: ${note.id}`);
 
-  private setupCommunicationAgent(note: any): void {
-    console.log(`Setting up communication agent for note:`, note.id);
-    // Implementation would set up contact/communication workflows
-  }
-
-  private setupSchedulingAgent(note: any): void {
-    console.log(`Setting up scheduling agent for note:`, note.id);
-    // Implementation would parse dates/times and set up calendar events
+    // In a real implementation, this would set up ClawdBot to monitor this note
+    // for changes and re-process it if it changes
   }
   
   private broadcastToUI(message: any): void {

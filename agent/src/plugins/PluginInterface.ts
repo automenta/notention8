@@ -12,15 +12,15 @@ export interface Plugin {
   destroy?(): void;
   
   // Hook functions that allow plugins to extend UI functionality
-  onNoteCreated?(note: any): void;
-  onNoteUpdated?(note: any): void;
-  onNoteDeleted?(noteId: string): void;
+  onNoteCreated?(note: any): void | Promise<void>;
+  onNoteUpdated?(note: any): void | Promise<void>;
+  onNoteDeleted?(noteId: string): void | Promise<void>;
   
   // Allow plugin to inject UI elements or functionality
   injectUI?(): string; // Return HTML/JS to inject into UI
   
   // Handle messages from UI
-  handleMessage?(message: any): void;
+  handleMessage?(message: any): void | Promise<void>;
   
   // Get plugin-specific API methods
   getAPI?(): any;
@@ -71,52 +71,52 @@ export class PluginManager {
   }
   
   // Broadcast events to all plugins
-  broadcastNoteCreated(note: any): void {
-    this.plugins.forEach(plugin => {
+  async broadcastNoteCreated(note: any): Promise<void> {
+    for (const plugin of this.plugins.values()) {
       if (plugin.onNoteCreated) {
         try {
-          plugin.onNoteCreated(note);
+          await Promise.resolve(plugin.onNoteCreated(note));
         } catch (error) {
           console.error(`Error in plugin ${plugin.id} onNoteCreated:`, error);
         }
       }
-    });
+    }
   }
-  
-  broadcastNoteUpdated(note: any): void {
-    this.plugins.forEach(plugin => {
+
+  async broadcastNoteUpdated(note: any): Promise<void> {
+    for (const plugin of this.plugins.values()) {
       if (plugin.onNoteUpdated) {
         try {
-          plugin.onNoteUpdated(note);
+          await Promise.resolve(plugin.onNoteUpdated(note));
         } catch (error) {
           console.error(`Error in plugin ${plugin.id} onNoteUpdated:`, error);
         }
       }
-    });
+    }
   }
-  
-  broadcastNoteDeleted(noteId: string): void {
-    this.plugins.forEach(plugin => {
+
+  async broadcastNoteDeleted(noteId: string): Promise<void> {
+    for (const plugin of this.plugins.values()) {
       if (plugin.onNoteDeleted) {
         try {
-          plugin.onNoteDeleted(noteId);
+          await Promise.resolve(plugin.onNoteDeleted(noteId));
         } catch (error) {
           console.error(`Error in plugin ${plugin.id} onNoteDeleted:`, error);
         }
       }
-    });
+    }
   }
   
-  broadcastMessage(message: any): void {
-    this.plugins.forEach(plugin => {
+  async broadcastMessage(message: any): Promise<void> {
+    for (const plugin of this.plugins.values()) {
       if (plugin.handleMessage) {
         try {
-          plugin.handleMessage(message);
+          await Promise.resolve(plugin.handleMessage(message));
         } catch (error) {
           console.error(`Error in plugin ${plugin.id} handleMessage:`, error);
         }
       }
-    });
+    }
   }
   
   getAllUIInjection(): string[] {

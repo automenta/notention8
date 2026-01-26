@@ -12,10 +12,14 @@ const __dirname = dirname(__filename);
 // Set ClawdBot config directory to relative ./config
 process.env.CLAWDBOT_HOME = join(process.cwd(), 'config');
 
-// Import ClawdBot and plugins
+// Import ClawdBot and systems
 import { Gateway } from 'clawdbot';
 import { PluginManager } from './plugins/PluginInterface';
 import { ClawdBotPlugin } from './plugins/ClawdBotPlugin';
+import { ExtensionManager } from './extensions/ExtensionSystem';
+import { SemanticPropertyExtension } from './extensions/SemanticPropertyExtension';
+import { MonitoringExtension } from './extensions/MonitoringExtension';
+import { ComprehensiveUIReplacementSystem } from './ui-replacement/ComprehensiveUIReplacementSystem';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -193,32 +197,89 @@ wss.on('connection', (ws) => {
 
         case 'note_created':
           // Broadcast to plugins
-          pluginManager.broadcastNoteCreated(message.payload);
+          pluginManager.broadcastNoteCreated(message.payload).catch(error => {
+            console.error('Error broadcasting note creation:', error);
+          });
           // These might be events that should trigger ClawdBot actions
           console.log('Note created event received:', message.payload);
           break;
 
         case 'note_updated':
           // Broadcast to plugins
-          pluginManager.broadcastNoteUpdated(message.payload);
+          pluginManager.broadcastNoteUpdated(message.payload).catch(error => {
+            console.error('Error broadcasting note update:', error);
+          });
           console.log('Note updated event received:', message.payload);
           break;
 
         case 'note_deleted':
           // Broadcast to plugins
-          pluginManager.broadcastNoteDeleted(message.payload.noteId || message.id);
+          const noteId = message.payload.noteId || message.payload.id || message.id;
+          pluginManager.broadcastNoteDeleted(noteId).catch(error => {
+            console.error('Error broadcasting note deletion:', error);
+          });
           console.log('Note deleted event received:', message.payload);
           break;
 
         default:
           // Let plugins handle custom message types
-          pluginManager.broadcastMessage(message);
+          await pluginManager.broadcastMessage(message);
 
-          console.log('Unknown message type from UI:', message.type);
-          ws.send(JSON.stringify({
-            type: 'error',
-            message: `Unknown message type: ${message.type}`
-          }));
+          // Handle specific UI integration messages that aren't handled by plugins
+          switch(message.type) {
+            case 'show_agent_creation_ui':
+              // Show agent creation UI
+              ws.send(JSON.stringify({
+                type: 'show_agent_creation_ui_response',
+                payload: {
+                  success: true,
+                  message: 'Showing agent creation UI'
+                }
+              }));
+              break;
+
+            case 'get_ui_replacements':
+              // Get UI replacement components for the current context
+              try {
+                // In a real implementation, this would use the UI replacement system
+                // For now, we'll return an empty array
+                ws.send(JSON.stringify({
+                  type: 'ui_replacements',
+                  payload: {
+                    components: [],
+                    context: message.payload
+                  }
+                }));
+              } catch (error) {
+                console.error('Error getting UI replacements:', error);
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  message: 'Error getting UI replacements'
+                }));
+              }
+              break;
+
+            case 'apply_automation_suggestion':
+              // Apply an automation suggestion
+              console.log('Applying automation suggestion:', message.payload);
+              ws.send(JSON.stringify({
+                type: 'automation_suggestion_applied',
+                payload: {
+                  success: true,
+                  noteId: message.payload.noteId,
+                  suggestionIndex: message.payload.suggestionIndex
+                }
+              }));
+              break;
+
+            default:
+              // If none of the plugins handled this message, send error
+              console.log('Unknown message type from UI:', message.type);
+              ws.send(JSON.stringify({
+                type: 'error',
+                message: `Unknown message type: ${message.type}`
+              }));
+          }
       }
     } catch (e) {
       console.error('Error parsing message from UI:', e);
@@ -240,8 +301,24 @@ wss.on('connection', (ws) => {
   });
 });
 
-// Initialize plugin manager
+// Initialize managers
 const pluginManager = new PluginManager();
+const extensionManager = new ExtensionManager();
+const uiReplacementSystem = new ComprehensiveUIReplacementSystem();
+
+// Initialize and register extensions
+async function initializeExtensions() {
+  try {
+    const semanticPropertyExtension = new SemanticPropertyExtension();
+    const monitoringExtension = new MonitoringExtension();
+
+    await extensionManager.registerExtension(semanticPropertyExtension);
+    await extensionManager.registerExtension(monitoringExtension);
+    console.log('Extensions initialized successfully');
+  } catch (error) {
+    console.error('Error initializing extensions:', error);
+  }
+}
 
 // Initialize ClawdBot Gateway
 let gateway: any;
@@ -252,8 +329,11 @@ try {
     // Add any other ClawdBot configuration here
   });
 
+  // Initialize extensions
+  initializeExtensions();
+
   // Create and register the ClawdBot plugin
-  const clawdBotPlugin = new ClawdBotPlugin(gateway);
+  const clawdBotPlugin = new ClawdBotPlugin(gateway, extensionManager, uiReplacementSystem);
   pluginManager.register(clawdBotPlugin);
 
   // Start ClawdBot
