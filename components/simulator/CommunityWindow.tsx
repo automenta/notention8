@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import type { Note } from '../../types';
 import { matchNotes } from '../../utils/matching';
-import { DownloadIcon } from '../icons';
+import { DownloadIcon } from '../layout/icons';
 
 interface Props {
   networkNotes: Note[];

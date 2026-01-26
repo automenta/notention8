@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { useSettings } from '../hooks/useSettingsContext';
-import { useView } from '../hooks/useViewContext';
-import type { View } from '../types';
+import { useSettings } from '../../hooks/useSettingsContext';
+import { useView } from '../../hooks/useViewContext';
+import type { View } from '../../types';
 import {
   ChatIcon,
   CubeTransparentIcon,

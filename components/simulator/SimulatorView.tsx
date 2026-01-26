@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { AgentSessionWrapper } from './AgentSessionWrapper';
 import { AgentSessionView } from './AgentSessionView';
 import { CommunityWindow } from './CommunityWindow';
+import { SwarmModal } from './SwarmModal';
 import { useSimulatorContext } from '../contexts/SimulatorContext';
-import { CubeIcon, CpuChipIcon } from '../icons';
-import { SWARM_TEMPLATES } from '../../hooks/simulator/types';
+import { CubeIcon, CpuChipIcon } from "../layout/icons";
 import type { SwarmTemplate, SimulationAgent } from '../../hooks/simulator/types';
 
 export const SimulatorView: React.FC = () => {
@@ -213,28 +213,11 @@ export const SimulatorView: React.FC = () => {
           )}
       </div>
 
-      {showSwarmModal && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-            <div className="bg-gray-900 border border-gray-700 rounded-lg w-[480px] max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
-                 <div className="p-4 border-b border-gray-800 flex justify-between items-center">
-                     <h2 className="font-bold text-white">Deploy Swarm</h2>
-                     <button onClick={() => setShowSwarmModal(false)} className="text-gray-500 hover:text-white">✕</button>
-                 </div>
-                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                     {SWARM_TEMPLATES.map(template => (
-                         <div key={template.id} className="bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded p-3 cursor-pointer transition-colors group"
-                              onClick={() => handleDeploySwarm(template)}>
-                              <div className="flex justify-between items-center mb-1">
-                                  <h3 className="font-bold text-blue-400 group-hover:text-blue-300">{template.name}</h3>
-                                  <span className="text-xs bg-gray-900 px-2 py-0.5 rounded text-gray-500">{template.agents.length} Agents</span>
-                              </div>
-                              <p className="text-xs text-gray-400">{template.description}</p>
-                         </div>
-                     ))}
-                 </div>
-            </div>
-        </div>
-      )}
+      <SwarmModal
+        isOpen={showSwarmModal}
+        onClose={() => setShowSwarmModal(false)}
+        onDeploy={handleDeploySwarm}
+      />
     </div>
   );
 };

@@ -94,5 +94,5 @@ export const useMapView = () => {
     }
   }, [geoPoints, onSelectNote]);
 
-  return { mapContainerRef };
+  return { mapContainerRef, hasPoints: geoPoints.length > 0 };
 };

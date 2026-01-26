@@ -1,13 +1,13 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { EditorManager } from '../../components/EditorManager';
+import { EditorManager } from '../../components/editor/EditorManager';
 import { ViewContext } from '../../components/contexts/ViewContext';
 import { SettingsContext } from '../../components/contexts/SettingsContext';
 import type { Note } from '../../types';
 
 // Mock TiptapEditor
-vi.mock('../../components/TiptapEditor', () => ({
+vi.mock('../../components/editor/TiptapEditor', () => ({
   TiptapEditor: () => <div data-testid="mock-editor">Editor</div>,
 }));
 
@@ -135,7 +135,7 @@ describe('EditorManager', () => {
 
     renderWithContext(<EditorManager note={initialNote} onSave={mockOnSave} />);
 
-    const publishBtn = screen.getByTitle('Publish to Nostr');
+    const publishBtn = screen.getByTitle('Publish');
 
     await act(async () => {
         fireEvent.click(publishBtn);
@@ -152,7 +152,7 @@ describe('EditorManager', () => {
   });
 
   it('calls handleAutoTag when auto-tag button is clicked', async () => {
-     renderWithContext(<EditorManager note={{...initialNote, content: '<p>Some content</p>'}} onSave={mockOnSave} />);
+     renderWithContext(<EditorManager note={{...initialNote, content: '<p>Some content</p>', tags: ['test']}} onSave={mockOnSave} />);
      const autoTagBtn = screen.getByTitle('Auto-suggest tags with AI');
 
      await act(async () => {

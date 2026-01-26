@@ -3,7 +3,7 @@ import { useNotes } from '../../hooks/useNotes';
 import { useView } from '../../hooks/useViewContext';
 import { useSettings } from '../../hooks/useSettingsContext';
 import { parseProperties } from '../../utils/parsing';
-import { XIcon } from '../icons';
+import { XIcon } from '../layout/icons';
 import { DEFAULT_TEMPLATES } from '../../utils/templates';
 
 export const TemplateList: React.FC = () => {

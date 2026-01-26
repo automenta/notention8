@@ -4,7 +4,7 @@ import { nip19 } from 'nostr-tools';
 import { useView } from '../../hooks/useViewContext';
 import type { NostrEvent, NostrProfile } from '../../types';
 import { formatNpub, extractPropertiesFromTags } from '../../utils/nostr';
-import { ChatIcon, MergeIcon, DocumentDuplicateIcon, TagIcon } from '../icons';
+import { ChatIcon, MergeIcon, DocumentDuplicateIcon, TagIcon } from '../layout/icons';
 
 // Extend NostrEvent to include score if available
 export type ScoredNostrEvent = NostrEvent & { score?: number };

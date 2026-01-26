@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { generateSecretKey, getPublicKey, nip19 } from 'nostr-tools';
 import { bytesToHex, hexToBytes, DEFAULT_RELAYS } from '@/utils/nostr';
-import { KeyIcon, UserPlusIcon, NetworkIcon, PlusIcon, TrashIcon } from '../icons';
+import { KeyIcon, UserPlusIcon, NetworkIcon, PlusIcon, TrashIcon } from '../layout/icons';
 import type { AppSettings } from '@/types';
 import { CopyableField } from '../common/CopyableField';
 import { usePublish } from '@/hooks/usePublish';

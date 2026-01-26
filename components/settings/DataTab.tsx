@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { TrashIcon, DocumentDuplicateIcon } from '../icons';
+import { TrashIcon, DocumentDuplicateIcon } from '../layout/icons';
 import { useNotes } from '../../hooks/useNotes';
 import { useSettings } from '../../hooks/useSettingsContext';
 import { useToast } from '../contexts/ToastContext';

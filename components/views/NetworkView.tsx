@@ -11,7 +11,7 @@ import {
   LoadingSpinner,
   SettingsIcon,
   SparklesIcon,
-} from '../icons';
+} from '../layout/icons';
 
 interface NetworkViewProps {
   matchAgainst?: Note | null;

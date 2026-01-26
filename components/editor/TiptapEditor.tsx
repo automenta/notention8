@@ -1,15 +1,15 @@
 import React, { useEffect, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { EditorContent } from '@tiptap/react';
-import type { Note, OntologyNode, Template } from '../types';
+import type { Note, OntologyNode, Template } from '../../types';
 import { TiptapToolbar } from './TiptapToolbar';
-import { sanitizeHTML } from '../utils/sanitize';
-import { formatHtmlForDisplay } from '../utils/editor';
-import { useTiptapConfig } from './editor/useTiptapConfig';
-import { useView } from '../hooks/useViewContext';
-import { useToast } from './contexts/ToastContext';
-import { EditorStatusBar } from './editor/EditorStatusBar';
-import { EditorBubbleMenu } from './editor/EditorBubbleMenu';
-import { InsertPropertyModal } from './editor/InsertPropertyModal';
+import { sanitizeHTML } from '../../utils/sanitize';
+import { formatHtmlForDisplay } from '../../utils/editor';
+import { useTiptapConfig } from './useTiptapConfig';
+import { useView } from '../../hooks/useViewContext';
+import { useToast } from '../contexts/ToastContext';
+import { EditorStatusBar } from './EditorStatusBar';
+import { EditorBubbleMenu } from './EditorBubbleMenu';
+import { InsertPropertyModal } from './InsertPropertyModal';
 
 interface TiptapEditorProps {
   note: Note;

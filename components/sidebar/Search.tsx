@@ -1,5 +1,5 @@
 import React from 'react';
-import { SearchIcon, XCircleIcon } from '../icons';
+import { SearchIcon, XCircleIcon } from '../layout/icons';
 
 interface SearchProps {
   searchTerm: string;

@@ -7,7 +7,7 @@ import { useToast } from '../contexts/ToastContext';
 import type { Contact, NostrEvent } from '../../types';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
 import { parseProperties } from '../../utils/parsing';
-import { ArrowLeftIcon, SendIcon, DocumentDuplicateIcon } from '../icons';
+import { ArrowLeftIcon, SendIcon, DocumentDuplicateIcon } from '../layout/icons';
 
 interface ChatWindowProps {
   privkey: string;

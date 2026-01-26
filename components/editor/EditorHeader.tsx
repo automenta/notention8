@@ -14,9 +14,9 @@ import {
   ClipboardIcon,
   TagIcon,
   PencilIcon
-} from './icons';
+} from '../layout/icons';
 import { TagInput } from './TagInput';
-import { HelpModal } from './common/HelpModal';
+import { HelpModal } from '../common/HelpModal';
 
 interface EditorHeaderProps {
   title: string;

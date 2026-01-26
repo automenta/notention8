@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import 'tippy.js/dist/tippy.css'; // Import tippy styles for suggestions
+import './index.css';
 import App from './App';
 import { SettingsProvider } from './components/contexts/SettingsContext';
 import { NotesProvider } from './components/contexts/NotesContext';

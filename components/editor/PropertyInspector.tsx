@@ -11,7 +11,7 @@ import {
   MapPinIcon,
   ClockIcon,
   InformationCircleIcon
-} from '../icons';
+} from '../layout/icons';
 
 interface PropertyInspectorProps {
   properties: Property[];

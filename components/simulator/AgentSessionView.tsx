@@ -1,5 +1,5 @@
 import React from 'react';
-import { TiptapEditor } from '../TiptapEditor';
+import { TiptapEditor } from '../editor/TiptapEditor';
 import type { Note } from '../../types';
 import { useAgentSessionLogic } from '../../hooks/simulator/useAgentSessionLogic';
 
