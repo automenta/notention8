@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
+import { Modal } from '../common/Modal';
 
 interface MapPickerModalProps {
   isOpen: boolean;
@@ -86,24 +87,17 @@ export const MapPickerModal: React.FC<MapPickerModalProps> = ({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] animate-fade-in"
-      onMouseDown={onClose}
+    <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Select a Location"
+        className="max-w-4xl h-[80vh]"
     >
-      <div
-        className="bg-gray-800 rounded-lg shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col p-4 border border-gray-600"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-4 flex-shrink-0">
-          <h2 className="text-xl font-bold text-white">Select a Location</h2>
-          <p className="text-sm text-gray-400">
-            Click on the map to place a pin.
-          </p>
-        </div>
-        <div ref={mapContainerRef} className="flex-grow w-full rounded-md" />
+        <p className="text-sm text-gray-400 mb-2 flex-shrink-0">
+          Click on the map to place a pin.
+        </p>
+        <div ref={mapContainerRef} className="flex-grow w-full rounded-md bg-gray-900" />
         <div className="flex justify-end items-center gap-4 mt-4 flex-shrink-0">
           {selectedCoords && (
             <p className="text-sm text-gray-300 font-mono bg-gray-700 px-3 py-1.5 rounded-md">
@@ -126,7 +120,6 @@ export const MapPickerModal: React.FC<MapPickerModalProps> = ({
             Save Location
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
