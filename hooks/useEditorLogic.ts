@@ -1,16 +1,14 @@
 import { useCallback } from 'react';
 import type { Note, Property } from '../types';
 import { usePublish } from './usePublish';
-import { getTextFromHtml } from '../utils/nostr';
 import { parseProperties, replacePropertyInString } from '../utils/parsing';
 import { useDebouncedSave } from './useDebouncedSave';
 import { useView } from './useViewContext';
 import { useToast } from '../components/contexts/ToastContext';
 import { useSettings } from './useSettingsContext';
-import { useAutoTagging } from './useAutoTagging';
 import { useGardener } from './useGardener';
-import { parseNaturalDate } from '../utils/dateParsing';
-import type { OntologyNode } from '../types';
+import { useOntologyMatching } from './useOntologyMatching';
+import { useEditorMagic } from './useEditorMagic';
 
 interface UseEditorLogicProps {
   note: Note;
@@ -22,7 +20,7 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
   const { setActiveView, setMatchingNoteId } = useView();
   const { addToast } = useToast();
   const { settings, setSettings } = useSettings();
-  const { evolveOntology, alignToOntology } = useGardener();
+  const { evolveOntology } = useGardener();
 
   const handlePersist = useCallback((n: Note) => {
     onSave(n);
@@ -43,69 +41,16 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       handlePersist(dirtyNote);
   }, [handlePersist, dirtyNote]);
 
-  // Find matching ontology node based on tags
-  const matchingOntologyNode = (() => {
-      const findNode = (nodes: OntologyNode[]): OntologyNode | null => {
-          for (const node of nodes) {
-              const label = node.label.toLowerCase();
-              const noteTags = dirtyNote.tags.map(t => t.toLowerCase());
-
-              // Check children first (more specific matches)
-              if (node.children) {
-                  const found = findNode(node.children);
-                  if (found) return found;
-              }
-
-              // Hyperslicing check (Extends): if node extends other concepts, check if all extended concepts are present
-              if (node.extends && node.extends.length > 0) {
-                  const allExtendedPresent = node.extends.every(ext =>
-                      noteTags.some(tag => tag.includes(ext.toLowerCase()))
-                  );
-                  if (allExtendedPresent) {
-                      return node;
-                  }
-              }
-
-              // Fallback: Check if tags contain the full label (normalized) or ID
-              // This supports monolithic tags like "Job Request" if slices fail or aren't defined
-              if (noteTags.some(t => t.includes(label) || t === node.id.toLowerCase())) {
-                  return node;
-              }
-          }
-          return null;
-      };
-
-      return findNode(settings.ontology);
-  })();
-
-  const actionLabel = matchingOntologyNode?.actionLabel || 'Publish';
-
-  const validationErrors = (() => {
-      const errors: string[] = [];
-      if (!matchingOntologyNode || !matchingOntologyNode.requiredAttributes) return errors;
-
-      matchingOntologyNode.requiredAttributes.forEach(req => {
-          const hasProp = dirtyNote.properties.some(p => p.key.toLowerCase() === req.toLowerCase());
-          if (!hasProp) {
-              errors.push(`Missing required property: [${req}:...]`);
-          }
-      });
-
-      return errors;
-  })();
-
-  const missingProperties = (() => {
-      const missing: string[] = [];
-      if (!matchingOntologyNode || !matchingOntologyNode.requiredAttributes) return missing;
-
-      matchingOntologyNode.requiredAttributes.forEach(req => {
-          const hasProp = dirtyNote.properties.some(p => p.key.toLowerCase() === req.toLowerCase());
-          if (!hasProp) {
-              missing.push(req);
-          }
-      });
-      return missing;
-  })();
+  const {
+      matchingOntologyNode,
+      actionLabel,
+      validationErrors,
+      missingProperties
+  } = useOntologyMatching({
+      tags: dirtyNote.tags,
+      properties: dirtyNote.properties,
+      ontology: settings.ontology
+  });
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -120,24 +65,10 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     [setDirtyNote]
   );
 
-  const { isAutoTagging, handleAutoTag, isApiKeyAvailable } = useAutoTagging({
-      content: dirtyNote.content,
-      tags: dirtyNote.tags,
-      onTagsChange: handleTagsChange
-  });
-
   const handleContentSave = useCallback(
     (content: string) => {
       // Parse properties from content and update note
-      // We pass the raw content (HTML) to parseProperties because it handles both
-      // text-based brackets and HTML-based property chips.
       const properties = parseProperties(content);
-
-      // Auto-convert natural dates if present in properties
-      // This logic could be more sophisticated (e.g., suggest changes instead of auto-replace)
-      // But for "Magic" effect, let's keep it simple or do it only on specific triggers?
-      // Actually, let's leave handleContentSave pure and add a specific effect or hook for transformations if needed.
-      // For now, we will apply conversions during Magic or explicit actions to avoid annoying typing interference.
 
       setDirtyNote((prev) => {
           const updated = { ...prev, content, properties };
@@ -146,6 +77,14 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     },
     [setDirtyNote]
   );
+
+  const { handleMagic, handleAutoTag, isAutoTagging, isApiKeyAvailable } = useEditorMagic({
+      content: dirtyNote.content,
+      tags: dirtyNote.tags,
+      onTagsChange: handleTagsChange,
+      onContentSave: handleContentSave,
+      ontology: settings.ontology
+  });
 
   const handlePublish = async () => {
     if (!dirtyNote.content) return;
@@ -209,9 +148,6 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
 
       const newContent = replacePropertyInString(dirtyNote.content, existingProp || null, newProp);
 
-      // If no existing location prop was found and replaced (because it might not exist in text but exist in parsed props?
-      // replacePropertyInString handles null oldProp by appending.
-
       if (newContent !== dirtyNote.content) {
           handleContentSave(newContent);
       }
@@ -233,47 +169,6 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
         handleContentSave(newContent);
     }
 }, [dirtyNote, handleContentSave]);
-
-  const handleMagic = useCallback(async () => {
-      const cleanText = getTextFromHtml(dirtyNote.content);
-      const suggestions = await alignToOntology(cleanText, settings.ontology);
-
-      // Also look for natural language date conversions in existing properties
-      // We check raw content to find all properties including chips
-      const existingProps = parseProperties(dirtyNote.content);
-      let content = dirtyNote.content;
-      let convertedCount = 0;
-
-      existingProps.forEach(prop => {
-          if (['date', 'deadline', 'start', 'end'].some(k => prop.key.includes(k))) {
-             const val = prop.values[0];
-             if (!val) return; // Skip if no value
-
-             const parsed = parseNaturalDate(val);
-             if (parsed && parsed !== val) {
-                 const newProp = { ...prop, values: [parsed] };
-                 content = replacePropertyInString(content, prop, newProp);
-                 convertedCount++;
-             }
-          }
-      });
-
-      if (suggestions.length > 0 || convertedCount > 0) {
-          if (suggestions.length > 0) {
-               content = content + '\n\n' + suggestions.map(t => `<p>${t}</p>`).join('');
-          }
-          handleContentSave(content);
-
-          // Also trigger auto-tagging
-          handleAutoTag();
-
-          addToast(`Magic: Added ${suggestions.length} properties, converted ${convertedCount} dates.`, 'success');
-      } else {
-          // Even if no properties, try auto-tagging
-          handleAutoTag();
-          addToast('Magic: Checked tags and properties.', 'info');
-      }
-  }, [dirtyNote.content, alignToOntology, settings.ontology, handleContentSave, addToast, handleAutoTag]);
 
   const handleSaveTemplate = useCallback((name: string) => {
       const template = {

@@ -2,6 +2,7 @@ import React from 'react';
 import { SWARM_TEMPLATES } from '../../hooks/simulator/types';
 import type { SwarmTemplate } from '../../hooks/simulator/types';
 import { Modal } from '../common/Modal';
+import { Badge } from '../common/Badge';
 
 interface SwarmModalProps {
     isOpen: boolean;
@@ -26,7 +27,7 @@ export const SwarmModal: React.FC<SwarmModalProps> = ({ isOpen, onClose, onDeplo
                     >
                         <div className="flex justify-between items-center mb-1">
                             <h3 className="font-bold text-blue-400 group-hover:text-blue-300">{template.name}</h3>
-                            <span className="text-xs bg-gray-800 px-2 py-0.5 rounded text-gray-500 border border-gray-700">{template.agents.length} Agents</span>
+                            <Badge variant="default">{template.agents.length} Agents</Badge>
                         </div>
                         <p className="text-xs text-gray-400">{template.description}</p>
                     </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from './Modal';
+import { Input } from './Input';
 import { format, isValid, parseISO } from 'date-fns';
 import { useToast } from '../contexts/ToastContext';
 
@@ -60,25 +61,19 @@ export function TimePickerModal({
         <Modal isOpen={isOpen} onClose={onClose} title={title}>
             <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider">Date</label>
-                        <input
-                            type="date"
-                            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-                            value={date}
-                            onChange={e => setDate(e.target.value)}
-                            autoFocus
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider">Time</label>
-                         <input
-                            type="time"
-                            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-                            value={time}
-                            onChange={e => setTime(e.target.value)}
-                        />
-                    </div>
+                    <Input
+                        label="Date"
+                        type="date"
+                        value={date}
+                        onChange={e => setDate(e.target.value)}
+                        autoFocus
+                    />
+                    <Input
+                        label="Time"
+                        type="time"
+                        value={time}
+                        onChange={e => setTime(e.target.value)}
+                    />
                 </div>
 
                 <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-gray-700/50">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { CubeIcon, CpuChipIcon, PlusIcon, UserGroupIcon, DownloadIcon } from "../layout/icons";
+import { Badge } from '../common/Badge';
 import type { SimulationAgent } from '../../hooks/simulator/types';
 
 interface SimulatorSidebarProps {
@@ -28,9 +29,6 @@ export const SimulatorSidebar: React.FC<SimulatorSidebarProps> = ({
   notifications
 }) => {
   const isMock = aiProviderName.includes("Mock");
-  const badgeClass = isMock
-    ? "bg-yellow-900/50 border-yellow-700 text-yellow-500"
-    : "bg-green-900/50 border-green-700 text-green-400";
 
   return (
     <div className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col flex-shrink-0">
@@ -39,9 +37,9 @@ export const SimulatorSidebar: React.FC<SimulatorSidebarProps> = ({
             <span className="text-xl">🧪</span> Simulator
         </h1>
         <div className="flex justify-between items-center bg-gray-950 p-2 rounded-lg border border-gray-800">
-             <span className={`text-[10px] px-2 py-0.5 rounded border ${badgeClass}`}>
+            <Badge variant={isMock ? 'warning' : 'success'} size="sm">
                 AI: {aiProviderName}
-            </span>
+            </Badge>
             <button
                 onClick={() => setActive(!active)}
                 className={`px-3 py-0.5 rounded text-xs font-bold transition-all shadow-lg ${
