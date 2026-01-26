@@ -5,6 +5,7 @@ import { ConfirmationModal } from '../common/ConfirmationModal';
 import { useToast } from '../../hooks/useToast';
 import localforage from 'localforage';
 import type { Note, AppSettings } from '../../types';
+import { generateNotesCSV } from '../../utils/csvExport';
 
 interface ImportExportSectionProps {
     notes: Note[];
@@ -38,6 +39,18 @@ export const ImportExportSection: React.FC<ImportExportSectionProps> = ({ notes,
         a.click();
         URL.revokeObjectURL(url);
         addToast('Data exported successfully', 'success');
+    };
+
+    const handleExportCSV = () => {
+        const csvContent = generateNotesCSV(notes);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `notention-notes-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        addToast('CSV exported successfully', 'success');
     };
 
     const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,7 +151,15 @@ export const ImportExportSection: React.FC<ImportExportSectionProps> = ({ notes,
                   variant="primary"
                   icon={ArrowDownIcon}
                 >
-                    Export Data (JSON)
+                    Export JSON
+                </Button>
+
+                <Button
+                  onClick={handleExportCSV}
+                  variant="secondary"
+                  icon={ArrowDownIcon}
+                >
+                    Export CSV
                 </Button>
 
                 <Button
@@ -146,7 +167,7 @@ export const ImportExportSection: React.FC<ImportExportSectionProps> = ({ notes,
                   variant="secondary"
                   icon={ArrowUpIcon}
                 >
-                    Import Data (JSON)
+                    Import JSON
                 </Button>
                 <input
                   type="file"

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import type { Note } from '../../types';
 import { parseGeoFromValues } from '../../utils/spacetime';
-import { MapPinIcon, ClockIcon } from '../layout/icons';
+import { MapPinIcon, ClockIcon, PencilIcon } from '../layout/icons';
 
 // Simple "static" map preview using a placeholder or a very simple iframe/image if possible.
 // For now, we'll just show a visual representation of the coordinates.
@@ -10,9 +10,11 @@ import { MapPinIcon, ClockIcon } from '../layout/icons';
 
 interface ContextPanelProps {
     note: Note;
+    onPickLocation?: () => void;
+    onPickTime?: (key: string) => void;
 }
 
-export const ContextPanel: React.FC<ContextPanelProps> = ({ note }) => {
+export const ContextPanel: React.FC<ContextPanelProps> = ({ note, onPickLocation, onPickTime }) => {
     const context = useMemo(() => {
         let location: { lat: number, lng: number } | null = null;
         let date: Date | null = null;
@@ -40,9 +42,9 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({ note }) => {
     if (!context.location && !context.date) return null;
 
     return (
-        <div className="flex gap-4 p-4 bg-gray-900/30 border-t border-gray-800">
+        <div className="flex gap-4 p-4 bg-gray-900/30 border-b border-gray-800">
             {context.location && (
-                <div className="flex items-start gap-3 p-3 bg-gray-800 rounded-lg border border-gray-700 min-w-[200px]">
+                <div className="relative group flex items-start gap-3 p-3 bg-gray-800 rounded-lg border border-gray-700 min-w-[200px] hover:border-blue-500/50 transition-colors">
                     <div className="p-2 bg-blue-900/30 rounded-full text-blue-400">
                         <MapPinIcon className="w-5 h-5" />
                     </div>
@@ -56,15 +58,25 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({ note }) => {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-xs text-blue-400 hover:underline mt-1 block"
+                            onClick={(e) => e.stopPropagation()}
                         >
                             Open Map ↗
                         </a>
                     </div>
+                    {onPickLocation && (
+                        <button
+                            onClick={onPickLocation}
+                            className="absolute top-2 right-2 p-1 text-gray-500 hover:text-white bg-gray-700/50 hover:bg-blue-600 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Edit Location"
+                        >
+                            <PencilIcon className="w-3 h-3" />
+                        </button>
+                    )}
                 </div>
             )}
 
             {context.date && (
-                <div className="flex items-start gap-3 p-3 bg-gray-800 rounded-lg border border-gray-700 min-w-[200px]">
+                <div className="relative group flex items-start gap-3 p-3 bg-gray-800 rounded-lg border border-gray-700 min-w-[200px] hover:border-purple-500/50 transition-colors">
                     <div className="p-2 bg-purple-900/30 rounded-full text-purple-400">
                         <ClockIcon className="w-5 h-5" />
                     </div>
@@ -89,6 +101,15 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({ note }) => {
                              })()}
                          </div>
                     </div>
+                    {onPickTime && (
+                        <button
+                            onClick={() => onPickTime(context.dateLabel)}
+                            className="absolute top-2 right-2 p-1 text-gray-500 hover:text-white bg-gray-700/50 hover:bg-purple-600 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Edit Time"
+                        >
+                            <PencilIcon className="w-3 h-3" />
+                        </button>
+                    )}
                 </div>
             )}
         </div>

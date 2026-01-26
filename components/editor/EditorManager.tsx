@@ -175,9 +175,17 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
             notes={notes}
             onPickLocation={handleRequestLocationPick}
             saveStatus={saveStatus}
+            topContent={
+                <>
+                    <SuggestionPanel noteId={note.id} onApply={handleApplySuggestions} />
+                    <ContextPanel
+                        note={dirtyNote}
+                        onPickLocation={() => setIsMapPickerOpen(true)}
+                        onPickTime={handlePickTime}
+                    />
+                </>
+            }
           >
-              <SuggestionPanel noteId={note.id} onApply={handleApplySuggestions} />
-              <ContextPanel note={dirtyNote} />
               <EditorMatches note={dirtyNote} />
           </TiptapEditor>
 

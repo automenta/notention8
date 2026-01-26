@@ -26,6 +26,7 @@ interface TiptapEditorProps {
   onPickLocation?: () => Promise<string>;
   saveStatus?: 'saved' | 'saving' | 'error';
   children?: React.ReactNode;
+  topContent?: React.ReactNode;
 }
 
 export interface TiptapEditorRef {
@@ -44,7 +45,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(({
   notes = [],
   onPickLocation,
   saveStatus,
-  children
+  children,
+  topContent
 }, ref) => {
   const [viewMode, setViewMode] = useState<'rich' | 'code'>('rich');
 
@@ -133,6 +135,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(({
         onPickLocation={onPickLocation}
       />
       <div className="flex-grow overflow-y-auto" onClick={handleEditorClick}>
+        {topContent}
         {viewMode === 'rich' ? (
           <>
             <EditorBubbleMenu editor={editor} />

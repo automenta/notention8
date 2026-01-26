@@ -121,6 +121,9 @@ export const OntologyTab: React.FC = () => {
                   ...prev,
                   ontology: addAttribute(prev.ontology, nodeId, key, newAttr)
               }));
+              const newExpanded = new Set(expandedNodes);
+              newExpanded.add(nodeId);
+              setExpandedNodes(newExpanded);
           }
       });
   };

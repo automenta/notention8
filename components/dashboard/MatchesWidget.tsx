@@ -6,10 +6,12 @@ import { IconButton } from '../common/IconButton';
 import { DashboardWidget } from './DashboardWidget';
 import { inferNoteIntent } from '../../utils/notes';
 import type { MatchResult } from '../../components/contexts/ViewContext';
+import { useToast } from '../../hooks/useToast';
 
 export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => void }) => {
     const { matches, setActiveView, setSelectedChatPubkey } = useView();
     const { notes } = useNotes();
+    const { addToast } = useToast();
 
     // Group matches by localNoteId
     const groupedMatches = useMemo(() => {
@@ -34,13 +36,14 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
             title="Network Matches"
             icon={SearchSparkleIcon}
             isEmpty={groupedMatches.length === 0}
+            onRefresh={() => addToast('Refreshing matches...', 'info')}
             emptyState={{
                 icon: SearchSparkleIcon,
                 iconClassName: "w-8 h-8 text-purple-400",
-                title: "No active opportunities.",
+                title: "No matches found.",
                 description: (
                     <span className="leading-relaxed">
-                        Use the <b>Extract</b> button in your notes to create properties like <code className="bg-gray-800 px-1 py-0.5 rounded text-purple-300">[price &lt; 100]</code>. The Semantic Engine will find matches.
+                         Try adding more specific properties to your notes to find peers. Use the <b>Extract</b> button in your notes to create properties like <code className="bg-gray-800 px-1 py-0.5 rounded text-purple-300">[price &lt; 100]</code>.
                     </span>
                 ),
                 className: "bg-gray-800/30 rounded-xl border border-gray-800 border-dashed"

@@ -17,6 +17,7 @@ import { Select } from '../common/Select';
 import { Textarea } from '../common/Textarea';
 import { useGardener } from '../../hooks/useGardener';
 import { parseProperties } from '../../utils/parsing';
+import { PropertyValueInput } from './PropertyValueInput';
 
 interface PropertyFormProps {
   initialKey: string;
@@ -245,14 +246,15 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
             { value: 'between', label: 'between (range)' },
         ]}
       />
-      <Input
-        placeholder="Value (comma separated)"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSave();
-            if (e.key === 'Escape') onCancel();
-        }}
+      <PropertyValueInput
+          value={value}
+          onChange={setValue}
+          attributeDef={currentAttr}
+          onPickLocation={onPickLocation ? async () => {
+              if (isAdding && !key) setKey('location');
+              onPickLocation();
+              return undefined; // onPickLocation in inspector might be void or return promise, we wrap it safely
+          } : undefined}
       />
       <div className="flex justify-end gap-2 pt-1">
         <IconButton

@@ -3,6 +3,7 @@ import type { Note } from '../../types';
 import { TrashIcon, WorldIcon, DownloadIcon, MapPinIcon, ClockIcon, PinIcon, DocumentDuplicateIcon } from '../layout/icons';
 import { getTextFromHtml } from '../../utils/parsing';
 import { IconButton } from '../common/IconButton';
+import { Badge } from '../common/Badge';
 
 export const NoteListItem = React.memo(({
   note,
@@ -105,6 +106,20 @@ export const NoteListItem = React.memo(({
       <p className={`text-xs truncate mb-2 ${isSelected ? 'text-blue-200/70' : 'text-gray-500'}`}>
         {contentPreview}
       </p>
+
+      {/* Property Badges */}
+      {note.properties.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+              {note.properties.slice(0, 3).map((p, i) => (
+                  <Badge key={i} size="sm" variant="outline" className={`border-opacity-50 ${isSelected ? 'text-blue-200 border-blue-400' : 'text-gray-400 border-gray-600'}`}>
+                      {p.key}: {p.values[0]}
+                  </Badge>
+              ))}
+              {note.properties.length > 3 && (
+                  <span className={`text-[10px] ${isSelected ? 'text-blue-300' : 'text-gray-600'}`}>+{note.properties.length - 3}</span>
+              )}
+          </div>
+      )}
 
       <div className="flex items-center justify-between h-5">
         <div className="flex items-center gap-2">
