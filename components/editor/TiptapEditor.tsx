@@ -3,7 +3,7 @@ import { EditorContent } from '@tiptap/react';
 import type { Note, OntologyNode, Template } from '../../types';
 import { TiptapToolbar } from './TiptapToolbar';
 import { sanitizeHTML } from '../../utils/sanitize';
-import { prettyPrintHtml } from '../../utils/htmlSemantics';
+import { prettyPrintHtml } from '../../utils/parsing';
 import { useTiptapConfig } from './useTiptapConfig';
 import { useView } from '../../hooks/useViewContext';
 import { useToast } from '../../hooks/useToast';

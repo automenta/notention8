@@ -4,7 +4,7 @@ import { useView } from '../../hooks/useViewContext';
 import { useNotes } from '../../hooks/useNotes';
 import { IconButton } from '../common/IconButton';
 import { DashboardWidget } from './DashboardWidget';
-import { inferNoteIntent } from '../../utils/semantics';
+import { inferNoteIntent } from '../../utils/notes';
 import type { MatchResult } from '../../components/contexts/ViewContext';
 
 export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => void }) => {
