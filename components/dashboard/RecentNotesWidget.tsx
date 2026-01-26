@@ -1,7 +1,7 @@
 import React from 'react';
 import { ClockIcon, PlusIcon } from '../layout/icons';
 import { Button } from '../common/Button';
-import { Card } from '../common/Card';
+import { DashboardWidget } from './DashboardWidget';
 import { RecentNoteItem } from './RecentNoteItem';
 import type { Note } from '../../types';
 
@@ -19,10 +19,24 @@ export const RecentNotesWidget: React.FC<RecentNotesWidgetProps> = ({
   onCreateNote
 }) => {
   return (
-    <Card
+    <DashboardWidget
       title="Recent Notes"
       icon={ClockIcon}
       className="border-none bg-transparent p-0"
+      isEmpty={notes.length === 0}
+      emptyState={{
+          title: "No notes yet. Start writing!",
+          className: "bg-gray-800/30 rounded-2xl border border-gray-800 border-dashed",
+          action: (
+            <Button
+                onClick={onCreateNote}
+                variant="primary"
+                icon={PlusIcon}
+            >
+                Create First Note
+            </Button>
+          )
+      }}
       headerAction={
         <Button
           onClick={onViewAll}
@@ -34,24 +48,11 @@ export const RecentNotesWidget: React.FC<RecentNotesWidgetProps> = ({
         </Button>
       }
     >
-        {notes.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {notes.map(note => (
-                    <RecentNoteItem key={note.id} note={note} onClick={onSelectNote} />
-                ))}
-            </div>
-        ) : (
-            <div className="flex flex-col items-center justify-center py-12 bg-gray-800/30 rounded-2xl border border-gray-800 border-dashed text-center">
-                <p className="text-gray-500 mb-4">No notes yet. Start writing!</p>
-                <Button
-                    onClick={onCreateNote}
-                    variant="primary"
-                    icon={PlusIcon}
-                >
-                    Create First Note
-                </Button>
-            </div>
-        )}
-    </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {notes.map(note => (
+                <RecentNoteItem key={note.id} note={note} onClick={onSelectNote} />
+            ))}
+        </div>
+    </DashboardWidget>
   );
 };

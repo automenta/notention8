@@ -16,3 +16,16 @@ export const parseNaturalDate = (text: string): string | null => {
   // Add more heuristics here or use a library like chrono-node if needed for complex parsing
   return null;
 };
+
+/**
+ * Parses a list of property values into a Date object.
+ * Returns null if invalid or no value.
+ */
+export const parseDateFromValues = (values: string[]): Date | null => {
+  if (!values || values.length === 0) return null;
+  const val = values[0];
+  if (!val) return null;
+
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+};

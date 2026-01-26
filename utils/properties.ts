@@ -16,6 +16,25 @@ export const OPERATOR_MAP: Record<string, string> = {
   between: '↔',
 };
 
+export const TEMPORAL_KEYS = ['date', 'time', 'deadline', 'start', 'end', 'due'];
+export const SPATIAL_KEYS = ['location', 'geo', 'place', 'coords'];
+
+/**
+ * Checks if a property key represents a temporal concept (date/time).
+ */
+export const isTemporalKey = (key: string): boolean => {
+  const lowerKey = key.toLowerCase();
+  return TEMPORAL_KEYS.some(k => lowerKey.includes(k));
+};
+
+/**
+ * Checks if a property key represents a spatial concept (location).
+ */
+export const isSpatialKey = (key: string): boolean => {
+  const lowerKey = key.toLowerCase();
+  return SPATIAL_KEYS.some(k => lowerKey.includes(k));
+};
+
 /**
  * Formats a property's data into a rich HTML string for display inside a widget.
  * This function handles different operators and value structures to create a

@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import { UI_STYLES } from '../../utils/ui';
 
 export interface SelectOption {
   value: string;
@@ -25,7 +26,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
   return (
     <div className={className}>
       {label && (
-        <label className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider">
+        <label className={UI_STYLES.input.label}>
           {label}
         </label>
       )}
@@ -38,11 +39,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
         <select
           ref={ref}
           className={`
-            w-full bg-gray-900/50 border border-gray-700/50 rounded-lg py-2.5 text-white
-            focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50
-            transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed
+            ${UI_STYLES.input.base}
+            py-2.5
+            appearance-none
             ${leftIcon ? 'pl-10' : 'px-3'} pr-10
-            ${error ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/50' : ''}
+            ${error ? UI_STYLES.input.error : ''}
           `}
           {...props}
         >
@@ -64,7 +65,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
         </div>
       </div>
       {error && (
-        <p className="mt-1 text-xs text-red-500">{error}</p>
+        <p className={UI_STYLES.input.errorText}>{error}</p>
       )}
     </div>
   );

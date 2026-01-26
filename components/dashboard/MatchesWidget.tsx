@@ -3,7 +3,7 @@ import { SearchSparkleIcon, ArrowRightIcon, ChatIcon } from '../layout/icons';
 import { useView } from '../../hooks/useViewContext';
 import { useNotes } from '../../hooks/useNotes';
 import { IconButton } from '../common/IconButton';
-import { Card } from '../common/Card';
+import { DashboardWidget } from './DashboardWidget';
 import { inferNoteIntent } from '../../utils/semantics';
 import type { MatchResult } from '../../components/contexts/ViewContext';
 
@@ -30,22 +30,24 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
     }, [matches]);
 
     return (
-        <Card title="Network Matches" icon={SearchSparkleIcon}>
+        <DashboardWidget
+            title="Network Matches"
+            icon={SearchSparkleIcon}
+            isEmpty={groupedMatches.length === 0}
+            emptyState={{
+                icon: SearchSparkleIcon,
+                iconClassName: "w-8 h-8 text-purple-400",
+                title: "No active opportunities.",
+                description: (
+                    <span className="leading-relaxed">
+                        Use the <b>Extract</b> button in your notes to create properties like <code className="bg-gray-800 px-1 py-0.5 rounded text-purple-300">[price &lt; 100]</code>. The Semantic Engine will find matches.
+                    </span>
+                ),
+                className: "bg-gray-800/30 rounded-xl border border-gray-800 border-dashed"
+            }}
+        >
             <div className="space-y-4">
-                {groupedMatches.length === 0 ? (
-                    <div className="p-6 bg-gray-800/30 rounded-xl border border-gray-800 border-dashed text-center flex flex-col items-center gap-3">
-                        <div className="bg-gray-800 p-3 rounded-full">
-                            <SearchSparkleIcon className="w-6 h-6 text-purple-400" />
-                        </div>
-                        <div>
-                            <p className="text-gray-300 text-sm font-medium mb-1">No active opportunities.</p>
-                            <p className="text-xs text-gray-500 max-w-[250px] mx-auto leading-relaxed">
-                                Use the <b>Extract</b> button in your notes to create properties like <code className="bg-gray-800 px-1 py-0.5 rounded text-purple-300">[price &lt; 100]</code>. The Semantic Engine will find matches.
-                            </p>
-                        </div>
-                    </div>
-                ) : (
-                    groupedMatches.map(([noteId, groupMatches]) => {
+                {groupedMatches.map(([noteId, groupMatches]) => {
                         const note = notes.find(n => n.id === noteId);
                         const noteTitle = note?.title || 'Untitled Note';
 
@@ -135,8 +137,8 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
                             </div>
                         );
                     })
-                )}
+                }
             </div>
-        </Card>
+        </DashboardWidget>
     );
 };
