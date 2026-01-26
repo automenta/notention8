@@ -1,12 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
+import type { Template } from '../../types';
 import { PlusIcon, ChevronDownIcon, SparklesIcon, CubeTransparentIcon } from './icons';
 
 interface NewNoteButtonProps {
     onNewNote: () => void;
     onCreateIntent: (type: 'request' | 'offer') => void;
+    templates?: Template[];
+    onCreateFromTemplate?: (template: Template) => void;
 }
 
-export const NewNoteButton: React.FC<NewNoteButtonProps> = ({ onNewNote, onCreateIntent }) => {
+export const NewNoteButton: React.FC<NewNoteButtonProps> = ({
+    onNewNote,
+    onCreateIntent,
+    templates = [],
+    onCreateFromTemplate
+}) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -22,6 +30,13 @@ export const NewNoteButton: React.FC<NewNoteButtonProps> = ({ onNewNote, onCreat
 
     const handleIntentClick = (type: 'request' | 'offer') => {
         onCreateIntent(type);
+        setIsDropdownOpen(false);
+    }
+
+    const handleTemplateClick = (template: Template) => {
+        if (onCreateFromTemplate) {
+            onCreateFromTemplate(template);
+        }
         setIsDropdownOpen(false);
     }
 
@@ -71,6 +86,23 @@ export const NewNoteButton: React.FC<NewNoteButtonProps> = ({ onNewNote, onCreat
                             <div className="text-xs text-gray-500">Provide services</div>
                         </div>
                     </button>
+
+                    {templates.length > 0 && (
+                        <>
+                            <div className="border-t border-gray-700 my-1"></div>
+                            <div className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase">Templates</div>
+                            {templates.map(template => (
+                                <button
+                                    key={template.id}
+                                    onClick={() => handleTemplateClick(template)}
+                                    className="w-full text-left px-4 py-2 hover:bg-gray-700 flex items-center gap-3 group text-sm text-gray-300 hover:text-white"
+                                >
+                                    <span>{template.icon || '📄'}</span>
+                                    <span>{template.label}</span>
+                                </button>
+                            ))}
+                        </>
+                    )}
                 </div>
             )}
         </div>

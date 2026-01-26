@@ -14,6 +14,10 @@ export function useSidebarLogic(sortedNotes: Note[]) {
     setSelectedNoteId,
     setActiveView,
     activeView,
+    sidebarViewMode,
+    setSidebarViewMode,
+    userLocation,
+    refreshUserLocation,
   } = useView();
 
   const { deleteNote, addNote, updateNote, restoreNote, permanentlyDeleteNote } = useNotes();
@@ -103,6 +107,10 @@ export function useSidebarLogic(sortedNotes: Note[]) {
       handleDeleteConfirmed,
       handleRestore,
       handleCreateNote,
-      handleTogglePin
+      handleTogglePin,
+      sidebarViewMode,
+      setSidebarViewMode,
+      userLocation,
+      refreshUserLocation
   };
 }

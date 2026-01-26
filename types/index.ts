@@ -8,7 +8,13 @@ export type SortOrder =
   | 'createdAt_desc'
   | 'createdAt_asc'
   | 'title_asc'
-  | 'title_desc';
+  | 'title_desc'
+  | 'soonest'
+  | 'nearest'
+  | 'relevance'
+  | 'tags';
+
+export type SidebarViewMode = 'list' | 'grid' | 'cloud';
 
 export interface Property {
   key: string;
