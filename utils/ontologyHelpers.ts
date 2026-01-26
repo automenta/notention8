@@ -24,6 +24,19 @@ export const findNode = (tree: OntologyNode[], nodeId: string): OntologyNode | n
   return null;
 };
 
+export const findAttributeDef = (key: string, nodes: OntologyNode[]): OntologyAttribute | undefined => {
+  for (const node of nodes) {
+    if (node.attributes && node.attributes[key]) {
+      return node.attributes[key];
+    }
+    if (node.children) {
+      const found = findAttributeDef(key, node.children);
+      if (found) return found;
+    }
+  }
+  return undefined;
+};
+
 // --- Node Operations ---
 
 export const addNode = (

@@ -9,7 +9,7 @@ export interface SuggestionItem {
 
 interface SuggestionListProps {
   items: SuggestionItem[];
-  command: (item: { id: string; label: string }) => void;
+  command: (item: SuggestionItem) => void;
 }
 
 export const SuggestionList = forwardRef((props: SuggestionListProps, ref) => {
@@ -18,7 +18,7 @@ export const SuggestionList = forwardRef((props: SuggestionListProps, ref) => {
   const selectItem = (index: number) => {
     const item = props.items[index];
     if (item) {
-      props.command({ id: item.id, label: item.label });
+      props.command(item);
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import { useEditorLogic } from '../hooks/useEditorLogic';
 import { useView } from '../hooks/useViewContext';
@@ -6,7 +6,7 @@ import { useToast } from './contexts/ToastContext';
 import { useNotes } from '../hooks/useNotes';
 import type { Note } from '../types';
 import { EditorHeader } from './EditorHeader';
-import { TiptapEditor } from './TiptapEditor';
+import { TiptapEditor, TiptapEditorRef } from './TiptapEditor';
 import { PropertyInspector } from './editor/PropertyInspector';
 import { TemplateSelector } from './editor/TemplateSelector';
 import { SaveTemplateModal } from './editor/SaveTemplateModal';
@@ -63,6 +63,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
 
   const { setSelectedNoteId } = useView();
   const { addToast } = useToast();
+  const editorRef = useRef<TiptapEditorRef>(null);
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
   const [isToolbarVisible, setIsToolbarVisible] = useState(true);
@@ -127,6 +128,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
   }, [dirtyNote, onSave, addToast, handlePrevious, handleNext, setSelectedNoteId, saveImmediately]);
   const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
+  const [locationPickerCallback, setLocationPickerCallback] = useState<((loc: string) => void) | null>(null);
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
   const [pickingTimeKey, setPickingTimeKey] = useState<string>('');
   const [isInsertPropertyModalOpen, setIsInsertPropertyModalOpen] = useState(false);
@@ -164,23 +166,28 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
   };
 
   const handleAddPropertyHint = (key: string) => {
-      setPrefilledPropertyKey(key);
-
-      let attr = findAttributeDef(key, settings.ontology);
-      setPrefilledAttributeDef(attr);
-
-      setIsInsertPropertyModalOpen(true);
+      if (editorRef.current) {
+          editorRef.current.openPropertyModal(key);
+      }
   };
 
-  const handleInsertProperty = (key: string, operator: string, value: string) => {
-      // We append the HTML representation of the property node so Tiptap can parse it into a chip
-      const safeKey = escapeAttribute(key);
-      const safeOperator = escapeAttribute(operator);
-      const safeValue = escapeAttribute(value);
-      const propertyHtml = `<span data-type="property" data-name="${safeKey}" data-operator="${safeOperator}" data-value="${safeValue}"></span> `;
-      const newContent = dirtyNote.content + (dirtyNote.content ? '<p></p>' : '') + propertyHtml;
-      handleContentSave(newContent);
-  };
+  // Modified handleUpdateLocation to support generic picking
+  const handleLocationSelect = React.useCallback((latlng: string) => {
+      if (locationPickerCallback) {
+          locationPickerCallback(latlng);
+          setLocationPickerCallback(null);
+          setIsMapPickerOpen(false);
+          return;
+      }
+      handleUpdateLocation(latlng);
+  }, [handleUpdateLocation, locationPickerCallback]);
+
+  const handleRequestLocationPick = React.useCallback((): Promise<string> => {
+      return new Promise((resolve) => {
+          setLocationPickerCallback(() => (loc: string) => resolve(loc));
+          setIsMapPickerOpen(true);
+      });
+  }, []);
 
   return (
     <div className="flex flex-col h-full relative">
@@ -216,6 +223,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col relative">
           <TiptapEditor
+            ref={editorRef}
             key={note.id}
             note={dirtyNote}
             onSave={handleContentSave}
@@ -230,6 +238,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
             }}
             onTemplates={() => setIsTemplateSelectorOpen(!isTemplateSelectorOpen)}
             notes={notes}
+            onPickLocation={handleRequestLocationPick}
           />
           {isTemplateSelectorOpen && (
               <TemplateSelector
@@ -263,24 +272,13 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
       <MapPickerModal
         isOpen={isMapPickerOpen}
         onClose={() => setIsMapPickerOpen(false)}
-        onLocationSelect={handleUpdateLocation}
+        onLocationSelect={handleLocationSelect}
       />
       <TimePickerModal
         isOpen={isTimePickerOpen}
         onClose={() => setIsTimePickerOpen(false)}
         onTimeSelect={handleTimeSelected}
         title={`Pick Time for ${pickingTimeKey}`}
-      />
-      <InsertPropertyModal
-          isOpen={isInsertPropertyModalOpen}
-          onClose={() => {
-            setIsInsertPropertyModalOpen(false);
-            setPrefilledAttributeDef(undefined);
-            setPrefilledPropertyKey('');
-          }}
-          onInsert={handleInsertProperty}
-          initialKey={prefilledPropertyKey}
-          attributeDef={prefilledAttributeDef}
       />
     </div>
   );

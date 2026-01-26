@@ -14,11 +14,13 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
           email: {
             type: 'string',
             description: 'Email address',
+            icon: 'send',
             operators: { real: ['is'], imaginary: ['is not', 'contains'] },
           },
           phone: {
             type: 'string',
             description: 'Phone number',
+            icon: 'chat',
             operators: { real: ['is'], imaginary: ['is not'] },
           },
         },
@@ -31,6 +33,7 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
           website: {
             type: 'string',
             description: 'Official website URL',
+            icon: 'world',
             operators: { real: ['is'], imaginary: ['is not', 'contains'] },
           },
         },
@@ -43,11 +46,13 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
           address: {
             type: 'string',
             description: 'Physical street address',
+            icon: 'map',
             operators: { real: ['is'], imaginary: ['contains'] },
           },
           location: {
             type: 'geo',
             description: 'Geographic coordinates',
+            icon: 'map-pin',
             operators: { real: ['is'], imaginary: ['is near'] },
           },
         },
@@ -79,16 +84,19 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
       startDateTime: {
         type: 'datetime',
         description: 'The start date and time',
+        icon: 'clock',
         operators: { real: ['is'], imaginary: ['is after', 'is before'] },
       },
       endDateTime: {
         type: 'datetime',
         description: 'The end date and time',
+        icon: 'clock',
         operators: { real: ['is'], imaginary: ['is after', 'is before'] },
       },
       venue: {
         type: 'string',
         description: 'The name of the place where the event takes place',
+        icon: 'map-pin',
         operators: { real: ['is'], imaginary: ['is not'] },
       },
     },
@@ -146,16 +154,19 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
         id: 'project',
         label: 'Project',
         description: 'A planned piece of work.',
+        requiredAttributes: ['deadline'],
         attributes: {
           status: {
             type: 'enum',
             options: ['Planning', 'Active', 'On Hold', 'Completed', 'Archived'],
             description: 'Current status of the project.',
+            icon: 'information-circle',
             operators: { real: ['is'], imaginary: ['is not'] },
           },
           deadline: {
             type: 'date',
             description: 'The date the project is due.',
+            icon: 'clock',
             operators: { real: ['is'], imaginary: ['is after', 'is before'] },
           },
         },
@@ -169,17 +180,20 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
             type: 'enum',
             options: ['Low', 'Medium', 'High', 'Urgent'],
             description: 'The priority of the task.',
+            icon: 'exclamation-triangle',
             operators: { real: ['is'], imaginary: ['is not'] },
           },
           dueDate: {
             type: 'date',
             description: 'The date the task should be completed by.',
+            icon: 'clock',
             operators: { real: ['is'], imaginary: ['is after', 'is before'] },
           },
           completed: {
             type: 'enum',
             options: ['true', 'false'],
             description: 'Whether the task is completed.',
+            icon: 'check-circle',
             operators: { real: ['is'], imaginary: ['is not'] },
           },
         },
