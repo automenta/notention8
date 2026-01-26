@@ -1,0 +1,21 @@
+{
+  "name": "@notention/core",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"No tests for core yet\""
+  },
+  "dependencies": {
+    "date-fns": "^4.1.0",
+    "nostr-tools": "^2.16.1"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.2"
+  }
+}

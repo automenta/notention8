@@ -1,0 +1,9 @@
+{
+  "agent": {
+    "model": "anthropic/claude-3-haiku-20240307"
+  },
+  "gateway": {
+    "port": 18789,
+    "bind": "127.0.0.1"
+  }
+}
