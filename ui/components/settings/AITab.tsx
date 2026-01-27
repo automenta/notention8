@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SparklesIcon, CheckIcon, CpuChipIcon } from '../common/icons';
 import { isGeminiApiKeyAvailable } from '@/services/ai/RemoteProvider';
 import { AVAILABLE_MODELS } from '@/services/ai/WebLLMProvider';
-import type { AppSettings } from @notention/core';
+import type { AppSettings } from '@notention/core';
 import { useToast } from '../../hooks/useToast';
 import { Toggle } from '../common/Toggle';
 import { Input } from '../common/Input';

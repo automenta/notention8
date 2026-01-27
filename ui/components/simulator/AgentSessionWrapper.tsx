@@ -5,7 +5,7 @@ import { SettingsContext } from '../contexts/SettingsContext';
 import localforage from 'localforage';
 import type { ReactNode } from 'react';
 import type { OntologyNode } from '@notention/core';
-import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
+import { DEFAULT_ONTOLOGY } from '@notention/core';
 
 interface Props {
   agentId: string;

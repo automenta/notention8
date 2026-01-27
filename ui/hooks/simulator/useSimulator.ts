@@ -2,14 +2,14 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import type { OntologyNode, Note } from '@notention/core';
 import type { AIProvider } from '../../services/@notention/core';
 import { Gardener } from '../../services/gardener';
-import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
+import { DEFAULT_ONTOLOGY } from '@notention/core';
 import { WebLLMProvider } from '../../services/ai/WebLLMProvider';
 import { MockLLMProvider } from '../../services/ai/MockLLMProvider';
 import { useSimulationAgents } from './useSimulationAgents';
 import { useSimulationNetwork } from './useSimulationNetwork';
 import { useSimulationLoop } from './useSimulationLoop';
 import { useNotes } from '../useNotes';
-import type { SimulationAgent } from @notention/core';
+import type { SimulationAgent } from '@notention/core';
 import { useAgentInteraction } from './useAgentInteraction';
 import { useSimulatorOntology } from './useSimulatorOntology';
 

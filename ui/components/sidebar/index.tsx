@@ -8,9 +8,10 @@ import { ViewSelector } from './ViewSelector';
 import { NoteGridItem } from './NoteGridItem';
 import { TagCloud } from './TagCloud';
 import { SidebarEmptyState } from './SidebarEmptyState';
-import { PlusIcon } from '../common/icons';
+import { PlusIcon, CpuChipIcon } from '../common/icons';
 import { useSidebarLogic } from './useSidebarLogic';
 import { IconButton } from '../common/IconButton';
+import { useAgent } from '../../components/contexts/AgentContext';
 
 interface SidebarProps {
   sortedNotes?: Note[];
@@ -38,6 +39,8 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
       refreshUserLocation
   } = useSidebarLogic(sortedNotes);
 
+  const { isConnected } = useAgent();
+
   React.useEffect(() => {
     if (sortOrder === 'nearest' && !userLocation) {
         refreshUserLocation();
@@ -54,6 +57,12 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
         <div className="flex items-center gap-2">
             <div className="flex-grow">
                 <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+            </div>
+            <div
+              className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-300 ${isConnected ? 'text-green-400 bg-green-400/10' : 'text-gray-500 bg-gray-700/50'}`}
+              title={isConnected ? "Agent Connected" : "Agent Disconnected"}
+            >
+                <CpuChipIcon className="w-5 h-5" />
             </div>
             <IconButton
                 onClick={() => handleCreateNote()}

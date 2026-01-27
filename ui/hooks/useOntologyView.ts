@@ -3,7 +3,7 @@ import { useSettings } from './useSettingsContext';
 import { useNotes } from './useNotes';
 import { useGardener } from './useGardener';
 import { detectConflicts } from '../utils/conflicts';
-import { addNode, deleteNode } from '../utils/ontologyHelpers';
+import { addNode, deleteNode } from '@notention/core';
 
 export type OntologyTab = 'graph' | 'simulator' | 'conflicts';
 

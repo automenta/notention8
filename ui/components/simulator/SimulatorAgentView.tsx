@@ -2,7 +2,7 @@ import React from 'react';
 import { AgentSessionWrapper } from './AgentSessionWrapper';
 import { AgentSessionView } from './AgentSessionView';
 import { SimulatorAgentEditor } from './SimulatorAgentEditor';
-import type { SimulationAgent } from '../../hooks/simulat@notention/core';
+import type { SimulationAgent } from '../../hooks/simulator/types';
 import type { Note, OntologyNode } from '@notention/core';
 
 interface SimulatorAgentViewProps {

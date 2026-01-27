@@ -10,7 +10,7 @@ import { parseProperties } from '@notention/core';
 import { ArrowLeftIcon, SendIcon, DocumentDuplicateIcon, SettingsIcon, TrashIcon } from '../common/icons';
 import { Avatar } from '../common/Avatar';
 import { IconButton } from '../common/IconButton';
-import { SELF_AGENT_ID } from '../../hooks/simulat@notention/core';
+import { SELF_AGENT_ID } from '../../hooks/simulator/types';
 
 interface ChatWindowProps {
   privkey: string;

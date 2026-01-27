@@ -119,7 +119,7 @@ try {
   }
 
   // Spawn ClawdBot gateway process
-  clawdBot = spawn(clawdBotBin, ['gateway', '--port', GATEWAY_PORT.toString()], {
+  clawdBot = spawn(clawdBotBin, ['gateway', '--port', GATEWAY_PORT.toString(), '--allow-unconfigured'], {
     stdio: 'inherit',
     env: {
       ...process.env,
