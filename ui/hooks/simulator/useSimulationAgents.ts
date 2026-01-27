@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback } from 'react';
-import { INITIAL_AGENTS, type SimulationAgent, SELF_AGENT_ID } from '@notention/core';
+import { INITIAL_AGENTS, type SimulationAgent, SELF_AGENT_ID } from './types';
 import { useLocalForage } from '../useLocalForage';
 
 export const useSimulationAgents = () => {

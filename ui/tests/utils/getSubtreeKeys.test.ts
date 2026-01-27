@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getSubtreeKeys } from '../../utils/ontologyHelpers';
+import { getSubtreeKeys } from '@notention/core';
 import type { OntologyNode } from '@notention/core';
 
 describe('getSubtreeKeys', () => {

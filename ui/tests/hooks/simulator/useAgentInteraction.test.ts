@@ -1,8 +1,8 @@
 import { renderHook, act } from '@testing-library/react';
 import { useAgentInteraction } from '../../../hooks/simulator/useAgentInteraction';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
-import type { SimulationAgent } from '../../../hooks/simulat@notention/core';
-import type { AIProvider } from '../../../services/@notention/core';
+import type { SimulationAgent } from '../../../hooks/simulator/types';
+import type { AIProvider } from '@notention/core';
 
 describe('useAgentInteraction', () => {
     let agentsRefMock: { current: SimulationAgent[] };

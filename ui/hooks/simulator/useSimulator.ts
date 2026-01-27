@@ -9,7 +9,7 @@ import { useSimulationAgents } from './useSimulationAgents';
 import { useSimulationNetwork } from './useSimulationNetwork';
 import { useSimulationLoop } from './useSimulationLoop';
 import { useNotes } from '../useNotes';
-import type { SimulationAgent } from '@notention/core';
+import type { SimulationAgent } from './types';
 import { useAgentInteraction } from './useAgentInteraction';
 import { useSimulatorOntology } from './useSimulatorOntology';
 

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import type { OntologyNode } from '@notention/core';
 import type { AIProvider } from '../../services/ai/types';
-import type { SimulationAgent } from '@notention/core';
+import type { SimulationAgent } from './types';
 import { Gardener } from '../../services/gardener';
 import { WebLLMProvider } from '../../services/ai/WebLLMProvider';
 import { MockLLMProvider } from '../../services/ai/MockLLMProvider';
