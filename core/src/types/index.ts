@@ -22,6 +22,13 @@ export interface Property {
   values: string[];
 }
 
+export interface NoteSource {
+  type: 'user' | 'skill' | 'import' | 'inference';
+  identifier: string;  // 'user-<id>', 'skill-indeed-v1', 'gpt-4o'
+  url?: string;        // Origin URL for imports
+  timestamp: number;
+}
+
 export interface OntologyAttribute {
   type: 'string' | 'date' | 'number' | 'enum' | 'datetime' | 'geo';
   description?: string;
@@ -59,6 +66,15 @@ export interface Note {
   publishedAt?: string;
   pinned?: boolean;
   deletedAt?: string;
+
+  // PROVENANCE: Track origin of note
+  source: NoteSource;
+
+  // PRIVACY FIREWALL: Default private
+  public: boolean;
+
+  // SIGNAL STRENGTH: Weighting for matching (0.0-1.0)
+  priority: number;
 }
 
 export interface Template {

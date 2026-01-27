@@ -45,3 +45,60 @@ describe('inferNoteIntent', () => {
     expect(inferNoteIntent(note)).toBe('Imaginary');
   });
 });
+
+describe('createNote', () => {
+  it('creates note with default source', () => {
+    const note = createNote();
+    expect(note.source).toBeDefined();
+    expect(note.source.type).toBe('user');
+    expect(note.source.identifier).toBe('user-default');
+    expect(note.source.timestamp).toBeGreaterThan(0);
+  });
+
+  it('creates note with privacy default (false)', () => {
+    const note = createNote();
+    expect(note.public).toBe(false);
+  });
+
+  it('creates note with full priority (1.0)', () => {
+    const note = createNote();
+    expect(note.priority).toBe(1.0);
+  });
+
+  it('allows overriding new fields', () => {
+    const note = createNote({
+      public: true,
+      priority: 0.2,
+      source: {
+        type: 'skill',
+        identifier: 'skill-test',
+        timestamp: 123456
+      }
+    });
+
+    expect(note.public).toBe(true);
+    expect(note.priority).toBe(0.2);
+    expect(note.source.type).toBe('skill');
+    expect(note.source.identifier).toBe('skill-test');
+    expect(note.source.timestamp).toBe(123456);
+  });
+
+  it('maintains backward compatibility for other fields', () => {
+    const note = createNote({
+      title: 'Test Note',
+      content: 'Test content',
+      tags: ['test'],
+      properties: [{ key: 'type', operator: 'is', values: ['test'] }]
+    });
+
+    expect(note.title).toBe('Test Note');
+    expect(note.content).toBe('Test content');
+    expect(note.tags).toEqual(['test']);
+    expect(note.properties).toHaveLength(1);
+    // And still has defaults for new fields
+    expect(note.public).toBe(false);
+    expect(note.priority).toBe(1.0);
+    expect(note.source.type).toBe('user');
+  });
+});
+

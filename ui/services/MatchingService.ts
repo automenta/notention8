@@ -25,9 +25,9 @@ const CANONICAL: Record<string, string> = {
 };
 
 export interface MatchResultDetails {
-    score: number;
-    satisfied: Property[];
-    failed: Property[];
+  score: number;
+  satisfied: Property[];
+  failed: Property[];
 }
 
 export class MatchingService {
@@ -104,14 +104,22 @@ export class MatchingService {
       if (this.checkConstraint(constraint, offer)) {
         satisfied.push(constraint);
       } else {
-          failed.push(constraint);
+        failed.push(constraint);
       }
     }
 
+    // Base score: proportion of constraints satisfied
+    const baseScore = satisfied.length / constraints.length;
+
+    // Weight by target note priority (0.0-1.0)
+    // This demotes low-priority bulk imports and promotes user-curated notes
+    const priority = offer.priority ?? 1.0; // Default to 1.0 for backward compatibility
+    const weightedScore = baseScore * priority;
+
     return {
-        score: satisfied.length / constraints.length,
-        satisfied,
-        failed
+      score: weightedScore,
+      satisfied,
+      failed
     };
   }
 
@@ -120,19 +128,27 @@ export class MatchingService {
    * This is useful for "See also" or "Related" suggestions where exact constraints might not match.
    */
   calculateSemanticOverlap(noteA: Note, noteB: Note): number {
-      const keysA = new Set(noteA.properties.map(p => p.key));
-      const keysB = new Set(noteB.properties.map(p => p.key));
+    const keysA = new Set(noteA.properties.map(p => p.key));
+    const keysB = new Set(noteB.properties.map(p => p.key));
 
-      if (keysA.size === 0 || keysB.size === 0) return 0;
+    if (keysA.size === 0 || keysB.size === 0) return 0;
 
-      let overlap = 0;
-      keysA.forEach(key => {
-          if (keysB.has(key)) overlap++;
-      });
+    let overlap = 0;
+    keysA.forEach(key => {
+      if (keysB.has(key)) overlap++;
+    });
 
-      // Jaccard index
-      const union = new Set([...keysA, ...keysB]);
-      return overlap / union.size;
+    // Jaccard index (base score)
+    const union = new Set([...keysA, ...keysB]);
+    const baseScore = overlap / union.size;
+
+    // Weight by average priority of both notes
+    // This ensures low-priority bulk imports don't pollute related suggestions
+    const priorityA = noteA.priority ?? 1.0;
+    const priorityB = noteB.priority ?? 1.0;
+    const avgPriority = (priorityA + priorityB) / 2;
+
+    return baseScore * avgPriority;
   }
 
   checkConstraint(constraint: Property, target: Note): boolean {
@@ -149,31 +165,31 @@ export class MatchingService {
 
     // Optimize 'between' constraint
     if (constraint.operator === 'between') {
-        if (constraint.values.length === 2) {
-            const min = this.parseValue(constraint.values[0]);
-            const max = this.parseValue(constraint.values[1]);
-            // Target matches if ANY of its values fall in range
-            return targetProp.values.some(v => {
-                const tVal = this.parseValue(v);
-                return tVal >= min && tVal <= max;
-            });
-        }
-        return false;
+      if (constraint.values.length === 2) {
+        const min = this.parseValue(constraint.values[0]);
+        const max = this.parseValue(constraint.values[1]);
+        // Target matches if ANY of its values fall in range
+        return targetProp.values.some(v => {
+          const tVal = this.parseValue(v);
+          return tVal >= min && tVal <= max;
+        });
+      }
+      return false;
     }
 
     // Optimize 'is near' constraint
     if (constraint.operator === 'is near') {
-        // constraint.values[0] is center point
-        // Optional constraint.values[1] could be radius? Not standard yet.
-        const p2 = parseGeo(String(this.parseValue(constraint.values[0])));
-        if (!p2) return false;
+      // constraint.values[0] is center point
+      // Optional constraint.values[1] could be radius? Not standard yet.
+      const p2 = parseGeo(String(this.parseValue(constraint.values[0])));
+      if (!p2) return false;
 
-        return targetProp.values.some(v => {
-            const p1 = parseGeo(String(this.parseValue(v)));
-            if (!p1) return false;
-            const dist = haversineDistance(p1, p2);
-            return dist <= 50; // Hardcoded 50km for now
-        });
+      return targetProp.values.some(v => {
+        const p1 = parseGeo(String(this.parseValue(v)));
+        if (!p1) return false;
+        const dist = haversineDistance(p1, p2);
+        return dist <= 50; // Hardcoded 50km for now
+      });
     }
 
     // Standard constraints iterate all constraint values (AND logic for constraints)
@@ -189,97 +205,97 @@ export class MatchingService {
     // [skill:contains:React, Vue] matches "React Native" AND "Vue.js" ? Yes.
 
     return constraint.values.every(cValStr => {
-        const constraintVal = this.parseValue(cValStr);
-        const constraintQty = parseQuantity(cValStr);
+      const constraintVal = this.parseValue(cValStr);
+      const constraintQty = parseQuantity(cValStr);
 
-        // Target must satisfy this specific value constraint
-        // We look for ONE value in target that satisfies this constraint value
-        return targetProp.values.some(v => {
-          const tVal = this.parseValue(v);
-          const tQty = parseQuantity(v);
+      // Target must satisfy this specific value constraint
+      // We look for ONE value in target that satisfies this constraint value
+      return targetProp.values.some(v => {
+        const tVal = this.parseValue(v);
+        const tQty = parseQuantity(v);
 
-          // Try quantity comparison first if both are parseable as quantities
-          // BUT strictness: only if compareQuantities returns non-null (meaning compatible units)
-          // If one is "100" (unitless) and other is "100 USD", compareQuantities returns null.
-          if (constraintQty && tQty) {
-              const cmp = compareQuantities(tQty, constraintQty);
-              if (cmp !== null) {
-                  switch (constraint.operator) {
-                      case 'is': return cmp === 0;
-                      case 'is not': return cmp !== 0;
-                      case 'less than': return cmp === -1;
-                      case 'greater than': return cmp === 1;
-                      // 'is before' and 'is after' usually for dates, handled by string/number fallback or maybe quantities if time?
-                      // But 'time' units in quantities are durations (1 hr), not points in time.
-                  }
-              }
+        // Try quantity comparison first if both are parseable as quantities
+        // BUT strictness: only if compareQuantities returns non-null (meaning compatible units)
+        // If one is "100" (unitless) and other is "100 USD", compareQuantities returns null.
+        if (constraintQty && tQty) {
+          const cmp = compareQuantities(tQty, constraintQty);
+          if (cmp !== null) {
+            switch (constraint.operator) {
+              case 'is': return cmp === 0;
+              case 'is not': return cmp !== 0;
+              case 'less than': return cmp === -1;
+              case 'greater than': return cmp === 1;
+              // 'is before' and 'is after' usually for dates, handled by string/number fallback or maybe quantities if time?
+              // But 'time' units in quantities are durations (1 hr), not points in time.
+            }
           }
+        }
 
-          switch (constraint.operator) {
-            case 'is':
-              // Exact match (string or number equality) or soft semantic match
-              // Handle simple variations: trim, lower case, removing common punctuation
-              if (typeof tVal === 'string' && typeof constraintVal === 'string') {
-                  const cleanT = this.normalizeTerm(tVal);
-                  const cleanC = this.normalizeTerm(constraintVal);
+        switch (constraint.operator) {
+          case 'is':
+            // Exact match (string or number equality) or soft semantic match
+            // Handle simple variations: trim, lower case, removing common punctuation
+            if (typeof tVal === 'string' && typeof constraintVal === 'string') {
+              const cleanT = this.normalizeTerm(tVal);
+              const cleanC = this.normalizeTerm(constraintVal);
 
-                  // Check exact match on normalized terms (handles synonyms)
-                  if (cleanT === cleanC) return true;
+              // Check exact match on normalized terms (handles synonyms)
+              if (cleanT === cleanC) return true;
 
-                  // Fallback to fuzzy logic on original raw strings if synonym match fails
-                  // (e.g. slight typos not in synonym dict)
-                  const rawT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
-                  const rawC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+              // Fallback to fuzzy logic on original raw strings if synonym match fails
+              // (e.g. slight typos not in synonym dict)
+              const rawT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+              const rawC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-                  // Fuzzy Match
-                  const dist = this.levenshteinDistance(rawT, rawC);
-                  const maxLen = Math.max(rawT.length, rawC.length);
-                  // Allow 1 edit for length 4-7, 2 edits for length 8+
-                  const allowedDist = maxLen > 7 ? 2 : maxLen > 3 ? 1 : 0;
+              // Fuzzy Match
+              const dist = this.levenshteinDistance(rawT, rawC);
+              const maxLen = Math.max(rawT.length, rawC.length);
+              // Allow 1 edit for length 4-7, 2 edits for length 8+
+              const allowedDist = maxLen > 7 ? 2 : maxLen > 3 ? 1 : 0;
 
-                  return rawT === rawC || rawT.includes(rawC) || rawC.includes(rawT) || dist <= allowedDist;
-              }
-              return tVal == constraintVal; // loose equality for "100" == 100
+              return rawT === rawC || rawT.includes(rawC) || rawC.includes(rawT) || dist <= allowedDist;
+            }
+            return tVal == constraintVal; // loose equality for "100" == 100
 
-            case 'is not':
-              if (typeof tVal === 'string' && typeof constraintVal === 'string') {
-                  const cleanT = this.normalizeTerm(tVal);
-                  const cleanC = this.normalizeTerm(constraintVal);
+          case 'is not':
+            if (typeof tVal === 'string' && typeof constraintVal === 'string') {
+              const cleanT = this.normalizeTerm(tVal);
+              const cleanC = this.normalizeTerm(constraintVal);
 
-                  if (cleanT === cleanC) return false;
+              if (cleanT === cleanC) return false;
 
-                  const rawT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
-                  const rawC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
-                  // It is NOT a match if they ARE equal (or soft equal)
-                  const dist = this.levenshteinDistance(rawT, rawC);
-                  const maxLen = Math.max(rawT.length, rawC.length);
-                  const allowedDist = maxLen > 7 ? 2 : maxLen > 3 ? 1 : 0;
+              const rawT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+              const rawC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+              // It is NOT a match if they ARE equal (or soft equal)
+              const dist = this.levenshteinDistance(rawT, rawC);
+              const maxLen = Math.max(rawT.length, rawC.length);
+              const allowedDist = maxLen > 7 ? 2 : maxLen > 3 ? 1 : 0;
 
-                  const isSoftEqual = rawT === rawC || rawT.includes(rawC) || rawC.includes(rawT) || dist <= allowedDist;
-                  return !isSoftEqual;
-              }
-              return tVal != constraintVal;
+              const isSoftEqual = rawT === rawC || rawT.includes(rawC) || rawC.includes(rawT) || dist <= allowedDist;
+              return !isSoftEqual;
+            }
+            return tVal != constraintVal;
 
-            case 'less than':
-            case 'is before':
-              return tVal < constraintVal;
+          case 'less than':
+          case 'is before':
+            return tVal < constraintVal;
 
-            case 'greater than':
-            case 'is after':
-              return tVal > constraintVal;
+          case 'greater than':
+          case 'is after':
+            return tVal > constraintVal;
 
-            case 'contains':
-              // Check normalized contains
-              const normT = this.normalizeTerm(String(tVal));
-              const normC = this.normalizeTerm(String(constraintVal));
-              if (normT.includes(normC)) return true;
+          case 'contains':
+            // Check normalized contains
+            const normT = this.normalizeTerm(String(tVal));
+            const normC = this.normalizeTerm(String(constraintVal));
+            if (normT.includes(normC)) return true;
 
-              return String(tVal).toLowerCase().includes(String(constraintVal).toLowerCase());
+            return String(tVal).toLowerCase().includes(String(constraintVal).toLowerCase());
 
-            default:
-              return false;
-          }
-        });
+          default:
+            return false;
+        }
+      });
     });
   }
 
@@ -289,7 +305,7 @@ export class MatchingService {
     // Try to parse as Date first if it looks like one (simple check)
     // ISO date format YYYY-MM-DD
     if (/^\d{4}-\d{2}-\d{2}/.test(val)) {
-        return val;
+      return val;
     }
 
     const num = parseFloat(val);

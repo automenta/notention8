@@ -46,6 +46,20 @@ export const createNote = (overrides?: Partial<Note>): Note => {
     properties: [],
     createdAt: now,
     updatedAt: now,
+
+    // Provenance tracking
+    source: {
+      type: 'user',
+      identifier: 'user-default',
+      timestamp: Date.now()
+    },
+
+    // Privacy by default
+    public: false,
+
+    // Full priority for user notes
+    priority: 1.0,
+
     ...overrides,
   };
 };
