@@ -3,7 +3,7 @@ import type { Note, OntologyNode, OntologyAttribute } from '@notention/core';
 import type { Gardener } from '../../services/gardener';
 import { parseProperties } from '@notention/core';
 import { matchingService } from '../../services/MatchingService';
-import { addAttribute } from '../../utils/ontologyHelpers';
+import { addAttribute } from '@notention/core';
 
 export interface Log {
     msg: string;

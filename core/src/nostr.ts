@@ -1,6 +1,6 @@
 import { SimplePool, utils } from 'nostr-tools';
 
-import type { NostrEvent, Note, Property } from '../types';
+import type { NostrEvent, Note, Property } from './types';
 
 export const DEFAULT_RELAYS = [
   'wss://relay.damus.io',
@@ -23,7 +23,7 @@ export const formatNpub = (npub: string) =>
   `${npub.slice(0, 10)}...${npub.slice(-4)}`;
 
 export const extractPropertiesFromTags = (tags: string[][]): Property[] => {
-  const propsMap = tags.reduce((acc, t) => {
+  const propsMap = tags.reduce((acc: Map<string, Property>, t: string[]) => {
     if (t[0] === 'property') {
       const [, key, op, val] = t;
       if (acc.has(key)) {

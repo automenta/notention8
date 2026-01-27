@@ -9,7 +9,7 @@ import {
   deleteAttribute,
   renameAttribute,
   mergeAttributes
-} from '../../utils/ontologyHelpers';
+} from '@notention/core';
 import { PlusIcon, SparklesIcon } from '../common/icons';
 import { Modal } from '../common/Modal';
 import { useToast } from '../../hooks/useToast';

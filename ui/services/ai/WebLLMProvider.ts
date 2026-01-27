@@ -1,5 +1,5 @@
 import { CreateMLCEngine, MLCEngine } from "@mlc-ai/web-llm";
-import type { AIProvider, InferredAttribute } from @notention/core';
+import type { AIProvider, InferredAttribute } from '@notention/core';
 import type { Note, OntologyAttribute, OntologyNode } from '@notention/core';
 
 export const AVAILABLE_MODELS = [

@@ -1,5 +1,5 @@
 import { useSimulatorContext } from '../useSimulatorContext';
-import { SwarmTemplate, SimulationAgent } from @notention/core';
+import { SwarmTemplate, SimulationAgent } from '@notention/core';
 
 export function useSwarmActions() {
     const { deploySwarm } = useSimulatorContext();

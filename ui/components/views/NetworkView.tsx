@@ -13,7 +13,7 @@ interface NetworkViewProps {
 }
 
 import { useState, useMemo } from 'react';
-import { getSubtreeKeys, findNode } from '../../utils/ontologyHelpers';
+import { getSubtreeKeys, findNode } from '@notention/core';
 import { parseProperties } from '@notention/core';
 
 export function NetworkView({ matchAgainst }: NetworkViewProps) {

@@ -1,4 +1,4 @@
-import { OntologyNode, OntologyAttribute } from '../types';
+import { OntologyNode, OntologyAttribute } from './types';
 
 /**
  * Pure functions for manipulating the Ontology tree.
@@ -71,7 +71,7 @@ export const getSubtreeKeys = (node: OntologyNode): Set<string> => {
     }
 
     if (node.children) {
-        node.children.forEach(child => {
+        node.children.forEach((child: OntologyNode) => {
             const childKeys = getSubtreeKeys(child);
             childKeys.forEach(k => keys.add(k));
         });

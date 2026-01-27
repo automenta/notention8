@@ -1,6 +1,6 @@
 import React from 'react';
-import { SWARM_TEMPLATES } from '../../hooks/simulat@notention/core';
-import type { SwarmTemplate } from '../../hooks/simulat@notention/core';
+import { SWARM_TEMPLATES } from '../../hooks/simulator/types';
+import type { SwarmTemplate } from '../../hooks/simulator/types';
 import { Modal } from '../common/Modal';
 import { Badge } from '../common/Badge';
 

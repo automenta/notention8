@@ -1,4 +1,4 @@
-import type { Property } from '../types';
+import type { Property } from './types';
 
 export const TEMPORAL_KEYS = ['date', 'time', 'deadline', 'start', 'end', 'due'];
 export const SPATIAL_KEYS = ['location', 'geo', 'place', 'coords'];
@@ -53,7 +53,7 @@ export const arePropertiesEqual = (p1: Property | null, p2: Property | null): bo
     p1.key === p2.key &&
     p1.operator === p2.operator &&
     p1.values.length === p2.values.length &&
-    p1.values.every((val, i) => val === p2.values[i])
+    p1.values.every((val: string, i: number) => val === p2.values[i])
   );
 };
 

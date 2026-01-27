@@ -9,6 +9,7 @@ import { ToastProvider } from './components/contexts/ToastProvider';
 import { ViewProvider } from './components/contexts/ViewContext';
 import { SimulatorProvider } from './components/contexts/SimulatorProvider';
 import { SuggestionProvider } from './components/contexts/SuggestionContext';
+import { AgentProvider } from './components/contexts/AgentContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -24,7 +25,9 @@ root.render(
           <ViewProvider>
             <SimulatorProvider>
               <SuggestionProvider>
-                <App />
+                <AgentProvider>
+                  <App />
+                </AgentProvider>
               </SuggestionProvider>
             </SimulatorProvider>
           </ViewProvider>

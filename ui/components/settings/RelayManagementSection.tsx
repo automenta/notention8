@@ -5,8 +5,8 @@ import { IconButton } from '../common/IconButton';
 import { Input } from '../common/Input';
 import { ConfirmationModal } from '../common/ConfirmationModal';
 import { useToast } from '../../hooks/useToast';
-import { DEFAULT_RELAYS } from @notention/core';
-import type { AppSettings } from @notention/core';
+import { DEFAULT_RELAYS } from '@notention/core';
+import type { AppSettings } from '@notention/core';
 
 interface RelayManagementSectionProps {
     settings: AppSettings;

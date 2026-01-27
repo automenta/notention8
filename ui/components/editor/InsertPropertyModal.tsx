@@ -3,7 +3,7 @@ import { Modal } from '../common/Modal';
 import { TagIcon, InformationCircleIcon, MapIcon } from '../common/icons';
 import { ICON_MAP } from '../layout/iconMap';
 import type { OntologyAttribute, OntologyNode } from '@notention/core';
-import { findAttributeDef } from '../../utils/ontologyHelpers';
+import { findAttributeDef } from '@notention/core';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { PropertyValueInput } from './PropertyValueInput';
