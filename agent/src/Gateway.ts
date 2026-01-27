@@ -1,11 +1,10 @@
 import { spawn, ChildProcess } from 'child_process';
-import path from 'path';
 import { ClawdBotClient } from './communication/ClawdBotClient';
 
 export class Gateway {
   private process: ChildProcess | null = null;
   private configDir: string;
-  public version: string = '2026.1.24-3'; // Hardcoded matches installed version
+  public version: string = '2026.1.24-3';
   public client: ClawdBotClient | null = null;
   public port: number = 18789;
   private onLog: ((log: string) => void) | null = null;
@@ -28,7 +27,7 @@ export class Gateway {
       this.process = spawn(cmd, args, {
         cwd: process.cwd(),
         env: { ...process.env, CLAWDBOT_HOME: this.configDir },
-        stdio: ['ignore', 'pipe', 'pipe'] // Pipe stdout/stderr to log
+        stdio: ['ignore', 'pipe', 'pipe']
       });
 
       this.client = new ClawdBotClient({ port: this.port });
@@ -39,9 +38,6 @@ export class Gateway {
           console.log('[ClawdBot]', msg.trim());
           if (this.onLog) {
               this.onLog(msg.trim());
-          }
-          if (msg.includes('Gateway listening') || msg.includes('ready')) {
-            // resolve(); // In real life we'd wait for ready signal
           }
         });
       }

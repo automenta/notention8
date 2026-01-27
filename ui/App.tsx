@@ -1,12 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { AppShell } from './components/AppShell';
-import { agentService } from './services/AgentService';
 
 function App() {
-  useEffect(() => {
-    agentService.connect();
-  }, []);
-
   return <AppShell />;
 }
 

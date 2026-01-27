@@ -54,37 +54,25 @@ export const AgentProvider: React.FC<AgentProviderProps> = ({
   const connect = useCallback(() => {
     if (socket?.readyState === WebSocket.OPEN) return;
 
-    // Avoid multiple connections
     if (socket && (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN)) return;
 
-    console.log('Connecting to Agent Server:', url);
     const ws = new WebSocket(url);
 
     ws.onopen = () => {
-      console.log('Agent WebSocket connected');
       setAgentState(prev => ({ ...prev, connected: true, status: 'connected' }));
-
-      // Request initial status
       ws.send(JSON.stringify({ type: 'clawdbot_status' }));
     };
 
     ws.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
-        console.log('Agent message received:', message);
 
         setAgentState(prev => {
-           // Handle specific state updates if needed
            if (message.type === 'clawdbot_status_update') {
                return { ...prev, lastMessage: message, ...message.payload };
            }
            return { ...prev, lastMessage: message };
         });
-
-        // Expose global for injected scripts (legacy support)
-        if (typeof window !== 'undefined') {
-             (window as any).lastAgentMessage = message;
-        }
 
       } catch (error) {
         console.error('Error parsing agent message:', error);
@@ -92,25 +80,16 @@ export const AgentProvider: React.FC<AgentProviderProps> = ({
     };
 
     ws.onclose = () => {
-      console.log('Agent WebSocket disconnected');
       setAgentState(prev => ({ ...prev, connected: false, status: 'disconnected' }));
       setSocket(null);
-
-      // Attempt reconnect after delay
       setTimeout(() => connect(), 5000);
     };
 
     ws.onerror = (error) => {
       console.error('Agent WebSocket error:', error);
-      // Close will trigger reconnect
     };
 
     setSocket(ws);
-
-    // Expose for legacy injected scripts
-    if (typeof window !== 'undefined') {
-        (window as any).uiWebSocket = ws;
-    }
 
   }, [url, socket]);
 
@@ -131,9 +110,6 @@ export const AgentProvider: React.FC<AgentProviderProps> = ({
 
   useEffect(() => {
     connect();
-    // Cleanup on unmount handled by ensuring single connection, but strictly we should close.
-    // However, in React strict mode, mount/unmount happens twice.
-    // The reconnect logic handles it.
     return () => {
         if(socket) socket.close();
     };
