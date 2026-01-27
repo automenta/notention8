@@ -61,7 +61,7 @@ describe('useGardener', () => {
   it('should call evolveOntology and update settings', async () => {
     const { result } = renderHook(() => useGardener());
 
-    const mockNotes: Note[] = [{ id: '1', title: 'test', content: 'test', createdAt: '', updatedAt: '', tags: [], properties: [] }];
+    const mockNotes: Note[] = [{ id: '1', title: 'test', content: 'test', createdAt: '', updatedAt: '', tags: [], properties: [], source: { type: 'user', identifier: 'test', timestamp: Date.now() }, public: false, priority: 1.0 }];
     const mockNewAttributes = [
       { key: 'newAttr', type: 'string', description: 'desc', usageCount: 1, sampleValues: [] }
     ];

@@ -11,7 +11,10 @@ describe('useDebouncedSave', () => {
         tags: [],
         properties: [],
         createdAt: '',
-        updatedAt: ''
+        updatedAt: '',
+        source: { type: 'user', identifier: 'test', timestamp: Date.now() },
+        public: false,
+        priority: 1.0,
     };
     const onSave = vi.fn();
 

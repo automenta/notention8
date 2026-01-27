@@ -46,6 +46,13 @@ export const createNote = (overrides?: Partial<Note>): Note => {
     properties: [],
     createdAt: now,
     updatedAt: now,
+    source: {
+      type: 'user',
+      identifier: 'user-local',
+      timestamp: Date.now(),
+    },
+    public: false,
+    priority: 1.0,
     ...overrides,
   };
 };

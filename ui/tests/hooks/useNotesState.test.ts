@@ -80,6 +80,9 @@ describe('services/notes', () => {
         updatedAt: new Date().toISOString(),
         tags: [],
         properties: [],
+        source: { type: 'user', identifier: 'test', timestamp: Date.now() },
+        public: false,
+        priority: 1.0,
       },
       {
         id: '2',
@@ -89,6 +92,9 @@ describe('services/notes', () => {
         updatedAt: new Date().toISOString(),
         tags: [],
         properties: [],
+        source: { type: 'user', identifier: 'test', timestamp: Date.now() },
+        public: false,
+        priority: 1.0,
       },
     ];
     mockUseLocalForage.mockReturnValue([initialNotes, mockSetNotes, false]);

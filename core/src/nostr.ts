@@ -52,5 +52,12 @@ export const convertEventToNote = (event: NostrEvent): Note => {
     createdAt: new Date(event.created_at * 1000).toISOString(),
     updatedAt: new Date(event.created_at * 1000).toISOString(),
     nostrEventId: event.id, // Explicitly set this
+    source: {
+      type: 'import',
+      identifier: 'nostr',
+      timestamp: event.created_at * 1000,
+    },
+    public: true,
+    priority: 1.0,
   };
 };

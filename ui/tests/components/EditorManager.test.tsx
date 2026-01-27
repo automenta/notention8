@@ -72,6 +72,9 @@ describe('EditorManager', () => {
     properties: [],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    source: { type: 'user', identifier: 'test', timestamp: Date.now() },
+    public: false,
+    priority: 1.0,
   };
 
   beforeEach(() => {
