@@ -62,7 +62,20 @@ export class LMAgentTranslationStrategy implements NoteTranslationStrategy {
       });
     }
 
-    prompt += `\nPlease analyze this note and execute the appropriate action using your available tools (Browser, Message, etc.). If no action is needed, simply acknowledge.`;
+    prompt += `\n
+System Instructions:
+You are an intelligent agent capable of managing this notebook.
+If the user's note implies an action (like creating a new note or updating the ontology schema), you MUST reply with a JSON object.
+
+Available Tools:
+1. create_note: Create a new note.
+   Format: { "tool": "create_note", "args": { "title": "...", "content": "...", "tags": [] } }
+
+2. update_ontology: Add a new category or attribute to the system ontology.
+   Format: { "tool": "update_ontology", "args": { "parentId": "entity", "id": "new_id", "label": "New Label", "description": "..." } }
+
+If no action is needed, simply reply with a helpful text response.
+`;
     return prompt;
   }
 

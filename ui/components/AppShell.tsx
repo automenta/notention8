@@ -5,6 +5,7 @@ import { CommandPalette } from './common/CommandPalette';
 import { HelpModal } from './common/HelpModal';
 import { Sidebar } from './sidebar';
 import { MainView } from './MainView';
+import { AgentToolHandler } from './agent/AgentToolHandler';
 
 import { useNotes } from '../hooks/useNotes';
 import { useSortedFilteredNotes } from '../hooks/useSortedFilteredNotes';
@@ -75,6 +76,7 @@ export function AppShell() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-800 text-gray-200">
+      <AgentToolHandler />
       <Header onNewNote={handleNewNote} />
       <div className="flex flex-1 overflow-hidden">
         <div className={sidebarClasses}>

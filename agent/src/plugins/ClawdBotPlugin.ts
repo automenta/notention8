@@ -461,11 +461,32 @@ export class ClawdBotPlugin implements Plugin {
                  const response = await this.gateway.client.sendAgentMessage(message);
                  console.log('Sent instruction to agent, received response:', response);
 
-                 // Broadcast response to UI
+                 // Check if response is a tool call (JSON)
+                 const responseText = response.data?.message || response.message || '';
+                 try {
+                     const parsed = JSON.parse(responseText);
+                     if (parsed.tool && parsed.args) {
+                         console.log('Detected Agent Tool Call:', parsed.tool);
+                         this.broadcastToUI({
+                             type: 'agent_tool_call',
+                             payload: {
+                                 tool: parsed.tool,
+                                 args: parsed.args,
+                                 agentId: 'clawdbot',
+                                 timestamp: new Date().toISOString()
+                             }
+                         });
+                         return; // Don't broadcast as simple text response
+                     }
+                 } catch (e) {
+                     // Not JSON, continue as text
+                 }
+
+                 // Broadcast response to UI as text
                  this.broadcastToUI({
                      type: 'agent_response',
                      payload: {
-                         message: response.data?.message || response.message || JSON.stringify(response),
+                         message: responseText,
                          agentId: 'clawdbot', // Or determine ID from response
                          timestamp: new Date().toISOString()
                      }
