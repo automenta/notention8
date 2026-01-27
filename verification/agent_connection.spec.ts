@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('Verify Agent Connection Indicator', async ({ page }) => {
+test('Verify Agent Connection and Status Query', async ({ page }) => {
   console.log('Navigating to http://localhost:3000...');
   await page.goto('http://localhost:3000');
 
@@ -9,29 +9,44 @@ test('Verify Agent Connection Indicator', async ({ page }) => {
   await sidebar.waitFor({ state: 'visible' });
   console.log('Sidebar loaded.');
 
-  // Check if the icon container exists at all
-  // It has classes: flex items-center justify-center w-8 h-8 rounded-lg
-  // We can look for the tooltip title attribute which should be present
-
-  // Let's try to find the CpuChipIcon directly.
-  // It usually has some class or just be an svg.
-  // But searching by title is safer if the component rendered.
-
-  try {
-    await page.waitForSelector('[title^="Agent "]', { timeout: 5000 });
-  } catch (e) {
-    console.log('Timeout waiting for Agent indicator. Dumping HTML...');
-    console.log(await sidebar.innerHTML());
-  }
-
+  // Find the CPU Chip Icon button
   const indicator = page.locator('[title^="Agent "]');
-  const title = await indicator.getAttribute('title');
-  console.log(`Indicator Title: "${title}"`);
 
   // Wait for connection (title becomes "Agent Connected")
-  // Retry a few times or wait
   await expect(indicator).toHaveAttribute('title', 'Agent Connected', { timeout: 10000 });
+  console.log('Agent is connected.');
 
-  const isConnected = await indicator.getAttribute('title') === 'Agent Connected';
-  expect(isConnected).toBe(true);
+  // Click the indicator to open the modal
+  await indicator.click();
+  console.log('Clicked Agent Indicator.');
+
+  // Wait for Modal
+  const modal = page.locator('div[role="dialog"]');
+  await modal.waitFor({ state: 'visible' });
+  await expect(modal).toContainText('Agent Status');
+  console.log('Agent Status Modal opened.');
+
+  // Click "Refresh Status"
+  const refreshBtn = modal.locator('button', { hasText: 'Refresh Status' });
+  await refreshBtn.click();
+  console.log('Clicked Refresh Status.');
+
+  // Wait for Status Response
+  // Find the "Status:" label
+  const statusLabel = modal.locator('span', { hasText: /^Status:$/ });
+  await statusLabel.waitFor({ state: 'visible', timeout: 5000 });
+
+  // Get the value next to it (sibling)
+  // Structure: <div> <span>Status:</span> <span class="text-green-400">running</span> </div>
+  const statusValue = statusLabel.locator('..').locator('span').nth(1);
+
+  await expect(statusValue).toBeVisible();
+  const statusText = await statusValue.textContent();
+  console.log(`Agent returned status: "${statusText}"`);
+
+  // It should be 'running'
+  expect(statusText).toBe('running');
+
+  // Take screenshot
+  await page.screenshot({ path: 'verification/agent_status_interaction.png' });
 });

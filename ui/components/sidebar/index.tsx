@@ -12,6 +12,7 @@ import { PlusIcon, CpuChipIcon } from '../common/icons';
 import { useSidebarLogic } from './useSidebarLogic';
 import { IconButton } from '../common/IconButton';
 import { useAgent } from '../../components/contexts/AgentContext';
+import { AgentStatusModal } from './AgentStatusModal';
 
 interface SidebarProps {
   sortedNotes?: Note[];
@@ -40,6 +41,7 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
   } = useSidebarLogic(sortedNotes);
 
   const { isConnected } = useAgent();
+  const [isAgentModalOpen, setIsAgentModalOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (sortOrder === 'nearest' && !userLocation) {
@@ -58,12 +60,14 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
             <div className="flex-grow">
                 <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             </div>
-            <div
-              className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-300 ${isConnected ? 'text-green-400 bg-green-400/10' : 'text-gray-500 bg-gray-700/50'}`}
+            <button
+              type="button"
+              className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-300 hover:bg-gray-700 cursor-pointer ${isConnected ? 'text-green-400 bg-green-400/10' : 'text-gray-500 bg-gray-700/50'}`}
               title={isConnected ? "Agent Connected" : "Agent Disconnected"}
+              onClick={() => setIsAgentModalOpen(true)}
             >
                 <CpuChipIcon className="w-5 h-5" />
-            </div>
+            </button>
             <IconButton
                 onClick={() => handleCreateNote()}
                 tooltip="New Note (Ctrl+N)"
@@ -129,6 +133,11 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
         message="Are you sure you want to permanently delete this note? This action cannot be undone."
         confirmLabel="Delete Forever"
         isDestructive
+      />
+
+      <AgentStatusModal
+        isOpen={isAgentModalOpen}
+        onClose={() => setIsAgentModalOpen(false)}
       />
     </div>
   );
