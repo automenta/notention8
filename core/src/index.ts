@@ -13,3 +13,4 @@ export * from './quantities.js';
 export * from './templates.js';
 export * from './networkGate.js';
 export * from './skills/types.js';
+export * from './feedback/types.js';
