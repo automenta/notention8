@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { Note } from '@notention/core';
-import { areNotesEqual } from '../utils/notes';
+import { areNotesEqual } from '@notention/core';
 
 const SAVE_DEBOUNCE_MS = 1000;
 

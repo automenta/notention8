@@ -3,7 +3,7 @@ import React from 'react';
 import { useSettings } from '../../hooks/useSettingsContext';
 import { useView } from '../../hooks/useViewContext';
 import { useNoteActions } from '../../hooks/useNoteActions';
-import { DEFAULT_TEMPLATES } from '../../utils/templates';
+import { DEFAULT_TEMPLATES } from '@notention/core';
 import type { View, Template } from '@notention/core';
 import { NavButton } from './NavButton';
 import { IconButton } from '../common/IconButton';

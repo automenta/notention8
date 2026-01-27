@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import L from 'leaflet';
 import { useNotes } from './useNotes';
 import { useView } from './useViewContext';
-import { parseGeoFromValues } from '../utils/spacetime';
+import { parseGeoFromValues } from '@notention/core';
 
 interface GeoPoint {
   noteId: string;

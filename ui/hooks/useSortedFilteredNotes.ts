@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react';
 import type { Note, SortOrder } from '@notention/core';
 import { getTextFromHtml, parseProperties } from '@notention/core';
 import { checkConstraint } from '../utils/matching';
-import { GeoCoords, haversineDistance, parseGeoFromValues } from '../utils/spacetime';
+import { GeoCoords, haversineDistance, parseGeoFromValues } from '@notention/core';
 import { isSpatialKey, isTemporalKey } from '@notention/core';
 import { parseDateFromValues } from '@notention/core';
 
