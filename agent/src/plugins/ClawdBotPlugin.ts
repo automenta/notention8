@@ -458,10 +458,27 @@ export class ClawdBotPlugin implements Plugin {
         const message = item.parameters.message;
         if (this.gateway && this.gateway.client) {
              try {
-                 await this.gateway.client.sendAgentMessage(message);
-                 console.log('Sent instruction to agent');
+                 const response = await this.gateway.client.sendAgentMessage(message);
+                 console.log('Sent instruction to agent, received response:', response);
+
+                 // Broadcast response to UI
+                 this.broadcastToUI({
+                     type: 'agent_response',
+                     payload: {
+                         message: response.data?.message || response.message || JSON.stringify(response),
+                         agentId: 'clawdbot', // Or determine ID from response
+                         timestamp: new Date().toISOString()
+                     }
+                 });
+
              } catch (e) {
                  console.error('Error sending agent message:', e);
+                 this.broadcastToUI({
+                     type: 'agent_response_error',
+                     payload: {
+                         error: e instanceof Error ? e.message : 'Unknown error sending message to agent'
+                     }
+                 });
              }
         } else {
             console.error('Cannot send agent message: Gateway client not available');

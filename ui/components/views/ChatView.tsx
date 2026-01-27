@@ -10,6 +10,7 @@ import { useGardener } from '../../hooks/useGardener';
 import { SELF_AGENT_ID } from '../../hooks/simulator/types';
 import type { Contact, NostrEvent } from '@notention/core';
 import type { SwarmTemplate } from '../../hooks/simulator/types';
+import { useAgent } from '../contexts/AgentContext';
 
 // Helper to create a local message object
 const createLocalMessage = (content: string, pubkey: string): NostrEvent => ({
@@ -42,10 +43,26 @@ export function ChatView() {
 
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null);
 
+  // Agent Context Hook
+  const { sendMessage: sendAgentMessage, lastMessage: lastAgentMessage, isConnected: isAgentConnected } = useAgent();
+
   // Clear notifications when entering chat view
   useEffect(() => {
       resetChatNotification();
   }, [resetChatNotification]);
+
+  // Listen for Agent Responses from Backend
+  useEffect(() => {
+      if (lastAgentMessage && lastAgentMessage.type === 'agent_response') {
+          const content = lastAgentMessage.payload?.message || JSON.stringify(lastAgentMessage.payload);
+          // Add as a message from SELF_AGENT_ID
+          setSystemMessages(prev => [...prev, createLocalMessage(content, SELF_AGENT_ID)]);
+      } else if (lastAgentMessage && lastAgentMessage.type === 'agent_response_error') {
+          const content = `Error: ${lastAgentMessage.payload?.error}`;
+          setSystemMessages(prev => [...prev, createLocalMessage(content, SELF_AGENT_ID)]);
+      }
+  }, [lastAgentMessage]);
+
   const {
     privkey,
     pubkey,
@@ -93,7 +110,7 @@ export function ChatView() {
   if (fullSelectedContact?.isAgent) {
       displayMessages = [...(agentMessages[fullSelectedContact.pubkey] || [])];
       if (fullSelectedContact.pubkey === SELF_AGENT_ID) {
-          // Merge in any local system overrides if we implement that
+          // Merge in any local system overrides
           displayMessages = [...displayMessages, ...systemMessages].sort((a,b) => a.created_at - b.created_at);
       }
   } else {
@@ -145,7 +162,22 @@ export function ChatView() {
           onSendMessage={async (peerPubkey, event, decryptedContent) => {
             if (peerPubkey === SELF_AGENT_ID) {
                 const lower = decryptedContent.toLowerCase();
-                // Check for commands
+
+                // Check connection to backend agent
+                if (isAgentConnected) {
+                    // Send to Real ClawdBot Agent
+                    if (pubkey) {
+                        setSystemMessages(prev => [...prev, createLocalMessage(decryptedContent, pubkey)]);
+                    }
+                    sendAgentMessage('clawdbot_execute', {
+                         type: 'agent_instruction',
+                         parameters: { message: decryptedContent }
+                    });
+                    // Skip local simulation
+                    return;
+                }
+
+                // Fallback to Simulation Logic if not connected
                 if (lower.includes('analyze') || lower.includes('evolve') || lower.includes('scan') || lower.includes('optimize') || lower.includes('update ontology') || lower.includes('help')) {
                     // 1. Add User Message Locally
                     if (pubkey) {
