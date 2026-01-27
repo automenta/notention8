@@ -7,12 +7,18 @@
     "core"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev --workspace=@notention/ui\" \"npm run dev --workspace=core\"",
+    "dev": "tsx dev-server.ts",
+    "dev-agent": "npm run start --workspace=@notention/agent",
+    "dev-ui": "npm run dev --workspace=@notention/ui",
     "build": "npm run build --workspaces --if-present",
-    "test": "npm run test --workspace=@notention/ui",
-    "dev:agent": "npm run dev --workspace=@notention/agent"
+    "test": "npm run test --workspace=@notention/ui"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "tsx": "^4.19.2",
+    "typescript": "~5.9.2"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.0"
   }
 }

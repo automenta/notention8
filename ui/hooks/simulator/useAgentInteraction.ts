@@ -1,8 +1,8 @@
 import { useState, useCallback, MutableRefObject } from 'react';
 import type { NostrEvent } from '@notention/core';
-import type { AIProvider } from '../../services/@notention/core';
+import type { AIProvider } from '../../services/ai/types';
 import { MockLLMProvider } from '../../services/ai/MockLLMProvider';
-import type { SimulationAgent } from @notention/core';
+import type { SimulationAgent } from '@notention/core';
 
 interface UseAgentInteractionProps {
     agentsRef: MutableRefObject<SimulationAgent[]>;

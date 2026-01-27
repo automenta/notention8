@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Common code for Notention ecosystem",
   "main": "dist/index.js",
-  "module": "dist/index.esm.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
@@ -18,10 +18,12 @@
   ],
   "author": "",
   "license": "MIT",
-  "peerDependencies": {
-    "nostr-tools": "^2.16.1"
+  "dependencies": {
+    "date-fns": "^4.1.0",
+    "nostr-tools": "^2.20.0"
   },
   "devDependencies": {
+    "@types/node": "^20.11.0",
     "typescript": "~5.9.2"
   },
   "type": "commonjs"

@@ -6,9 +6,13 @@ import { PatternMatchingStrategy } from '../strategies/PatternMatchingStrategy';
 import { TranslationContext } from '../strategies/NoteTranslationStrategy';
 import { UIIntegrationSystem } from '../ui-representation/UIIntegrationSystem';
 
+import { ClawdBotClient } from '../communication/ClawdBotClient';
+
 interface ClawdBotGateway {
-  sendAction(action: any): Promise<any>;
-  getStatus(): Promise<any>;
+  process?: any;
+  port?: number;
+  configDir?: string;
+  client?: ClawdBotClient;
 }
 
 export class ClawdBotPlugin implements Plugin {
@@ -17,7 +21,7 @@ export class ClawdBotPlugin implements Plugin {
   description = 'Integrates ClawdBot execution capabilities with Notention';
   version = '1.0.0';
 
-  private gateway: ClawdBotGateway | null = null;
+  private gateway: any = null;
   private wsClients: Set<any> = new Set();
   private strategyManager: StrategyManager;
   private extensionManager: any; // Will be passed in
@@ -295,27 +299,34 @@ export class ClawdBotPlugin implements Plugin {
   }
   
   private async executeClawdBotAction(payload: any): Promise<void> {
-    if (!this.gateway) {
-      console.error('No ClawdBot gateway available');
+    if (!this.gateway || !this.gateway.client) {
+      console.error('No ClawdBot client available');
+      this.broadcastToUI({
+        type: 'clawdbot_error',
+        payload: { error: 'ClawdBot client not available' }
+      });
       return;
     }
-    
+
     try {
       console.log('Executing ClawdBot action:', payload);
-      // In a real implementation, this would call the actual ClawdBot gateway
-      // const result = await this.gateway.sendAction(payload);
-      
-      // For now, mock the response
-      const result = { success: true, message: 'Action executed', data: {} };
-      
+
+      // Use the client to execute the action
+      const result = await this.gateway.client.executeAction(payload);
+
       // Broadcast result to UI clients
       this.broadcastToUI({
         type: 'clawdbot_result',
-        payload: result
+        payload: {
+          success: true,
+          message: 'Action executed successfully',
+          data: result,
+          gatewayPort: this.gateway.port
+        }
       });
     } catch (error) {
       console.error('Error executing ClawdBot action:', error);
-      
+
       this.broadcastToUI({
         type: 'clawdbot_error',
         payload: { error: error instanceof Error ? error.message : 'Unknown error' }
@@ -324,29 +335,43 @@ export class ClawdBotPlugin implements Plugin {
   }
   
   private async getClawdBotStatus(): Promise<void> {
-    if (!this.gateway) {
-      console.error('No ClawdBot gateway available');
-      return;
-    }
-    
-    try {
-      // In a real implementation, this would get actual status from ClawdBot
-      // const status = await this.gateway.getStatus();
-      
-      // For now, mock the status
-      const status = { 
-        connected: true, 
-        status: 'running', 
-        agents: 1, 
-        lastActivity: new Date().toISOString() 
-      };
-      
+    if (!this.gateway || !this.gateway.client) {
+      console.error('No ClawdBot client available');
       this.broadcastToUI({
         type: 'clawdbot_status_update',
-        payload: status
+        payload: {
+          connected: false,
+          status: 'disconnected',
+          error: 'ClawdBot client not available',
+          lastAttempt: new Date().toISOString()
+        }
+      });
+      return;
+    }
+
+    try {
+      // Use the client to get actual status from ClawdBot
+      const status = await this.gateway.client.getStatus();
+
+      this.broadcastToUI({
+        type: 'clawdbot_status_update',
+        payload: {
+          ...status,
+          connected: true,
+          lastAttempt: new Date().toISOString()
+        }
       });
     } catch (error) {
       console.error('Error getting ClawdBot status:', error);
+      this.broadcastToUI({
+        type: 'clawdbot_status_update',
+        payload: {
+          connected: false,
+          status: 'error',
+          error: error instanceof Error ? error.message : 'Unknown error',
+          lastAttempt: new Date().toISOString()
+        }
+      });
     }
   }
   

@@ -7,9 +7,9 @@ import { useSimulatorContext } from '../../hooks/useSimulatorContext';
 import { AgentSettingsModal } from '../simulator/AgentSettingsModal';
 import { useNotes } from '../../hooks/useNotes';
 import { useGardener } from '../../hooks/useGardener';
-import { SELF_AGENT_ID } from '../../hooks/simulat@notention/core';
+import { SELF_AGENT_ID } from '@notention/core';
 import type { Contact, NostrEvent } from '@notention/core';
-import type { SwarmTemplate } from '../../hooks/simulat@notention/core';
+import type { SwarmTemplate } from '@notention/core';
 
 // Helper to create a local message object
 const createLocalMessage = (content: string, pubkey: string): NostrEvent => ({

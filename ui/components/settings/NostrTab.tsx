@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { generateSecretKey, getPublicKey, nip19 } from 'nostr-tools';
-import { bytesToHex, hexToBytes } from @notention/core';
+import { bytesToHex, hexToBytes } from 'nostr-tools';
 import { KeyIcon, UserPlusIcon } from '../common/icons';
-import type { AppSettings } from @notention/core';
+import type { AppSettings } from '@notention/core';
 import { CopyableField } from '../common/CopyableField';
 import { usePublish } from '@/hooks/usePublish';
 import { useToast } from '../../hooks/useToast';

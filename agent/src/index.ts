@@ -49,6 +49,7 @@ import { ComprehensiveUIReplacementSystem } from './ui-replacement/Comprehensive
 import { ComprehensiveStateManager } from './state-management/ComprehensiveStateManager';
 import { TransparentErrorHandler } from './error-handling/ErrorHandler';
 import { ComprehensiveConfigurationManager } from './configuration/ConfigurationManager';
+import { ClawdBotClient } from './communication/ClawdBotClient';
 
 const app = express();
 
@@ -127,38 +128,52 @@ try {
     }
   });
 
-  // Initialize the state manager with the gateway
-  // Note: We'll pass a mock gateway object since ClawdBot runs as a separate process
-  const mockGateway = {
-    version: 'proxy-mode',
-    start: async () => Promise.resolve(),
-    stop: async () => Promise.resolve()
-  };
-  
-  stateManager.initialize().catch(err => {
-    console.error('Error initializing state manager:', err);
-  });
+  // Wait a bit for ClawdBot to start up before initializing client
+  setTimeout(async () => {
+    try {
+      // Create ClawdBot client for communication
+      const clawdBotClient = new ClawdBotClient({
+        port: GATEWAY_PORT,
+        host: '127.0.0.1',
+        timeout: 10000
+      });
 
-  // Initialize the configuration manager
-  configManager.initialize().catch(err => {
-    console.error('Error initializing configuration manager:', err);
-  });
+      // Initialize the client
+      await clawdBotClient.initialize();
+      console.log(`✅ ClawdBot client connected to gateway on port ${GATEWAY_PORT}`);
 
-  // Initialize extensions
-  initializeExtensions();
+      // Initialize the state manager
+      stateManager.initialize().catch(err => {
+        console.error('Error initializing state manager:', err);
+      });
 
-  // Create and register the ClawdBot plugin
-  const clawdBotPlugin = new ClawdBotPlugin(
-    mockGateway, // Using mock since real gateway runs in separate process
-    extensionManager,
-    uiReplacementSystem,
-    stateManager,
-    errorHandler,
-    configManager
-  );
-  pluginManager.register(clawdBotPlugin);
+      // Initialize the configuration manager
+      configManager.initialize().catch(err => {
+        console.error('Error initializing configuration manager:', err);
+      });
 
-  console.log(`ClawdBot gateway process started on port ${GATEWAY_PORT}`);
+      // Initialize extensions
+      initializeExtensions();
+
+      // Create and register the ClawdBot plugin
+      const clawdBotPlugin = new ClawdBotPlugin(
+        clawdBotClient, // Pass the client instead of process reference
+        extensionManager,
+        uiReplacementSystem,
+        stateManager,
+        errorHandler,
+        configManager
+      );
+      pluginManager.register(clawdBotPlugin);
+
+      console.log(`✅ ClawdBot integration fully initialized on port ${GATEWAY_PORT}`);
+
+    } catch (error) {
+      console.error('Failed to initialize ClawdBot client:', error);
+      // Log the error using the error handler
+      errorHandler.handleError(error, { source: 'ClawdBotClient', action: 'initialize' });
+    }
+  }, 3000); // Wait 3 seconds for ClawdBot to start
 
 } catch (error) {
   console.error('Failed to start ClawdBot gateway:', error);
@@ -175,9 +190,9 @@ const server = app.listen(SERVER_PORT, () => {
 
 // Cleanup on exit
 const cleanup = () => {
-  console.log('Shutting down...');
-  if (clawdBot) {
-    clawdBot.kill();
+  console.log('Shutting down ClawdBot gateway...');
+  if (clawdBot && !clawdBot.killed) {
+    clawdBot.kill('SIGTERM');
   }
   server.close(() => {
     console.log('Server closed.');
@@ -187,3 +202,14 @@ const cleanup = () => {
 
 process.on('SIGINT', cleanup);
 process.on('SIGTERM', cleanup);
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  cleanup();
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  cleanup();
+});

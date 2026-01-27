@@ -263,13 +263,29 @@ export class ComprehensiveStateManager implements StateManager {
   
   private async fetchCurrentState(): Promise<ClawdBotState> {
     // In a real implementation, this would fetch the actual state from the ClawdBot gateway
-    // For now, we'll simulate by returning the current state with updated timestamps
-    
+    // For now, we'll return the current state with updated timestamps
+    // In the future, this would make an actual API call to the ClawdBot gateway
+
     // Update uptime
     const startTime = new Date(this.currentState.configuration.settings.startTime || new Date());
     const currentTime = new Date();
     const uptimeSeconds = Math.floor((currentTime.getTime() - startTime.getTime()) / 1000);
-    
+
+    // If we have access to the gateway process, we could potentially query it
+    if (this.gateway && typeof this.gateway.queryState === 'function') {
+      try {
+        const actualState = await this.gateway.queryState();
+        return {
+          ...actualState,
+          uptime: uptimeSeconds,
+          recentLogs: this.getRecentLogs(20) // Last 20 logs
+        };
+      } catch (error) {
+        console.error('Error fetching actual state from gateway:', error);
+        // Fall back to current state
+      }
+    }
+
     return {
       ...this.currentState,
       uptime: uptimeSeconds,

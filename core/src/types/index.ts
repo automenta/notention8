@@ -1,6 +1,13 @@
-import type { Event as NostrToolsEvent } from 'nostr-tools';
-
-export type NostrEvent = NostrToolsEvent;
+// Define NostrEvent type without external dependencies initially
+export interface NostrEvent {
+  id: string;
+  pubkey: string;
+  created_at: number;
+  kind: number;
+  tags: string[][];
+  content: string;
+  sig: string;
+}
 
 export type SortOrder =
   | 'updatedAt_desc'

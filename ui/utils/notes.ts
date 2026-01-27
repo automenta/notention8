@@ -1,5 +1,5 @@
 import type { Note } from '@notention/core';
-import { arePropertyArraysEqual, isIndefiniteProperty } from './properties';
+import { arePropertyArraysEqual, isIndefiniteProperty } from '@notention/core';
 
 export type NoteIntent = 'Real' | 'Imaginary' | 'Ambiguous';
 

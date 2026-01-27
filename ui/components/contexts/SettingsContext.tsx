@@ -2,7 +2,7 @@ import React, { createContext, ReactNode, useEffect } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { useLocalForage } from '../../hooks/useLocalForage';
 import type { AppSettings } from '@notention/core';
-import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
+import { DEFAULT_ONTOLOGY } from '@notention/core';
 import { DEFAULT_RELAYS } from '@notention/core';
 
 interface SettingsContextType {

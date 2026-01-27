@@ -1,4 +1,4 @@
-import type { AIProvider, InferredAttribute } from @notention/core';
+import type { AIProvider, InferredAttribute } from '@notention/core';
 import type { OntologyNode } from '@notention/core';
 
 export class MockLLMProvider implements AIProvider {

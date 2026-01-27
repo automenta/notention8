@@ -1,6 +1,6 @@
 import { SimplePool, utils } from 'nostr-tools';
 
-import type { NostrEvent, Note, Property } from '../types';
+import type { NostrEvent, Note, Property } from './types';
 
 export const DEFAULT_RELAYS = [
   'wss://relay.damus.io',

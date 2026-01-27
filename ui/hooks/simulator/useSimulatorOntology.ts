@@ -1,7 +1,7 @@
 import { useCallback, MutableRefObject } from 'react';
 import type { OntologyNode } from '@notention/core';
 import { Gardener } from '../../services/gardener';
-import { mergeAttributes, deleteAttribute, findNode, renameAttribute } from '../../utils/ontologyHelpers';
+import { mergeAttributes, deleteAttribute, findNode, renameAttribute } from '@notention/core';
 
 interface UseSimulatorOntologyProps {
     ontologyRef: MutableRefObject<OntologyNode[]>;
