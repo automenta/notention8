@@ -46,6 +46,7 @@ export const useEditorPublishing = ({
           ...dirtyNote,
           nostrEventId: eventId,
           publishedAt: now,
+          public: true, // Ensure note is marked public after successful publication
         };
         setDirtyNote(updatedNote);
         onSave(updatedNote);

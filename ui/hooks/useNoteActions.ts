@@ -4,8 +4,15 @@ import { parseProperties } from '@notention/core';
 import type { Property } from '@notention/core';
 
 export function useNoteActions() {
-    const { addNote, updateNote } = useNotes();
+    const { addNote, updateNote, notes } = useNotes();
     const { setSelectedNoteId, setActiveView } = useView();
+
+    const promoteNote = (noteId: string) => {
+        const note = notes.find(n => n.id === noteId);
+        if (note) {
+            updateNote({ ...note, priority: 1.0 });
+        }
+    };
 
     const createNoteAndNavigate = (
         title: string | undefined,
@@ -30,6 +37,7 @@ export function useNoteActions() {
     };
 
     return {
-        createNoteAndNavigate
+        createNoteAndNavigate,
+        promoteNote
     };
 }

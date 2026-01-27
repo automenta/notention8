@@ -234,6 +234,8 @@ export const WorldIcon = (props: IconProps) => (
   </OutlineIcon>
 );
 
+export const GlobeIcon = WorldIcon;
+
 export const EditIcon = (props: IconProps) => (
   <OutlineIcon {...props}>
     <path
