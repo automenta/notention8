@@ -26,5 +26,5 @@
     "@types/node": "^20.11.0",
     "typescript": "~5.9.2"
   },
-  "type": "commonjs"
+  "type": "module"
 }

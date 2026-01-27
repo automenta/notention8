@@ -8,7 +8,7 @@ import {
   renameAttribute,
   mergeAttributes,
   findNode
-} from '../../utils/ontologyHelpers';
+} from '@notention/core';
 import { OntologyNode } from '@notention/core';
 
 describe('Ontology Helpers', () => {

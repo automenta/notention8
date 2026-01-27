@@ -150,7 +150,7 @@ export class ScheduledTaskMetaphor implements FunctionalityMetaphor {
           command: 'schedule_task',
           parameters: {
             taskId: notentionAction.id,
-            time: notentionAction.time
+            time: (notentionAction as any).time
           }
         };
       case 'reschedule':

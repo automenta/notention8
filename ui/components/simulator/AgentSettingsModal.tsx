@@ -3,8 +3,8 @@ import { Modal } from '../common/Modal';
 import { SimulatorAgentEditor } from './SimulatorAgentEditor';
 import { Button } from '../common/Button';
 import { TrashIcon, PauseIcon, PlayIcon } from '../common/icons';
-import type { SimulationAgent } from '../../hooks/simulat@notention/core';
-import { SELF_AGENT_ID } from '../../hooks/simulat@notention/core';
+import type { SimulationAgent } from '../../hooks/simulator/types';
+import { SELF_AGENT_ID } from '../../hooks/simulator/types';
 
 interface AgentSettingsModalProps {
     isOpen: boolean;

@@ -78,21 +78,6 @@ export class ClawdBotPlugin implements Plugin {
     console.log('Note deleted:', noteId);
   }
   
-  handleMessage(message: any): void {
-    console.log('ClawdBot plugin received message:', message.type);
-    
-    switch(message.type) {
-      case 'clawdbot_execute':
-        this.executeClawdBotAction(message.payload);
-        break;
-      case 'clawdbot_status':
-        this.getClawdBotStatus();
-        break;
-      default:
-        console.log('Unknown message type for ClawdBot plugin:', message.type);
-    }
-  }
-  
   injectUI(): string {
     // Return JavaScript code that will be injected into the UI
     // This allows the UI to have ClawdBot functionality without knowing about it
@@ -334,6 +319,10 @@ export class ClawdBotPlugin implements Plugin {
     }
   }
   
+  public async analyzeNoteForAutomation(note: any): Promise<void> {
+    return this.processNoteForExecution(note);
+  }
+
   private async getClawdBotStatus(): Promise<void> {
     if (!this.gateway || !this.gateway.client) {
       console.error('No ClawdBot client available');
