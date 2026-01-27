@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { useSortedFilteredNotes } from '../../hooks/useSortedFilteredNotes';
-import { createNote } from '../../utils/notes';
+import { createNote } from '@notention/core';
 import type { Note } from '@notention/core';
 import { describe, it, expect } from 'vitest';
 

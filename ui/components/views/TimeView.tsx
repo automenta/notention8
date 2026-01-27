@@ -7,7 +7,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useNotes } from '../../hooks/useNotes';
 import { useView } from '../../hooks/useViewContext';
 import { MapPinIcon } from '../common/icons';
-import { parseGeoFromValues, haversineDistance } from '../../utils/spacetime';
+import { parseGeoFromValues, haversineDistance } from '@notention/core';
 
 const locales = {
   'en-US': enUS,

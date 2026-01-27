@@ -2,7 +2,8 @@ import React, { createContext, ReactNode, useState } from 'react';
 import { useLocalForage } from '../../hooks/useLocalForage';
 import { useToast } from '../../hooks/useToast';
 import type { View, SortOrder, NostrEvent, SidebarViewMode } from '@notention/core';
-import { getCurrentPosition, GeoCoords } from '../../utils/spacetime';
+import { GeoCoords } from '@notention/core';
+import { getCurrentPosition } from '../../utils/geolocation';
 
 import type { Property } from '@notention/core';
 

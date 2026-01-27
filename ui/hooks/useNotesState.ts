@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useLocalForage } from './useLocalForage';
-import { createNote } from '../utils/notes';
+import { createNote } from '@notention/core';
 import type { Note } from '@notention/core';
 
 export const useNotesState = (driver?: LocalForage) => {

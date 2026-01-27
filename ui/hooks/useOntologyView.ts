@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { useSettings } from './useSettingsContext';
 import { useNotes } from './useNotes';
 import { useGardener } from './useGardener';
-import { detectConflicts } from '../utils/conflicts';
+import { detectConflicts } from '@notention/core';
 import { addNode, deleteNode } from '@notention/core';
 
 export type OntologyTab = 'graph' | 'simulator' | 'conflicts';

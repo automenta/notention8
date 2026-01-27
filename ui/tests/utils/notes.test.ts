@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { inferNoteIntent, createNote } from '../../utils/notes';
+import { inferNoteIntent, createNote } from '@notention/core';
 
 describe('inferNoteIntent', () => {
   it('returns "Real" for explicit offer tags', () => {

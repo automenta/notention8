@@ -1,4 +1,3 @@
-
 export interface GeoCoords {
     lat: number;
     lng: number;
@@ -58,23 +57,3 @@ export const haversineDistance = (coords1: GeoCoords, coords2: GeoCoords): numbe
 };
 
 const toRad = (val: number) => val * Math.PI / 180;
-
-export const getCurrentPosition = (): Promise<{ lat: number; lng: number }> => {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject(new Error('Geolocation is not supported by your browser'));
-    } else {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          resolve({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-        },
-        (error) => {
-          reject(error);
-        }
-      );
-    }
-  });
-};

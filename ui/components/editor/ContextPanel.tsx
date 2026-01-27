@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import type { Note } from '@notention/core';
-import { parseGeoFromValues } from '../../utils/spacetime';
+import { parseGeoFromValues } from '@notention/core';
 import { MapPinIcon, ClockIcon, PencilIcon } from '../common/icons';
 
 // Simple "static" map preview using a placeholder or a very simple iframe/image if possible.
