@@ -52,7 +52,7 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       ontology: settings.ontology
   });
 
-  const { handlePublish, isPublishing } = useEditorPublishing({
+  const { handlePublish, isPublishing, privacyCheck } = useEditorPublishing({
     dirtyNote,
     setDirtyNote,
     onSave,
@@ -154,6 +154,7 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     validationErrors,
     missingProperties,
     matchingOntologyNode,
-    saveStatus
+    saveStatus,
+    privacyCheck,
   };
 };

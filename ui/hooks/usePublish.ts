@@ -1,13 +1,19 @@
 import { useCallback, useState } from 'react';
 import { finalizeEvent } from 'nostr-tools';
 import { useSettings } from './useSettingsContext';
-import { pool, DEFAULT_RELAYS, hexToBytes } from '@notention/core';
-import { getTextFromHtml } from '@notention/core';
+import { pool, DEFAULT_RELAYS, hexToBytes, publishNoteToNostr } from '@notention/core';
 import type { Note } from '@notention/core';
+
+export interface PrivacyCheckRequest {
+    note: Note;
+    message: string;
+    resolve: (value: boolean) => void;
+}
 
 export const usePublish = () => {
   const { settings } = useSettings();
   const [isPublishing, setIsPublishing] = useState(false);
+  const [privacyCheck, setPrivacyCheck] = useState<PrivacyCheckRequest | null>(null);
 
   const relays = settings.nostr.relays || DEFAULT_RELAYS;
 
@@ -18,34 +24,24 @@ export const usePublish = () => {
 
     setIsPublishing(true);
     try {
-      const privkeyBytes = hexToBytes(settings.nostr.privkey);
-      const content = getTextFromHtml(note.content);
-
-      const tags = note.tags.map(tag => ['t', tag]);
-
-      note.properties.forEach(prop => {
-        if (prop.values.length > 0) {
-            prop.values.forEach(val => {
-                tags.push(['property', prop.key, prop.operator, val]);
+      const eventId = await publishNoteToNostr(
+        note,
+        settings.nostr.privkey,
+        relays,
+        (message: string) => {
+            return new Promise<boolean>((resolve) => {
+                setPrivacyCheck({
+                    note,
+                    message,
+                    resolve: (val) => {
+                        setPrivacyCheck(null);
+                        resolve(val);
+                    }
+                });
             });
         }
-      });
-
-      const created_at = Math.floor(Date.now() / 1000);
-
-      const eventTemplate = {
-        kind: 1,
-        created_at,
-        tags,
-        content: `${note.title}\n\n${content}`,
-      };
-
-      const signedEvent = finalizeEvent(eventTemplate, privkeyBytes);
-
-      const pubs = pool.publish(relays, signedEvent);
-      await Promise.any(pubs);
-
-      return signedEvent.id;
+      );
+      return eventId;
     } catch (error) {
       console.error('Failed to publish note:', error);
       throw error;
@@ -83,5 +79,5 @@ export const usePublish = () => {
     }
   }, [settings.nostr.privkey, relays]);
 
-  return { publishNote, publishProfile, isPublishing };
+  return { publishNote, publishProfile, isPublishing, privacyCheck };
 };

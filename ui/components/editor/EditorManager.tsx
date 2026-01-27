@@ -15,6 +15,7 @@ import { TemplateSelector } from './TemplateSelector';
 import { SaveTemplateModal } from './SaveTemplateModal';
 import { MapPickerModal } from '../map/MapPickerModal';
 import { TimePickerModal } from '../common/TimePickerModal';
+import { PrivacyConfirmModal } from '../modals/PrivacyConfirmModal';
 import { EditorMatches } from './EditorMatches';
 import { ContextPanel } from './ContextPanel';
 import { SuggestionPanel } from './SuggestionPanel';
@@ -49,6 +50,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     actionLabel,
     missingProperties,
     saveStatus,
+    privacyCheck,
   } = useEditorLogic({ note, onSave });
 
   const {
@@ -225,6 +227,14 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         onTimeSelect={handleTimeSelected}
         title={`Pick Time for ${pickingTimeKey}`}
       />
+      {privacyCheck && (
+        <PrivacyConfirmModal
+            note={privacyCheck.note}
+            destination="Nostr Network"
+            onConfirm={() => privacyCheck.resolve(true)}
+            onCancel={() => privacyCheck.resolve(false)}
+        />
+      )}
     </div>
   );
 }

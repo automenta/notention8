@@ -1,4 +1,6 @@
-import { SimplePool, utils } from 'nostr-tools';
+import { SimplePool, utils, finalizeEvent } from 'nostr-tools';
+import { getTextFromHtml } from './parsing';
+import { NetworkGate, PrivacyError } from './networkGate';
 
 import type { NostrEvent, Note, Property } from './types';
 
@@ -61,3 +63,52 @@ export const convertEventToNote = (event: NostrEvent): Note => {
     priority: 1.0,
   };
 };
+
+const networkGate = new NetworkGate();
+
+export async function publishNoteToNostr(
+  note: Note,
+  privkey: string,
+  relays: string[],
+  promptUser?: (msg: string) => Promise<boolean>
+): Promise<string> {
+  // Privacy check
+  const canPublish = await networkGate.canTransmit(
+    note,
+    'Nostr network',
+    promptUser
+  );
+
+  if (!canPublish) {
+    throw new PrivacyError('Publication cancelled - note is private');
+  }
+
+  const privkeyBytes = hexToBytes(privkey);
+  const content = getTextFromHtml(note.content);
+
+  const tags = note.tags.map(tag => ['t', tag]);
+
+  note.properties.forEach(prop => {
+    if (prop.values.length > 0) {
+        prop.values.forEach(val => {
+            tags.push(['property', prop.key, prop.operator, val]);
+        });
+    }
+  });
+
+  const created_at = Math.floor(Date.now() / 1000);
+
+  const eventTemplate = {
+    kind: 1,
+    created_at,
+    tags,
+    content: `${note.title}\n\n${content}`,
+  };
+
+  const signedEvent = finalizeEvent(eventTemplate, privkeyBytes);
+
+  const pubs = pool.publish(relays, signedEvent);
+  await Promise.any(pubs);
+
+  return signedEvent.id;
+}

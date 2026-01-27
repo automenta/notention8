@@ -19,7 +19,7 @@ export const useEditorPublishing = ({
   validationErrors,
   actionLabel,
 }: UseEditorPublishingProps) => {
-  const { publishNote, isPublishing } = usePublish();
+  const { publishNote, isPublishing, privacyCheck } = usePublish();
   const { evolveOntology } = useGardener();
   const { addToast } = useToast();
 
@@ -72,5 +72,6 @@ export const useEditorPublishing = ({
   return {
     handlePublish,
     isPublishing,
+    privacyCheck,
   };
 };
