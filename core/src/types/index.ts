@@ -46,6 +46,13 @@ export interface OntologyNode {
   extends?: string[];
 }
 
+export interface NoteSource {
+  type: 'user' | 'skill' | 'import' | 'inference';
+  identifier: string; // 'user-<id>', 'skill-indeed-v1', 'gpt-4o'
+  url?: string; // Origin URL for imports
+  timestamp: number;
+}
+
 export interface Note {
   id: string;
   title: string;
@@ -59,6 +66,9 @@ export interface Note {
   publishedAt?: string;
   pinned?: boolean;
   deletedAt?: string;
+  source: NoteSource;
+  public: boolean;
+  priority: number;
 }
 
 export interface Template {
