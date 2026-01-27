@@ -19,6 +19,7 @@ import { ComprehensiveUIReplacementSystem } from './ui-replacement/Comprehensive
 import { ComprehensiveStateManager } from './state-management/ComprehensiveStateManager';
 import { TransparentErrorHandler } from './error-handling/ErrorHandler';
 import { ComprehensiveConfigurationManager } from './error-handling/ConfigurationManager';
+import { ClawdBotCoordinator } from './ClawdBotCoordinator';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -196,7 +197,19 @@ wss.on('connection', (ws) => {
           pluginManager.broadcastNoteCreated(message.payload).catch(error => {
             console.error('Error broadcasting note creation:', error);
           });
-          // These might be events that should trigger ClawdBot actions
+
+          // Trigger Skill Coordinator
+          if (coordinator) {
+             coordinator.processNote(message.payload).then(results => {
+                 if (results && results.length > 0) {
+                     // If skills produced new notes (imports), send them back to UI
+                     ws.send(JSON.stringify({
+                         type: 'skills_results',
+                         payload: results
+                     }));
+                 }
+             }).catch(err => console.error("Coordinator error:", err));
+          }
           console.log('Note created event received:', message.payload);
           break;
 
@@ -411,6 +424,7 @@ const uiReplacementSystem = new ComprehensiveUIReplacementSystem();
 const stateManager = new ComprehensiveStateManager(null); // Will be initialized with gateway
 const errorHandler = new TransparentErrorHandler();
 const configManager = new ComprehensiveConfigurationManager();
+let coordinator: ClawdBotCoordinator | null = null;
 
 // Initialize and register extensions
 async function initializeExtensions() {
@@ -450,6 +464,9 @@ let gateway: any;
       configManager
     );
     pluginManager.register(clawdBotPlugin);
+
+    // Initialize Coordinator
+    coordinator = new ClawdBotCoordinator(gateway);
 
     // Initialize the state manager with the gateway
     stateManager.initialize().catch((err: any) => {
