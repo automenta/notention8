@@ -1,6 +1,10 @@
 import type { Note, ActionSequence, BrowserAction } from '@notention/core';
 import { SkillRegistry } from './skills/SkillRegistry';
 import { IndeedSkill } from './skills/IndeedSkill';
+import { CraigslistSkill } from './skills/CraigslistSkill';
+import { GitHubSkill } from './skills/GitHubSkill';
+import { EventbriteSkill } from './skills/EventbriteSkill';
+import { ZillowSkill } from './skills/ZillowSkill';
 
 /**
  * Browser execution handler interface for ClawdBot/MoltBot integration
@@ -30,14 +34,19 @@ export class ClawdBotCoordinator {
     }
 
     private initializeBuiltInSkills(): void {
-        this.registry.register(new IndeedSkill(), {
-            tags: ['jobs', 'employment', 'freelance'],
-            domains: ['indeed.com'],
-            requiresAuth: false,
-            author: 'notention'
-        });
+        const skills = [
+            { skill: new IndeedSkill(), meta: { tags: ['jobs', 'employment'], domains: ['indeed.com'] } },
+            { skill: new CraigslistSkill(), meta: { tags: ['marketplace', 'products'], domains: ['craigslist.org'] } },
+            { skill: new GitHubSkill(), meta: { tags: ['code', 'opensource'], domains: ['github.com'] } },
+            { skill: new EventbriteSkill(), meta: { tags: ['events', 'concerts'], domains: ['eventbrite.com'] } },
+            { skill: new ZillowSkill(), meta: { tags: ['realestate', 'housing'], domains: ['zillow.com'] } }
+        ];
 
-        console.log('🤖 ClawdBot Coordinator initialized with 1 skill');
+        skills.forEach(({ skill, meta }) =>
+            this.registry.register(skill, { ...meta, requiresAuth: false, author: 'notention' })
+        );
+
+        console.log(`🤖 ClawdBot initialized with ${skills.length} skills`);
     }
 
     /**
@@ -121,4 +130,48 @@ export class ClawdBotCoordinator {
     }
 }
 
+/**
+ * Global coordinator singleton
+ */
 export const clawdBotCoordinator = new ClawdBotCoordinator();
+
+/**
+ * Initialize ClawdBot browser integration.
+ * Call this to connect to a running ClawdBot instance.
+ * 
+ * @example
+ * ```typescript
+ * import { initializeClawdBotIntegration } from './ClawdBotCoordinator';
+ * 
+ * // Connect to ClawdBot running on default port
+ * await initializeClawdBotIntegration();
+ * 
+ * // Or specify custom options
+ * await initializeClawdBotIntegration({
+ *   host: '127.0.0.1',
+ *   port: 3000,
+ *   timeout: 30000
+ * });
+ * ```
+ */
+export async function initializeClawdBotIntegration(options?: {
+    host?: string;
+    port?: number;
+    timeout?: number;
+}): Promise<void> {
+    const { createClawdBotExecutor } = await import('./browser/ClawdBotBrowserAdapter');
+
+    const executor = createClawdBotExecutor(options ?? {});
+
+    // Verify connection
+    const available = await executor.isAvailable();
+    if (!available) {
+        throw new Error('ClawdBot is not available. Make sure ClawdBot is running.');
+    }
+
+    // Set executor
+    clawdBotCoordinator.setBrowserExecutor(executor);
+
+    console.log('✅ ClawdBot integration initialized');
+}
+
