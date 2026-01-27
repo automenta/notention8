@@ -252,6 +252,16 @@ let gateway: any;
       // Add any other ClawdBot configuration here
     });
 
+    gateway.setOnLog((log: string) => {
+        broadcastToUIClients({
+            type: 'clawdbot_log',
+            payload: {
+                message: log,
+                timestamp: new Date().toISOString()
+            }
+        });
+    });
+
     // Initialize extensions
     await initializeExtensions();
 

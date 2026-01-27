@@ -8,9 +8,14 @@ export class Gateway {
   public version: string = '2026.1.24-3'; // Hardcoded matches installed version
   public client: ClawdBotClient | null = null;
   public port: number = 18789;
+  private onLog: ((log: string) => void) | null = null;
 
   constructor(config: { configDir: string }) {
     this.configDir = config.configDir;
+  }
+
+  setOnLog(callback: (log: string) => void) {
+      this.onLog = callback;
   }
 
   async start(): Promise<void> {
@@ -32,6 +37,9 @@ export class Gateway {
         this.process.stdout.on('data', (data) => {
           const msg = data.toString();
           console.log('[ClawdBot]', msg.trim());
+          if (this.onLog) {
+              this.onLog(msg.trim());
+          }
           if (msg.includes('Gateway listening') || msg.includes('ready')) {
             // resolve(); // In real life we'd wait for ready signal
           }
@@ -40,7 +48,11 @@ export class Gateway {
 
       if (this.process.stderr) {
         this.process.stderr.on('data', (data) => {
-          console.error('[ClawdBot Error]', data.toString().trim());
+          const msg = data.toString();
+          console.error('[ClawdBot Error]', msg.trim());
+          if (this.onLog) {
+              this.onLog(`ERROR: ${msg.trim()}`);
+          }
         });
       }
 

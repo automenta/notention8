@@ -5,6 +5,7 @@ import {
   Condition,
   Trigger
 } from './NoteTranslationStrategy';
+import { DEFAULT_ONTOLOGY } from '@notention/core';
 
 export class LMAgentTranslationStrategy implements NoteTranslationStrategy {
   private readonly name = 'LM Agent Translation Strategy';
@@ -43,6 +44,16 @@ export class LMAgentTranslationStrategy implements NoteTranslationStrategy {
     if (note.title) prompt += `Title: ${note.title}\n`;
     if (note.content) prompt += `Content: ${note.content}\n`;
 
+    // Include ontology context
+    const matchingNode = this.findMatchingOntologyNode(note);
+    if (matchingNode) {
+        prompt += `\nContext: This note matches the ontology type '${matchingNode.label}'.\n`;
+        prompt += `Description: ${matchingNode.description || ''}\n`;
+        if (matchingNode.attributes) {
+            prompt += `Expected Attributes: ${Object.keys(matchingNode.attributes).join(', ')}\n`;
+        }
+    }
+
     if (note.properties && note.properties.length > 0) {
       prompt += `Properties:\n`;
       note.properties.forEach((p: any) => {
@@ -53,6 +64,42 @@ export class LMAgentTranslationStrategy implements NoteTranslationStrategy {
 
     prompt += `\nPlease analyze this note and execute the appropriate action using your available tools (Browser, Message, etc.). If no action is needed, simply acknowledge.`;
     return prompt;
+  }
+
+  private findMatchingOntologyNode(note: any): any {
+     // Simple heuristic: check if note properties match ontology required attributes
+     // or if tags match node ID
+
+     const flattenNodes = (nodes: any[]): any[] => {
+         let flat: any[] = [];
+         nodes.forEach(n => {
+             flat.push(n);
+             if (n.children) flat = flat.concat(flattenNodes(n.children));
+         });
+         return flat;
+     };
+
+     const allNodes = flattenNodes(DEFAULT_ONTOLOGY);
+
+     // Check tags first
+     if (note.tags && note.tags.length > 0) {
+         for (const tag of note.tags) {
+             const found = allNodes.find(n => n.id === tag || n.label.toLowerCase() === tag.toLowerCase());
+             if (found) return found;
+         }
+     }
+
+     // Check properties
+     if (note.properties && note.properties.length > 0) {
+         const keys = note.properties.map((p: any) => p.key);
+         for (const node of allNodes) {
+             if (node.requiredAttributes && node.requiredAttributes.every((k: string) => keys.includes(k))) {
+                 return node;
+             }
+         }
+     }
+
+     return null;
   }
 
   getPriority(): number {
