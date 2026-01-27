@@ -14,3 +14,13 @@ export * from './templates.js';
 export * from './networkGate.js';
 export * from './skills/types.js';
 export * from './feedback/types.js';
+
+// Ontology-driven services (Phase 1.4 & 2)
+export * from './ontologyService.js';
+export * from './propertyExtractor.js';
+export * from './queryBuilder.js';
+
+// Skill system (Phase 4)
+export * from './skillPatternMatcher.js';
+export * from './skillApprovalManager.js';
+export * from './skillExecutor.js';

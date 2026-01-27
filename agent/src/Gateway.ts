@@ -1,20 +1,27 @@
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
 import { MoltBotBridge } from './bridge/MoltBotBridge';
+import { MessageTransformer, MoltBotMessage } from './transformers/MessageTransformer';
+import { Note } from '../../core/src/types/index.js';
 
 export class Gateway {
   private process: ChildProcess | null = null;
   private configDir: string;
   private bridge: MoltBotBridge;
   public version: string = '2026.1.24-3'; // Hardcoded matches installed version
+  private onMessageReceived?: (note: Note) => void;
 
-  constructor(config: { configDir: string }) {
+  constructor(config: { configDir: string; onMessageReceived?: (note: Note) => void }) {
     this.configDir = config.configDir;
+    this.onMessageReceived = config.onMessageReceived;
     this.bridge = new MoltBotBridge({
       port: 18789,
       reconnectInterval: 2000,
       maxReconnectAttempts: 30
     });
+
+    // Wire up message transformer to bridge events
+    this.setupMessageHandlers();
   }
 
   async start(): Promise<void> {
@@ -80,6 +87,48 @@ export class Gateway {
 
   getBridge(): MoltBotBridge {
     return this.bridge;
+  }
+
+  /**
+   * Set up handlers for incoming MoltBot messages
+   * Transforms messages to Notes using ontology properties
+   */
+  private setupMessageHandlers(): void {
+    this.bridge.on('message', (message: any) => {
+      try {
+        // Transform MoltBot message → Note
+        const note = MessageTransformer.inboundToNote(message as MoltBotMessage);
+
+        console.log('[Gateway] Incoming message transformed to note:', note.id);
+
+        // Notify callback (will be handled by coordinator/index.ts)
+        if (this.onMessageReceived) {
+          this.onMessageReceived(note);
+        }
+      } catch (error) {
+        console.error('[Gateway] Error transforming inbound message:', error);
+      }
+    });
+  }
+
+  /**
+   * Send a note as a MoltBot message
+   * Detects send intent from ontology operators
+   */
+  async sendNote(note: Note): Promise<void> {
+    if (!MessageTransformer.hasSendIntent(note)) {
+      throw new Error('Note does not have send intent (no "send to" operator)');
+    }
+
+    const message = MessageTransformer.outboundToMessage(note);
+    if (!message) {
+      throw new Error('Failed to transform note to message');
+    }
+
+    console.log('[Gateway] Sending note as message:', message);
+
+    // Send via bridge
+    await this.bridge.sendCommand('send_message', message);
   }
 
   async getStatus(): Promise<any> {

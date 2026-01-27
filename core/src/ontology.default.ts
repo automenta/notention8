@@ -84,6 +84,52 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
     ],
   },
   {
+    id: 'communication',
+    label: 'Communication',
+    description: 'Messages and conversations across channels.',
+    children: [
+      {
+        id: 'message',
+        label: 'Message',
+        description: 'A communication sent through a channel.',
+        attributes: {
+          conversationId: {
+            type: 'string',
+            description: 'Thread or conversation identifier',
+            icon: 'chat-bubble',
+            operators: { real: ['is'], imaginary: ['is not'] },
+          },
+          channel: {
+            type: 'enum',
+            options: ['whatsapp', 'telegram', 'discord', 'sms', 'email'],
+            description: 'Communication channel',
+            icon: 'share',
+            operators: { real: ['is'], imaginary: ['is not'] },
+          },
+          from: {
+            type: 'string',
+            description: 'Sender identifier (phone, email, username)',
+            icon: 'arrow-left',
+            operators: { real: ['is'], imaginary: ['is not', 'contains'] },
+          },
+          to: {
+            type: 'string',
+            description: 'Recipient identifier',
+            icon: 'arrow-right',
+            operators: { real: ['is'], imaginary: ['send to'] },
+          },
+          messageType: {
+            type: 'enum',
+            options: ['text', 'image', 'voice', 'video', 'file'],
+            description: 'Type of message content',
+            icon: 'document',
+            operators: { real: ['is'], imaginary: ['is not'] },
+          },
+        },
+      },
+    ],
+  },
+  {
     id: 'event',
     label: 'Event',
     description: 'Something that happens, especially something of importance.',
@@ -131,9 +177,9 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
             operators: { real: ['is'], imaginary: ['is not'] },
           },
           budget: {
-             type: 'number',
-             description: 'Budget or salary.',
-             operators: { real: ['is'], imaginary: ['greater than', 'less than'] },
+            type: 'number',
+            description: 'Budget or salary.',
+            operators: { real: ['is'], imaginary: ['greater than', 'less than'] },
           }
         }
       },
@@ -151,9 +197,9 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
             operators: { real: ['is'], imaginary: ['is not'] },
           },
           rate: {
-             type: 'number',
-             description: 'Hourly rate.',
-             operators: { real: ['is'], imaginary: ['greater than', 'less than'] },
+            type: 'number',
+            description: 'Hourly rate.',
+            operators: { real: ['is'], imaginary: ['greater than', 'less than'] },
           }
         }
       },
@@ -208,64 +254,64 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
     ],
   },
   {
-      id: 'marketplace',
-      label: 'Marketplace',
-      children: [
-          {
-              id: 'product',
-              label: 'Product',
-              description: 'A physical or digital item for sale.',
-              actionLabel: 'Sell Product',
-              requiredAttributes: ['name', 'price'],
-              attributes: {
-                  name: {
-                      type: 'string',
-                      description: 'Name of the product',
-                      operators: { real: ['is'], imaginary: ['is not', 'contains'] }
-                  },
-                  price: {
-                      type: 'number',
-                      description: 'Price of the product',
-                      operators: { real: ['is'], imaginary: ['less than', 'greater than'] }
-                  },
-                  condition: {
-                      type: 'enum',
-                      options: ['New', 'Used - Like New', 'Used - Good', 'Used - Fair'],
-                      description: 'Condition of the item',
-                      operators: { real: ['is'], imaginary: ['is not'] }
-                  },
-                  category: {
-                      type: 'string',
-                      description: 'Product category',
-                      operators: { real: ['is'], imaginary: ['contains'] }
-                  }
-              }
+    id: 'marketplace',
+    label: 'Marketplace',
+    children: [
+      {
+        id: 'product',
+        label: 'Product',
+        description: 'A physical or digital item for sale.',
+        actionLabel: 'Sell Product',
+        requiredAttributes: ['name', 'price'],
+        attributes: {
+          name: {
+            type: 'string',
+            description: 'Name of the product',
+            operators: { real: ['is'], imaginary: ['is not', 'contains'] }
           },
-          {
-              id: 'service',
-              label: 'Service',
-              description: 'A service offered for a fee.',
-              actionLabel: 'Offer Service',
-              requiredAttributes: ['serviceType', 'rate'],
-              attributes: {
-                  serviceType: {
-                      type: 'string',
-                      description: 'Type of service (e.g. Plumbing, Design)',
-                      operators: { real: ['is'], imaginary: ['is not', 'contains'] }
-                  },
-                  rate: {
-                      type: 'number',
-                      description: 'Cost per unit (e.g. hour, project)',
-                      operators: { real: ['is'], imaginary: ['less than', 'greater than'] }
-                  },
-                  availability: {
-                      type: 'string',
-                      description: 'When the service is available',
-                      operators: { real: ['is'], imaginary: ['contains'] }
-                  }
-              }
+          price: {
+            type: 'number',
+            description: 'Price of the product',
+            operators: { real: ['is'], imaginary: ['less than', 'greater than'] }
+          },
+          condition: {
+            type: 'enum',
+            options: ['New', 'Used - Like New', 'Used - Good', 'Used - Fair'],
+            description: 'Condition of the item',
+            operators: { real: ['is'], imaginary: ['is not'] }
+          },
+          category: {
+            type: 'string',
+            description: 'Product category',
+            operators: { real: ['is'], imaginary: ['contains'] }
           }
-      ]
+        }
+      },
+      {
+        id: 'service',
+        label: 'Service',
+        description: 'A service offered for a fee.',
+        actionLabel: 'Offer Service',
+        requiredAttributes: ['serviceType', 'rate'],
+        attributes: {
+          serviceType: {
+            type: 'string',
+            description: 'Type of service (e.g. Plumbing, Design)',
+            operators: { real: ['is'], imaginary: ['is not', 'contains'] }
+          },
+          rate: {
+            type: 'number',
+            description: 'Cost per unit (e.g. hour, project)',
+            operators: { real: ['is'], imaginary: ['less than', 'greater than'] }
+          },
+          availability: {
+            type: 'string',
+            description: 'When the service is available',
+            operators: { real: ['is'], imaginary: ['contains'] }
+          }
+        }
+      }
+    ]
   },
   {
     id: 'templates',

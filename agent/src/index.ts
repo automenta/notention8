@@ -200,8 +200,19 @@ wss.on('connection', (ws) => {
           pluginManager.broadcastNoteCreated(message.payload).catch(error => {
             console.error('Error broadcasting note creation:', error);
           });
-          // These might be events that should trigger ClawdBot actions
+
           console.log('Note created event received:', message.payload);
+
+          // Check for send intent (ontology-driven)
+          if (gateway && gateway.sendNote) {
+            const { MessageTransformer } = await import('./transformers/MessageTransformer.js');
+            if (MessageTransformer.hasSendIntent(message.payload)) {
+              console.log('[Agent] Note has send intent, sending via MoltBot...');
+              gateway.sendNote(message.payload)
+                .then(() => console.log('[Agent] Message sent successfully'))
+                .catch((err: any) => console.error('[Agent] Failed to send:', err));
+            }
+          }
           break;
 
         case 'note_updated':
@@ -212,7 +223,19 @@ wss.on('connection', (ws) => {
           pluginManager.broadcastNoteUpdated(message.payload).catch(error => {
             console.error('Error broadcasting note update:', error);
           });
+
           console.log('Note updated event received:', message.payload);
+
+          // Check for send intent (ontology-driven)
+          if (gateway && gateway.sendNote) {
+            const { MessageTransformer } = await import('./transformers/MessageTransformer.js');
+            if (MessageTransformer.hasSendIntent(message.payload)) {
+              console.log('[Agent] Updated note has send intent, sending via MoltBot...');
+              gateway.sendNote(message.payload)
+                .then(() => console.log('[Agent] Message sent successfully'))
+                .catch((err: any) => console.error('[Agent] Failed to send:', err));
+            }
+          }
           break;
 
         case 'note_deleted':
@@ -442,9 +465,22 @@ let gateway: any;
 (async () => {
   try {
     console.log('Initializing ClawdBot gateway...');
+
+    // Gateway with message callback - broadcasts incoming messages as notes to UI
     gateway = new Gateway({
       configDir: join(process.cwd(), 'config'),
-      // Add any other ClawdBot configuration here
+      onMessageReceived: (note) => {
+        console.log('[Agent] Received message, broadcasting as note:', note.id);
+
+        // Broadcast to all connected UI clients
+        broadcastToUIClients({
+          type: 'note_created',
+          payload: note
+        });
+
+        // Also notify coordinator
+        clawdBotCoordinator.onNoteCreated(note);
+      }
     });
 
     // Initialize extensions
