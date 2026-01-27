@@ -20,6 +20,7 @@ import { ComprehensiveStateManager } from './state-management/ComprehensiveState
 import { TransparentErrorHandler } from './error-handling/ErrorHandler';
 import { ComprehensiveConfigurationManager } from './error-handling/ConfigurationManager';
 import { ClawdBotCoordinator } from './ClawdBotCoordinator';
+import { WSMessageHandler } from './communication/WSMessageHandler';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -175,228 +176,7 @@ wss.on('connection', (ws) => {
 
     try {
       const message = JSON.parse(data.toString());
-
-      // Handle different types of messages from UI
-      switch(message.type) {
-        case 'clawdbot_request':
-          // Process request intended for ClawdBot
-          console.log('Processing ClawdBot request:', message.payload);
-
-          // In a real implementation, this would forward to ClawdBot
-          // For now, send a mock response
-          ws.send(JSON.stringify({
-            type: 'clawdbot_response',
-            requestId: message.id,
-            success: true,
-            result: { message: 'Request processed (mock)' }
-          }));
-          break;
-
-        case 'note_created':
-          // Broadcast to plugins
-          pluginManager.broadcastNoteCreated(message.payload).catch(error => {
-            console.error('Error broadcasting note creation:', error);
-          });
-
-          // Trigger Skill Coordinator
-          if (coordinator) {
-             coordinator.processNote(message.payload).then(results => {
-                 if (results && results.length > 0) {
-                     // If skills produced new notes (imports), send them back to UI
-                     ws.send(JSON.stringify({
-                         type: 'skills_results',
-                         payload: results
-                     }));
-                 }
-             }).catch(err => console.error("Coordinator error:", err));
-          }
-          console.log('Note created event received:', message.payload);
-          break;
-
-        case 'note_updated':
-          // Broadcast to plugins
-          pluginManager.broadcastNoteUpdated(message.payload).catch(error => {
-            console.error('Error broadcasting note update:', error);
-          });
-          console.log('Note updated event received:', message.payload);
-          break;
-
-        case 'note_deleted':
-          // Broadcast to plugins
-          const noteId = message.payload.noteId || message.payload.id || message.id;
-          pluginManager.broadcastNoteDeleted(noteId).catch(error => {
-            console.error('Error broadcasting note deletion:', error);
-          });
-          console.log('Note deleted event received:', message.payload);
-          break;
-
-        default:
-          // Let plugins handle custom message types
-          await pluginManager.broadcastMessage(message);
-
-          // If no plugin handled the message, it will be caught by the switch statement above
-
-          // Handle specific UI integration messages that aren't handled by plugins
-          switch(message.type) {
-            case 'show_agent_creation_ui':
-              // Show agent creation UI
-              ws.send(JSON.stringify({
-                type: 'show_agent_creation_ui_response',
-                payload: {
-                  success: true,
-                  message: 'Showing agent creation UI'
-                }
-              }));
-              break;
-
-            case 'get_ui_replacements':
-              // Get UI replacement components for the current context
-              try {
-                // In a real implementation, this would use the UI replacement system
-                // For now, we'll return an empty array
-                ws.send(JSON.stringify({
-                  type: 'ui_replacements',
-                  payload: {
-                    components: [],
-                    context: message.payload
-                  }
-                }));
-              } catch (error) {
-                console.error('Error getting UI replacements:', error);
-                ws.send(JSON.stringify({
-                  type: 'error',
-                  message: 'Error getting UI replacements'
-                }));
-              }
-              break;
-
-            case 'apply_automation_suggestion':
-              // Apply an automation suggestion
-              console.log('Applying automation suggestion:', message.payload);
-              ws.send(JSON.stringify({
-                type: 'automation_suggestion_applied',
-                payload: {
-                  success: true,
-                  noteId: message.payload.noteId,
-                  suggestionIndex: message.payload.suggestionIndex
-                }
-              }));
-              break;
-
-            case 'refresh_agents':
-              // Refresh agent state
-              try {
-                const state = await stateManager.getState();
-                ws.send(JSON.stringify({
-                  type: 'agents_refreshed',
-                  payload: {
-                    agents: state.activeAgents,
-                    timestamp: new Date().toISOString()
-                  }
-                }));
-              } catch (error) {
-                console.error('Error refreshing agents:', error);
-                ws.send(JSON.stringify({
-                  type: 'error',
-                  message: 'Error refreshing agents'
-                }));
-              }
-              break;
-
-            case 'show_agent_editor':
-              // Show agent editor
-              try {
-                const agentId = message.payload.agentId;
-                const agentState = await stateManager.getAgentState(agentId);
-
-                ws.send(JSON.stringify({
-                  type: 'show_agent_editor_response',
-                  payload: {
-                    agent: agentState,
-                    success: !!agentState
-                  }
-                }));
-              } catch (error) {
-                console.error('Error showing agent editor:', error);
-                ws.send(JSON.stringify({
-                  type: 'error',
-                  message: 'Error showing agent editor'
-                }));
-              }
-              break;
-
-            case 'resolve_error':
-              // Resolve an error
-              try {
-                const errorId = message.payload.errorId;
-                errorHandler.resolveError(errorId, 'Resolved via UI');
-
-                ws.send(JSON.stringify({
-                  type: 'error_resolved',
-                  payload: {
-                    errorId,
-                    success: true
-                  }
-                }));
-              } catch (error) {
-                console.error('Error resolving error:', error);
-                ws.send(JSON.stringify({
-                  type: 'error',
-                  message: 'Error resolving error'
-                }));
-              }
-              break;
-
-            case 'refresh_error_report':
-              // Refresh error report
-              try {
-                const stats = errorHandler.getErrorStats();
-                const unresolved = errorHandler.getUnresolvedErrors();
-
-                ws.send(JSON.stringify({
-                  type: 'error_report_refreshed',
-                  payload: {
-                    stats,
-                    unresolved: unresolved.slice(0, 10), // Top 10 unresolved
-                    timestamp: new Date().toISOString()
-                  }
-                }));
-              } catch (error) {
-                console.error('Error refreshing error report:', error);
-                ws.send(JSON.stringify({
-                  type: 'error',
-                  message: 'Error refreshing error report'
-                }));
-              }
-              break;
-
-            case 'generate_error_report':
-              // Generate full error report
-              try {
-                const report = errorHandler.generateErrorReport();
-
-                ws.send(JSON.stringify({
-                  type: 'full_error_report',
-                  payload: report
-                }));
-              } catch (error) {
-                console.error('Error generating error report:', error);
-                ws.send(JSON.stringify({
-                  type: 'error',
-                  message: 'Error generating error report'
-                }));
-              }
-              break;
-
-            default:
-              // If none of the plugins handled this message, send error
-              console.log('Unknown message type from UI:', message.type);
-              ws.send(JSON.stringify({
-                type: 'error',
-                message: `Unknown message type: ${message.type}`
-              }));
-          }
-      }
+      await wsMessageHandler.handleMessage(message, ws);
     } catch (e) {
       console.error('Error parsing message from UI:', e);
       ws.send(JSON.stringify({
@@ -425,6 +205,14 @@ const stateManager = new ComprehensiveStateManager(null); // Will be initialized
 const errorHandler = new TransparentErrorHandler();
 const configManager = new ComprehensiveConfigurationManager();
 let coordinator: ClawdBotCoordinator | null = null;
+
+// Initialize Message Handler
+const wsMessageHandler = new WSMessageHandler(
+    pluginManager,
+    stateManager,
+    errorHandler,
+    coordinator
+);
 
 // Initialize and register extensions
 async function initializeExtensions() {
@@ -467,6 +255,7 @@ let gateway: any;
 
     // Initialize Coordinator
     coordinator = new ClawdBotCoordinator(gateway);
+    wsMessageHandler.setCoordinator(coordinator);
 
     // Initialize the state manager with the gateway
     stateManager.initialize().catch((err: any) => {
