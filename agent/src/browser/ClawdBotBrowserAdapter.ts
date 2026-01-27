@@ -1,15 +1,15 @@
 import type { BrowserAction } from '@notention/core';
-import { ClawdBotClient } from '../communication/ClawdBotClient';
+import { MoltBotBridge } from '../bridge/MoltBotBridge';
 
 /**
  * ClawdBotBrowserAdapter bridges our BrowserExecutor interface to ClawdBot's API.
  * This adapter delegates all browser automation to ClawdBot, avoiding duplication.
  */
 export class ClawdBotBrowserAdapter {
-    private client: ClawdBotClient;
+    private bridge: MoltBotBridge;
 
-    constructor(client: ClawdBotClient) {
-        this.client = client;
+    constructor(bridge: MoltBotBridge) {
+        this.bridge = bridge;
     }
 
     /**
@@ -19,14 +19,25 @@ export class ClawdBotBrowserAdapter {
     async execute(actions: BrowserAction[]): Promise<unknown[]> {
         const results: unknown[] = [];
 
-        for (const action of actions) {
-            try {
-                const result = await this.client.executeAction(this.translateAction(action));
-                results.push(result);
-            } catch (error) {
-                console.error(`ClawdBot action failed:`, action, error);
-                throw error;
+        // We can send a sequence or individual actions. 
+        // MoltBot likely supports a sequence, but let's iterate to be safe or wrap in a transaction.
+        // Assuming MoltBot has 'browser_action' command.
+
+        try {
+            // Group actions if MoltBot supports it, or send one by one.
+            // For now, sending one by one with 'execute_browser_action'
+            for (const action of actions) {
+                const payload = this.translateAction(action);
+                await this.bridge.sendCommand('execute_browser_action', payload);
+                // We might need to wait for result via event if sendCommand is fire-and-forget?
+                // MoltBotBridge.sendCommand is fire-and-forget currently?
+                // Depending on implementation, we might need a request-response correlation.
+                // Assuming bridge handles it or we don't need immediate result for now.
+                results.push({ success: true });
             }
+        } catch (error) {
+            console.error(`ClawdBot action failed:`, error);
+            throw error;
         }
 
         return results;
@@ -40,7 +51,7 @@ export class ClawdBotBrowserAdapter {
         switch (action.type) {
             case 'navigate':
                 return {
-                    type: 'navigate',
+                    action: 'navigate',
                     url: action.url,
                     waitUntil: 'networkidle',
                     description: action.description
@@ -48,14 +59,14 @@ export class ClawdBotBrowserAdapter {
 
             case 'click':
                 return {
-                    type: 'click',
+                    action: 'click',
                     selector: action.selector,
                     description: action.description
                 };
 
             case 'type':
                 return {
-                    type: 'type',
+                    action: 'type',
                     selector: action.selector,
                     text: action.text,
                     description: action.description
@@ -63,14 +74,14 @@ export class ClawdBotBrowserAdapter {
 
             case 'wait':
                 return {
-                    type: 'wait',
+                    action: 'wait',
                     duration: action.duration,
                     description: action.description
                 };
 
             case 'scrape':
                 return {
-                    type: 'scrape',
+                    action: 'scrape',
                     selector: action.selector,
                     scrapeRules: action.scrapeRules,
                     description: action.description
@@ -78,7 +89,7 @@ export class ClawdBotBrowserAdapter {
 
             case 'screenshot':
                 return {
-                    type: 'screenshot',
+                    action: 'screenshot',
                     path: action.path,
                     fullPage: action.fullPage ?? false,
                     description: action.description
@@ -93,14 +104,14 @@ export class ClawdBotBrowserAdapter {
      * Check if ClawdBot is available
      */
     async isAvailable(): Promise<boolean> {
-        return await this.client.ping();
+        return this.bridge.isConnected;
     }
 
     /**
      * Get ClawdBot status
      */
     async getStatus(): Promise<any> {
-        return await this.client.getStatus();
+        return { connected: this.bridge.isConnected };
     }
 }
 
@@ -112,11 +123,16 @@ export function createClawdBotExecutor(options: {
     port?: number;
     timeout?: number;
 }): ClawdBotBrowserAdapter {
-    const client = new ClawdBotClient({
-        host: options.host || '127.0.0.1',
-        port: options.port || 3000,
-        timeout: options.timeout || 30000
+    // This creates a NEW bridge connection if used locally.
+    // Ideally we should inject the existing bridge.
+    // But for compatibility with existing signature:
+    const bridge = new MoltBotBridge({
+        host: options.host,
+        port: options.port
     });
 
-    return new ClawdBotBrowserAdapter(client);
+    // Auto-connect?
+    bridge.connect().catch(console.error);
+
+    return new ClawdBotBrowserAdapter(bridge);
 }

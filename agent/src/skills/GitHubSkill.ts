@@ -4,6 +4,7 @@ import { createNote } from '@notention/core';
 export class GitHubSkill implements Skill {
     id = 'skill-github-v1';
     name = 'GitHub Repository Search';
+    description = 'Search repositories on GitHub';
     version = '1.0.0';
 
     patterns: PropertyPattern[] = [
@@ -72,7 +73,7 @@ export class GitHubSkill implements Skill {
             {
                 type: 'scrape',
                 selector: '.repo-list-item',
-                extract: {
+                scrapeRules: {
                     name: 'h3 a',
                     description: '.mb-1',
                     stars: '[aria-label*="star"]',

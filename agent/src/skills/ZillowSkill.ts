@@ -4,6 +4,7 @@ import { createNote } from '@notention/core';
 export class ZillowSkill implements Skill {
     id = 'skill-zillow-v1';
     name = 'Zillow Real Estate Search';
+    description = 'Search real estate on Zillow';
     version = '1.0.0';
 
     patterns: PropertyPattern[] = [
@@ -71,7 +72,7 @@ export class ZillowSkill implements Skill {
             {
                 type: 'scrape',
                 selector: 'article[data-test="property-card"]',
-                extract: {
+                scrapeRules: {
                     address: '[data-test="property-card-addr"]',
                     price: '[data-test="property-card-price"]',
                     bedrooms: '[data-test="property-card-bed"]',

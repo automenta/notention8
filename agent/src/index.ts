@@ -10,6 +10,7 @@ process.env.CLAWDBOT_HOME = join(process.cwd(), 'config');
 
 // Import ClawdBot and systems
 import { Gateway } from './Gateway.js';
+import { clawdBotCoordinator } from './ClawdBotCoordinator.js';
 import { PluginManager } from './plugins/PluginInterface';
 import { ClawdBotPlugin } from './plugins/ClawdBotPlugin';
 import { ExtensionManager } from './extensions/ExtensionSystem';
@@ -176,7 +177,7 @@ wss.on('connection', (ws) => {
       const message = JSON.parse(data.toString());
 
       // Handle different types of messages from UI
-      switch(message.type) {
+      switch (message.type) {
         case 'clawdbot_request':
           // Process request intended for ClawdBot
           console.log('Processing ClawdBot request:', message.payload);
@@ -192,6 +193,9 @@ wss.on('connection', (ws) => {
           break;
 
         case 'note_created':
+          // Update Coordinator Cache
+          clawdBotCoordinator.onNoteCreated(message.payload);
+
           // Broadcast to plugins
           pluginManager.broadcastNoteCreated(message.payload).catch(error => {
             console.error('Error broadcasting note creation:', error);
@@ -201,6 +205,9 @@ wss.on('connection', (ws) => {
           break;
 
         case 'note_updated':
+          // Update Coordinator Cache
+          clawdBotCoordinator.onNoteUpdated(message.payload);
+
           // Broadcast to plugins
           pluginManager.broadcastNoteUpdated(message.payload).catch(error => {
             console.error('Error broadcasting note update:', error);
@@ -209,8 +216,11 @@ wss.on('connection', (ws) => {
           break;
 
         case 'note_deleted':
-          // Broadcast to plugins
+          // Update Coordinator Cache
           const noteId = message.payload.noteId || message.payload.id || message.id;
+          clawdBotCoordinator.onNoteDeleted(noteId);
+
+          // Broadcast to plugins
           pluginManager.broadcastNoteDeleted(noteId).catch(error => {
             console.error('Error broadcasting note deletion:', error);
           });
@@ -224,7 +234,7 @@ wss.on('connection', (ws) => {
           // If no plugin handled the message, it will be caught by the switch statement above
 
           // Handle specific UI integration messages that aren't handled by plugins
-          switch(message.type) {
+          switch (message.type) {
             case 'show_agent_creation_ui':
               // Show agent creation UI
               ws.send(JSON.stringify({
@@ -439,6 +449,10 @@ let gateway: any;
 
     // Initialize extensions
     await initializeExtensions();
+
+    // Connect Coordinator to Gateway Bridge
+    const bridge = gateway.getBridge();
+    clawdBotCoordinator.setBridge(bridge);
 
     // Create and register the ClawdBot plugin
     const clawdBotPlugin = new ClawdBotPlugin(

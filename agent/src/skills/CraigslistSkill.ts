@@ -4,6 +4,7 @@ import { createNote } from '@notention/core';
 export class CraigslistSkill implements Skill {
     id = 'skill-craigslist-v1';
     name = 'Craigslist Marketplace Search';
+    description = 'Search for listings on Craigslist';
     version = '1.0.0';
 
     patterns: PropertyPattern[] = [
@@ -66,7 +67,7 @@ export class CraigslistSkill implements Skill {
             {
                 type: 'scrape',
                 selector: '.result-row',
-                extract: {
+                scrapeRules: {
                     title: '.result-title',
                     price: '.result-price',
                     location: '.result-hood',

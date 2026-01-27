@@ -26,6 +26,7 @@ export interface BrowserExecutor {
 export class ClawdBotCoordinator {
     private registry: SkillRegistry;
     private browserExecutor?: BrowserExecutor;
+    private bridge?: any; // MoltBotBridge
 
     constructor(registry?: SkillRegistry, browserExecutor?: BrowserExecutor) {
         this.registry = registry || new SkillRegistry();
@@ -49,10 +50,162 @@ export class ClawdBotCoordinator {
         console.log(`🤖 ClawdBot initialized with ${skills.length} skills`);
     }
 
+    private notes: Map<string, Note> = new Map();
+
+    setBridge(bridge: any) {
+        this.bridge = bridge;
+        this.bridge.on('message', (msg: any) => this.handleBridgeMessage(msg));
+    }
+
+    /**
+     * Handle updates for the internal note cache (Context Provider)
+     */
+    onNoteCreated(note: Note) {
+        this.notes.set(note.id, note);
+        // Trigger self-processing if it's a task/agent note?
+        this.processNote(note).catch(console.error);
+    }
+
+    onNoteUpdated(note: Note) {
+        this.notes.set(note.id, note);
+        // Re-evaluate?
+    }
+
+    onNoteDeleted(noteId: string) {
+        this.notes.delete(noteId);
+    }
+
+    private async handleBridgeMessage(message: any) {
+        console.log('📨 Bridge Message:', message.type);
+
+        if (message.type === 'agent_response' || message.type === 'task_result') {
+            const { taskId, content, result } = message.payload;
+
+            // Create a Result Note
+            const taskNote = this.notes.get(taskId);
+            const title = taskNote ? `Result: ${taskNote.title}` : `Agent Result`;
+
+            // Create result note (pseudo-code, in real app we'd need to push TO the system/UI)
+            // But here we are the agent, we can't directly write to UI's DB strictly speaking unless via PluginManager?
+            // Actually, we can just log it for now or assume a callback mechanism. 
+            // Better: Emit an event that index.ts listens to and broadcasts as 'note_created' to UI.
+
+            console.log(`✨ Agent finished task ${taskId}. Content: ${content?.substring(0, 50)}...`);
+
+            // TODO: Emit event to create new note in the system
+        }
+    }
+
+    private isAgentConfiguration(note: Note): boolean {
+        return note.properties.some(p => p.key === 'type' && p.values.includes('agent'));
+    }
+
+    private isTask(note: Note): boolean {
+        return note.properties.some(p => p.key === 'type' && p.values.includes('task'));
+    }
+
+    private async syncAgentConfiguration(note: Note): Promise<void> {
+        if (!this.bridge) {
+            console.warn('⚠️ No MoltBot bridge configured. Cannot sync agent.');
+            return;
+        }
+
+        console.log(`⚙️ Syncing Agent Configuration: ${note.title}`);
+
+        const config = this.extractAgentConfig(note);
+        await this.bridge.sendCommand('configure_agent', config);
+
+        console.log('✅ Agent configuration sent to MoltBot');
+    }
+
+    private async executeTask(note: Note): Promise<void> {
+        if (!this.bridge) {
+            console.warn('⚠️ No MoltBot bridge configured. Cannot execute task.');
+            return;
+        }
+
+        const assignee = note.properties.find(p => p.key === 'assignee')?.values[0];
+        console.log(`⚡ Executing Task: ${note.title} (Assignee: ${assignee || 'Auto'})`);
+
+        // Retrieve relevant context (memories, related notes)
+        const contextNotes = await this.retrieveRelevantContext(note);
+        const contextSummary = contextNotes.map(n => `- ${n.title}: ${n.content.substring(0, 100)}...`).join('\n');
+
+        const payload = {
+            taskId: note.id,
+            instruction: note.content,
+            assignee: assignee,
+            context: {
+                relatedNotes: contextSummary,
+                // Pass full notes if the agent supports it
+                fullNotes: contextNotes
+            }
+        };
+
+        await this.bridge.sendCommand('execute_task', payload);
+        console.log(`✅ Task instruction sent to MoltBot (with ${contextNotes.length} context notes)`);
+    }
+
+    /**
+     * Retrieve relevant notes to provide as context for the task.
+     * Uses simple tag matching against the in-memory note cache.
+     */
+    private async retrieveRelevantContext(taskNote: Note): Promise<Note[]> {
+        const taskTags = new Set(taskNote.tags);
+        if (taskTags.size === 0) return [];
+
+        console.log(`🔍 Searching context for tags: ${Array.from(taskTags).join(', ')}`);
+
+        return Array.from(this.notes.values())
+            .filter(n => n.id !== taskNote.id) // Exclude self
+            .filter(n => n.tags.some(tag => taskTags.has(tag))) // Match any tag
+            .slice(0, 5); // Limit to top 5
+    }
+
+    private extractAgentConfig(note: Note): any {
+        const config: any = {
+            id: note.id,
+            name: note.title,
+            description: note.content,
+            systemPrompt: '',
+            capabilities: [],
+            model: 'claude-3-5-sonnet' // default
+        };
+
+        for (const prop of note.properties) {
+            if (prop.key === 'model' && prop.values.length > 0) {
+                config.model = prop.values[0];
+            }
+            if (prop.key === 'type') continue;
+
+            // Map other properties
+            if (prop.key === 'system_prompt') {
+                config.systemPrompt = prop.values[0];
+            }
+            if (prop.key === 'access') {
+                config.capabilities.push(...prop.values);
+            }
+        }
+
+        return config;
+    }
+
     /**
      * Process note through matching skills, returning action sequences
      */
     async processNote(note: Note): Promise<ActionSequence[]> {
+        // 1. Check if this is an Agent Configuration Note
+        if (this.isAgentConfiguration(note)) {
+            await this.syncAgentConfiguration(note);
+            return [];
+        }
+
+        // 2. Check if this is a Task Note
+        if (this.isTask(note)) {
+            await this.executeTask(note);
+            return [];
+        }
+
         const matches = this.registry.findMatching(note, 0.5);
 
         if (!matches.length) {
@@ -174,4 +327,3 @@ export async function initializeClawdBotIntegration(options?: {
 
     console.log('✅ ClawdBot integration initialized');
 }
-

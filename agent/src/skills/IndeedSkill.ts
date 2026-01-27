@@ -13,7 +13,7 @@ import type { Note } from '@notention/core';
 export class IndeedSkill implements Skill {
     id = 'skill-indeed-v1';
     name = 'Indeed Job Search';
-    description = 'Search for jobs on Indeed.com based on semantic criteria';
+    description = 'Search for jobs on Indeed';
     version = '1.0.0';
 
     patterns: PropertyPattern[] = [

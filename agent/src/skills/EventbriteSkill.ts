@@ -4,6 +4,7 @@ import { createNote } from '@notention/core';
 export class EventbriteSkill implements Skill {
     id = 'skill-eventbrite-v1';
     name = 'Eventbrite Event Search';
+    description = 'Find events on Eventbrite';
     version = '1.0.0';
 
     patterns: PropertyPattern[] = [
@@ -70,7 +71,7 @@ export class EventbriteSkill implements Skill {
             {
                 type: 'scrape',
                 selector: '[data-testid="search-result-card"]',
-                extract: {
+                scrapeRules: {
                     title: 'h2',
                     date: '[data-testid="event-card-date"]',
                     location: '[data-testid="event-card-location"]',

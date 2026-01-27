@@ -25,7 +25,7 @@ export interface PropertyPattern {
  * Skills translate semantic notes into browser actions that interact with external websites.
  */
 export interface BrowserAction {
-    type: 'navigate' | 'fill-form' | 'click' | 'scrape' | 'wait';
+    type: 'navigate' | 'fill-form' | 'click' | 'scrape' | 'wait' | 'type' | 'screenshot';
 
     /** URL to navigate to (for 'navigate' type) */
     url?: string;
@@ -36,6 +36,9 @@ export interface BrowserAction {
     /** Value to fill/click (for 'fill-form' type) */
     value?: string;
 
+    /** Text to type (for 'type' type) */
+    text?: string;
+
     /** Data extraction rules (for 'scrape' type) */
     scrapeRules?: {
         [key: string]: string; // property key -> CSS selector
@@ -43,6 +46,12 @@ export interface BrowserAction {
 
     /** Wait duration in ms (for 'wait' type) */
     duration?: number;
+
+    /** Path to save screenshot (for 'screenshot' type) */
+    path?: string;
+
+    /** Whether to take full page screenshot */
+    fullPage?: boolean;
 
     /** Human-readable description of this action */
     description?: string;
