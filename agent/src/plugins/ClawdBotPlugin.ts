@@ -30,6 +30,7 @@ export class ClawdBotPlugin implements Plugin {
   private stateManager: any; // Will be passed in
   private errorHandler: any; // Will be passed in
   private configManager: any; // Will be passed in
+  private broadcaster: ((message: any) => void) | null = null;
 
   constructor(
     gateway: any,
@@ -60,6 +61,10 @@ export class ClawdBotPlugin implements Plugin {
   
   destroy(): void {
     console.log('ClawdBot plugin destroyed');
+  }
+
+  setBroadcaster(broadcaster: (message: any) => void) {
+    this.broadcaster = broadcaster;
   }
   
   async onNoteCreated(note: any): Promise<void> {
@@ -449,9 +454,19 @@ export class ClawdBotPlugin implements Plugin {
   private async executeSingleResult(item: any, note: any): Promise<void> {
     console.log(`Executing item:`, item);
 
-    // In a real implementation, this would send the action/configuration to ClawdBot
-    // For now, we'll just log what would be executed
-    if (item.type === 'lm_generated_workflow' || item.type === 'pattern_based_workflow') {
+    if (item.type === 'agent_instruction') {
+        const message = item.parameters.message;
+        if (this.gateway && this.gateway.client) {
+             try {
+                 await this.gateway.client.sendAgentMessage(message);
+                 console.log('Sent instruction to agent');
+             } catch (e) {
+                 console.error('Error sending agent message:', e);
+             }
+        } else {
+            console.error('Cannot send agent message: Gateway client not available');
+        }
+    } else if (item.type === 'lm_generated_workflow' || item.type === 'pattern_based_workflow') {
       console.log(`Setting up workflow: ${item.id}`);
       // Execute the workflow configuration
       for (const action of item.actions) {
@@ -459,6 +474,14 @@ export class ClawdBotPlugin implements Plugin {
       }
     } else {
       console.log(`Executing action: ${item.description || item.type}`);
+      // Also try to execute other actions via gateway if possible
+       if (this.gateway && this.gateway.client) {
+            try {
+                await this.gateway.client.executeAction(item);
+            } catch (e) {
+                console.error('Error executing action:', e);
+            }
+       }
     }
   }
 
@@ -470,8 +493,10 @@ export class ClawdBotPlugin implements Plugin {
   }
   
   private broadcastToUI(message: any): void {
-    // This would broadcast to connected UI clients
-    // Implementation depends on how the server manages UI connections
-    console.log('Broadcasting to UI:', message);
+    if (this.broadcaster) {
+        this.broadcaster(message);
+    } else {
+        console.log('Broadcasting to UI (no broadcaster set):', message);
+    }
   }
 }
