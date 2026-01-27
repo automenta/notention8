@@ -1,5 +1,5 @@
 import React from 'react';
-import type { SimulationAgent } from '@notention/core';
+import type { SimulationAgent } from '../../hooks/simulator/types';
 import { SparklesIcon } from '../common/icons';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';

@@ -28,9 +28,9 @@ export const useOntologyView = () => {
       // Also count tags matching ontology node IDs?
       // Tags are strings. If tag matches node.id or node.label
       note.tags.forEach(tag => {
-          const t = tag.toLowerCase(); // simplified
-          const current = stats.get(t) || 0;
-          stats.set(t, current + 1);
+        const t = tag.toLowerCase(); // simplified
+        const current = stats.get(t) || 0;
+        stats.set(t, current + 1);
       });
     });
 
@@ -38,7 +38,7 @@ export const useOntologyView = () => {
   }, [notes]);
 
   const conflicts = useMemo(() => {
-      return detectConflicts(notes, ontology);
+    return detectConflicts(notes, ontology);
   }, [notes, ontology]);
 
   const handleEvolve = async () => {
@@ -51,34 +51,34 @@ export const useOntologyView = () => {
   };
 
   const handleOptimize = async () => {
-      setIsEvolving(true);
-      const res = await optimizeOntology();
-      setIsEvolving(false);
-      if (res.merged.length > 0) {
-          alert(`Optimization Suggestion:\n${res.merged.join('\n')}`);
-      }
+    setIsEvolving(true);
+    const res = await optimizeOntology();
+    setIsEvolving(false);
+    if (res.merged.length > 0) {
+      alert(`Optimization Suggestion:\n${res.merged.join('\n')}`);
+    }
   };
 
   const handleAddNode = useCallback((parentId: string | null, label: string) => {
-      setSettings(prev => {
-          const newNode = {
-              id: label.toLowerCase().replace(/\s+/g, '-'),
-              label,
-              attributes: {},
-              children: []
-          };
-          return {
-              ...prev,
-              ontology: addNode(prev.ontology, parentId, newNode)
-          };
-      });
+    setSettings(prev => {
+      const newNode = {
+        id: label.toLowerCase().replace(/\s+/g, '-'),
+        label,
+        attributes: {},
+        children: []
+      };
+      return {
+        ...prev,
+        ontology: addNode(prev.ontology, parentId, newNode)
+      };
+    });
   }, [setSettings]);
 
   const handleDeleteNode = useCallback((nodeId: string) => {
-      setSettings(prev => ({
-          ...prev,
-          ontology: deleteNode(prev.ontology, nodeId)
-      }));
+    setSettings(prev => ({
+      ...prev,
+      ontology: deleteNode(prev.ontology, nodeId)
+    }));
   }, [setSettings]);
 
   return {

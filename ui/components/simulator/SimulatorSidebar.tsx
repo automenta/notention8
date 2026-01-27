@@ -3,7 +3,7 @@ import { CubeIcon, CpuChipIcon, PlusIcon, UserGroupIcon, DownloadIcon } from "..
 import { Badge } from '../common/Badge';
 import { IconButton } from '../common/IconButton';
 import { Button } from '../common/Button';
-import type { SimulationAgent } from '@notention/core';
+import type { SimulationAgent } from '../../hooks/simulator/types';
 
 interface SimulatorSidebarProps {
   aiProviderName: string;

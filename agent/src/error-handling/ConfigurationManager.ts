@@ -713,7 +713,7 @@ export class ComprehensiveConfigurationManager implements ConfigurationManager {
       if (exportConfig.connections) {
         exportConfig.connections = exportConfig.connections.map(conn => {
           const { credentials, ...safeConn } = conn;
-          return safeConn;
+          return safeConn as any;
         });
       }
 

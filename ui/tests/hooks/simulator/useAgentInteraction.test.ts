@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { useAgentInteraction } from '../../../hooks/simulator/useAgentInteraction';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
-import type { SimulationAgent } from '@notention/core';
+import type { SimulationAgent } from '../../../hooks/simulator/types';
 import type { AIProvider } from '@notention/core';
 
 describe('useAgentInteraction', () => {
@@ -55,7 +55,7 @@ describe('useAgentInteraction', () => {
         expect(result.current.agentMessages['1']).toHaveLength(1);
 
         await act(async () => {
-             vi.runAllTimers();
+            vi.runAllTimers();
         });
 
         expect(result.current.agentMessages['1']).toHaveLength(2);

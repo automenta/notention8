@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { finalizeEvent, nip19 } from 'nostr-tools';
 import { useNostrProfile } from '../../hooks/useNostrProfile';
 import type { Contact } from '@notention/core';
-import type { SwarmTemplate } from '@notention/core';
+import type { SwarmTemplate } from '../../hooks/simulator/types';
 import { SwarmModal } from '../simulator/SwarmModal';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '@notention/core';
 import { SearchIcon, CpuChipIcon, UserGroupIcon, UserPlusIcon } from '../common/icons';

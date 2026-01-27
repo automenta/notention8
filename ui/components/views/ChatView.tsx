@@ -8,7 +8,7 @@ import { AgentSettingsModal } from '../simulator/AgentSettingsModal';
 import { useNotes } from '../../hooks/useNotes';
 import { useGardener } from '../../hooks/useGardener';
 import { SELF_AGENT_ID } from '../../hooks/simulator/types';
-import type { Contact, NostrEvent } from '../../hooks/simulator/types';
+import type { Contact, NostrEvent } from '@notention/core';
 import type { SwarmTemplate } from '../../hooks/simulator/types';
 
 // Helper to create a local message object
