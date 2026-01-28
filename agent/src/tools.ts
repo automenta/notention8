@@ -50,6 +50,59 @@ export const executeSkillTool = createTool({
 
         log('Tool', 'Executing action:', action);
 
+        // Handle Macro Actions
+        if (action.type === 'macro' && action.payload && action.payload.chain) {
+            log('Tool', 'Executing Macro Chain:', action.payload.chain);
+            const results = [];
+
+            // Execute chain sequentially
+            for (const stepName of action.payload.chain) {
+                // Find skill by name (fuzzy or exact) or ID
+                // For now assuming name-based lookup helper or iterating registry
+                // TODO: Optimize lookup
+                const stepSkill = (registry as any).getAll().find((s: any) =>
+                    s.skill.name.toLowerCase() === stepName.toLowerCase() ||
+                    s.skill.id === stepName
+                )?.skill;
+
+                if (stepSkill) {
+                    log('Tool', `Macro Step: ${stepSkill.name}`);
+                    // Recursively execute the skill using the *original* note
+                    // (Or potentially the output of the previous step? For now original)
+                    const stepAction = await stepSkill.export(note);
+                    if (stepAction) {
+                        const stepResult = await executeAction(stepAction);
+                        const stepNotes = await stepSkill.import(stepResult);
+                        results.push(...stepNotes);
+                    }
+                } else {
+                    log('Tool', `Macro Step Skipped: Skill '${stepName}' not found`);
+                }
+            }
+            return results;
+        }
+
+        // Handle Prompt Actions (Phase 2.2)
+        if (action.type === 'prompt' && action.payload && action.payload.prompt) {
+            log('Tool', 'Executing Prompt Action:', action.payload.prompt.substring(0, 30));
+
+            try {
+                // Access Agent from globals to use generateText
+                const { getAgentRegistry } = await import('./globals');
+                const agent = getAgentRegistry().getDefault();
+
+                if (agent && agent.generateText) {
+                    const result = await agent.generateText(action.payload.prompt);
+                    return await skill.import([result]);
+                } else {
+                    return { success: false, reason: 'Agent does not support generation' };
+                }
+            } catch (e) {
+                log('Tool', 'Prompt execution failed', e);
+                return { success: false, reason: String(e) };
+            }
+        }
+
         // Execute the actual action (browser automation, API call, etc.)
         const results = await executeAction(action);
 

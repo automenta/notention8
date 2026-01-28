@@ -2,7 +2,7 @@ import { Note } from '../../../core/src/types';
 
 export interface SkillAction {
     type: string;
-    payload: any;
+    payload?: any;
     [key: string]: any;
 }
 

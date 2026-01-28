@@ -93,16 +93,6 @@ export class NoteBasedConfig {
 - [ ] Changes are logged and reversible.
 - [ ] Invalid configurations are handled gracefully.
 
-### 1.4 Progressive Feature Discovery
-**Goal**: Guide users toward advanced features without overwhelming them
-**Files**: `core/src/guidance/FeatureGuide.ts`, `agent/src/advisor/UsageAdvisor.ts`
-
-**Features**:
-- Context-aware suggestions based on user behavior.
-- Achievement system for feature adoption.
-- Tutorial notes that demonstrate advanced functionality.
-- "Try this next" recommendations based on current usage.
-
 ---
 
 ## Phase 2: The Action Loop & Skill Ecosystem ("The Hands")

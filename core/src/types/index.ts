@@ -97,6 +97,15 @@ export interface AppSettings {
   };
   ontology: OntologyNode[];
   customTemplates: Template[];
+  // New configuration fields from Onboarding
+  privacyMode?: 'local-only' | 'shared';
+  capabilities?: {
+    browser: boolean;
+    files: boolean;
+  };
+  user?: {
+    name?: string;
+  };
 }
 
 export interface NostrProfile {
@@ -288,4 +297,7 @@ export interface Agent {
   // Introspection
   getCapabilities(): AgentCapabilities;
   supportsFeature(feature: AgentFeature): boolean;
+
+  // === LLM Capability ===
+  generateText(prompt: string): Promise<string>;
 }

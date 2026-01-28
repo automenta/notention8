@@ -6,8 +6,8 @@ import { SuggestionList, SuggestionItem } from './SuggestionList';
 interface SuggestionProps {
   query: string;
   editor: Editor;
-  clientRect: GetReferenceClientRect;
-  event: KeyboardEvent;
+  clientRect: any; // Loosen type to avoid Tippy/Tiptap mismatch
+  event?: KeyboardEvent;
   text: string;
   range: { from: number; to: number };
 }
@@ -64,7 +64,7 @@ export const configureSuggestions = (
         },
 
         onKeyDown: (props: SuggestionProps) => {
-          if (props.event.key === 'Escape') {
+          if (props.event?.key === 'Escape') {
             popup[0].hide();
             return true;
           }

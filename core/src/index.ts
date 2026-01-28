@@ -28,3 +28,10 @@ export * from './skills/SkillRegistry.js';
 export * from './skillPatternMatcher.js';
 export * from './skillApprovalManager.js';
 export * from './skillExecutor.js';
+
+// Onboarding (Phase 1.1)
+export * from './onboarding/types.js';
+export * from './onboarding/OnboardingService.js';
+
+// Configuration (Phase 1.3)
+export * from './config/NoteBasedConfig.js';

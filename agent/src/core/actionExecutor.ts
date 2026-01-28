@@ -30,65 +30,114 @@ export async function executeAction(action: any): Promise<any[]> {
 }
 
 async function executeBrowserAction(action: any): Promise<any[]> {
-    log('ActionExecutor', 'Browser action:', action.url);
+    log('ActionExecutor', 'VoltBrowser action:', action.url);
 
-    // Lazy import playwright to avoid overhead if not used
+    // Lazy import playwright
     const { chromium } = await import('playwright');
 
+    // Use a persistent context if we want to save state, but for now launch fresh
+    // TODO: Implement persistent context management in VoltBrowserCoordinator
     const browser = await chromium.launch({
-        headless: true
+        headless: true // Make configurable via action.headless if needed
     });
 
     try {
-        const page = await browser.newPage();
+        const context = await browser.newContext({
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        });
+        const page = await context.newPage();
 
-        // Basic navigation and extraction logic
-        // This is a generic implementation - typically actions would strictly define what to do
-        await page.goto(action.url, { waitUntil: 'domcontentloaded' });
+        // 1. Navigation
+        if (action.url) {
+            // Check for localhost
+            if (action.url.includes('localhost') || action.url.includes('127.0.0.1')) {
+                if (!action.allowLocalhost) {
+                    throw new Error('Security: Localhost access denied. Set allowLocalhost: true in action.');
+                }
+            }
+            await page.goto(action.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        }
 
-        let result: any = null;
+        // 2. Complex Interactions
+        if (action.interactions && Array.isArray(action.interactions)) {
+            for (const step of action.interactions) {
+                log('ActionExecutor', `Interaction: ${step.type} ${step.selector || ''}`);
+
+                // Broadcast action for Visual Feedback (Agent Cursor)
+                // This mimics "broadcasting" by logging special events that headers/listeners can pick up
+                // In a real system, we'd emit to the WebSocket server here.
+                // TODO: Inject 'broadcastToUI' into execution context
+
+                try {
+                    switch (step.type) {
+                        case 'click':
+                            await page.click(step.selector, { timeout: 5000 });
+                            break;
+                        case 'type':
+                            await page.fill(step.selector, step.value, { timeout: 5000 });
+                            break;
+                        case 'wait':
+                            if (typeof step.value === 'number') {
+                                await page.waitForTimeout(step.value);
+                            } else {
+                                await page.waitForSelector(step.selector, { timeout: 10000 });
+                            }
+                            break;
+                        case 'scroll':
+                            await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+                            break;
+                        case 'hover':
+                            await page.hover(step.selector);
+                            break;
+                        case 'press':
+                            await page.press(step.selector, step.key);
+                            break;
+                    }
+                } catch (e: any) {
+                    error('ActionExecutor', `Interaction failed: ${step.type}`, e);
+                    if (action.abortOnError) throw e;
+                }
+            }
+        }
+
+        // 3. Extraction
+        let data: any = {};
 
         if (action.extract) {
-            // If action defines extraction selectors
-            // { extract: { "title": "h1", "items": ".item" } }
-            result = await page.evaluate((selectors: any) => {
-                const data: any = {};
+            data = await page.evaluate((selectors: any) => {
+                const result: any = {};
                 for (const key in selectors) {
                     const selector = selectors[key];
                     const elements = document.querySelectorAll(selector);
                     if (elements.length > 1) {
-                        data[key] = Array.from(elements).map(e => e.textContent?.trim());
+                        result[key] = Array.from(elements).map(e => e.textContent?.trim()).filter(t => t);
                     } else if (elements.length === 1) {
-                        data[key] = elements[0].textContent?.trim();
+                        result[key] = elements[0].textContent?.trim();
                     }
                 }
-                return data;
+                return result;
             }, action.extract);
         } else {
-            // Default extraction: Title and main text
-            result = await page.evaluate(() => ({
+            // Default: Title, URL, and simple content
+            data = await page.evaluate(() => ({
                 title: document.title,
-                content: document.body.innerText.substring(0, 5000) // Truncate generic scrape
+                url: window.location.href,
+                content: document.body.innerText.substring(0, 5000)
             }));
         }
 
-        // Handle specific interactions if defined
-        if (action.interactions) {
-            for (const step of action.interactions) {
-                if (step.type === 'click') await page.click(step.selector);
-                if (step.type === 'type') await page.fill(step.selector, step.value);
-                if (step.type === 'wait') await page.waitForSelector(step.selector);
-            }
-
-            // Re-evaluate result after interactions if needed
-            if (action.postInteractionExtract) {
-                // ... similar extraction logic
-            }
+        // 4. Screenshots (Visual Feedback)
+        if (action.screenshot) {
+            const screenshotBuffer = await page.screenshot({
+                fullPage: action.screenshot === 'full'
+            });
+            // Convert to base64 for direct embedding in Note
+            data._screenshot = `data:image/png;base64,${screenshotBuffer.toString('base64')}`;
         }
 
-        return [result];
+        return [data];
     } catch (e) {
-        error('ActionExecutor', 'Browser automation failed', e);
+        error('ActionExecutor', 'VoltBrowser automation failed', e);
         throw e;
     } finally {
         await browser.close();

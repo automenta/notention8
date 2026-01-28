@@ -12,9 +12,16 @@ import { log, error } from './core/utils';
 
 // --- Initialization Helpers ---
 
+import { IndeedSkill } from './skills/standard/IndeedSkill';
+import { CraigslistSkill } from './skills/standard/CraigslistSkill';
+import { GitHubSkill } from './skills/standard/GitHubSkill';
+
 function initializeBuiltInSkills(registry: SkillRegistry) {
-  // Future: Register built-in skills here
-  log('Init', 'Initializing skills...');
+  log('Init', 'Initializing standard skills...');
+
+  registry.register(new IndeedSkill(), { tags: ['job', 'search', 'indeed'], domains: ['indeed.com'] });
+  registry.register(new CraigslistSkill(), { tags: ['classifieds', 'search', 'craigslist'], domains: ['craigslist.org'] });
+  registry.register(new GitHubSkill(), { tags: ['code', 'repo', 'github'], domains: ['github.com'] });
 }
 
 // --- Server Setup ---
@@ -59,6 +66,27 @@ async function bootstrap() {
   skillRegistry.setAgent(voltagent);
   initializeBuiltInSkills(skillRegistry);
 
+  // Initialize Configurator
+  const { InitialConfigurator } = await import('./configurator/InitialConfigurator');
+  const configurator = new InitialConfigurator();
+
+  // Initialize Config Processor (Phase 1.3)
+  const { ConfigProcessor } = await import('./configurator/ConfigProcessor');
+  const configProcessor = new ConfigProcessor();
+
+  // Initialize Macro Manager (Phase 2.2)
+  const { MacroManager } = await import('./skills/MacroManager');
+  const macroManager = new MacroManager(skillRegistry);
+
+  // Initialize Plugin Loader (Phase 2.2)
+  const { PluginLoader } = await import('./skills/PluginLoader');
+  const pluginLoader = new PluginLoader(skillRegistry);
+  await pluginLoader.loadPlugins();
+
+  // Check if system is initialized
+  const onboardingNote = configurator.createOnboardingTriggerNote();
+  // broadcastToUI({ type: 'note_created', payload: onboardingNote }); // Optional: let UI discovery handle it
+
   skillExecutor = new SkillExecutor(voltagent, skillRegistry, (event) => {
     broadcastToUI(event);
   });
@@ -73,6 +101,11 @@ async function bootstrap() {
   // Event Handlers
   voltagent.onNoteReceived((note: Note) => {
     log('Agent', `Note received: ${note.id}`);
+
+    // Process for Configuration
+    configProcessor.processNote(note);
+    macroManager.processNote(note);
+
     broadcastToUI({ type: 'note_created', payload: note });
   });
 }

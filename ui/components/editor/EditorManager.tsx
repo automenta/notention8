@@ -9,7 +9,8 @@ import { useEditorActions } from '../../hooks/useEditorActions';
 import { useEditorShortcuts } from '../../hooks/useEditorShortcuts';
 import type { Note, OntologyNode } from '@notention/core';
 import { EditorHeader } from './EditorHeader';
-import { TiptapEditor, TiptapEditorRef } from './TiptapEditor';
+import { TiptapEditorRef } from './TiptapEditor';
+import { HybridEditor } from './HybridEditor';
 import { PropertyInspector } from './PropertyInspector';
 import { TemplateSelector } from './TemplateSelector';
 import { SaveTemplateModal } from './SaveTemplateModal';
@@ -52,16 +53,16 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
   } = useEditorLogic({ note, onSave });
 
   const {
-      isInspectorOpen, setIsInspectorOpen,
-      isTemplateSelectorOpen, setIsTemplateSelectorOpen,
-      isSaveTemplateModalOpen, setIsSaveTemplateModalOpen,
-      isMapPickerOpen, setIsMapPickerOpen,
-      isTimePickerOpen, setIsTimePickerOpen,
-      pickingTimeKey,
-      handlePickTime,
-      handleTimeSelected,
-      handleLocationSelect,
-      handleRequestLocationPick
+    isInspectorOpen, setIsInspectorOpen,
+    isTemplateSelectorOpen, setIsTemplateSelectorOpen,
+    isSaveTemplateModalOpen, setIsSaveTemplateModalOpen,
+    isMapPickerOpen, setIsMapPickerOpen,
+    isTimePickerOpen, setIsTimePickerOpen,
+    pickingTimeKey,
+    handlePickTime,
+    handleTimeSelected,
+    handleLocationSelect,
+    handleRequestLocationPick
   } = useEditorModals(handleUpdateProperty, handleUpdateLocation);
 
   const { setSelectedNoteId } = useView();
@@ -89,39 +90,39 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
   const { handleExport, handleCopyContent } = useEditorActions(dirtyNote);
 
   useEditorShortcuts({
-      dirtyNote,
-      onSave: saveImmediately,
-      addToast,
-      handlePrevious,
-      handleNext,
-      setSelectedNoteId
+    dirtyNote,
+    onSave: saveImmediately,
+    addToast,
+    handlePrevious,
+    handleNext,
+    setSelectedNoteId
   });
 
   const allTemplates = settings.customTemplates;
 
   const handleInsertTemplate = (template: OntologyNode) => {
-      // Create empty semantic tags for each attribute in the template
-      const attributes = template.attributes || {};
-      const tags = Object.keys(attributes).map(key => `[${key}:is:?]`);
+    // Create empty semantic tags for each attribute in the template
+    const attributes = template.attributes || {};
+    const tags = Object.keys(attributes).map(key => `[${key}:is:?]`);
 
-      const newContent = dirtyNote.content + (dirtyNote.content ? '\n\n' : '') +
-          `<h2>${template.label}</h2>\n` +
-          tags.map(t => `<p>${t}</p>`).join('');
+    const newContent = dirtyNote.content + (dirtyNote.content ? '\n\n' : '') +
+      `<h2>${template.label}</h2>\n` +
+      tags.map(t => `<p>${t}</p>`).join('');
 
-      handleContentSave(newContent);
-      setIsTemplateSelectorOpen(false);
+    handleContentSave(newContent);
+    setIsTemplateSelectorOpen(false);
   };
 
   const handleAddPropertyHint = (key: string) => {
-      if (editorRef.current) {
-          editorRef.current.openPropertyModal(key);
-      }
+    if (editorRef.current) {
+      editorRef.current.openPropertyModal(key);
+    }
   };
 
   const handleApplySuggestions = (suggestions: string[]) => {
-      const additions = suggestions.map(s => `<p>${s}</p>`).join('');
-      const newContent = dirtyNote.content + additions;
-      handleContentSave(newContent);
+    const additions = suggestions.map(s => `<p>${s}</p>`).join('');
+    const newContent = dirtyNote.content + additions;
+    handleContentSave(newContent);
   };
 
   return (
@@ -157,7 +158,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
       />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col relative">
-          <TiptapEditor
+          <HybridEditor
             ref={editorRef}
             key={note.id}
             note={dirtyNote}
@@ -166,42 +167,42 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
             templates={allTemplates}
             showToolbar={isToolbarVisible}
             onMagic={() => {
-                if (settings.aiProvider === 'webllm' && settings.aiEnabled) {
-                    addToast('Loading local model... this may take a while.', 'info');
-                }
-                handleMagic();
+              if (settings.aiProvider === 'webllm' && settings.aiEnabled) {
+                addToast('Loading local model... this may take a while.', 'info');
+              }
+              handleMagic();
             }}
             onTemplates={() => setIsTemplateSelectorOpen(!isTemplateSelectorOpen)}
             notes={notes}
             onPickLocation={handleRequestLocationPick}
             saveStatus={saveStatus}
             topContent={
-                <>
-                    <SuggestionPanel noteId={note.id} onApply={handleApplySuggestions} />
-                    <ContextPanel
-                        note={dirtyNote}
-                        onPickLocation={() => setIsMapPickerOpen(true)}
-                        onPickTime={handlePickTime}
-                    />
-                </>
+              <>
+                <SuggestionPanel noteId={note.id} onApply={handleApplySuggestions} />
+                <ContextPanel
+                  note={dirtyNote}
+                  onPickLocation={() => setIsMapPickerOpen(true)}
+                  onPickTime={handlePickTime}
+                />
+              </>
             }
           >
-              <EditorMatches note={dirtyNote} />
-          </TiptapEditor>
+            <EditorMatches note={dirtyNote} />
+          </HybridEditor>
 
           {isTemplateSelectorOpen && (
-              <TemplateSelector
-                  ontology={settings.ontology}
-                  onSelect={handleInsertTemplate}
-                  onClose={() => setIsTemplateSelectorOpen(false)}
-              />
+            <TemplateSelector
+              ontology={settings.ontology}
+              onSelect={handleInsertTemplate}
+              onClose={() => setIsTemplateSelectorOpen(false)}
+            />
           )}
         </div>
         {isInspectorOpen && (
           <PropertyInspector
             properties={dirtyNote.properties ?? []}
             onUpdateText={handleUpdateTextFromInspector}
-            onPropertyChange={() => {}} // Read only for now (updates text)
+            onPropertyChange={() => { }} // Read only for now (updates text)
             onPickLocation={() => setIsMapPickerOpen(true)}
             onPickTime={handlePickTime}
             ontology={settings.ontology}
@@ -210,9 +211,9 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         )}
       </div>
       <SaveTemplateModal
-          isOpen={isSaveTemplateModalOpen}
-          onClose={() => setIsSaveTemplateModalOpen(false)}
-          onSave={handleSaveTemplate}
+        isOpen={isSaveTemplateModalOpen}
+        onClose={() => setIsSaveTemplateModalOpen(false)}
+        onSave={handleSaveTemplate}
       />
       <MapPickerModal
         isOpen={isMapPickerOpen}
