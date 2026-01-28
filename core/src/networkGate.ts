@@ -1,4 +1,4 @@
-import type { Note } from './types';
+import type { Note } from './types/index.js';
 
 /**
  * Privacy error thrown when attempting to transmit private notes without user consent

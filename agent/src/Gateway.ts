@@ -46,7 +46,7 @@ export class Gateway {
           if (msg.includes('Gateway listening') || msg.includes('ready')) {
             if (!this.bridge.isConnected) {
               this.bridge.connect().catch(err =>
-                console.error('[Gateway] Bridge connection failed:', err)
+                console.error('[Gateway] Bridge connection failed:', err?.message || err)
               );
             }
           }
@@ -60,7 +60,7 @@ export class Gateway {
       }
 
       this.process.on('error', (err) => {
-        console.error('ClawdBot failed to start:', err);
+        console.error('ClawdBot failed to start:', err?.message || err);
         reject(err);
       });
 

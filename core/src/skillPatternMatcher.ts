@@ -159,40 +159,29 @@ export class SkillPatternMatcher {
             operator?: string;
         }
     ): string[] {
-        const matched: string[] = [];
-
-        for (const prop of properties) {
-            let matches = true;
-
-            // Check attribute type
-            if (requirement.attributeType) {
-                const attr = this.ontologyService.getAttribute(prop.key);
-                if (!attr || attr.type !== requirement.attributeType) {
-                    matches = false;
+        return properties
+            .filter(prop => {
+                // Check attribute type
+                if (requirement.attributeType) {
+                    const attr = this.ontologyService.getAttribute(prop.key);
+                    if (!attr || attr.type !== requirement.attributeType) {
+                        return false;
+                    }
                 }
-            }
 
-            // Check key similarity (fuzzy match)
-            if (requirement.keySimilarTo && matches) {
-                const isSimilar = this.isSimilarKey(prop.key, requirement.keySimilarTo);
-                if (!isSimilar) {
-                    matches = false;
+                // Check key similarity (fuzzy match)
+                if (requirement.keySimilarTo && !this.isSimilarKey(prop.key, requirement.keySimilarTo)) {
+                    return false;
                 }
-            }
 
-            // Check operator
-            if (requirement.operator && matches) {
-                if (prop.operator !== requirement.operator) {
-                    matches = false;
+                // Check operator
+                if (requirement.operator && prop.operator !== requirement.operator) {
+                    return false;
                 }
-            }
 
-            if (matches) {
-                matched.push(prop.key);
-            }
-        }
-
-        return matched;
+                return true;
+            })
+            .map(prop => prop.key);
     }
 
     /**

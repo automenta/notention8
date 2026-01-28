@@ -28,6 +28,11 @@ export class OntologyService {
     private ontology: OntologyNode[];
     private attributeIndex: Map<string, OntologyAttribute>;
 
+    // Caching for performance
+    private widgetMetadataCache: Map<string, WidgetMetadata | null> = new Map();
+    private enumOptionsCache: Map<string, string[] | null> = new Map();
+    private fuzzyMatchesCache: Map<string, string[]> = new Map();
+
     constructor(ontology: OntologyNode[]) {
         this.ontology = ontology;
         this.attributeIndex = this.buildAttributeIndex();
@@ -63,17 +68,29 @@ export class OntologyService {
      * Get widget type and metadata for an attribute
      */
     getWidgetMetadata(attributeKey: string): WidgetMetadata | null {
+        // Check cache first
+        if (this.widgetMetadataCache.has(attributeKey)) {
+            return this.widgetMetadataCache.get(attributeKey)!;
+        }
+
         const attr = this.attributeIndex.get(attributeKey);
-        if (!attr) return null;
+        if (!attr) {
+            // Cache the null result
+            this.widgetMetadataCache.set(attributeKey, null);
+            return null;
+        }
 
         const widgetType = this.typeToWidget(attr.type);
-
-        return {
+        const metadata = {
             type: widgetType,
             icon: attr.icon,
             options: attr.type === 'enum' ? attr.options : undefined,
             operators: [...attr.operators.real, ...attr.operators.imaginary]
         };
+
+        // Cache the result
+        this.widgetMetadataCache.set(attributeKey, metadata);
+        return metadata;
     }
 
     /**
@@ -96,26 +113,35 @@ export class OntologyService {
      * Get all attributes that support a specific operator
      */
     getAttributesByOperator(operator: string): Array<{ key: string, attribute: OntologyAttribute }> {
-        const results: Array<{ key: string, attribute: OntologyAttribute }> = [];
-
-        for (const [key, attr] of this.attributeIndex.entries()) {
-            const allOps = [...attr.operators.real, ...attr.operators.imaginary];
-            if (allOps.includes(operator)) {
-                results.push({ key, attribute: attr });
-            }
-        }
-
-        return results;
+        return Array.from(this.attributeIndex.entries())
+            .filter(([_, attr]) => {
+                const allOps = [...attr.operators.real, ...attr.operators.imaginary];
+                return allOps.includes(operator);
+            })
+            .map(([key, attr]) => ({ key, attribute: attr }));
     }
 
     /**
      * Get enum options for an attribute
      */
     getEnumOptions(attributeKey: string): string[] | null {
-        const attr = this.attributeIndex.get(attributeKey);
-        if (!attr || attr.type !== 'enum') return null;
+        // Check cache first
+        if (this.enumOptionsCache.has(attributeKey)) {
+            return this.enumOptionsCache.get(attributeKey)!;
+        }
 
-        return attr.options || [];
+        const attr = this.attributeIndex.get(attributeKey);
+        if (!attr || attr.type !== 'enum') {
+            // Cache the null result
+            this.enumOptionsCache.set(attributeKey, null);
+            return null;
+        }
+
+        const options = attr.options || [];
+
+        // Cache the result
+        this.enumOptionsCache.set(attributeKey, options);
+        return options;
     }
 
     /**
@@ -138,12 +164,18 @@ export class OntologyService {
      * Returns keys sorted by relevance
      */
     getFuzzyMatches(input: string, limit: number = 5): string[] {
+        const cacheKey = `${input}_${limit}`;
+
+        // Check cache first
+        if (this.fuzzyMatchesCache.has(cacheKey)) {
+            return this.fuzzyMatchesCache.get(cacheKey)!;
+        }
+
         const lower = input.toLowerCase();
-        const matches: Array<{ key: string, score: number }> = [];
+        const scoredMatches: Array<{ key: string, score: number }> = [];
 
-        for (const key of this.attributeIndex.keys()) {
+        for (const [key, attr] of this.attributeIndex.entries()) {
             const keyLower = key.toLowerCase();
-
             let score = 0;
 
             // Exact match
@@ -153,25 +185,24 @@ export class OntologyService {
             // Contains
             else if (keyLower.includes(lower)) score = 60;
             // Description match
-            else {
-                const attr = this.attributeIndex.get(key)!;
-                if (attr.description?.toLowerCase().includes(lower)) {
-                    score = 40;
-                }
-            }
+            else if (attr.description?.toLowerCase().includes(lower)) score = 40;
 
             if (score > 0) {
-                matches.push({ key, score });
+                scoredMatches.push({ key, score });
             }
         }
 
         // Sort by score desc, then alphabetically
-        matches.sort((a, b) => {
+        scoredMatches.sort((a, b) => {
             if (a.score !== b.score) return b.score - a.score;
             return a.key.localeCompare(b.key);
         });
 
-        return matches.slice(0, limit).map(m => m.key);
+        const result = scoredMatches.slice(0, limit).map(m => m.key);
+
+        // Cache the result
+        this.fuzzyMatchesCache.set(cacheKey, result);
+        return result;
     }
 
     /**
@@ -219,5 +250,14 @@ export class OntologyService {
      */
     getNode(nodeId: string): OntologyNode | null {
         return findNode(this.ontology, nodeId);
+    }
+
+    /**
+     * Clear all caches when ontology changes
+     */
+    clearCaches(): void {
+        this.widgetMetadataCache.clear();
+        this.enumOptionsCache.clear();
+        this.fuzzyMatchesCache.clear();
     }
 }

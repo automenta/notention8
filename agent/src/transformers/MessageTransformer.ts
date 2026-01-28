@@ -1,30 +1,4 @@
-// Minimal type definitions (will be properly imported once packages are built)
-interface Property {
-    key: string;
-    operator: string;
-    values: string[];
-}
-
-interface NoteSource {
-    type: 'user' | 'skill' | 'import' | 'inference';
-    identifier: string;
-    url?: string;
-    timestamp: number;
-}
-
-interface Note {
-    id: string;
-    title: string;
-    content: string;
-    tags: string[];
-    properties: Property[];
-    createdAt: string;
-    updatedAt: string;
-    source: NoteSource;
-    public: boolean;
-    priority: number;
-}
-
+import { Note, Property } from '../../../core/src/types/index.js';
 import { v4 as uuidv4 } from 'uuid';
 
 /**

@@ -1,4 +1,5 @@
 export * from './types/index.js';
+export * from './errorTypes.js';
 export * from './nostr.js';
 export * from './ontology.default.js';
 export * from './ontologyHelpers.js';
@@ -17,10 +18,13 @@ export * from './feedback/types.js';
 
 // Ontology-driven services (Phase 1.4 & 2)
 export * from './ontologyService.js';
+export * from './ontologyServiceFactory.js';
 export * from './propertyExtractor.js';
 export * from './queryBuilder.js';
 
 // Skill system (Phase 4)
+export * from './skills/BaseSkill.js';
+export * from './skills/SkillRegistry.js';
 export * from './skillPatternMatcher.js';
 export * from './skillApprovalManager.js';
 export * from './skillExecutor.js';

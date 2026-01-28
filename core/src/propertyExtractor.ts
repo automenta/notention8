@@ -1,6 +1,7 @@
 import { Property } from './types/index.js';
 import { OntologyService } from './ontologyService.js';
 import { DEFAULT_ONTOLOGY } from './ontology.default.js';
+import { PropertyValidationError } from './errorTypes.js';
 
 /**
  * PropertyExtractor - Extract ontology properties from natural language
@@ -38,7 +39,23 @@ export class PropertyExtractor {
         const properties: Property[] = [];
         const lower = text.toLowerCase();
 
-        // Strategy 1: Match "send to [contact]"  
+        // Apply extraction strategies in sequence
+        this.applySendToStrategy(text, properties);
+        this.applyChannelStrategy(text, properties);
+        this.applyPhoneStrategy(text, properties);
+        this.applyEmailStrategy(text, properties);
+        this.applyLocationStrategy(text, properties);
+        this.applyDateStrategy(text, properties);
+        this.applyFuzzyMatchingStrategy(text, properties);
+
+        return properties;
+    }
+
+    /**
+     * Strategy 1: Match "send to [contact]"
+     */
+    private applySendToStrategy(text: string, properties: Property[]): void {
+        const lower = text.toLowerCase();
         const sendMatch = lower.match(/(?:send|message)\s+(?:to|)\s+([+\w@#-]+)/);
         if (sendMatch) {
             properties.push({
@@ -47,8 +64,13 @@ export class PropertyExtractor {
                 values: [sendMatch[1]]
             });
         }
+    }
 
-        // Strategy 2: Match "via/using [channel]"
+    /**
+     * Strategy 2: Match "via/using [channel]"
+     */
+    private applyChannelStrategy(text: string, properties: Property[]): void {
+        const lower = text.toLowerCase();
         const channelMatch = lower.match(/(?:via|using|on|through)\s+(\w+)/);
         if (channelMatch) {
             const channel = channelMatch[1];
@@ -62,8 +84,12 @@ export class PropertyExtractor {
                 });
             }
         }
+    }
 
-        // Strategy 3: Match phone numbers
+    /**
+     * Strategy 3: Match phone numbers
+     */
+    private applyPhoneStrategy(text: string, properties: Property[]): void {
         const phoneMatch = text.match(/(\+?\d{10,15})/);
         if (phoneMatch && !properties.some(p => p.key === 'to')) {
             properties.push({
@@ -72,8 +98,12 @@ export class PropertyExtractor {
                 values: [phoneMatch[1]]
             });
         }
+    }
 
-        // Strategy 4: Match email addresses
+    /**
+     * Strategy 4: Match email addresses
+     */
+    private applyEmailStrategy(text: string, properties: Property[]): void {
         const emailMatch = text.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
         if (emailMatch) {
             properties.push({
@@ -82,8 +112,12 @@ export class PropertyExtractor {
                 values: [emailMatch[1]]
             });
         }
+    }
 
-        // Strategy 5: Match locations (basic)
+    /**
+     * Strategy 5: Match locations (basic)
+     */
+    private applyLocationStrategy(text: string, properties: Property[]): void {
         const locationKeywords = ['near', 'in', 'at'];
         for (const keyword of locationKeywords) {
             const regex = new RegExp(`${keyword}\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)`, 'g');
@@ -98,8 +132,12 @@ export class PropertyExtractor {
                 break;
             }
         }
+    }
 
-        // Strategy 6: Match datetime references
+    /**
+     * Strategy 6: Match datetime references
+     */
+    private applyDateStrategy(text: string, properties: Property[]): void {
         const datePatterns = [
             { regex: /tomorrow/i, offset: 1 },
             { regex: /today/i, offset: 0 },
@@ -118,8 +156,12 @@ export class PropertyExtractor {
                 break;
             }
         }
+    }
 
-        // Strategy 7: Fuzzy attribute matching for remaining words
+    /**
+     * Strategy 7: Fuzzy attribute matching for remaining words
+     */
+    private applyFuzzyMatchingStrategy(text: string, properties: Property[]): void {
         const words = text.split(/\s+/).filter(w => w.length > 3);
         for (const word of words) {
             const matches = this.ontologyService.getFuzzyMatches(word, 1);
@@ -135,8 +177,6 @@ export class PropertyExtractor {
                 }
             }
         }
-
-        return properties;
     }
 
     /**
@@ -196,6 +236,16 @@ export class PropertyExtractor {
             valid: errors.length === 0,
             errors
         };
+    }
+
+    /**
+     * Validate property against ontology, throwing an error if invalid
+     */
+    validatePropertyOrThrow(property: Property): void {
+        const { valid, errors } = this.validateProperty(property);
+        if (!valid) {
+            throw new PropertyValidationError(errors.join('; '));
+        }
     }
 
     /**

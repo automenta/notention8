@@ -48,8 +48,8 @@ export class MoltBotBridge extends EventEmitter {
                     try {
                         const message = JSON.parse(data.toString());
                         this.handleMessage(message);
-                    } catch (e) {
-                        console.error('[Bridge] Failed to parse message:', e);
+                    } catch (e: any) {
+                        console.error('[Bridge] Failed to parse message:', e?.message || e);
                     }
                 });
 
@@ -116,7 +116,11 @@ export class MoltBotBridge extends EventEmitter {
         }
 
         this.reconnectAttempts++;
-        const delay = this.config.reconnectInterval || 3000;
+        // Exponential backoff: double the delay with each attempt, capped at 30 seconds
+        const baseDelay = this.config.reconnectInterval || 3000;
+        const cappedDelay = Math.min(baseDelay * Math.pow(2, this.reconnectAttempts - 1), 30000); // Cap at 30 seconds
+        const delay = Math.floor(cappedDelay);
+
         console.log(`[Bridge] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})...`);
 
         setTimeout(() => {
