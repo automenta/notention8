@@ -119,11 +119,14 @@ export class PropertyExtractor {
      */
     private applyLocationStrategy(text: string, properties: Property[]): void {
         const locationKeywords = ['near', 'in', 'at'];
+
+        // Cache regex patterns to avoid recreating them
         for (const keyword of locationKeywords) {
-            const regex = new RegExp(`${keyword}\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)`, 'g');
-            const match = text.match(regex);
-            if (match) {
-                const location = match[0].replace(new RegExp(`^${keyword}\\s+`), '');
+            const regex = new RegExp(`${keyword}\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)`, 'gi');
+            const matches = text.match(regex);
+            if (matches) {
+                // Extract the location name by removing the keyword prefix
+                const location = matches[0].replace(new RegExp(`^${keyword}\\s+`, 'i'), '').trim();
                 properties.push({
                     key: 'location',
                     operator: 'is near',
@@ -163,17 +166,20 @@ export class PropertyExtractor {
      */
     private applyFuzzyMatchingStrategy(text: string, properties: Property[]): void {
         const words = text.split(/\s+/).filter(w => w.length > 3);
-        for (const word of words) {
+        const existingKeys = new Set(properties.map(p => p.key)); // Use Set for faster lookup
+
+        for (const [index, word] of words.entries()) {
             const matches = this.ontologyService.getFuzzyMatches(word, 1);
-            if (matches.length > 0 && !properties.some(p => p.key === matches[0])) {
+            if (matches.length > 0 && !existingKeys.has(matches[0])) {
                 // Only add if we can infer a value
-                const nextWord = words[words.indexOf(word) + 1];
+                const nextWord = words[index + 1];
                 if (nextWord && nextWord.length > 2) {
                     properties.push({
                         key: matches[0],
                         operator: 'contains',
                         values: [nextWord]
                     });
+                    existingKeys.add(matches[0]); // Add to set to avoid duplicates
                 }
             }
         }

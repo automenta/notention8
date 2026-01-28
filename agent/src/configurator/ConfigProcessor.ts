@@ -21,19 +21,13 @@ export class ConfigProcessor {
     }
 
     private applyConfig(config: Partial<AppSettings>): void {
-        // Calculate diff for logging
-        const changes: string[] = [];
-        if (config.privacyMode && config.privacyMode !== this.currentConfig.privacyMode) {
-            changes.push(`Privacy Mode: ${config.privacyMode}`);
-        }
-        if (config.capabilities) {
-            if (config.capabilities.browser !== this.currentConfig.capabilities?.browser) {
-                changes.push(`Browser Capability: ${config.capabilities.browser}`);
-            }
-            if (config.capabilities.files !== this.currentConfig.capabilities?.files) {
-                changes.push(`Files Capability: ${config.capabilities.files}`);
-            }
-        }
+        // Calculate diff for logging using more modern syntax
+        const changes = Object.entries({
+            'Privacy Mode': config.privacyMode && config.privacyMode !== this.currentConfig.privacyMode ? config.privacyMode : undefined,
+            'Browser Capability': config.capabilities?.browser !== this.currentConfig.capabilities?.browser ? config.capabilities?.browser : undefined,
+            'Files Capability': config.capabilities?.files !== this.currentConfig.capabilities?.files ? config.capabilities?.files : undefined
+        }).filter(([_, value]) => value !== undefined)
+          .map(([key, value]) => `${key}: ${value}`);
 
         if (changes.length > 0) {
             log('Config', `Applying configuration changes: ${changes.join(', ')}`);

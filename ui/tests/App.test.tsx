@@ -27,6 +27,18 @@ vi.mock('../hooks/useViewContext', () => ({
   }),
 }));
 
+// Mock the onboarding service to prevent issues with constructor
+vi.mock('@notention/core', async () => {
+  const actual = await vi.importActual('@notention/core');
+  return {
+    ...actual,
+    OnboardingService: class {
+      constructor() {}
+      generateConfigNoteContent = () => '# System Configuration\n@config:active';
+    }
+  };
+});
+
 describe('App component', () => {
   it('should render without crashing', () => {
     // We just want to make sure rendering doesn't throw an error.

@@ -1,6 +1,7 @@
 import { Agent, WorkflowResult } from '@notention/core/src/types';
 import { Note } from '@notention/core/src/types';
 import { SkillRegistry } from './SkillRegistry';
+import { SkillExecutionError } from '@notention/core/src/errorTypes';
 
 export class SkillExecutor {
     private onEvent?: (event: any) => void;
@@ -53,14 +54,26 @@ export class SkillExecutor {
                     }
                 });
 
-                if (result.importedNotes) {
+                if (result?.importedNotes) {
                     allResults.push(...result.importedNotes);
                 }
 
                 this.emit('skill_completed', { skill: skill.name, success: true });
             } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
                 console.error(`Error executing skill ${skill.name}:`, error);
-                this.emit('skill_failed', { skill: skill.name, error: String(error) });
+
+                // Emit structured error information
+                this.emit('skill_failed', {
+                    skill: skill.name,
+                    error: errorMessage,
+                    noteId: note.id
+                });
+
+                // Optionally rethrow or handle specific error types
+                if (!(error instanceof SkillExecutionError)) {
+                    throw new SkillExecutionError(`Failed to execute skill ${skill.name}: ${errorMessage}`);
+                }
             }
         }
 
