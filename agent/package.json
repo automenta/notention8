@@ -4,7 +4,7 @@
   "description": "ClawdBot wrapper for Notention",
   "main": "dist/index.js",
   "scripts": {
-    "start:molt": "tsx molt/index.ts",
+    "start:moltbot": "tsx moltbot/index.ts",
     "start:volt": "tsx voltagent/index.ts",
     "build": "tsc"
   },

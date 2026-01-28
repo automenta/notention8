@@ -5,6 +5,7 @@ import { VoltAgentPlugin } from './VoltAgentPlugin';
 (async () => {
     const server = new AgentServer({
         port: parseInt(process.env.PORT || '3000'),
+        agentName: 'VoltAgent'
     });
 
     try {

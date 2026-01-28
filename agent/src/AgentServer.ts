@@ -16,9 +16,11 @@ export interface AgentServerConfig {
     port?: number;
     uiDistPath?: string;
     wsPath?: string;
+    agentName?: string;
 }
 
 export class AgentServer {
+    public agentName: string;
     public app: express.Express;
     public server: any;
     public wss: WebSocketServer | null = null;
@@ -36,6 +38,7 @@ export class AgentServer {
     constructor(config: AgentServerConfig = {}) {
         this.port = config.port || parseInt(process.env.PORT || '3000');
         this.wsPath = config.wsPath || '/ws/clawdbot';
+        this.agentName = config.agentName || 'Agent Server';
         this.app = express();
 
         // Initialize Managers
@@ -151,7 +154,11 @@ export class AgentServer {
                 this.wss.on('connection', (ws) => {
                     console.log('UI client connected');
                     this.uiClients.add(ws);
-                    ws.send(JSON.stringify({ type: 'connection_established', message: 'Connected' }));
+                    ws.send(JSON.stringify({
+                        type: 'connection_established',
+                        message: `Connected to ${this.agentName}`,
+                        agentName: this.agentName
+                    }));
 
                     ws.on('message', async (data) => {
                         try {

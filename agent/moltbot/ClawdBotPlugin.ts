@@ -229,6 +229,18 @@ export class ClawdBotPlugin implements Plugin {
       case 'submit_feedback':
         await this.handleFeedback(message.payload);
         break;
+      case 'agent_request':
+      case 'clawdbot_request':
+        // Handle direct chat messages
+        const prompt = message.payload.message || message.payload.prompt;
+        if (prompt) {
+             // Treat as an instruction
+             await this.executeTranslatedResult({
+                 type: 'agent_instruction',
+                 parameters: { message: prompt }
+             }, null);
+        }
+        break;
       default:
         console.log('Unknown message type for ClawdBot plugin:', message.type);
     }

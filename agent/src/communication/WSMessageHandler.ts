@@ -49,8 +49,11 @@ export class WSMessageHandler {
              console.error('Error broadcasting agent request:', error);
         });
 
+        // Use clawdbot_response for legacy compatibility if request was clawdbot_request
+        const responseType = message.type === 'clawdbot_request' ? 'clawdbot_response' : 'agent_response';
+
         ws.send(JSON.stringify({
-            type: 'agent_response',
+            type: responseType,
             requestId: message.id,
             success: true,
             result: { message: 'Request received' }

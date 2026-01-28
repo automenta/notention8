@@ -1,9 +1,10 @@
 import { Plugin } from '../src/plugins/PluginInterface';
 import { StrategyManager } from '../src/strategies/StrategyManager';
 import { AgentAction } from '../src/strategies/NoteTranslationStrategy';
-import { Agent, Memory } from "@voltagent/core";
+import { Agent, Memory, tool } from "@voltagent/core";
 import { createPinoLogger } from "@voltagent/logger";
 import { openai } from "@ai-sdk/openai";
+import { z } from "zod";
 
 export class VoltAgentPlugin implements Plugin {
     id = 'voltagent-integration';
@@ -23,12 +24,59 @@ export class VoltAgentPlugin implements Plugin {
             level: "info",
         });
 
+        // Define tools that bridge to the Frontend UI
+        const createNoteTool = tool({
+            name: "create_note",
+            description: "Create a new note in the notebook",
+            parameters: z.object({
+                title: z.string().describe("The title of the note"),
+                content: z.string().describe("The content of the note"),
+                tags: z.array(z.string()).optional().describe("Tags for the note")
+            }),
+            execute: async (args) => {
+                this.broadcast({
+                    type: 'agent_tool_call',
+                    payload: {
+                        tool: 'create_note',
+                        args: args,
+                        agentId: 'voltagent',
+                        timestamp: new Date().toISOString()
+                    }
+                });
+                return "Request sent to create note. The UI will handle this.";
+            }
+        });
+
+        const updateOntologyTool = tool({
+            name: "update_ontology",
+            description: "Update the ontology (schema) of the notebook",
+            parameters: z.object({
+                parentId: z.string().describe("Parent node ID"),
+                id: z.string().describe("New node ID"),
+                label: z.string().describe("Label for the new node"),
+                description: z.string().describe("Description of the new node")
+            }),
+            execute: async (args) => {
+                 this.broadcast({
+                    type: 'agent_tool_call',
+                    payload: {
+                        tool: 'update_ontology',
+                        args: args,
+                        agentId: 'voltagent',
+                        timestamp: new Date().toISOString()
+                    }
+                });
+                return "Request sent to update ontology.";
+            }
+        });
+
         this.agent = new Agent({
             name: "notention-assistant",
-            instructions: "You are an intelligent agent managing a notebook. You can create notes, update ontology, and answer questions.",
+            instructions: "You are an intelligent agent managing a notebook. You can create notes, update ontology, and answer questions. Use the provided tools to perform actions.",
             model: openai("gpt-4o-mini"),
             // @ts-ignore - Memory constructor requirements vary by version
             memory: new Memory({}),
+            tools: [createNoteTool, updateOntologyTool],
             logger
         });
     }
@@ -69,6 +117,7 @@ export class VoltAgentPlugin implements Plugin {
 
     async onNoteCreated(note: any): Promise<void> {
         console.log('VoltAgent: Note created', note.id);
+        // Optionally inject into agent memory
     }
 
     async onNoteUpdated(note: any): Promise<void> {}

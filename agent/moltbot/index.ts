@@ -9,6 +9,7 @@ process.env.CLAWDBOT_HOME = join(process.cwd(), 'config');
 (async () => {
     const server = new AgentServer({
         port: parseInt(process.env.PORT || '3000'),
+        agentName: 'MoltBot (ClawdBot)'
     });
 
     try {
