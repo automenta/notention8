@@ -72,8 +72,6 @@ export class VoltAgentPlugin implements Plugin {
             name: "notention-assistant",
             instructions: "You are an intelligent agent managing a notebook. You can create notes, update ontology, and answer questions. Use the provided tools to perform actions.",
             model: openai("gpt-4o-mini"),
-            // @ts-ignore - Memory constructor requirements vary by version
-            memory: new Memory({}),
             tools: [createNoteTool, updateOntologyTool],
             logger
         });
@@ -100,9 +98,8 @@ export class VoltAgentPlugin implements Plugin {
 
     private async processAgentRequest(prompt: string, requestId?: string) {
         try {
-            // @ts-ignore - Assuming run method exists in this version of VoltAgent
-            const result: any = await this.agent.run({ input: prompt });
-            const responseText = result.text || result.output || JSON.stringify(result);
+            const result = await this.agent.generateText(prompt);
+            const responseText = result.text;
 
             this.broadcast({
                 type: 'agent_response',
