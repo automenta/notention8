@@ -13,6 +13,7 @@ interface AgentState {
   status: string;
   activeAgents: any[];
   lastMessage: AgentMessage | null;
+  agentName?: string;
 }
 
 interface AgentContextType {
@@ -48,7 +49,8 @@ export const AgentProvider: React.FC<AgentProviderProps> = ({
     connected: false,
     status: 'disconnected',
     activeAgents: [],
-    lastMessage: null
+    lastMessage: null,
+    agentName: undefined
   });
 
   const connect = useCallback(() => {
@@ -68,6 +70,9 @@ export const AgentProvider: React.FC<AgentProviderProps> = ({
         const message = JSON.parse(event.data);
 
         setAgentState(prev => {
+           if (message.type === 'connection_established' && message.agentName) {
+               return { ...prev, lastMessage: message, agentName: message.agentName };
+           }
            if (message.type === 'clawdbot_status_update') {
                return { ...prev, lastMessage: message, ...message.payload };
            }

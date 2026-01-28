@@ -91,6 +91,12 @@ export class VoltAgentPlugin implements Plugin {
              if (prompt) {
                  await this.processAgentRequest(prompt, message.id);
              }
+        } else if (message.type === 'clawdbot_execute') {
+            // Handle execution requests from ChatView
+            const action = message.payload;
+            if (action && action.type === 'agent_instruction' && action.parameters && action.parameters.message) {
+                 await this.processAgentRequest(action.parameters.message);
+            }
         }
     }
 
