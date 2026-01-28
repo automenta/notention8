@@ -4,7 +4,9 @@
   "description": "Shared Agent Library for Notention",
   "main": "index.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "start:moltbot": "npm start -w @notention/moltbot",
+    "start:volt": "npm start -w @notention/voltagent"
   },
   "keywords": [
     "notention",
