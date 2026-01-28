@@ -147,6 +147,10 @@ export const useGardener = () => {
       return await gardener.alignToOntology(text, ontology);
   }, [gardener]);
 
+  const extractProperties = useCallback(async (text: string, ontology: OntologyNode[]) => {
+      return await gardener.extractProperties(text, ontology);
+  }, [gardener]);
+
   const optimizeOntology = useCallback(async () => {
       const result = await gardener.optimizeOntology(settings.ontology);
 
@@ -158,5 +162,5 @@ export const useGardener = () => {
       return result;
   }, [gardener, settings.ontology, addToast]);
 
-  return { evolveOntology, learnFromProperties, alignToOntology, optimizeOntology };
+  return { evolveOntology, learnFromProperties, alignToOntology, extractProperties, optimizeOntology };
 };
