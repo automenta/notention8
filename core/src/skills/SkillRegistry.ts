@@ -8,7 +8,10 @@ export class SkillRegistry {
      * Register a skill
      */
     registerSkill(skill: BaseSkill | SkillDefinition): void {
-        this.skills.set(skill.id, skill);
+        const id = (skill as any).id;
+        if (id) {
+            this.skills.set(id, skill);
+        }
     }
 
     /**

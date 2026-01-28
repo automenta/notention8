@@ -1,0 +1,20 @@
+{
+    "name": "@notention/agent-voltagent",
+    "version": "1.0.0",
+    "description": "VoltAgent integration for Notention",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc"
+    },
+    "dependencies": {
+        "@notention/core": "*",
+        "@types/uuid": "^10.0.0",
+        "@voltagent/core": "^0.1.0",
+        "@voltagent/libsql": "^0.1.0",
+        "uuid": "^9.0.1",
+        "zod": "^3.22.4"
+    },
+    "devDependencies": {
+        "typescript": "~5.9.2"
+    }
+}

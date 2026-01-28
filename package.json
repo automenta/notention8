@@ -4,6 +4,8 @@
   "workspaces": [
     "ui",
     "agent",
+    "agent/voltagent",
+    "agent/moltbot",
     "core"
   ],
   "scripts": {

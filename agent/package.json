@@ -8,13 +8,18 @@
     "start": "tsx src/index.ts",
     "build": "tsc"
   },
-  "keywords": ["notention", "clawdbot", "agent"],
+  "keywords": [
+    "notention",
+    "clawdbot",
+    "agent"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
     "@notention/core": "*",
     "@notention/ui": "*",
-    "clawdbot": "^2026.1.24-3",
+    "@notention/agent-voltagent": "*",
+    "@notention/agent-moltbot": "*",
     "express": "^4.21.2",
     "ws": "^8.18.0"
   },

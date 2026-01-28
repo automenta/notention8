@@ -1,4 +1,4 @@
-import { OntologyNode } from '../types/index.js';
+import { OntologyNode } from './types/index.js';
 import { OntologyService } from './ontologyService.js';
 import { DEFAULT_ONTOLOGY } from './ontology.default.js';
 
