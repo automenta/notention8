@@ -7,10 +7,10 @@ import {
   RepresentationConverter
 } from './UIMappingInterfaces';
 
-export class ClawdBotRepresentationConverter implements RepresentationConverter {
+export class AgentRepresentationConverter implements RepresentationConverter {
 
   toAgentRepresentation(config: any): AgentRepresentation {
-    // Convert a ClawdBot configuration to a UI-friendly representation
+    // Convert an Agent configuration to a UI-friendly representation
     return {
       id: config.id || `agent-${Date.now()}`,
       name: config.name || config.id || 'Unnamed Agent',
@@ -28,7 +28,7 @@ export class ClawdBotRepresentationConverter implements RepresentationConverter 
   }
 
   fromAgentRepresentation(representation: AgentRepresentation): any {
-    // Convert UI representation back to ClawdBot configuration
+    // Convert UI representation back to Agent configuration
     return {
       id: representation.id,
       name: representation.name,

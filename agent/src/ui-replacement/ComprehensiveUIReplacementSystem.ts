@@ -80,9 +80,9 @@ export class ComprehensiveUIReplacementSystem {
   }
 
   /**
-   * Transform a ClawdBot concept using the appropriate metaphor
+   * Transform an Agent concept using the appropriate metaphor
    */
-  transformClawdBotConcept(concept: any): any {
+  transformAgentConcept(concept: any): any {
     // Determine the appropriate metaphor based on the concept type
     const metaphorId = concept.type || concept.category || 'conditional-automation';
     const metaphor = this.getMetaphor(metaphorId);
@@ -97,14 +97,14 @@ export class ComprehensiveUIReplacementSystem {
   }
 
   /**
-   * Convert a Notention UI action to a ClawdBot command
+   * Convert a Notention UI action to an Agent command
    */
-  convertToClawdBotCommand(action: any): any {
+  convertToAgentCommand(action: any): any {
     const metaphorId = action.metaphorId || 'conditional-automation';
     const metaphor = this.getMetaphor(metaphorId);
 
     if (metaphor) {
-      return metaphor.toClawdBotCommand(action);
+      return metaphor.toAgentCommand(action);
     }
 
     // Default conversion

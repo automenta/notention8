@@ -1,5 +1,5 @@
 import {
-  ClawdBotState,
+  SystemState,
   AgentState,
   StateManager,
   LogEntry,
@@ -7,11 +7,11 @@ import {
 } from './StateManagementInterfaces';
 
 export class ComprehensiveStateManager implements StateManager {
-  private currentState: ClawdBotState;
-  private subscribers: Array<(state: ClawdBotState) => void> = [];
+  private currentState: SystemState;
+  private subscribers: Array<(state: SystemState) => void> = [];
   private logHistory: LogEntry[] = [];
   private maxLogEntries: number = 1000;
-  private gateway: any; // ClawdBot gateway reference
+  private gateway: any; // Gateway reference
 
   constructor(gateway: any) {
     this.gateway = gateway;
@@ -43,7 +43,7 @@ export class ComprehensiveStateManager implements StateManager {
     this.logHistory = [];
   }
 
-  async getState(): Promise<ClawdBotState> {
+  async getState(): Promise<SystemState> {
     try {
       // Refresh state from gateway periodically
       const freshState = await this.fetchCurrentState();
@@ -62,7 +62,7 @@ export class ComprehensiveStateManager implements StateManager {
     }
   }
 
-  async updateState(newState: Partial<ClawdBotState>): Promise<void> {
+  async updateState(newState: Partial<SystemState>): Promise<void> {
     const prevState = { ...this.currentState };
 
     // Update state properties
@@ -202,7 +202,7 @@ export class ComprehensiveStateManager implements StateManager {
     return this.logHistory.slice(-count);
   }
 
-  subscribe(callback: (state: ClawdBotState) => void): () => void {
+  subscribe(callback: (state: SystemState) => void): () => void {
     this.subscribers.push(callback);
 
     // Return unsubscribe function
@@ -214,7 +214,7 @@ export class ComprehensiveStateManager implements StateManager {
     };
   }
 
-  private notifySubscribers(state: ClawdBotState): void {
+  private notifySubscribers(state: SystemState): void {
     for (const subscriber of this.subscribers) {
       try {
         subscriber(state);
@@ -231,9 +231,9 @@ export class ComprehensiveStateManager implements StateManager {
     }
   }
 
-  private getDefaultState(): ClawdBotState {
+  private getDefaultState(): SystemState {
     return {
-      id: 'clawdbot-default',
+      id: 'agent-system-default',
       status: 'initializing',
       version: 'unknown',
       uptime: 0,
@@ -242,7 +242,7 @@ export class ComprehensiveStateManager implements StateManager {
       configuration: {
         id: 'default-config',
         name: 'Default Configuration',
-        description: 'Default ClawdBot configuration',
+        description: 'Default Agent System configuration',
         settings: {},
         agents: [],
         skills: [],
@@ -261,8 +261,8 @@ export class ComprehensiveStateManager implements StateManager {
     };
   }
 
-  private async fetchCurrentState(): Promise<ClawdBotState> {
-    // In a real implementation, this would fetch the actual state from the ClawdBot gateway
+  private async fetchCurrentState(): Promise<SystemState> {
+    // In a real implementation, this would fetch the actual state from the Gateway
     // For now, we'll simulate by returning the current state with updated timestamps
 
     // Update uptime

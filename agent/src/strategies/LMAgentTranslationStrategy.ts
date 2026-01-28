@@ -1,7 +1,7 @@
 import {
   NoteTranslationStrategy,
-  ClawdBotAction,
-  ClawdBotConfiguration,
+  AgentAction,
+  AgentConfiguration,
   Condition,
   Trigger
 } from './NoteTranslationStrategy';
@@ -16,7 +16,7 @@ export class LMAgentTranslationStrategy implements NoteTranslationStrategy {
     return true;
   }
 
-  async translate(note: any): Promise<ClawdBotAction[] | ClawdBotConfiguration> {
+  async translate(note: any): Promise<AgentAction[] | AgentConfiguration> {
     // This is where an actual LM agent would process the note
     // For now, we'll simulate the process with a mock implementation
 
@@ -25,7 +25,7 @@ export class LMAgentTranslationStrategy implements NoteTranslationStrategy {
     // In a real implementation, this would:
     // 1. Send the note to an LM (local or remote)
     // 2. Have the LM analyze the note for intent
-    // 3. Generate appropriate ClawdBot actions/configuration
+    // 3. Generate appropriate Agent actions/configuration
     // 4. Return the result
 
     // Mock implementation - analyze the note and generate actions
@@ -66,12 +66,12 @@ export class LMAgentTranslationStrategy implements NoteTranslationStrategy {
     };
   }
 
-  private async mockLMParse(note: any): Promise<ClawdBotAction[]> {
+  private async mockLMParse(note: any): Promise<AgentAction[]> {
     // Simulate what an LM agent might do
     const content = (note.title || '') + ' ' + (note.content || '');
     const lowerContent = content.toLowerCase();
 
-    const actions: ClawdBotAction[] = [];
+    const actions: AgentAction[] = [];
 
     // Simulate LM identifying different types of intent
     if (lowerContent.includes('remind') || lowerContent.includes('remember')) {

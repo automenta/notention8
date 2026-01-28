@@ -12,10 +12,10 @@ export class ConditionalAutomationMetaphor implements FunctionalityMetaphor {
   color = '#3b82f6';
   category = 'automation';
 
-  toNotentionConcept(clawdBotFunction: any): NotentionConcept {
+  toNotentionConcept(agentFunction: any): NotentionConcept {
     return {
       type: 'automation-rule',
-      representation: `When ${clawdBotFunction.condition || 'condition'} then ${clawdBotFunction.action || 'action'}`,
+      representation: `When ${agentFunction.condition || 'condition'} then ${agentFunction.action || 'action'}`,
       actions: [
         {
           id: 'activate',
@@ -46,19 +46,19 @@ export class ConditionalAutomationMetaphor implements FunctionalityMetaphor {
         }
       ],
       properties: {
-        condition: clawdBotFunction.condition,
-        action: clawdBotFunction.action,
-        enabled: clawdBotFunction.enabled ?? true,
-        lastRun: clawdBotFunction.lastRun
+        condition: agentFunction.condition,
+        action: agentFunction.action,
+        enabled: agentFunction.enabled ?? true,
+        lastRun: agentFunction.lastRun
       }
     };
   }
 
-  toClawdBotCommand(notentionAction: NotentionAction): any {
+  toAgentCommand(notentionAction: NotentionAction): any {
     switch (notentionAction.id) {
       case 'activate':
         return {
-          type: 'clawdbot_command',
+          type: 'agent_command',
           command: 'activate_rule',
           parameters: {
             ruleId: notentionAction.id
@@ -66,7 +66,7 @@ export class ConditionalAutomationMetaphor implements FunctionalityMetaphor {
         };
       case 'deactivate':
         return {
-          type: 'clawdbot_command',
+          type: 'agent_command',
           command: 'deactivate_rule',
           parameters: {
             ruleId: notentionAction.id
@@ -74,7 +74,7 @@ export class ConditionalAutomationMetaphor implements FunctionalityMetaphor {
         };
       case 'edit':
         return {
-          type: 'clawdbot_command',
+          type: 'agent_command',
           command: 'edit_rule',
           parameters: {
             ruleId: notentionAction.id
@@ -82,7 +82,7 @@ export class ConditionalAutomationMetaphor implements FunctionalityMetaphor {
         };
       default:
         return {
-          type: 'clawdbot_command',
+          type: 'agent_command',
           command: 'unknown_action',
           parameters: {
             action: notentionAction.id
@@ -100,10 +100,10 @@ export class ScheduledTaskMetaphor implements FunctionalityMetaphor {
   color = '#10b981';
   category = 'scheduling';
 
-  toNotentionConcept(clawdBotFunction: any): NotentionConcept {
+  toNotentionConcept(agentFunction: any): NotentionConcept {
     return {
       type: 'scheduled-task',
-      representation: `Do ${clawdBotFunction.action || 'action'} at ${clawdBotFunction.time || 'time'}`,
+      representation: `Do ${agentFunction.action || 'action'} at ${agentFunction.time || 'time'}`,
       actions: [
         {
           id: 'schedule',
@@ -134,19 +134,19 @@ export class ScheduledTaskMetaphor implements FunctionalityMetaphor {
         }
       ],
       properties: {
-        time: clawdBotFunction.time,
-        action: clawdBotFunction.action,
-        recurring: clawdBotFunction.recurring ?? false,
-        scheduled: clawdBotFunction.scheduled ?? false
+        time: agentFunction.time,
+        action: agentFunction.action,
+        recurring: agentFunction.recurring ?? false,
+        scheduled: agentFunction.scheduled ?? false
       }
     };
   }
 
-  toClawdBotCommand(notentionAction: NotentionAction): any {
+  toAgentCommand(notentionAction: NotentionAction): any {
     switch (notentionAction.id) {
       case 'schedule':
         return {
-          type: 'clawdbot_command',
+          type: 'agent_command',
           command: 'schedule_task',
           parameters: {
             taskId: notentionAction.id,
@@ -155,7 +155,7 @@ export class ScheduledTaskMetaphor implements FunctionalityMetaphor {
         };
       case 'reschedule':
         return {
-          type: 'clawdbot_command',
+          type: 'agent_command',
           command: 'reschedule_task',
           parameters: {
             taskId: notentionAction.id
@@ -163,7 +163,7 @@ export class ScheduledTaskMetaphor implements FunctionalityMetaphor {
         };
       case 'cancel':
         return {
-          type: 'clawdbot_command',
+          type: 'agent_command',
           command: 'cancel_task',
           parameters: {
             taskId: notentionAction.id
@@ -171,7 +171,7 @@ export class ScheduledTaskMetaphor implements FunctionalityMetaphor {
         };
       default:
         return {
-          type: 'clawdbot_command',
+          type: 'agent_command',
           command: 'unknown_action',
           parameters: {
             action: notentionAction.id
@@ -189,10 +189,10 @@ export class MonitoringAgentMetaphor implements FunctionalityMetaphor {
   color = '#8b5cf6';
   category = 'monitoring';
 
-  toNotentionConcept(clawdBotFunction: any): NotentionConcept {
+  toNotentionConcept(agentFunction: any): NotentionConcept {
     return {
       type: 'monitoring-agent',
-      representation: `Monitor ${clawdBotFunction.target || 'target'} for ${clawdBotFunction.trigger || 'changes'}`,
+      representation: `Monitor ${agentFunction.target || 'target'} for ${agentFunction.trigger || 'changes'}`,
       actions: [
         {
           id: 'start-monitoring',
@@ -223,20 +223,20 @@ export class MonitoringAgentMetaphor implements FunctionalityMetaphor {
         }
       ],
       properties: {
-        target: clawdBotFunction.target,
-        trigger: clawdBotFunction.trigger,
-        response: clawdBotFunction.response,
-        active: clawdBotFunction.active ?? false,
-        lastEvent: clawdBotFunction.lastEvent
+        target: agentFunction.target,
+        trigger: agentFunction.trigger,
+        response: agentFunction.response,
+        active: agentFunction.active ?? false,
+        lastEvent: agentFunction.lastEvent
       }
     };
   }
 
-  toClawdBotCommand(notentionAction: NotentionAction): any {
+  toAgentCommand(notentionAction: NotentionAction): any {
     switch (notentionAction.id) {
       case 'start-monitoring':
         return {
-          type: 'clawdbot_command',
+          type: 'agent_command',
           command: 'start_monitoring',
           parameters: {
             agentId: notentionAction.id
@@ -244,7 +244,7 @@ export class MonitoringAgentMetaphor implements FunctionalityMetaphor {
         };
       case 'stop-monitoring':
         return {
-          type: 'clawdbot_command',
+          type: 'agent_command',
           command: 'stop_monitoring',
           parameters: {
             agentId: notentionAction.id
@@ -252,7 +252,7 @@ export class MonitoringAgentMetaphor implements FunctionalityMetaphor {
         };
       case 'view-data':
         return {
-          type: 'clawdbot_command',
+          type: 'agent_command',
           command: 'get_monitoring_data',
           parameters: {
             agentId: notentionAction.id
@@ -260,7 +260,7 @@ export class MonitoringAgentMetaphor implements FunctionalityMetaphor {
         };
       default:
         return {
-          type: 'clawdbot_command',
+          type: 'agent_command',
           command: 'unknown_action',
           parameters: {
             action: notentionAction.id

@@ -1,12 +1,16 @@
-import { Plugin } from './PluginInterface';
-import { StrategyManager } from '../strategies/StrategyManager';
-import { LMAgentTranslationStrategy } from '../strategies/LMAgentTranslationStrategy';
-import { HeuristicTranslationStrategy } from '../strategies/HeuristicTranslationStrategy';
-import { PatternMatchingStrategy } from '../strategies/PatternMatchingStrategy';
-import { TranslationContext } from '../strategies/NoteTranslationStrategy';
-import { UIIntegrationSystem } from '../ui-representation/UIIntegrationSystem';
+import { Plugin } from '@notention/agent';
+import {
+  StrategyManager,
+  LMAgentTranslationStrategy,
+  HeuristicTranslationStrategy,
+  PatternMatchingStrategy,
+  TranslationContext,
+  AgentAction,
+  AgentConfiguration,
+  UIIntegrationSystem
+} from '@notention/agent';
 
-import { ClawdBotClient } from '../communication/ClawdBotClient';
+import { ClawdBotClient } from './communication/ClawdBotClient';
 
 interface ClawdBotGateway {
   process?: any;
@@ -22,7 +26,6 @@ export class ClawdBotPlugin implements Plugin {
   version = '1.0.0';
 
   private gateway: any = null;
-  private wsClients: Set<any> = new Set();
   private strategyManager: StrategyManager;
   private extensionManager: any; // Will be passed in
   private uiIntegrationSystem: UIIntegrationSystem;
@@ -472,6 +475,7 @@ export class ClawdBotPlugin implements Plugin {
   private broadcastToUI(message: any): void {
     // This would broadcast to connected UI clients
     // Implementation depends on how the server manages UI connections
+    // Assuming gateway or server handles this
     console.log('Broadcasting to UI:', message);
   }
 }

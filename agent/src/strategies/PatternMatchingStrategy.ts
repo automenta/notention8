@@ -1,7 +1,7 @@
 import {
   NoteTranslationStrategy,
-  ClawdBotAction,
-  ClawdBotConfiguration,
+  AgentAction,
+  AgentConfiguration,
   Condition,
   Trigger
 } from './NoteTranslationStrategy';
@@ -104,9 +104,9 @@ export class PatternMatchingStrategy implements NoteTranslationStrategy {
     return false;
   }
 
-  async translate(note: any): Promise<ClawdBotAction[] | ClawdBotConfiguration> {
+  async translate(note: any): Promise<AgentAction[] | AgentConfiguration> {
     const content = (note.title || '') + ' ' + (note.content || '');
-    const actions: ClawdBotAction[] = [];
+    const actions: AgentAction[] = [];
 
     // Match against natural language patterns
     for (const pattern of this.patterns) {

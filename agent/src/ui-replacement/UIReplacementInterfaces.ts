@@ -1,6 +1,6 @@
 // Interfaces for complete UI replacement functionality
 
-// Represents a UI replacement component that can replace ClawdBot UI elements
+// Represents a UI replacement component that can replace Agent UI elements
 export interface UIReplacementComponent {
   id: string;
   name: string;
@@ -25,7 +25,7 @@ export interface UIReplacementContext {
   currentPage: string; // Current Notention page/view
   selectedNote?: any; // Currently selected note
   activeAgents?: any[]; // Currently active agents
-  clawdBotStatus: any; // Current ClawdBot status
+  agentStatus: any; // Current Agent status
   userPreferences: any; // User preferences for UI
   [key: string]: any; // Additional context
 }
@@ -47,7 +47,7 @@ export interface UIReplacementManager {
   handleInteraction(interaction: UIInteraction): void;
 }
 
-// Metaphor for representing ClawdBot functionality in Notention UI
+// Metaphor for representing Agent functionality in Notention UI
 export interface FunctionalityMetaphor {
   id: string;
   name: string;
@@ -56,11 +56,11 @@ export interface FunctionalityMetaphor {
   color: string;
   category: string; // 'automation', 'monitoring', 'communication', etc.
 
-  // Maps ClawdBot functionality to Notention UI concepts
+  // Maps Agent functionality to Notention UI concepts
   toNotentionConcept(clawdBotFunction: any): NotentionConcept;
 
-  // Maps Notention UI interactions to ClawdBot commands
-  toClawdBotCommand(notentionAction: NotentionAction): any;
+  // Maps Notention UI interactions to Agent commands
+  toAgentCommand(notentionAction: NotentionAction): any;
 }
 
 // A concept in the Notention UI

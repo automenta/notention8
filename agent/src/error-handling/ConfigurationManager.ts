@@ -1,5 +1,5 @@
 import {
-  ClawdBotConfiguration,
+  SystemConfiguration,
   AgentConfiguration,
   SkillConfiguration,
   ConnectionConfiguration,
@@ -20,13 +20,13 @@ export interface ConfigurationChange {
 
 export interface ConfigurationManager {
   // Load configuration from storage
-  loadConfiguration(): Promise<ClawdBotConfiguration>;
+  loadConfiguration(): Promise<SystemConfiguration>;
 
   // Save configuration to storage
-  saveConfiguration(config: ClawdBotConfiguration): Promise<void>;
+  saveConfiguration(config: SystemConfiguration): Promise<void>;
 
   // Validate configuration
-  validateConfiguration(config: ClawdBotConfiguration): ValidationResult;
+  validateConfiguration(config: SystemConfiguration): ValidationResult;
 
   // Get specific configuration sections
   getAgents(): Promise<AgentConfiguration[]>;
@@ -76,13 +76,13 @@ export interface ConfigurationManager {
 }
 
 export class ComprehensiveConfigurationManager implements ConfigurationManager {
-  private config: ClawdBotConfiguration | null = null;
+  private config: SystemConfiguration | null = null;
   private configPath: string;
   private changeHistory: ConfigurationChange[] = [];
   private maxHistorySize: number = 1000;
   private backupManager: BackupManager;
 
-  constructor(configPath: string = './config/clawdbot-config.json') {
+  constructor(configPath: string = './config/agent-system-config.json') {
     this.configPath = configPath;
     this.backupManager = new BackupManager();
   }
@@ -104,7 +104,7 @@ export class ComprehensiveConfigurationManager implements ConfigurationManager {
     this.config = null;
   }
 
-  async loadConfiguration(): Promise<ClawdBotConfiguration> {
+  async loadConfiguration(): Promise<SystemConfiguration> {
     try {
       // In a real implementation, this would read from the file system
       // For now, we'll return a default configuration
@@ -116,7 +116,7 @@ export class ComprehensiveConfigurationManager implements ConfigurationManager {
     }
   }
 
-  async saveConfiguration(config: ClawdBotConfiguration): Promise<void> {
+  async saveConfiguration(config: SystemConfiguration): Promise<void> {
     try {
       // In a real implementation, this would write to the file system
       this.config = config;
@@ -130,7 +130,7 @@ export class ComprehensiveConfigurationManager implements ConfigurationManager {
     }
   }
 
-  validateConfiguration(config: ClawdBotConfiguration): ValidationResult {
+  validateConfiguration(config: SystemConfiguration): ValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -774,11 +774,11 @@ export class ComprehensiveConfigurationManager implements ConfigurationManager {
     }
   }
 
-  private getDefaultConfiguration(): ClawdBotConfiguration {
+  private getDefaultConfiguration(): SystemConfiguration {
     return {
       id: 'default-config',
       name: 'Default Configuration',
-      description: 'Default ClawdBot configuration',
+      description: 'Default Agent System configuration',
       settings: {
         startTime: new Date().toISOString(),
         debugMode: false,

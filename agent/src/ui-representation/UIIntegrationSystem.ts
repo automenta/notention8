@@ -5,7 +5,7 @@ import {
   UIMetaphorMapper,
   VisualizationComponent
 } from './UIMappingInterfaces';
-import { ClawdBotRepresentationConverter } from './ClawdBotRepresentationConverter';
+import { AgentRepresentationConverter } from './AgentRepresentationConverter';
 import { NotentionUIMetaphorMapper } from './NotentionUIMetaphorMapper';
 import { AgentVisualizationComponent } from './AgentVisualizationComponent';
 
@@ -31,7 +31,7 @@ export class UIIntegrationSystem {
   private visualizationComponents: Map<string, VisualizationComponent>;
 
   constructor() {
-    this.converter = new ClawdBotRepresentationConverter();
+    this.converter = new AgentRepresentationConverter();
     this.metaphorMapper = new NotentionUIMetaphorMapper();
     this.visualizationComponents = new Map();
 
@@ -48,24 +48,24 @@ export class UIIntegrationSystem {
   }
 
   /**
-   * Convert a ClawdBot configuration to UI representation
+   * Convert an Agent configuration to UI representation
    */
-  convertToUIRepresentation(clawdBotConfig: any): AgentRepresentation {
-    return this.converter.toAgentRepresentation(clawdBotConfig);
+  convertToUIRepresentation(agentConfig: any): AgentRepresentation {
+    return this.converter.toAgentRepresentation(agentConfig);
   }
 
   /**
-   * Convert UI representation back to ClawdBot configuration
+   * Convert UI representation back to Agent configuration
    */
   convertFromUIRepresentation(uiRepresentation: AgentRepresentation): any {
     return this.converter.fromAgentRepresentation(uiRepresentation);
   }
 
   /**
-   * Map a ClawdBot concept to a Notention UI metaphor
+   * Map an Agent concept to a Notention UI metaphor
    */
-  mapToUIMetaphor(clawdBotConcept: any): UIMetaphor {
-    return this.metaphorMapper.mapToMetaphor(clawdBotConcept);
+  mapToUIMetaphor(agentConcept: any): UIMetaphor {
+    return this.metaphorMapper.mapToMetaphor(agentConcept);
   }
 
   /**
@@ -87,7 +87,7 @@ export class UIIntegrationSystem {
   }
 
   /**
-   * Generate UI elements for displaying ClawdBot functionality in Notention
+   * Generate UI elements for displaying Agent functionality in Notention
    */
   generateUIDisplayElements(context: UIIntegrationContext): UIIntegrationResult {
     try {
@@ -95,7 +95,7 @@ export class UIIntegrationSystem {
 
       // If we have a specific agent ID, render that agent
       if (context.agentId) {
-        // In a real implementation, this would fetch the agent config from ClawdBot
+        // In a real implementation, this would fetch the agent config from the Agent System
         const mockAgentConfig = {
           id: context.agentId,
           name: `Agent ${context.agentId}`,
@@ -163,7 +163,7 @@ export class UIIntegrationSystem {
    * Generate an overview of active agents
    */
   private generateActiveAgentsOverview(): string {
-    // In a real implementation, this would fetch active agents from ClawdBot
+    // In a real implementation, this would fetch active agents from the Agent System
     return `
       <div class="agents-overview">
         <h4>Active Automation Agents</h4>
@@ -193,10 +193,10 @@ export class UIIntegrationSystem {
   }
 
   /**
-   * Process a UI interaction and convert it to a ClawdBot action
+   * Process a UI interaction and convert it to an Agent action
    */
   processUIInteraction(interaction: any): any {
-    // Convert UI interaction to ClawdBot command
+    // Convert UI interaction to Agent command
     switch (interaction.type) {
       case 'agent_control':
         return {

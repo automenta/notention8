@@ -1,7 +1,7 @@
 import {
   NoteTranslationStrategy,
-  ClawdBotAction,
-  ClawdBotConfiguration,
+  AgentAction,
+  AgentConfiguration,
   Condition,
   Schedule,
   Trigger
@@ -40,8 +40,8 @@ export class HeuristicTranslationStrategy implements NoteTranslationStrategy {
     return automationPatterns.some(pattern => pattern.test(lowerContent)) || hasProperties;
   }
 
-  async translate(note: any): Promise<ClawdBotAction[] | ClawdBotConfiguration> {
-    const actions: ClawdBotAction[] = [];
+  async translate(note: any): Promise<AgentAction[] | AgentConfiguration> {
+    const actions: AgentAction[] = [];
     const content = (note.title || '') + ' ' + (note.content || '');
 
     // Extract semantic properties like [action:...], [when:...], [if:...]
@@ -114,8 +114,8 @@ export class HeuristicTranslationStrategy implements NoteTranslationStrategy {
     return conditions;
   }
 
-  private extractScheduledActions(properties: string[]): ClawdBotAction[] {
-    const actions: ClawdBotAction[] = [];
+  private extractScheduledActions(properties: string[]): AgentAction[] {
+    const actions: AgentAction[] = [];
 
     properties.forEach(prop => {
       if (prop.startsWith('action:') || prop.startsWith('do:')) {
@@ -133,8 +133,8 @@ export class HeuristicTranslationStrategy implements NoteTranslationStrategy {
     return actions;
   }
 
-  private extractMonitoringActions(properties: string[]): ClawdBotAction[] {
-    const actions: ClawdBotAction[] = [];
+  private extractMonitoringActions(properties: string[]): AgentAction[] {
+    const actions: AgentAction[] = [];
 
     properties.forEach(prop => {
       if (prop.includes('monitor') || prop.includes('track') || prop.includes('watch')) {
@@ -151,8 +151,8 @@ export class HeuristicTranslationStrategy implements NoteTranslationStrategy {
     return actions;
   }
 
-  private async extractNaturalLanguageActions(content: string, note: any): Promise<ClawdBotAction[]> {
-    const actions: ClawdBotAction[] = [];
+  private async extractNaturalLanguageActions(content: string, note: any): Promise<AgentAction[]> {
+    const actions: AgentAction[] = [];
     const lowerContent = content.toLowerCase();
 
     // Look for reminder patterns

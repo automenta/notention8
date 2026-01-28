@@ -1,14 +1,14 @@
-// Interfaces for comprehensive ClawdBot state management
+// Interfaces for comprehensive Agent System state management
 
-// Represents the complete state of ClawdBot
-export interface ClawdBotState {
+// Represents the complete state of the Agent System
+export interface SystemState {
   id: string;
   status: 'running' | 'stopped' | 'paused' | 'error' | 'initializing';
   version: string;
   uptime: number; // in seconds
   activeAgents: AgentState[];
   availableSkills: SkillDescriptor[];
-  configuration: ClawdBotConfiguration;
+  configuration: SystemConfiguration;
   recentLogs: LogEntry[];
   resourceUsage: ResourceUsage;
   lastError?: ErrorInfo;
@@ -99,8 +99,8 @@ export interface ParameterSpec {
   options?: string[]; // for enum types
 }
 
-// ClawdBot configuration
-export interface ClawdBotConfiguration {
+// System configuration
+export interface SystemConfiguration {
   id: string;
   name: string;
   description: string;
@@ -237,10 +237,10 @@ export interface ErrorInfo {
 // State manager interface
 export interface StateManager {
   // Get current state
-  getState(): Promise<ClawdBotState>;
+  getState(): Promise<SystemState>;
 
   // Update state
-  updateState(newState: Partial<ClawdBotState>): Promise<void>;
+  updateState(newState: Partial<SystemState>): Promise<void>;
 
   // Get specific agent state
   getAgentState(agentId: string): Promise<AgentState | undefined>;
@@ -249,10 +249,10 @@ export interface StateManager {
   updateAgentState(agentId: string, newState: Partial<AgentState>): Promise<void>;
 
   // Get configuration
-  getConfiguration(): Promise<ClawdBotConfiguration>;
+  getConfiguration(): Promise<SystemConfiguration>;
 
   // Update configuration
-  updateConfiguration(newConfig: Partial<ClawdBotConfiguration>): Promise<void>;
+  updateConfiguration(newConfig: Partial<SystemConfiguration>): Promise<void>;
 
   // Add log entry
   addLog(entry: LogEntry): void;
@@ -261,7 +261,7 @@ export interface StateManager {
   getRecentLogs(count?: number): LogEntry[];
 
   // Subscribe to state changes
-  subscribe(callback: (state: ClawdBotState) => void): () => void;
+  subscribe(callback: (state: SystemState) => void): () => void;
 
   // Initialize state manager
   initialize(): Promise<void>;

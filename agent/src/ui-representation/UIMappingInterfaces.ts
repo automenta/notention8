@@ -1,6 +1,6 @@
-// Interfaces for representing ClawdBot functionality in the Notention UI
+// Interfaces for representing Agent functionality in the Notention UI
 
-// Represents a ClawdBot agent/workflow in the UI
+// Represents an Agent/workflow in the UI
 export interface AgentRepresentation {
   id: string;
   name: string;
@@ -66,15 +66,15 @@ export interface AgentUIState {
   configuration: any;
 }
 
-// Interface for converting ClawdBot entities to UI representations
+// Interface for converting Agent entities to UI representations
 export interface RepresentationConverter {
   /**
-   * Convert a ClawdBot configuration to a UI representation
+   * Convert an Agent configuration to a UI representation
    */
   toAgentRepresentation(config: any): AgentRepresentation;
 
   /**
-   * Convert UI representation back to ClawdBot configuration
+   * Convert UI representation back to Agent configuration
    */
   fromAgentRepresentation(representation: AgentRepresentation): any;
 
@@ -110,12 +110,12 @@ export interface VisualizationComponent {
 // Interface for UI metaphor mapping
 export interface UIMetaphorMapper {
   /**
-   * Map a ClawdBot concept to a Notention UI metaphor
+   * Map an Agent concept to a Notention UI metaphor
    */
-  mapToMetaphor(clawdBotConcept: any): UIMetaphor;
+  mapToMetaphor(agentConcept: any): UIMetaphor;
 
   /**
-   * Map a UI metaphor back to a ClawdBot concept
+   * Map a UI metaphor back to an Agent concept
    */
   mapFromMetaphor(metaphor: UIMetaphor): any;
 

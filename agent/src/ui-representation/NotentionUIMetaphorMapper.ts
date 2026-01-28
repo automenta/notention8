@@ -170,9 +170,9 @@ export class NotentionUIMetaphorMapper implements UIMetaphorMapper {
     }
   ];
 
-  mapToMetaphor(clawdBotConcept: any): UIMetaphor {
+  mapToMetaphor(agentConcept: any): UIMetaphor {
     // Determine the most appropriate metaphor based on the concept
-    const type = clawdBotConcept.type || clawdBotConcept.settings?.type || 'generic';
+    const type = agentConcept.type || agentConcept.settings?.type || 'generic';
 
     // Try to match based on type
     const matchedMetaphor = this.metaphors.find(m =>
@@ -188,7 +188,7 @@ export class NotentionUIMetaphorMapper implements UIMetaphorMapper {
   }
 
   mapFromMetaphor(metaphor: UIMetaphor): any {
-    // Convert a UI metaphor back to a ClawdBot concept
+    // Convert a UI metaphor back to an Agent concept
     return {
       type: metaphor.category,
       name: metaphor.name,

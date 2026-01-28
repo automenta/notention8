@@ -1,4 +1,4 @@
-// Extension interface for adding new functionality to the ClawdBot agent
+// Extension interface for adding new functionality to the Agent System
 export interface Extension {
   /**
    * Unique identifier for the extension
@@ -54,7 +54,7 @@ export interface ExtensionContext {
   request: any;
 
   /**
-   * Reference to the ClawdBot gateway
+   * Reference to the Gateway
    */
   gateway: any;
 

@@ -1,8 +1,9 @@
 {
   "name": "@notention/agent",
   "version": "1.0.0",
-  "description": "ClawdBot wrapper for Notention",
+  "description": "Core Agent Logic for Notention",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
@@ -10,14 +11,11 @@
   },
   "keywords": [
     "notention",
-    "clawdbot",
     "agent"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@notention/agent-moltbot": "*",
-    "@notention/agent-voltagent": "*",
     "@notention/core": "*",
     "@notention/ui": "*",
     "express": "^4.21.2",
