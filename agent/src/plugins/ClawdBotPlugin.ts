@@ -9,6 +9,7 @@ import { UIIntegrationSystem } from '../ui-representation/UIIntegrationSystem';
 import { ClawdBotClient } from '../communication/ClawdBotClient';
 import { SkillRegistry } from '../skills/SkillRegistry';
 import { IndeedSkill } from '../skills/IndeedSkill';
+import { FeedbackCollector } from '../feedback/FeedbackCollector';
 
 interface ClawdBotGateway {
   process?: any;
@@ -34,6 +35,7 @@ export class ClawdBotPlugin implements Plugin {
   private configManager: any;
   private broadcaster: ((message: any) => void) | null = null;
   private skillRegistry: SkillRegistry;
+  private feedbackCollector: FeedbackCollector;
 
   constructor(
     gateway: any,
@@ -55,6 +57,9 @@ export class ClawdBotPlugin implements Plugin {
     // Initialize Skills
     this.skillRegistry = new SkillRegistry();
     this.skillRegistry.register(new IndeedSkill());
+
+    // Initialize Feedback
+    this.feedbackCollector = new FeedbackCollector();
 
     // Register strategies
     this.strategyManager.registerStrategy(new SkillBasedStrategy(this.skillRegistry));
@@ -221,6 +226,9 @@ export class ClawdBotPlugin implements Plugin {
       case 'get_active_agents':
         await this.handleGetActiveAgents();
         break;
+      case 'submit_feedback':
+        await this.handleFeedback(message.payload);
+        break;
       default:
         console.log('Unknown message type for ClawdBot plugin:', message.type);
     }
@@ -234,6 +242,22 @@ export class ClawdBotPlugin implements Plugin {
     };
   }
 
+  private async handleFeedback(payload: any): Promise<void> {
+      try {
+          await this.feedbackCollector.recordFeedback(payload);
+          this.broadcastToUI({
+              type: 'feedback_recorded',
+              payload: { success: true, id: payload.id }
+          });
+      } catch (error) {
+          console.error('Error recording feedback:', error);
+          this.broadcastToUI({
+              type: 'feedback_error',
+              payload: { error: 'Failed to record feedback' }
+          });
+      }
+  }
+
   private async handleGetMetaphors(): Promise<void> {
     const metaphors = this.uiIntegrationSystem.getAvailableMetaphors();
     this.broadcastToUI({
@@ -243,15 +267,45 @@ export class ClawdBotPlugin implements Plugin {
   }
 
   private async handleCreateAgentFromNote(payload: any): Promise<void> {
-    // Simulate process
-    this.broadcastToUI({
-      type: 'agent_creation_initiated',
-      payload: {
-        noteId: payload.noteId,
-        status: 'success',
-        message: 'Agent creation initiated'
-      }
-    });
+    if (this.gateway && this.gateway.client) {
+        try {
+            // Actually create the agent in ClawdBot
+            const agent = await this.gateway.client.createAgent({
+                fromNoteId: payload.noteId,
+                config: {
+                    type: 'autonomous',
+                    capabilities: ['browser', 'analysis']
+                }
+            });
+
+            this.broadcastToUI({
+                type: 'agent_created',
+                payload: {
+                    noteId: payload.noteId,
+                    agentId: agent.id,
+                    status: 'success',
+                    message: `Agent created successfully from note ${payload.noteId}`
+                }
+            });
+        } catch (e) {
+            console.error('Error creating agent:', e);
+            this.broadcastToUI({
+                type: 'agent_creation_error',
+                payload: {
+                    noteId: payload.noteId,
+                    error: e instanceof Error ? e.message : 'Unknown error creating agent'
+                }
+            });
+        }
+    } else {
+        this.broadcastToUI({
+            type: 'agent_creation_error',
+            payload: {
+                noteId: payload.noteId,
+                error: 'ClawdBot gateway not connected'
+            }
+        });
+    }
   }
 
   private async handleAgentControl(payload: any): Promise<void> {
@@ -267,15 +321,38 @@ export class ClawdBotPlugin implements Plugin {
   }
 
   private async handleGetActiveAgents(): Promise<void> {
-    // Return empty list
-    this.broadcastToUI({
-      type: 'active_agents_overview',
-      payload: {
-        agents: [],
-        count: 0,
-        message: 'No active agents'
-      }
-    });
+    if (this.gateway && this.gateway.client) {
+        try {
+            const agents = await this.gateway.client.listAgents();
+            this.broadcastToUI({
+                type: 'active_agents_overview',
+                payload: {
+                    agents: agents,
+                    count: agents.length,
+                    message: `Found ${agents.length} active agents`
+                }
+            });
+        } catch (e) {
+            console.error('Error listing agents:', e);
+             this.broadcastToUI({
+                type: 'active_agents_overview',
+                payload: {
+                    agents: [],
+                    count: 0,
+                    message: 'Error fetching agents'
+                }
+            });
+        }
+    } else {
+         this.broadcastToUI({
+            type: 'active_agents_overview',
+            payload: {
+                agents: [],
+                count: 0,
+                message: 'No connection to ClawdBot'
+            }
+        });
+    }
   }
   
   private async executeClawdBotAction(payload: any): Promise<void> {

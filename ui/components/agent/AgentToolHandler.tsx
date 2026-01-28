@@ -63,6 +63,14 @@ export function AgentToolHandler() {
                     });
                     break;
 
+                case 'execute_browser_action':
+                    addToast('Agent requested Browser Action', 'info');
+                    sendMessage('clawdbot_execute', {
+                        type: 'browser',
+                        config: args
+                    });
+                    break;
+
                 default:
                     sendMessage('clawdbot_execute', {
                         type: 'agent_instruction',
