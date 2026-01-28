@@ -1,6 +1,4 @@
-import { Plugin } from '../src/plugins/PluginInterface';
-import { StrategyManager } from '../src/strategies/StrategyManager';
-import { AgentAction } from '../src/strategies/NoteTranslationStrategy';
+import { Plugin, StrategyManager, AgentAction } from '@notention/agent';
 import { Agent, Memory, tool } from "@voltagent/core";
 import { createPinoLogger } from "@voltagent/logger";
 import { openai } from "@ai-sdk/openai";
