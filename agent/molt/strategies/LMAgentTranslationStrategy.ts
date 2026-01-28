@@ -1,9 +1,9 @@
 import { DEFAULT_ONTOLOGY } from '@notention/core';
 import {
-  ClawdBotAction,
-  ClawdBotConfiguration,
+  AgentAction,
+  AgentConfiguration,
   NoteTranslationStrategy,
-} from './NoteTranslationStrategy';
+} from '../../src/strategies/NoteTranslationStrategy';
 
 export class LMAgentTranslationStrategy implements NoteTranslationStrategy {
   private readonly name = 'LM Agent Translation Strategy';
@@ -13,10 +13,10 @@ export class LMAgentTranslationStrategy implements NoteTranslationStrategy {
     return true;
   }
 
-  async translate(note: any): Promise<ClawdBotAction[] | ClawdBotConfiguration> {
+  async translate(note: any): Promise<AgentAction[] | AgentConfiguration> {
     const prompt = this.constructAgentPrompt(note);
 
-    const action: ClawdBotAction = {
+    const action: AgentAction = {
       id: `agent-instruction-${note.id}-${Date.now()}`,
       type: 'agent_instruction',
       description: 'Send note context to ClawdBot Agent for processing',

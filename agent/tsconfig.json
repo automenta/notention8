@@ -9,7 +9,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
@@ -29,7 +29,9 @@
     "strict": false
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "molt/**/*",
+    "voltagent/**/*"
   ],
   "exclude": [
     "node_modules",
