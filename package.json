@@ -4,7 +4,9 @@
   "workspaces": [
     "ui",
     "agent",
-    "core"
+    "core",
+    "agent/voltagent",
+    "agent/moltbot"
   ],
   "scripts": {
     "test": "npm test --workspaces",
