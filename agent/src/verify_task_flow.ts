@@ -1,4 +1,4 @@
-import { clawdBotCoordinator } from './ClawdBotCoordinator';
+import { clawdBotCoordinator } from '../moltbot/src/ClawdBotCoordinator';
 import { createNote } from '@notention/core';
 
 // Mock Bridge

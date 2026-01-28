@@ -3,10 +3,21 @@ import { Note } from '@notention/core/src/types';
 import { SkillRegistry } from './SkillRegistry';
 
 export class SkillExecutor {
+    private onEvent?: (event: any) => void;
+
     constructor(
         private agent: Agent,
-        private registry: SkillRegistry
-    ) { }
+        private registry: SkillRegistry,
+        onEvent?: (event: any) => void
+    ) {
+        this.onEvent = onEvent;
+    }
+
+    private emit(type: string, payload: any) {
+        if (this.onEvent) {
+            this.onEvent({ type, payload });
+        }
+    }
 
     async executeForNote(note: Note): Promise<Note[]> {
         // Find matching skills via agent
@@ -19,6 +30,11 @@ export class SkillExecutor {
 
         console.log(`Found ${matches.length} matching skills`);
 
+        this.emit('skill_execution_started', {
+            noteId: note.id,
+            skills: matches.map(m => m.skill.name)
+        });
+
         // Execute via VoltAgent's skill-execution workflow
         const allResults: Note[] = [];
 
@@ -26,6 +42,8 @@ export class SkillExecutor {
             if (confidence < 0.5) continue; // Skip low-confidence matches
 
             try {
+                this.emit('skill_running', { skill: skill.name, noteId: note.id });
+
                 // Note: The workflow 'skill-execution' was defined to take noteData.
                 const result = await this.agent.executeWorkflow('skill-execution', {
                     skillId: skill.id,
@@ -35,11 +53,21 @@ export class SkillExecutor {
                     }
                 });
 
-                allResults.push(...(result.importedNotes || []));
+                if (result.importedNotes) {
+                    allResults.push(...result.importedNotes);
+                }
+
+                this.emit('skill_completed', { skill: skill.name, success: true });
             } catch (error) {
                 console.error(`Error executing skill ${skill.name}:`, error);
+                this.emit('skill_failed', { skill: skill.name, error: String(error) });
             }
         }
+
+        this.emit('skill_execution_finished', {
+            noteId: note.id,
+            resultsCount: allResults.length
+        });
 
         return allResults;
     }

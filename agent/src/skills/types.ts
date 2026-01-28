@@ -12,8 +12,14 @@ export interface Skill {
     description: string;
 
     // Core methods
-    export(note: Note): Promise<SkillAction | null>;
-    import(results: any): Promise<Note[]>;
+    // Core methods (VoltAgent)
+    export?(note: Note): Promise<SkillAction | null>;
+    import?(results: any): Promise<Note[]>;
+
+    // MoltBot compatibility
+    preview?(note: Note): string;
+    exportToActions?(note: Note): any;
+    importFromData?(data: any, sourceNote: Note): Note[];
 }
 
 export interface SkillMetadata {

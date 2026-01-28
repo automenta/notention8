@@ -3,7 +3,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { join } from 'path';
 import fs from 'fs';
 import { AgentRegistry } from './core/AgentRegistry';
-import { VoltAgentProvider } from '@notention/agent-voltagent';
+import { VoltAgentProvider } from '../voltagent/src/VoltAgentProvider';
 import { SkillRegistry } from './skills/SkillRegistry';
 import { SkillExecutor } from './skills/SkillExecutor';
 import { loadAgentConfig } from './config';
@@ -59,7 +59,9 @@ async function bootstrap() {
   skillRegistry.setAgent(voltagent);
   initializeBuiltInSkills(skillRegistry);
 
-  skillExecutor = new SkillExecutor(voltagent, skillRegistry);
+  skillExecutor = new SkillExecutor(voltagent, skillRegistry, (event) => {
+    broadcastToUI(event);
+  });
 
   // Register App-Specific Tools with VoltAgent
   const { querySkillRegistryTool, executeSkillTool, ontologyQueryTool } = await import('./tools');

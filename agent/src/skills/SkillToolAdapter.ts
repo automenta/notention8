@@ -3,6 +3,7 @@ import { Tool } from '@notention/core/src/types';
 import { Skill } from './types';
 import { Note } from '@notention/core/src/types';
 import { createTool, log } from '../core/utils';
+import { executeAction } from '../core/actionExecutor';
 
 export class SkillToolAdapter {
     static createToolFromSkill(skill: Skill): Tool {
@@ -16,21 +17,35 @@ export class SkillToolAdapter {
                 })
             }),
             execute: async ({ note }: any) => {
-                const action = await skill.export(note as Note);
+                let action: any = null;
+
+                if (skill.export) {
+                    action = await skill.export(note as Note);
+                } else if (skill.exportToActions) {
+                    // Fallback to MoltBot method
+                    const actions = skill.exportToActions(note as Note);
+                    if (actions && actions.actions && actions.actions.length > 0) {
+                        action = { type: 'browser_action', payload: actions.actions };
+                    }
+                }
+
                 if (!action) {
                     return { success: false, reason: 'Skill did not generate action' };
                 }
 
                 // Execute external action
-                const results = await this.executeExternalAction(action);
-                return await skill.import(results);
+                const results = await executeAction(action);
+
+                if (skill.import) {
+                    return await skill.import(results);
+                } else if (skill.importFromData) {
+                    // Fallback to MoltBot method
+                    // Note: Mocking sourceNote as the input note for now
+                    return skill.importFromData(results, note as Note);
+                }
+
+                return [];
             }
         });
-    }
-
-    private static async executeExternalAction(action: any): Promise<any> {
-        log('SkillToolAdapter', 'Executing external action:', action);
-        // Stub implementation
-        return { status: 'success', data: 'Stubbed action result' };
     }
 }

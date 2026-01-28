@@ -1,5 +1,5 @@
 import type { Note, ActionSequence, BrowserAction } from '@notention/core';
-import { SkillRegistry } from './skills/SkillRegistry';
+import { SkillRegistry } from '../../src/skills/SkillRegistry';
 import { IndeedSkill } from './skills/IndeedSkill';
 import { CraigslistSkill } from './skills/CraigslistSkill';
 import { GitHubSkill } from './skills/GitHubSkill';
@@ -206,7 +206,7 @@ export class ClawdBotCoordinator {
             return [];
         }
 
-        const matches = this.registry.findMatching(note, 0.5);
+        const matches = await this.registry.findMatching(note, 0.5);
 
         if (!matches.length) {
             console.log(`ℹ️ No matching skills for: "${note.title}"`);
@@ -221,6 +221,7 @@ export class ClawdBotCoordinator {
         return matches
             .map(m => {
                 try {
+                    if (!m.skill.exportToActions) return null;
                     const sequence = m.skill.exportToActions(note);
                     console.log(`📋 ${sequence.name}${m.skill.preview ? `: ${m.skill.preview(note)}` : ''}`);
                     return sequence;
@@ -251,6 +252,11 @@ export class ClawdBotCoordinator {
 
         if (!skillMetadata) {
             console.warn('⚠️ Skill not found for sequence');
+            return [];
+        }
+
+        if (!skillMetadata.skill.importFromData) {
+            console.warn('⚠️ Skill does not support importFromData');
             return [];
         }
 

@@ -16,11 +16,12 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@notention/agent-moltbot": "*",
+    "@notention/agent-voltagent": "*",
     "@notention/core": "*",
     "@notention/ui": "*",
-    "@notention/agent-voltagent": "*",
-    "@notention/agent-moltbot": "*",
     "express": "^4.21.2",
+    "playwright": "^1.58.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {
