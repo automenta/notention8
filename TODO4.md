@@ -2,9 +2,9 @@
 > **Master Roadmap** merging Architecture (`TODO3.md`) and Tactical Tasks (`TODO.md`) with the Original Vision.
 
 ## Vision Statement
-Transform Notention from a private semantic notebook into a **Universal Action Agent**. Notention bridges **Thinking** (Notes) and **Doing** (VoltAgent/ClawdBot). It starts as an ergonomic hybrid editor and scales into a P2P social mind where agents coordinate and evolve together.
+Transform Notention from a private semantic notebook into a **Universal Action Agent**. Notention bridges **Thinking** (Notes) and **Doing** via **VoltAgent**, its central intelligence. It starts as an ergonomic hybrid editor and scales into a P2P social mind where agents coordinate and evolve together.
 
-This roadmap is a **Lossless Merge**: It preserves the deep simulation and onboarding specs of the original plan while upgrading the architecture to "VoltAgent-First" and prioritizing "Ergonomic Utility".
+This roadmap upgrades the architecture to **VoltAgent-First**, positioning **VoltAgent** as the primary autonomous system and **ClawdBot** as its specialized browser automation engine.
 
 ---
 
@@ -12,10 +12,10 @@ This roadmap is a **Lossless Merge**: It preserves the deep simulation and onboa
 
 1.  **Phase 1: Foundation & Ergonomics** ("The Hybrid Mind")
     *   *Goal:* From Empty State to "First Automation" in < 5 mins via a Hybrid Semantic Editor.
-    *   *Tech:* VoltAgent, Note-Driven Config, Setup Wizard.
+    *   *Tech:* VoltAgent Core, Note-Driven Config, Setup Wizard.
 2.  **Phase 2: The Action Loop** ("The Hands")
-    *   *Goal:* Robust browser automation (ClawdBot) and a "Zero-Code" skill ecosystem.
-    *   *Tech:* Playwright, Skill Registry, Sandbox Testing.
+    *   *Goal:* Robust browser automation (VoltAgent Browser Engine) and a "Zero-Code" skill ecosystem.
+    *   *Tech:* VoltAgent Workflows, Playwright, Skill Registry.
 3.  **Phase 3: Network & Simulation** ("The Social Mind")
     *   *Goal:* Multi-agent coordination and bioplausible simulation of idea propagation.
     *   *Tech:* Nostr, Virtual Peers, Evolution Tracker.
@@ -33,7 +33,7 @@ This roadmap is a **Lossless Merge**: It preserves the deep simulation and onboa
 
 **Features**:
 - Welcome sequence with guided tour of core concepts (Notes = Instructions).
-- Automatic detection of system capabilities (browser automation, file access, etc.).
+- Automatic detection of system capabilities (VoltAgent capabilities, file access, etc.).
 - Privacy settings configuration with clear explanations (Local-First by default).
 - Basic skill activation based on user profile.
 - Sample note creation demonstrating core functionality.
@@ -57,7 +57,7 @@ This roadmap is a **Lossless Merge**: It preserves the deep simulation and onboa
 - **Property Autocomplete:** Typing `[` triggers fuzzy search for ontology keys (`status`, `priority`) and values.
 - **Natural Language Injection:** "Ghost text" suggestions that convert "Buy milk tomorrow" into `[task:buy] [item:milk] [due:tomorrow]`.
 - **Live Validation:** Visual feedback (Red/Green) when properties match/violate the ontology.
-- **Active Feedback:** Streaming agent logs/screenshots directly into the Note view.
+- **Active Feedback:** Streaming VoltAgent logs/screenshots directly into the Note view.
 
 ### 1.3 Self-Configuration Through Notes
 **Goal**: Enable notes to configure and reconfigure the system
@@ -107,21 +107,21 @@ export class NoteBasedConfig {
 
 ## Phase 2: The Action Loop & Skill Ecosystem ("The Hands")
 
-### 2.1 VoltAgent & ClawdBot Integration
-**Goal**: Execute semantic intents on the real web.
+### 2.1 VoltAgent Browser Capabilities (fka ClawdBot)
+**Goal**: Execute semantic intents on the real web using VoltAgent's browser engine.
 **Files**: `agent/src/ClawdBotCoordinator.ts`, `agent/voltagent/VoltAgentProvider.ts`
 
 **Features**:
-- **Browser Executor:** `ClawdBotBrowserAdapter` using Playwright.
-- **Skill Registry:** Formal mapping of Semantic Patterns -> Skills.
+- **Browser Executor:** VoltAgent uses `ClawdBotBrowserAdapter` (Playwright) as its hands.
+- **Skill Registry:** Formal mapping of Semantic Patterns -> VoltAgent Skills.
 - **Standard Skills:**
     - `IndeedSkill` (Jobs)
     - `CraigslistSkill` (Marketplace)
     - `GitHubSkill` (Code)
-- **Visual Feedback:** Stream browser screenshots back to the UI Note.
+- **Visual Feedback:** VoltAgent streams browser screenshots back to the UI Note.
 
 ### 2.2 Skill Ecosystem (DevX)
-**Goal**: Empower users to extend the system without touching core code.
+**Goal**: Empower users to extend VoltAgent without touching core code.
 
 **Features**:
 - **Zero-Code Macro Skills:** Define skills by chaining existing ones in a Note.
@@ -170,7 +170,21 @@ export class TestEnvironment {
 - [ ] Mock services accurately simulate real services.
 - [ ] 5-Minute Skill: A developer can write and install a new skill in < 5 mins.
 
-### 2.4 Scenario-Based Testing
+### 2.4 Self-Driving UI (VoltAgent Tutorial Mode)
+**Goal**: VoltAgent uses the App UI itself to teach, demonstrate, and test.
+**Concept**: Since VoltAgent controls the browser engine, it can be directed to `localhost` to interact with Notention just like a human user.
+
+**Features**:
+- **"Watch Me" Tutorials**: VoltAgent takes control of the cursor to physically click buttons and type notes.
+- **Ghost Demos**: VoltAgent acts as a "Ghost User" to populate a demo environment.
+- **UI Regression**: VoltAgent uses the actual UI to verify that features work end-to-end.
+
+**Implementation**:
+- Add `localhost` as a permitted domain for the browser engine.
+- Create a `TutorialSkill` that maps intents to UI selector sequences.
+- Overlay "Agent Cursors" on the UI so the user can distinguish Agent actions.
+
+### 2.5 Scenario-Based Testing
 **Goal**: Provide structured testing for automation workflows
 **Files**: `core/src/testing/ScenarioManager.ts`, `agent/src/tester/ScenarioRunner.ts`
 
@@ -279,7 +293,7 @@ export class SimulationNetwork {
 
 ### Months 3-4: Phase 2 - The Action Loop
 - Build Isolated Test Environment & Mock Services.
-- Implement ClawdBot Browser Automation & Skill Registry.
+- Integration VoltAgent Browser Engine & Skill Registry.
 - Launch "Zero-Code" Skill capabilities.
 
 ### Months 5-6: Phase 3 - Social Mind & Simulation
