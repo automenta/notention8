@@ -3,6 +3,7 @@ import { Agent, Memory, tool } from "@voltagent/core";
 import { createPinoLogger } from "@voltagent/logger";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
+import * as crypto from 'crypto';
 
 export class VoltAgentPlugin implements Plugin {
     id = 'voltagent-integration';
@@ -98,7 +99,10 @@ export class VoltAgentPlugin implements Plugin {
 
     private async processAgentRequest(prompt: string, requestId?: string) {
         try {
-            const result = await this.agent.generateText(prompt);
+            const result = await this.agent.generateText(prompt, {
+                conversationId: 'default-session',
+                userId: 'user'
+            });
             const responseText = result.text;
 
             this.broadcast({
