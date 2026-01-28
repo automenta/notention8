@@ -86,12 +86,14 @@ export class VoltAgentPlugin implements Plugin {
         if (message.type === 'agent_request' || message.type === 'clawdbot_request') {
              const prompt = message.payload.message || message.payload.prompt;
              if (prompt) {
+                 console.log(`[VoltAgent] Received user prompt: "${prompt.slice(0, 50)}..."`);
                  await this.processAgentRequest(prompt, message.id);
              }
         } else if (message.type === 'clawdbot_execute') {
-            // Handle execution requests from ChatView
+            // Handle execution requests from ChatView (usually tool results)
             const action = message.payload;
             if (action && action.type === 'agent_instruction' && action.parameters && action.parameters.message) {
+                 console.log(`[VoltAgent] Received tool execution feedback: "${action.parameters.message.slice(0, 50)}..."`);
                  await this.processAgentRequest(action.parameters.message);
             }
         }
@@ -104,6 +106,8 @@ export class VoltAgentPlugin implements Plugin {
                 userId: 'user'
             });
             const responseText = result.text;
+
+            console.log(`[VoltAgent] Generated response: "${responseText.slice(0, 50)}..."`);
 
             this.broadcast({
                 type: 'agent_response',
