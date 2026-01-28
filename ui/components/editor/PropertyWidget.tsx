@@ -10,9 +10,10 @@ interface PropertyWidgetProps {
   onChange: (updated: Property) => void;
   onRemove: () => void;
   ontology: OntologyNode[];
+  className?: string;
 }
 
-export function PropertyWidget({ property, onChange, onRemove, ontology }: PropertyWidgetProps) {
+export function PropertyWidget({ property, onChange, onRemove, ontology, className = "mb-2" }: PropertyWidgetProps) {
   const getAttributeDetails = (key: string, nodes: OntologyNode[]): { type: string, description?: string } | undefined => {
       if (!nodes) return undefined;
       for (const node of nodes) {
@@ -30,7 +31,7 @@ export function PropertyWidget({ property, onChange, onRemove, ontology }: Prope
   const currentAttr = getAttributeDetails(property.key, ontology);
 
   return (
-    <div className="flex items-center gap-2 bg-gray-800/50 p-2 rounded border border-gray-700/50 hover:border-blue-500/30 transition-all mb-2 animate-fade-in">
+    <div className={`flex items-center gap-2 bg-gray-800/50 p-2 rounded border border-gray-700/50 hover:border-blue-500/30 transition-all animate-fade-in ${className}`}>
        {/* Key Input */}
        <div className="relative w-1/3 min-w-[120px]">
            <input
