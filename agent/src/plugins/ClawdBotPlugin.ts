@@ -3,9 +3,12 @@ import { StrategyManager } from '../strategies/StrategyManager';
 import { LMAgentTranslationStrategy } from '../strategies/LMAgentTranslationStrategy';
 import { HeuristicTranslationStrategy } from '../strategies/HeuristicTranslationStrategy';
 import { PatternMatchingStrategy } from '../strategies/PatternMatchingStrategy';
+import { SkillBasedStrategy } from '../strategies/SkillBasedStrategy';
 import { TranslationContext } from '../strategies/NoteTranslationStrategy';
 import { UIIntegrationSystem } from '../ui-representation/UIIntegrationSystem';
 import { ClawdBotClient } from '../communication/ClawdBotClient';
+import { SkillRegistry } from '../skills/SkillRegistry';
+import { IndeedSkill } from '../skills/IndeedSkill';
 
 interface ClawdBotGateway {
   process?: any;
@@ -30,6 +33,7 @@ export class ClawdBotPlugin implements Plugin {
   private errorHandler: any;
   private configManager: any;
   private broadcaster: ((message: any) => void) | null = null;
+  private skillRegistry: SkillRegistry;
 
   constructor(
     gateway: any,
@@ -48,7 +52,12 @@ export class ClawdBotPlugin implements Plugin {
     this.strategyManager = new StrategyManager();
     this.uiIntegrationSystem = new UIIntegrationSystem();
 
-    // Register default strategies
+    // Initialize Skills
+    this.skillRegistry = new SkillRegistry();
+    this.skillRegistry.register(new IndeedSkill());
+
+    // Register strategies
+    this.strategyManager.registerStrategy(new SkillBasedStrategy(this.skillRegistry));
     this.strategyManager.registerStrategy(new LMAgentTranslationStrategy());
     this.strategyManager.registerStrategy(new HeuristicTranslationStrategy());
     this.strategyManager.registerStrategy(new PatternMatchingStrategy());
@@ -413,7 +422,34 @@ export class ClawdBotPlugin implements Plugin {
   }
 
   private async executeSingleResult(item: any, note: any): Promise<void> {
-    if (item.type === 'agent_instruction') {
+    if (item.type === 'skill_execution') {
+      // Handle Skill Execution
+      const { skillId, action } = item.parameters;
+      const skill = this.skillRegistry.get(skillId);
+
+      if (skill && this.gateway && this.gateway.client) {
+        try {
+          // Execute action via ClawdBot
+          const result = await this.gateway.client.executeAction(action);
+
+          // Import results via Skill
+          const importedNotes = await skill.import(result);
+
+          if (importedNotes && importedNotes.length > 0) {
+             this.broadcastToUI({
+                 type: 'notes_imported',
+                 payload: { notes: importedNotes, source: skill.name }
+             });
+          }
+        } catch (e) {
+             console.error(`Error executing skill ${skillId}:`, e);
+             this.broadcastToUI({
+                 type: 'agent_response_error',
+                 payload: { error: `Error executing skill ${skill.name}` }
+             });
+        }
+      }
+    } else if (item.type === 'agent_instruction') {
         const message = item.parameters.message;
         if (this.gateway && this.gateway.client) {
              try {
