@@ -4,6 +4,7 @@ import { IconButton } from '../common/IconButton';
 import { Select } from '../common/Select';
 import { PropertyValueInput } from './PropertyValueInput';
 import { TrashIcon, InformationCircleIcon } from '../common/icons';
+import { Autocomplete, AutocompleteOption } from '../common/Autocomplete';
 
 interface PropertyWidgetProps {
   property: Property;
@@ -28,26 +29,46 @@ export function PropertyWidget({ property, onChange, onRemove, ontology, classNa
       return undefined;
   };
 
+  const getAllAttributes = (nodes: OntologyNode[]): AutocompleteOption[] => {
+      let options: AutocompleteOption[] = [];
+      if (!nodes) return options;
+
+      for (const node of nodes) {
+          if (node.attributes) {
+              Object.entries(node.attributes).forEach(([key, attr]) => {
+                  options.push({
+                      value: key,
+                      label: key,
+                      description: attr.description
+                  });
+              });
+          }
+          if (node.children) {
+              options = [...options, ...getAllAttributes(node.children)];
+          }
+      }
+
+      // Deduplicate by value (key)
+      const uniqueOptions = Array.from(new Map(options.map(item => [item.value, item])).values());
+      return uniqueOptions;
+  };
+
   const currentAttr = getAttributeDetails(property.key, ontology);
+  const attributeOptions = getAllAttributes(ontology);
 
   return (
-    <div className={`flex items-center gap-2 bg-gray-800/50 p-2 rounded border border-gray-700/50 hover:border-blue-500/30 transition-all animate-fade-in ${className}`}>
+    <div className={`flex items-center gap-2 bg-gray-800/50 p-2 rounded border border-gray-700/50 hover:border-blue-500/30 transition-all animate-fade-in relative focus-within:z-20 ${className}`}>
        {/* Key Input */}
        <div className="relative w-1/3 min-w-[120px]">
-           <input
-             className="w-full bg-gray-900 border border-gray-700 rounded px-2 py-2 text-sm text-blue-300 font-mono focus:outline-none focus:border-blue-500 transition-colors"
-             list={`prop-keys-${property.key}`}
+           <Autocomplete
              value={property.key}
-             onChange={(e) => onChange({...property, key: e.target.value})}
+             onChange={(val) => onChange({...property, key: val})}
+             options={attributeOptions}
              placeholder="Key"
+             className="w-full"
            />
-           <datalist id={`prop-keys-${property.key}`}>
-               {ontology.flatMap(n => n.attributes ? Object.keys(n.attributes) : []).map(k => (
-                   <option key={k} value={k} />
-               ))}
-           </datalist>
            {currentAttr?.description && (
-               <div className="absolute right-2 top-2.5 text-gray-500 cursor-help" title={currentAttr.description}>
+               <div className="absolute right-2 top-2.5 text-gray-500 cursor-help z-10" title={currentAttr.description}>
                    <InformationCircleIcon className="w-3.5 h-3.5" />
                </div>
            )}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useWebSocket } from '../../hooks/useWebSocket';
-import { AgentStatus as AgentStatusType } from '../../../../agent/src/core/types';
+import { AgentStatus as AgentStatusType } from '../../../agent/src/core/types';
 
 export function AgentStatus() {
     const [status, setStatus] = useState<AgentStatusType | null>(null);
@@ -26,34 +26,45 @@ export function AgentStatus() {
         };
     }, [sendMessage, subscribe]);
 
-    if (!status) return <div>Connecting to agent...</div>;
+    if (!status) return (
+        <div className="p-3 text-sm text-gray-500 animate-pulse">
+            Connecting to agent...
+        </div>
+    );
 
     return (
-        <div className="agent-status" style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}>
-            <div className={`status-indicator ${status.state}`} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>{status.state === 'running' ? '🟢' : '🔴'}</span>
-                <span style={{ fontWeight: 'bold' }}>{status.state.toUpperCase()}</span>
-                <span style={{ fontSize: '0.8em', color: '#666' }}>v{status.version}</span>
+        <div className="bg-gray-900/50 border border-gray-700/50 rounded-lg p-3 text-sm shadow-sm backdrop-blur-sm">
+            <div className="flex items-center gap-2 mb-2">
+                <span className={`flex h-2 w-2 rounded-full ${status.state === 'running' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                <span className="font-bold text-gray-200 uppercase tracking-wide text-xs">{status.state}</span>
+                <span className="text-[10px] text-gray-500 font-mono border border-gray-700 rounded px-1">v{status.version}</span>
             </div>
 
-            <div className="capabilities" style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+            <div className="flex flex-wrap gap-1.5 mb-3">
                 {Object.entries(status.capabilities).map(([feature, enabled]) => (
-                    <span key={feature} className={`capability ${enabled ? 'enabled' : 'disabled'}`}
-                        style={{
-                            padding: '2px 6px',
-                            borderRadius: '10px',
-                            fontSize: '0.75em',
-                            backgroundColor: enabled ? '#e6fffa' : '#f5f5f5',
-                            color: enabled ? '#008080' : '#888'
-                        }}>
+                    <span
+                        key={feature}
+                        className={`
+                            px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider transition-colors
+                            ${enabled
+                                ? 'bg-blue-900/30 text-blue-300 border border-blue-700/30'
+                                : 'bg-gray-800/50 text-gray-600 border border-gray-700/30 line-through decoration-gray-600'}
+                        `}
+                    >
                         {feature}
                     </span>
                 ))}
             </div>
 
-            <div className="health" style={{ marginTop: '8px', fontSize: '0.8em' }}>
-                <div style={{ marginRight: '10px', display: 'inline-block' }}>Workflows: {status.health.activeWorkflows}</div>
-                <div style={{ display: 'inline-block' }}>Tools: {status.health.activeTools}</div>
+            <div className="flex gap-4 text-xs text-gray-400 font-mono pt-2 border-t border-gray-800/50">
+                <div className="flex items-center gap-1">
+                    <span>Workflows:</span>
+                    <span className="text-gray-200 font-bold">{status.health.activeWorkflows}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <span>Tools:</span>
+                    <span className="text-gray-200 font-bold">{status.health.activeTools}</span>
+                </div>
             </div>
         </div>
     );

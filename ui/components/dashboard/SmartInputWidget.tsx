@@ -79,12 +79,14 @@ export function SmartInputWidget() {
         <Card
             title="Hybrid Input"
             icon={SparklesIcon}
-            className="shadow-xl relative overflow-hidden group"
+            className="shadow-xl relative group"
             variant="default"
         >
-             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
-                <SparklesIcon className="w-24 h-24 text-purple-500 transform rotate-12" />
-            </div>
+             <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <SparklesIcon className="w-24 h-24 text-purple-500 transform rotate-12" />
+                </div>
+             </div>
 
             <div className="relative z-10">
                 <Textarea
@@ -108,7 +110,7 @@ export function SmartInputWidget() {
                         <div className="space-y-1">
                             {suggestedProps.map((prop, idx) => (
                                 <PropertyWidget
-                                    key={`${prop.key}-${idx}`}
+                                    key={idx}
                                     property={prop}
                                     onChange={(updated) => {
                                         const next = [...suggestedProps];
