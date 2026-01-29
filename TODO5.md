@@ -21,6 +21,11 @@ Automation is useless if the manual experience is clunky. We must perfect the **
 -   **No Magic, Just Mechanics**: "Self-Demonstration" isn't magic; it's the system showing you how it works so you can trust it.
 -   **The "Opt-In" Co-Pilot**: AI features (VoltAgent) are off by default. You summon them like a genie. They never interrupt.
 
+**Implementation Details**:
+-   **Component**: `HybridEditor` with Monaco/CodeMirror hybrid for structured text.
+-   **Data**: `ThoughtNode` interface extends `Note` with `status: 'active' | 'archived'`, `urgency: 0-1`, and `context`.
+-   **UX**: "Command Palette" style entry for everything (`Ctrl+K` -> "New Thought").
+
 ### 2. Ontological Resonance (Alignment)
 **Principle**: *If we speak the same language, we can coordinate without friction.*
 
@@ -29,7 +34,32 @@ The "Ontology" is not just a schema; it's a **Shared Language of Thought**.
 -   **Network Resonance**: When two users share an ontology, they can "match" thoughts instantly (e.g., "I need a job" <-> "I need a dev") without a middleman.
 -   **Scalable Wisdom**: As the community refines ontologies, the "Global Brain" gets smarter, but *you* decide which parts to download.
 
-### 3. Thought Execution (VoltAgent)
+**Implementation Details**:
+-   **Engine**: `OntologyLearner` (Agent) watches user typing patterns to suggest schema updates.
+-   **Storage**: IPFS/Nostr for sharing Ontology fragments (lexicons).
+-   **Protocol**: `NIP-99` (simulated) for semantic intent matching.
+
+## The Flywheel: Solving the Naked Page
+
+**Problem**: The hardest part of thinking is starting.
+**Solution**: The system provides **Ignition**.
+
+### 3. Ignition (The Cold Start)
+**Principle**: *The system should offer a handle to grab onto when the mind is slippery.*
+
+-   **The Daily Compass**: Upon opening, show a "Summary of Yesterday" + "Focus for Today".
+-   **Contextual Nudges**: "You left off on [Project X]. Want to resume?"
+-   **Serendipity**: "Remember this thought from 2 years ago?" (Spaced Repetition).
+-   **Socratic Mode**: User types "I'm stuck". Agent asks: "What is the specific blocker?" (Therapist/Coach mode).
+
+**Implementation Details**:
+-   **View**: `IgnitionDashboard.tsx` replaces the blank list on startup.
+-   **Agent**: `FlywheelAgent` runs locally, analyzing `last_active` and `orphaned_thoughts`.
+-   **Logic**: `ContextAwarenessEngine` scores "Relevance" of old notes based on current time/location/open tabs.
+
+---
+
+### 4. Thought Execution (VoltAgent)
 **Principle**: *A Thought sufficient to specify an action is an action.*
 
 If you can write it down clearly enough, the machine should be able to do it—but only when you say "Engage".
@@ -37,21 +67,39 @@ If you can write it down clearly enough, the machine should be able to do it—b
 -   **The "Ghost" User**: The Agent doesn't use a hidden API. It uses *your* browser, *your* mouse, *your* keyboard. It is a "Ghost" in your machine, doing exactly what you would do, but faster.
 -   **Transparent Operations**: You see every click. You can pause, rewind, or take over at any time.
 
+**Implementation Details**:
+-   **Bridge**: WebSocket connection from `VoltAgent` (Backend) to `AgentCursor` (Frontend).
+-   **Visuals**: `AgentOverlay` component draws SVG paths for mouse movements.
+-   **Safety**: "Dead Man's Switch" - pressing any key pauses the Agent.
+
 ---
 
 ## The Master Plan
 
+## The Master Plan (Technical Execution)
+
 ### Phase 5.1: The Sovereign Kernel (Manual Perfection)
 *Goal: The best "Thought Processor" on earth, even offline.*
--   **Refined Editor**: Typing flows like water. Properties auto-complete.
--   **Manual Ontology**: Users define their own structures easily.
--   **"Ghost Mode" (Visualizer)**: The system visualizes what it *would* do, without doing it. A teaching tool.
+1.  **Refined Editor**:
+    *   [ ] Implement `HybridEditor` with inline property rendering.
+    *   [ ] Add `PropertyAutocomplete` based on local Ontology.
+2.  **Ignition Dashboard**:
+    *   [ ] Create `FlywheelAgent` (local logic only, no LLM needed initially).
+    *   [ ] Build `IgnitionView` (React) to display cues/nudges.
+3.  **Visualization ("Ghost Mode")**:
+    *   [ ] Connect `AgentService` to `AgentCursor` via WebSocket.
+    *   [ ] Create `TutorialSkill` that purely demonstrates UI features without side effects.
 
 ### Phase 5.2: The Opt-In Exocortex (Automation)
 *Goal: Breaking the barrier between Thought and Action.*
--   **The Summoning**: Press a key to summon VoltAgent contextually.
--   **Browser Telekinesis**: The Agent drives the browser to execute thoughts.
--   **Zero-Trust Automation**: The Agent asks for confirmation for every "Write" action until you explicitly whitelist it.
+1.  **The Bridge**:
+    *   [ ] Enhance `VoltAgentProvider` to broadcast `action_start`, `action_end`, `cursor_move` events.
+    *   [ ] Implement "Dead Man's Switch" (User input > Agent input).
+2.  **Self-Evolution**:
+    *   [ ] Implement `SelfEvolveSkill` allowing Agent to toggle Settings.
+    *   [ ] Add `PermissionGate` UI component: "Agent wants to enable AI. Allow? [Y/N]".
+3.  **Action**:
+    *   [ ] Implement `BrowserSkill` with "Projector" mode (runs in user's visible browser via extension or CDP, or streams headless view).
 
 ### Phase 5.3: The Resonant Web (Network)
 *Goal: A social network of pure intent.*
