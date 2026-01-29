@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { Property, OntologyNode } from '@notention/core';
 import { IconButton } from '../common/IconButton';
 import { Select } from '../common/Select';
@@ -54,7 +54,9 @@ export function PropertyWidget({ property, onChange, onRemove, ontology, classNa
   };
 
   const currentAttr = getAttributeDetails(property.key, ontology);
-  const attributeOptions = getAllAttributes(ontology);
+
+  // Memoize attribute options to prevent expensive recursion on every render
+  const attributeOptions = useMemo(() => getAllAttributes(ontology), [ontology]);
 
   return (
     <div className={`flex items-center gap-2 bg-gray-800/50 p-2 rounded border border-gray-700/50 hover:border-blue-500/30 transition-all animate-fade-in relative focus-within:z-20 ${className}`}>

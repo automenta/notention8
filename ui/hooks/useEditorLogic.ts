@@ -62,15 +62,16 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
 
   const { handleSaveTemplate } = useEditorTemplates({ dirtyNote });
 
+  // Promote note priority to 1.0 on manual edits (Phase 3.3)
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) =>
-      setDirtyNote((prev) => ({ ...prev, title: e.target.value })),
+      setDirtyNote((prev) => ({ ...prev, title: e.target.value, priority: 1.0 })),
     [setDirtyNote]
   );
 
   const handleTagsChange = useCallback(
     (newTags: string[]) => {
-      setDirtyNote((prev) => ({ ...prev, tags: newTags }));
+      setDirtyNote((prev) => ({ ...prev, tags: newTags, priority: 1.0 }));
     },
     [setDirtyNote]
   );
@@ -81,7 +82,7 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       const properties = parseProperties(content);
 
       setDirtyNote((prev) => {
-          const updated = { ...prev, content, properties };
+          const updated = { ...prev, content, properties, priority: 1.0 };
           return updated;
       });
     },
