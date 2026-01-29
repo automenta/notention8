@@ -1,6 +1,6 @@
 import { Note } from '@notention/core/src/types';
 import { Skill, SkillAction } from './types';
-import { SkillRegistry } from './SkillRegistry';
+import { AgentSkillRegistry } from './AgentSkillRegistry';
 import { log } from '../core/utils';
 
 export class DynamicMacroSkill implements Skill {
@@ -70,7 +70,7 @@ export class DynamicPromptSkill implements Skill {
 }
 
 export class MacroManager {
-    constructor(private registry: SkillRegistry) { }
+    constructor(private registry: AgentSkillRegistry) { }
 
     processNote(note: Note) {
         // 1. Macro Chain: [skill:Name] = [skill:A] -> [skill:B]

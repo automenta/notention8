@@ -1,5 +1,5 @@
 
-import { SkillRegistry } from './skills/SkillRegistry';
+import { AgentSkillRegistry } from './skills/AgentSkillRegistry';
 import { MacroManager } from './skills/MacroManager';
 import { Note } from '@notention/core/src/types';
 import { DynamicPromptSkill } from './skills/MacroManager';
@@ -7,7 +7,7 @@ import { DynamicPromptSkill } from './skills/MacroManager';
 async function verifyPrompt() {
     console.log('🧪 Verifying Prompt Skills...');
 
-    const registry = new SkillRegistry();
+    const registry = new AgentSkillRegistry();
     const manager = new MacroManager(registry);
 
     // 1. Create a Note causing definition

@@ -1,10 +1,9 @@
 // Simple singleton management for the agent module
 import { AgentRegistry } from './core/AgentRegistry';
-// We will import SkillRegistry type later when we create it, for now use any or interface
-// import { SkillRegistry } from './skills/SkillRegistry';
+import { AgentSkillRegistry } from './skills/AgentSkillRegistry';
 
 let agentRegistry: AgentRegistry | null = null;
-let skillRegistry: any | null = null;
+let skillRegistry: AgentSkillRegistry | null = null;
 let ontology: any | null = null;
 
 export function getAgentRegistry(): AgentRegistry {
@@ -14,11 +13,11 @@ export function getAgentRegistry(): AgentRegistry {
     return agentRegistry;
 }
 
-export function setSkillRegistry(registry: any) {
+export function setSkillRegistry(registry: AgentSkillRegistry) {
     skillRegistry = registry;
 }
 
-export function getSkillRegistry(): any {
+export function getSkillRegistry(): AgentSkillRegistry {
     if (!skillRegistry) {
         throw new Error("SkillRegistry not initialized");
     }

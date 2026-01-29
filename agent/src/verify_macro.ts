@@ -1,12 +1,12 @@
 
-import { SkillRegistry } from './skills/SkillRegistry';
+import { AgentSkillRegistry } from './skills/AgentSkillRegistry';
 import { MacroManager } from './skills/MacroManager';
 import { Note } from '@notention/core/src/types';
 
 async function verifyMacro() {
     console.log('🧪 Verifying Macro Skills...');
 
-    const registry = new SkillRegistry();
+    const registry = new AgentSkillRegistry();
     const manager = new MacroManager(registry);
 
     // 1. Create a Note causing definition

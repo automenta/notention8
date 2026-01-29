@@ -1,5 +1,5 @@
 import type { Note, ActionSequence, BrowserAction } from '@notention/core';
-import { SkillRegistry } from '../../src/skills/SkillRegistry';
+import { AgentSkillRegistry } from '../../src/skills/AgentSkillRegistry';
 import { IndeedSkill } from './skills/IndeedSkill';
 import { CraigslistSkill } from './skills/CraigslistSkill';
 import { GitHubSkill } from './skills/GitHubSkill';
@@ -24,12 +24,12 @@ export interface BrowserExecutor {
  * 5. User reviews/curates imported notes
  */
 export class ClawdBotCoordinator {
-    private registry: SkillRegistry;
+    private registry: AgentSkillRegistry;
     private browserExecutor?: BrowserExecutor;
     private bridge?: any; // MoltBotBridge
 
-    constructor(registry?: SkillRegistry, browserExecutor?: BrowserExecutor) {
-        this.registry = registry || new SkillRegistry();
+    constructor(registry?: AgentSkillRegistry, browserExecutor?: BrowserExecutor) {
+        this.registry = registry || new AgentSkillRegistry();
         this.browserExecutor = browserExecutor;
         this.initializeBuiltInSkills();
     }
@@ -280,7 +280,7 @@ export class ClawdBotCoordinator {
         return results.flat();
     }
 
-    getRegistry(): SkillRegistry {
+    getRegistry(): AgentSkillRegistry {
         return this.registry;
     }
 

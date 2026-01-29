@@ -4,7 +4,7 @@ import { join } from 'path';
 import fs from 'fs';
 import { AgentRegistry } from './core/AgentRegistry';
 import { VoltAgentProvider } from '../voltagent/src/VoltAgentProvider';
-import { SkillRegistry } from './skills/SkillRegistry';
+import { AgentSkillRegistry } from './skills/AgentSkillRegistry';
 import { SkillExecutor } from './skills/SkillExecutor';
 import { loadAgentConfig } from './config';
 import { Note } from '@notention/core/src/types';
@@ -50,7 +50,7 @@ const uiClients = new Set<WebSocket>();
 // --- Agent System ---
 
 const agentRegistry = new AgentRegistry();
-const skillRegistry = new SkillRegistry();
+const skillRegistry = new AgentSkillRegistry();
 let skillExecutor: SkillExecutor;
 
 async function bootstrap() {

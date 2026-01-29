@@ -1,12 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { SkillRegistry } from './SkillRegistry';
+import { AgentSkillRegistry } from './AgentSkillRegistry';
 import { log } from '../core/utils';
 
 export class PluginLoader {
     private installedPath: string;
 
-    constructor(private registry: SkillRegistry) {
+    constructor(private registry: AgentSkillRegistry) {
         this.installedPath = path.join(process.cwd(), 'src/skills/installed');
         if (!fs.existsSync(this.installedPath)) {
             fs.mkdirSync(this.installedPath, { recursive: true });

@@ -1,6 +1,6 @@
 import { Agent, WorkflowResult } from '@notention/core/src/types';
 import { Note } from '@notention/core/src/types';
-import { SkillRegistry } from './SkillRegistry';
+import { AgentSkillRegistry } from './AgentSkillRegistry';
 import { SkillExecutionError } from '@notention/core/src/errorTypes';
 
 export class SkillExecutor {
@@ -8,7 +8,7 @@ export class SkillExecutor {
 
     constructor(
         private agent: Agent,
-        private registry: SkillRegistry,
+        private registry: AgentSkillRegistry,
         onEvent?: (event: any) => void
     ) {
         this.onEvent = onEvent;

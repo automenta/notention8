@@ -1,11 +1,12 @@
-import { Agent, Tool, AgentFeature } from '@notention/core/src/types';
+import { Agent, AgentFeature } from '@notention/core/src/types';
 import { Note } from '../../../core/src/types';
 import { Skill, SkillMetadata } from './types';
 import { SkillToolAdapter } from './SkillToolAdapter';
+import { SkillRegistry } from '@notention/core/src/skills/SkillRegistry';
 
-export class SkillRegistry {
-    private skills = new Map<string, SkillMetadata>();
+export class AgentSkillRegistry extends SkillRegistry {
     private agent: Agent | null = null;
+    private skillMetadata = new Map<string, SkillMetadata>();
 
     setAgent(agent: Agent): void {
         this.agent = agent;
@@ -13,7 +14,11 @@ export class SkillRegistry {
     }
 
     register(skill: Skill, metadata?: Partial<SkillMetadata>): void {
-        this.skills.set(skill.id, {
+        // Call parent register method
+        super.registerSkill(skill);
+
+        // Store metadata separately
+        this.skillMetadata.set(skill.id, {
             skill,
             tags: metadata?.tags ?? [],
             domains: metadata?.domains ?? [],
@@ -30,11 +35,12 @@ export class SkillRegistry {
     }
 
     get(id: string): Skill | undefined {
-        return this.skills.get(id)?.skill;
+        const skill = super.getSkill(id);
+        return skill as Skill | undefined;
     }
 
     getAll(): SkillMetadata[] {
-        return Array.from(this.skills.values());
+        return Array.from(this.skillMetadata.values());
     }
 
     // This signature might need adjustment based on how it's called
@@ -42,14 +48,14 @@ export class SkillRegistry {
     async findMatching(note: Note, minConfidence: number = 0.5): Promise<Array<{ skill: Skill; confidence: number }>> {
         // Local matching logic fallback
         const matches: Array<{ skill: Skill; confidence: number }> = [];
-        for (const meta of this.skills.values()) {
+        for (const meta of this.skillMetadata.values()) {
             // Simple keyword matching for fallback
             // In reality this would be more complex
             if (note.content.includes(meta.skill.name)) {
                 matches.push({ skill: meta.skill, confidence: 0.8 });
             }
         }
-        return matches;
+        return matches.filter(match => match.confidence >= minConfidence);
     }
 
     async findMatchingWithAgent(note: Note): Promise<Array<{ skill: Skill; confidence: number }>> {
@@ -65,7 +71,7 @@ export class SkillRegistry {
                 properties: note.properties
             });
 
-            return result.rankedSkills || [];
+            return (result.rankedSkills || []).filter(match => match.confidence >= 0.5);
         } catch (e) {
             console.error('Skill matching workflow failed, falling back locally', e);
             return this.findMatching(note);
@@ -80,7 +86,7 @@ export class SkillRegistry {
     }
 
     private async syncSkillsToAgent(): Promise<void> {
-        for (const { skill } of this.skills.values()) {
+        for (const { skill } of this.skillMetadata.values()) {
             await this.registerSkillWithAgent(skill);
         }
     }
