@@ -1,5 +1,5 @@
-import type { Skill, PropertyPattern, ActionSequence, BrowserAction, Note } from '@notention/core';
-import { createNote } from '@notention/core';
+import type { Skill, PropertyPattern, ActionSequence, BrowserAction, Note } from '../../../core/src/index';
+import { createNote } from '../../../core/src/index';
 
 export class ZillowSkill implements Skill {
     id = 'skill-zillow-v1';

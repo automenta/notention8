@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { Tool } from '@notention/core/src/types';
-import { Skill } from './types';
-import { Note } from '@notention/core/src/types';
+import { Tool } from '../../../core/src/types/index';
+import { Skill } from '../../../core/src/skills/types';
+import { Note } from '../../../core/src/types/index';
 import { createTool, log } from '../core/utils';
 import { executeAction } from '../core/actionExecutor';
 
