@@ -8,23 +8,28 @@ interface LifeTemplate {
 const LIFE_TEMPLATES: Record<string, LifeTemplate[]> = {
   health: [
     { ontology: 'wellbeing.sleep', prompt: "What time did you actually fall asleep last night?" },
-    { ontology: 'wellbeing.nutrition', prompt: "What's one food you'd eat less of this week?" }
+    { ontology: 'wellbeing.nutrition', prompt: "What's one food you'd eat less of this week?" },
+    { ontology: 'wellbeing.exercise', prompt: "What's a physical activity you actually enjoy?" }
   ],
   work: [
     { ontology: 'career.blocker', prompt: "What's the one task you've been avoiding?" },
-    { ontology: 'career.growth', prompt: "What skill would make your job 20% easier?" }
+    { ontology: 'career.growth', prompt: "What skill would make your job 20% easier?" },
+    { ontology: 'career.balance', prompt: "When do you feel most drained at work?" }
   ],
   finances: [
     { ontology: 'finance.savings', prompt: "What's one subscription you could cancel?" },
-    { ontology: 'finance.income', prompt: "What's one way you could increase your income this month?" }
+    { ontology: 'finance.income', prompt: "What's one way you could increase your income this month?" },
+    { ontology: 'finance.debt', prompt: "Which debt stresses you out the most?" }
   ],
   relationships: [
     { ontology: 'relationship.connection', prompt: "Who have you been meaning to reach out to?" },
-    { ontology: 'relationship.conflict', prompt: "Is there a conversation you've been putting off?" }
+    { ontology: 'relationship.conflict', prompt: "Is there a conversation you've been putting off?" },
+    { ontology: 'relationship.boundaries', prompt: "Where do you need to say 'no' more often?" }
   ],
   existential: [
     { ontology: 'life.purpose', prompt: "What's keeping you awake at 3am?" },
-    { ontology: 'life.joy', prompt: "When was the last time you felt truly alive?" }
+    { ontology: 'life.joy', prompt: "When was the last time you felt truly alive?" },
+    { ontology: 'life.legacy', prompt: "What do you want to be remembered for?" }
   ]
 };
 
@@ -33,22 +38,22 @@ export class LifeDecomposer {
     const intent = rawIntent.toLowerCase();
     const proposed: ProposedThought[] = [];
 
-    // Simple keyword matching for domain selection
-    // In future this would be a local classifier
+    // Heuristic matching for domain selection
     const domainsToInclude = new Set<string>();
 
-    if (intent.includes('health') || intent.includes('diet') || intent.includes('sleep') || intent.includes('tired')) {
-        domainsToInclude.add('health');
-    }
-    if (intent.includes('work') || intent.includes('job') || intent.includes('career') || intent.includes('busy')) {
-        domainsToInclude.add('work');
-    }
-    if (intent.includes('money') || intent.includes('finance') || intent.includes('cost') || intent.includes('save')) {
-        domainsToInclude.add('finances');
-    }
-    if (intent.includes('relationship') || intent.includes('friend') || intent.includes('family') || intent.includes('love')) {
-        domainsToInclude.add('relationships');
-    }
+    const patterns = {
+        health: /health|diet|sleep|tired|energy|fit|pain|sick|gym|exercise|weight/,
+        work: /work|job|career|busy|stress|boss|project|deadline|task|meeting/,
+        finances: /money|finance|cost|save|spend|debt|bill|salary|income|broke/,
+        relationships: /relationship|friend|family|love|partner|lonely|social|kids|parent/,
+        existential: /life|purpose|meaning|future|death|sad|happy|why|god|spirit/
+    };
+
+    if (patterns.health.test(intent)) domainsToInclude.add('health');
+    if (patterns.work.test(intent)) domainsToInclude.add('work');
+    if (patterns.finances.test(intent)) domainsToInclude.add('finances');
+    if (patterns.relationships.test(intent)) domainsToInclude.add('relationships');
+    if (patterns.existential.test(intent)) domainsToInclude.add('existential');
 
     // Default: "Fix my life" or generic queries -> return top picks from major domains
     if (domainsToInclude.size === 0 || intent.includes('fix my life') || intent.includes('help')) {
