@@ -289,3 +289,25 @@ export interface Agent {
   getCapabilities(): AgentCapabilities;
   supportsFeature(feature: AgentFeature): boolean;
 }
+
+// === THOUGHT SYSTEM TYPES (Phase 5) ===
+
+export type ThoughtIntent = 'fleeting' | 'planning' | 'executing' | 'archived';
+export type ThoughtSovereignty = 'local' | 'pending_sync' | 'shared';
+export type VoltAgentState = 'idle' | 'demonstrating' | 'acting' | 'blocked';
+
+export interface Thought {
+  id: string;
+  intent: ThoughtIntent;
+  sovereignty: ThoughtSovereignty;
+  volt_agent_state?: VoltAgentState;
+  source_note: Note;
+}
+
+export interface ProposedThought {
+  ontology: string;
+  status: 'proposed';
+  content: string;
+  sovereignty: 'local';
+  source: string;
+}

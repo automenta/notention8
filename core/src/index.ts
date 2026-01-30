@@ -28,3 +28,6 @@ export * from './skills/SkillRegistry.js';
 export * from './skillPatternMatcher.js';
 export * from './skillApprovalManager.js';
 export * from './skillExecutor.js';
+
+// Sovereign Thought System (Phase 5)
+export * from './decomposer/LifeDecomposer.js';
