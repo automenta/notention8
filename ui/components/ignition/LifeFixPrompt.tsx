@@ -4,6 +4,7 @@ import { Button } from '../common/Button';
 import { Textarea } from '../common/Textarea';
 import { SparklesIcon, CheckIcon, XIcon, ArrowRightIcon } from '../common/icons';
 import { useNotes } from '../../hooks/useNotes';
+import { useGardener } from '../../hooks/useGardener';
 
 export function LifeFixPrompt() {
   const [input, setInput] = useState('');
@@ -14,22 +15,26 @@ export function LifeFixPrompt() {
   const [demoLog, setDemoLog] = useState<string[]>([]);
   const [isDemoRunning, setIsDemoRunning] = useState(false);
 
+  const { addNote } = useNotes();
+  const { provider } = useGardener();
+
   // We instantiate LifeDecomposer here.
   // In a more complex setup, this might be provided via context or dependency injection.
-  const decomposer = new LifeDecomposer();
-  const { addNote } = useNotes();
+  const decomposer = new LifeDecomposer(provider);
 
-  const handleDecompose = () => {
+  const handleDecompose = async () => {
     if (!input.trim()) return;
     setIsDecomposing(true);
 
-    // Simulate thinking delay for UX
-    setTimeout(() => {
-        const thoughts = decomposer.decompose(input);
+    try {
+        const thoughts = await decomposer.decomposeWithAI(input);
         setProposedThoughts(thoughts);
         setStage('selection');
+    } catch (e) {
+        console.error(e);
+    } finally {
         setIsDecomposing(false);
-    }, 600);
+    }
   };
 
   const handleAccept = (thought: ProposedThought) => {
@@ -63,10 +68,14 @@ export function LifeFixPrompt() {
       if (isDemoRunning) return;
       setIsDemoRunning(true);
       setDemoLog(['> Initializing demonstration mode... Done', '> Target: ' + acceptedThoughts[0]?.ontology]);
+  };
+
+  useEffect(() => {
+      if (!isDemoRunning) return;
 
       const steps = [
           '> Action: Search & Summarize',
-          '> Agent: "Searching for solutions regarding ' + acceptedThoughts[0]?.ontology + '..."',
+          '> Agent: "Searching for solutions regarding ' + (acceptedThoughts[0]?.ontology || 'unknown') + '..."',
           '> Agent: "Found 3 potential strategies."',
           '> Agent: "Drafting action plan..."',
           '> Simulation complete. No side effects applied.',
@@ -83,7 +92,9 @@ export function LifeFixPrompt() {
           setDemoLog(prev => [...prev, steps[i]]);
           i++;
       }, 1500);
-  };
+
+      return () => clearInterval(interval);
+  }, [isDemoRunning, acceptedThoughts]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] w-full max-w-2xl mx-auto px-4 animate-fade-in">

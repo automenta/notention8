@@ -48,7 +48,7 @@ export const useGardener = () => {
   const { settings, setSettings } = useSettings();
   const { addToast } = useToast();
 
-  const gardener = useMemo(() => {
+  const { gardener, provider } = useMemo(() => {
     // Instantiate provider based on settings
     let provider;
 
@@ -62,7 +62,7 @@ export const useGardener = () => {
         provider = new LocalAIProvider();
     }
 
-    return new Gardener(provider);
+    return { gardener: new Gardener(provider), provider };
   }, [settings.aiEnabled, settings.aiProvider, settings.aiModel, settings.googleGeminiApiKey]);
 
   const evolveOntology = useCallback(async (notes: Note[], targetConceptId?: string) => {
@@ -162,5 +162,5 @@ export const useGardener = () => {
       return result;
   }, [gardener, settings.ontology, addToast]);
 
-  return { evolveOntology, learnFromProperties, alignToOntology, extractProperties, optimizeOntology };
+  return { evolveOntology, learnFromProperties, alignToOntology, extractProperties, optimizeOntology, provider };
 };

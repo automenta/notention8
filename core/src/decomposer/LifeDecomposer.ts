@@ -1,4 +1,4 @@
-import { ProposedThought } from '../types/index.js';
+import { ProposedThought, AIProvider } from '../types/index.js';
 
 interface LifeTemplate {
   ontology: string;
@@ -34,6 +34,12 @@ const LIFE_TEMPLATES: Record<string, LifeTemplate[]> = {
 };
 
 export class LifeDecomposer {
+  private aiProvider?: AIProvider;
+
+  constructor(aiProvider?: AIProvider) {
+    this.aiProvider = aiProvider;
+  }
+
   decompose(rawIntent: string): ProposedThought[] {
     const intent = rawIntent.toLowerCase();
     const proposed: ProposedThought[] = [];
@@ -79,7 +85,6 @@ export class LifeDecomposer {
     });
 
     // Limit to prevent overwhelm (max 4 initially as per plan)
-    // We try to pick one from each selected domain first to ensure diversity
     if (proposed.length > 4) {
         const diverse: ProposedThought[] = [];
         const domainsArray = Array.from(domainsToInclude);
@@ -107,5 +112,45 @@ export class LifeDecomposer {
     }
 
     return proposed;
+  }
+
+  async decomposeWithAI(rawIntent: string): Promise<ProposedThought[]> {
+      if (!this.aiProvider) {
+          console.warn('LifeDecomposer: No AI Provider, falling back to regex.');
+          return this.decompose(rawIntent);
+      }
+
+      const prompt = `
+Analyze the user's intent: "${rawIntent}"
+
+Decompose this into 3-5 specific, actionable sub-problems or reflection questions.
+Assign a specific ontology category (e.g., 'wellbeing.sleep', 'career.growth', 'finance.savings') to each.
+
+Return ONLY a JSON array of objects with the format:
+[
+  { "ontology": "category.subcategory", "content": "Question or sub-problem" }
+]
+`;
+
+      try {
+          const response = await this.aiProvider.generateCompletion(prompt);
+          // Clean code blocks if present
+          const cleanJson = response.replace(/```json/g, '').replace(/```/g, '').trim();
+          const parsed = JSON.parse(cleanJson);
+
+          if (Array.isArray(parsed)) {
+              return parsed.map((item: any) => ({
+                  ontology: item.ontology,
+                  content: item.content,
+                  status: 'proposed',
+                  sovereignty: 'local',
+                  source: 'decomposer:ai'
+              }));
+          }
+      } catch (error) {
+          console.error('LifeDecomposer: AI decomposition failed', error);
+      }
+
+      return this.decompose(rawIntent);
   }
 }
