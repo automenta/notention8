@@ -34,3 +34,12 @@ export * from './decomposer/LifeDecomposer.js';
 
 // Security (Phase 5.1/5.3)
 export * from './security/CredentialManager.js';
+
+// Thought Runtime (Phase 5)
+export * from './thoughts/ThoughtRuntime.js';
+
+// Network (Phase 3/5)
+export * from './network/ResonanceProtocol.js';
+
+// Sync (Phase 4/5)
+export * from './sync/MerkleThoughtTree.js';

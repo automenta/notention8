@@ -7,6 +7,8 @@ import { VoltAgentProvider } from '../voltagent/src/VoltAgentProvider';
 import { SkillRegistry } from './skills/SkillRegistry';
 import { SkillExecutor } from './skills/SkillExecutor';
 import { ConfigProcessor } from './configurator/ConfigProcessor';
+import { ShadowLexicon } from './ontology/ShadowLexicon';
+import { CapabilityManager } from './security/CapabilityManager';
 import { loadAgentConfig } from './config';
 import { Note } from '@notention/core/src/types';
 import { log, error } from './core/utils';
@@ -46,6 +48,8 @@ const uiClients = new Set<WebSocket>();
 const agentRegistry = new AgentRegistry();
 const skillRegistry = new SkillRegistry();
 const configProcessor = new ConfigProcessor();
+const shadowLexicon = new ShadowLexicon();
+const capabilityManager = new CapabilityManager();
 let skillExecutor: SkillExecutor;
 
 async function bootstrap() {
@@ -78,6 +82,9 @@ async function bootstrap() {
 
     // Process configuration notes
     await configProcessor.processNote(note);
+
+    // Observe ontology patterns
+    await shadowLexicon.observe(note);
 
     broadcastToUI({ type: 'note_created', payload: note });
   });
@@ -123,6 +130,7 @@ async function handleUIMessage(message: any, ws: WebSocket) {
     case 'note_created':
       // Also process config on creation via UI
       await configProcessor.processNote(message.payload);
+      await shadowLexicon.observe(message.payload);
 
       const notes = await skillExecutor.executeForNote(message.payload);
       for (const result of notes) {
