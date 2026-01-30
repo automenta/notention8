@@ -16,6 +16,12 @@ export * from './networkGate.js';
 export * from './skills/types.js';
 export * from './feedback/types.js';
 
+// Pattern Recognition and Prediction (Phase 1)
+export * from './patternRecognition.js';
+export * from './predictionTracking.js';
+export { ValidationFramework, validationFramework } from './validationFramework.js';
+export * from './autonomousTasks.js';
+
 // Ontology-driven services (Phase 1.4 & 2)
 export * from './ontologyService.js';
 export * from './ontologyServiceFactory.js';
