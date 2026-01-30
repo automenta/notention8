@@ -23,7 +23,7 @@ export class ResonanceProtocol {
     // For now, we return a stub.
     return {
       ontology,
-      vectorHash: `blinded_hash_${ontology}_${Date.now()}`,
+      vectorHash: isPrivate ? `blinded_hash_${ontology}_${Date.now()}` : `public_vector_${ontology}`,
       nonce,
       timestamp: Date.now(),
       isPrivate
@@ -35,6 +35,10 @@ export class ResonanceProtocol {
    * This would involve comparing blinded hashes or using a secure multi-party computation protocol.
    */
   static checkResonance(hashA: IntentHash, hashB: IntentHash): boolean {
+    if (hashA.isPrivate !== hashB.isPrivate) {
+        // Can't match private with public directly without downgrade
+        return false;
+    }
     // Stub logic: simple ontology match
     return hashA.ontology === hashB.ontology;
   }

@@ -40,6 +40,7 @@ export * from './thoughts/ThoughtRuntime.js';
 
 // Network (Phase 3/5)
 export * from './network/ResonanceProtocol.js';
+export * from './network/PublicMatching.js';
 
 // Sync (Phase 4/5)
 export * from './sync/MerkleThoughtTree.js';

@@ -9,6 +9,7 @@ import { SkillExecutor } from './skills/SkillExecutor';
 import { ConfigProcessor } from './configurator/ConfigProcessor';
 import { ShadowLexicon } from './ontology/ShadowLexicon';
 import { CapabilityManager } from './security/CapabilityManager';
+import { MatchingService } from './network/MatchingService';
 import { loadAgentConfig } from './config';
 import { Note } from '@notention/core/src/types';
 import { log, error } from './core/utils';
@@ -50,6 +51,7 @@ const skillRegistry = new SkillRegistry();
 const configProcessor = new ConfigProcessor();
 const shadowLexicon = new ShadowLexicon();
 const capabilityManager = new CapabilityManager();
+const matchingService = new MatchingService();
 let skillExecutor: SkillExecutor;
 
 async function bootstrap() {
@@ -85,6 +87,9 @@ async function bootstrap() {
 
     // Observe ontology patterns
     await shadowLexicon.observe(note);
+
+    // Trigger matching (defaulting to Private Resonance for now)
+    await matchingService.findMatches(note, true);
 
     broadcastToUI({ type: 'note_created', payload: note });
   });
