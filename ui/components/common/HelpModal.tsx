@@ -122,6 +122,14 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                             <span className="text-gray-400 group-hover:text-white transition-colors">Back to List</span>
                             <code className="text-gray-300 bg-gray-800 px-2 py-0.5 rounded border border-gray-700/50 font-mono text-xs">Alt+Left</code>
                         </div>
+                        <div className="flex justify-between items-center group">
+                            <span className="text-gray-400 group-hover:text-white transition-colors">Toggle Sidebar</span>
+                            <code className="text-gray-300 bg-gray-800 px-2 py-0.5 rounded border border-gray-700/50 font-mono text-xs">Ctrl+\\</code>
+                        </div>
+                        <div className="flex justify-between items-center group">
+                            <span className="text-gray-400 group-hover:text-white transition-colors">Toggle Developer Mode</span>
+                            <code className="text-gray-300 bg-gray-800 px-2 py-0.5 rounded border border-gray-700/50 font-mono text-xs">Ctrl+Shift+D</code>
+                        </div>
                     </div>
                 </div>
             </div>

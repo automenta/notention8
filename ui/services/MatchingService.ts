@@ -124,6 +124,79 @@ export class MatchingService {
   }
 
   /**
+   * Enhanced matching that distinguishes between Real (facts) and Imaginary (constraints)
+   * as described in the architecture documentation.
+   *
+   * Real (Facts): Properties with 'is' operator represent facts about the note
+   * Imaginary (Constraints): Properties with other operators represent requirements
+   */
+  matchNotesWithRealVsImaginary(request: Note, offer: Note): MatchResultDetails {
+    // Request note: all properties are constraints (imaginary)
+    const requestConstraints = request.properties;
+
+    // Offer note: 'is' properties are facts (real), others are constraints (imaginary)
+    const offerFacts = offer.properties.filter(p => p.operator === 'is');
+    const offerConstraints = offer.properties.filter(p => p.operator !== 'is');
+
+    if (requestConstraints.length === 0 && offerConstraints.length === 0) {
+      return { score: 1, satisfied: [], failed: [] }; // Perfect match if both have no constraints
+    }
+
+    const satisfied: Property[] = [];
+    const failed: Property[] = [];
+
+    // Check if offer facts satisfy request constraints
+    for (const reqConstraint of requestConstraints) {
+      // Find corresponding fact in offer
+      const correspondingFact = offerFacts.find(fact => fact.key === reqConstraint.key);
+
+      if (correspondingFact) {
+        // Check if the fact satisfies the constraint
+        if (this.checkConstraint(reqConstraint, { ...offer, properties: [correspondingFact] })) {
+          satisfied.push(reqConstraint);
+        } else {
+          failed.push(reqConstraint);
+        }
+      } else {
+        // No corresponding fact, constraint cannot be satisfied
+        failed.push(reqConstraint);
+      }
+    }
+
+    // Check if request facts satisfy offer constraints
+    for (const offerConstraint of offerConstraints) {
+      // Find corresponding fact in request
+      const correspondingFact = request.properties.find(fact => fact.key === offerConstraint.key && fact.operator === 'is');
+
+      if (correspondingFact) {
+        // Check if the request fact satisfies the offer constraint
+        if (this.checkConstraint(offerConstraint, { ...request, properties: [correspondingFact] })) {
+          satisfied.push(offerConstraint);
+        } else {
+          failed.push(offerConstraint);
+        }
+      } else {
+        // No corresponding fact, constraint cannot be satisfied
+        failed.push(offerConstraint);
+      }
+    }
+
+    // Calculate score based on total constraints
+    const totalConstraints = requestConstraints.length + offerConstraints.length;
+    const baseScore = totalConstraints > 0 ? satisfied.length / totalConstraints : 1;
+
+    // Weight by target note priority
+    const priority = offer.priority ?? 1.0;
+    const weightedScore = baseScore * priority;
+
+    return {
+      score: weightedScore,
+      satisfied,
+      failed
+    };
+  }
+
+  /**
    * Calculates a semantic overlap score between two notes based on shared property keys.
    * This is useful for "See also" or "Related" suggestions where exact constraints might not match.
    */

@@ -19,6 +19,7 @@ import { TimePickerModal } from '../common/TimePickerModal';
 import { EditorMatches } from './EditorMatches';
 import { ContextPanel } from './ContextPanel';
 import { SuggestionPanel } from './SuggestionPanel';
+import { SmartNoteAssistant } from '../SmartNoteAssistant';
 
 interface EditorManagerProps {
   note: Note;
@@ -188,6 +189,13 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
             }
           >
             <EditorMatches note={dirtyNote} />
+            <div className="mt-4">
+              <SmartNoteAssistant
+                note={dirtyNote}
+                onNoteUpdate={handleContentSave}
+                className="mt-2"
+              />
+            </div>
           </HybridEditor>
 
           {isTemplateSelectorOpen && (

@@ -1,29 +1,26 @@
-import { clawdBotCoordinator } from '../moltbot/src/ClawdBotCoordinator';
 import { createNote } from '@notention/core';
-
-// Mock Bridge
-const mockBridge = {
-    callbacks: new Map<string, Function>(),
-    isConnected: true,
-    sendCommand: (command: string, payload: any) => {
-        console.log(`\nBRIDGE MOCK: Sending Command: ${command}`);
-        console.log(`PAYLOAD: ${JSON.stringify(payload, null, 2)}`);
-        return Promise.resolve();
-    },
-    on: (event: string, cb: Function) => {
-        console.log(`BRIDGE MOCK: Registered listener for '${event}'`);
-        // Store callback to simulate events later
-        // In this simple mock we just assign it to a property we can call
-        (mockBridge as any).trigger = cb;
-    },
-    trigger: (msg: any) => { } // Placeholder
-};
+import { VoltAgentProvider } from '../voltagent/src/VoltAgentProvider';
 
 async function verify() {
     console.log('🧪 Starting Task Flow Verification...');
 
-    // 1. Setup Coordinator with Mock Bridge
-    clawdBotCoordinator.setBridge(mockBridge);
+    // 1. Initialize VoltAgentProvider
+    const voltagent = new VoltAgentProvider({
+        enabled: true,
+        model: 'gpt-4o-mini',
+        serverPort: 3141,
+        memoryUrl: ':memory:',
+        logLevel: 'info',
+        features: {
+            memory: true,
+            rag: true,
+            mcp: true,
+            workflows: true,
+            voice: false
+        }
+    });
+
+    await voltagent.start();
 
     // 2. Seed Context Notes
     console.log('\n🌱 Seeding successfully Context Notes...');
@@ -32,7 +29,9 @@ async function verify() {
         content: 'We use React 18, TypeScript, and Vite.',
         tags: ['research', 'react', 'tech'],
     });
-    clawdBotCoordinator.onNoteCreated(contextNote);
+
+    // Process the context note
+    await voltagent.processNote(contextNote);
 
     // 3. Create a Mock Task Note
     const taskNote = createNote({
@@ -50,22 +49,16 @@ async function verify() {
 
     // 4. Process the Task Note (Outbound)
     console.log('\n⚙️ Processing Task Note (Outbound)...');
-    await clawdBotCoordinator.processNote(taskNote);
+    const results = await voltagent.processNote(taskNote);
+    console.log(`\n📊 Received ${results.length} results from agent processing`);
 
     // 5. Simulate Inbound Response (Agent Result)
     console.log('\n📨 Simulating Inbound Agent Response...');
-    const mockResponse = {
-        type: 'agent_response',
-        payload: {
-            taskId: taskNote.id,
-            content: 'I found 5 jobs at Google, Meta, etc.',
-            result: [{ title: 'Senior React Dev', company: 'Google' }]
-        }
-    };
+    for (const result of results) {
+        console.log(`   • Result: ${result.title}`);
+    }
 
-    // Trigger the mock bridge event
-    (mockBridge as any).trigger(mockResponse);
-
+    await voltagent.stop();
     console.log('\n✅ Verification Completed.');
 }
 

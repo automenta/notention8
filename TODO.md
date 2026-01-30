@@ -991,7 +991,7 @@ export function FeedbackWidget({ entityId, entityType }: FeedbackWidgetProps) {
 ## References
 
 - **Branch comparison:** [branch_comparison.md](file:///home/me/.gemini/antigravity/brain/af4da072-db22-4a0d-9492-1387404a66da/branch_comparison.md)
-- **ClawdBot aka MoltBot docs:** https://docs.molt.bot
+- **VoltAgent docs:** https://voltagent.ai/docs
 - **Nostr protocol:** https://github.com/nostr-protocol/nips
 - **Existing ClawdBot Gateway:** [agent/src/Gateway.ts](file:///home/me/notention8/agent/src/Gateway.ts)
 - **Existing Plugin system:** [agent/src/plugins/PluginInterface.ts](file:///home/me/notention8/agent/src/plugins/PluginInterface.ts)

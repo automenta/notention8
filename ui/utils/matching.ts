@@ -10,6 +10,10 @@ export const matchNotes = (request: Note, offer: Note): MatchResultDetails => {
     return matchingService.matchNotes(request, offer);
 };
 
+export const matchNotesWithRealVsImaginary = (request: Note, offer: Note): MatchResultDetails => {
+    return matchingService.matchNotesWithRealVsImaginary(request, offer);
+};
+
 export const calculateSemanticOverlap = (noteA: Note, noteB: Note): number => {
     return matchingService.calculateSemanticOverlap(noteA, noteB);
 };

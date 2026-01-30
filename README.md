@@ -17,22 +17,39 @@ Just type naturally. The editor automatically parses your intent.
 -   **Properties:** `[key:op:value]` (e.g., `[status:is:Active]`)
 -   **Logic:** `[budget < 500]`, `[deadline > 2025-01-01]`
 -   **Tags:** `#project`, `#idea`
+-   **Smart Assistant:** AI-powered suggestions for semantic properties
+-   **Advanced Parsing:** Supports both canonical and symbolic formats
 
 ### ⚡️ Universal Action Agent
-Notention doesn't just store your tasks; it helps complete them. Powered by the **VoltAgent** architecture and **MoltBot** skills, the system acts as a digital extension of yourself.
+Notention doesn't just store your tasks; it helps complete them. Powered by the **VoltAgent** architecture, the system acts as a digital extension of yourself.
 -   **Semantic Automation:** Write "Find 3-bedroom, 2-bath houses in Austin under $600k", and the agent will understand the criteria, search real estate platforms, and import the results as structured notes.
 -   **Browser Automations:** The agent can navigate the web, fill forms, and interact with sites to execute complex workflows like booking tickets or applying for jobs.
 -   **Real-Time Feedback:** Watch the agent work in real-time as it navigates, researches, and updates your workspace.
+
+### 🌐 Dual Mode Operation
+Notention operates in both modes seamlessly:
+-   **Serverless PWA (Offline-First):** Works completely offline with local storage and processing
+-   **Server Mode:** Connects to remote agent services for enhanced capabilities
+-   **Automatic Sync:** Seamlessly transitions between online and offline modes
 
 ### 🧠 Active Knowledge
 Your workspace gets smarter the more you use it.
 -   **Memory & RAG:** The system indexes your notes and documents, allowing you to ask complex questions that require synthesizing information from across your entire knowledge base.
 -   **Evolving Ontology:** The system learns from your usage, automatically inferring relationships and types to keep your knowledge organized without manual grooming.
+-   **Real vs Imaginary Logic:** Distinguishes between facts (`[role:is:Engineer]`) and constraints (`[salary > 50000]`)
+
+### 🔧 Developer Tools
+Powerful tools for architects and developers:
+-   **Ontology Visualizer:** Interactive graph view of your semantic schema
+-   **Parser Debugger:** Real-time parsing of semantic properties
+-   **Matcher Tester:** Test matching between request and offer notes
+-   **Progressive Disclosure:** Developer features available in developer mode
 
 ### 🌐 P2P Coordination (Nostr)
 Publish your intent to the censorship-resistant Nostr network to find matches outside your personal workspace.
 -   **Publish:** Turn a private request note into a public offer or job posting with one click.
--   **Match:** Connect with peers offering exactly what you need, based on semantic compatibility, not keyword spam.
+-   **Smart Matching:** Connect with peers offering exactly what you need, based on semantic compatibility, not keyword spam.
+-   **Privacy Controls:** Default-private with explicit consent for publishing
 
 ## Getting Started
 

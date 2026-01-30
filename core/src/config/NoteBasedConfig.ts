@@ -31,10 +31,10 @@ export function parseConfigFromNote(note: Note): Partial<AppSettings> {
 
     // Capabilities
     const browserCap = getVal('capability:browser');
-    if (browserCap === 'true') config.capabilities!.browser = true;
+    if (browserCap === 'true') (config.capabilities as any).browser = true;
 
     const filesCap = getVal('capability:files');
-    if (filesCap === 'true') config.capabilities!.files = true;
+    if (filesCap === 'true') (config.capabilities as any).files = true;
 
     // User
     const userName = getVal('user:name');
@@ -77,7 +77,7 @@ export function mergeConfigs(base: AppSettings, overrides: Partial<AppSettings>)
 
         // Ensure defaults if base was empty
         if (!next.capabilities) {
-            const caps = overrides.capabilities || {};
+            const caps = overrides.capabilities || {} as any;
             next.capabilities = {
                 browser: caps.browser ?? false,
                 files: caps.files ?? false

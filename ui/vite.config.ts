@@ -25,5 +25,15 @@ export default defineConfig(({ mode }) => {
         reporter: ['text', 'json', 'html'],
       },
     },
+    // Enable PWA functionality
+    publicDir: 'public',
+    build: {
+      rollupOptions: {
+        input: {
+          main: path.resolve(__dirname, 'index.html'),
+          sw: path.resolve(__dirname, 'src/service-worker.js')
+        }
+      }
+    }
   };
 });

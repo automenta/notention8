@@ -5,9 +5,9 @@ import { DEFAULT_ONTOLOGY } from '@notention/core';
 import { PropertyInput } from './PropertyInput';
 
 /**
- * MessageComposer - Send messages via MoltBot using ontology properties
- * 
- * Detects send intent from ontology and creates notes that trigger MoltBot gateway.
+ * MessageComposer - Send messages via agent using ontology properties
+ *
+ * Detects send intent from ontology and creates notes that trigger agent gateway.
  */
 
 interface MessageComposerProps {
@@ -63,7 +63,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({ onSend }) => {
         <div className="message-composer">
             <div className="composer-header">
                 <h3>Send Message</h3>
-                <span className="composer-subtitle">Powered by MoltBot Gateway</span>
+                <span className="composer-subtitle">Powered by Agent Gateway</span>
             </div>
 
             <div className="composer-form">
@@ -130,7 +130,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({ onSend }) => {
                 <div className="composer-info">
                     <p>
                         This creates a note with <code>[to:send to:{recipient}]</code> which
-                        automatically triggers the MoltBot gateway to send your message.
+                        automatically triggers the agent gateway to send your message.
                     </p>
                 </div>
             </div>

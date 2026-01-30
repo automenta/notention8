@@ -58,7 +58,45 @@ export function AppShell() {
               }
           }
       },
-      onCommandPalette: () => setIsPaletteOpen(true)
+      onCommandPalette: () => setIsPaletteOpen(true),
+      onSave: () => {
+          // Trigger save if in note editor
+          const saveButton = document.querySelector('button[data-action="save"]');
+          if (saveButton) {
+              (saveButton as HTMLButtonElement).click();
+          } else {
+              // If no specific save button, we could trigger a general save
+              console.log('Save action triggered');
+          }
+      },
+      onPreviousNote: () => {
+          if (sortedNotes.length > 0 && selectedNoteId) {
+              const currentIndex = sortedNotes.findIndex(note => note.id === selectedNoteId);
+              if (currentIndex > 0) {
+                  setSelectedNoteId(sortedNotes[currentIndex - 1].id);
+              }
+          }
+      },
+      onNextNote: () => {
+          if (sortedNotes.length > 0 && selectedNoteId) {
+              const currentIndex = sortedNotes.findIndex(note => note.id === selectedNoteId);
+              if (currentIndex < sortedNotes.length - 1) {
+                  setSelectedNoteId(sortedNotes[currentIndex + 1].id);
+              }
+          }
+      },
+      onBackToList: () => {
+          setSelectedNoteId(null);
+          if (activeView !== 'notes') {
+              setActiveView('notes');
+          }
+      },
+      onToggleSidebar: () => setIsSidebarOpen(!isSidebarOpen),
+      onToggleDeveloperMode: () => {
+          // Toggle developer mode in settings
+          const event = new CustomEvent('toggleDeveloperMode');
+          window.dispatchEvent(event);
+      }
   });
 
   const sidebarClasses = [

@@ -18,7 +18,7 @@ export class InitialConfigurator {
             content: 'Click here to start the setup wizard.\n\n[action:setup_wizard]',
             tags: ['@onboarding:setup'],
             source: {
-                type: 'system',
+                type: 'import',
                 identifier: 'initial-configurator',
                 timestamp: Date.now()
             }
@@ -56,7 +56,7 @@ export class InitialConfigurator {
       `.trim(),
             tags: ['@ontology:base'],
             source: {
-                type: 'system',
+                type: 'import',
                 identifier: 'initial-configurator',
                 timestamp: Date.now()
             }

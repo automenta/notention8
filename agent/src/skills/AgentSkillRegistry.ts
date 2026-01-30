@@ -14,8 +14,8 @@ export class AgentSkillRegistry extends SkillRegistry {
     }
 
     register(skill: Skill, metadata?: Partial<SkillMetadata>): void {
-        // Call parent register method
-        super.registerSkill(skill);
+        // Call parent register method - need to handle the type difference
+        super.registerSkill(skill as any); // Temporary cast until types are aligned
 
         // Store metadata separately
         this.skillMetadata.set(skill.id, {

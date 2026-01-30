@@ -16,7 +16,7 @@ import { IndeedSkill } from './skills/standard/IndeedSkill';
 import { CraigslistSkill } from './skills/standard/CraigslistSkill';
 import { GitHubSkill } from './skills/standard/GitHubSkill';
 
-function initializeBuiltInSkills(registry: SkillRegistry) {
+function initializeBuiltInSkills(registry: AgentSkillRegistry) {
   log('Init', 'Initializing standard skills...');
 
   registry.register(new IndeedSkill(), { tags: ['job', 'search', 'indeed'], domains: ['indeed.com'] });

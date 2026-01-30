@@ -84,42 +84,103 @@ export const parseProperties = (text: string): Property[] => {
  * Helper to parse the content inside brackets [content]
  */
 const parsePropertyBlock = (content: string): Property | null => {
-   // Check if it matches standard format (two colons)
-    // heuristic: count colons
-    const colons = content.split(':');
-    if (colons.length >= 3) {
-      const key = colons[0].trim();
-      const op = colons[1].trim();
-      const val = colons.slice(2).join(':').trim();
+  // Check if it matches standard format (two colons)
+  // heuristic: count colons
+  const colons = content.split(':');
+  if (colons.length >= 3) {
+    const key = colons[0].trim();
+    const op = colons[1].trim();
+    const val = colons.slice(2).join(':').trim();
+
+    return {
+      key,
+      operator: op,
+      values: val.split(',').map(v => v.trim())
+    };
+  }
+
+  // Check for symbolic operators
+  const symbols = Object.keys(SYMBOL_TO_OP).sort((a, b) => b.length - a.length);
+
+  for (const sym of symbols) {
+    const escapedSym = sym.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const symRegex = new RegExp(`^(.+?)\\s*(${escapedSym})\\s*(.*)$`);
+
+    const symMatch = content.match(symRegex);
+    if (symMatch) {
+      const key = symMatch[1].trim();
+      const opSymbol = symMatch[2];
+      const val = symMatch[3].trim();
 
       return {
         key,
-        operator: op,
+        operator: SYMBOL_TO_OP[opSymbol],
         values: val.split(',').map(v => v.trim())
       };
     }
+  }
 
-    // Check for symbolic operators
-    const symbols = Object.keys(SYMBOL_TO_OP).sort((a, b) => b.length - a.length);
+  // Enhanced parsing for more complex symbolic formats
+  // Handle [key op value] format where op is a word like 'before', 'after', etc.
+  const wordOpRegex = /^([^\s]+)\s+(is|contains|before|after|less than|greater than|between|not)\s+(.+)$/;
+  const wordOpMatch = content.match(wordOpRegex);
+  if (wordOpMatch) {
+    const [, key, op, val] = wordOpMatch;
+    return {
+      key: key.trim(),
+      operator: op.trim(),
+      values: val.trim().split(',').map(v => v.trim())
+    };
+  }
 
-    for (const sym of symbols) {
-      const escapedSym = sym.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const symRegex = new RegExp(`^(.+?)\\s*(${escapedSym})\\s*(.*)$`);
+  // Handle [key op value] format where op is a symbol but not in our standard list
+  const generalSymRegex = /^([^\s]+)\s*([<>=!]+)\s*(.+)$/;
+  const generalSymMatch = content.match(generalSymRegex);
+  if (generalSymMatch) {
+    const [, key, op, val] = generalSymMatch;
+    // Map common operators to canonical form
+    let canonicalOp = op.trim();
+    if (op === '!=') canonicalOp = 'is not';
+    else if (op === '<=') canonicalOp = 'less than or equal';
+    else if (op === '>=') canonicalOp = 'greater than or equal';
 
-      const symMatch = content.match(symRegex);
-      if (symMatch) {
-        const key = symMatch[1].trim();
-        const opSymbol = symMatch[2];
-        const val = symMatch[3].trim();
+    return {
+      key: key.trim(),
+      operator: canonicalOp,
+      values: val.trim().split(',').map(v => v.trim())
+    };
+  }
 
-        return {
-          key,
-          operator: SYMBOL_TO_OP[opSymbol],
-          values: val.split(',').map(v => v.trim())
-        };
-      }
-    }
-    return null;
+  // Handle simple [key:value] format (backward compatibility)
+  const simpleColonRegex = /^([^\s]+):(.+)$/;
+  const simpleMatch = content.match(simpleColonRegex);
+  if (simpleMatch) {
+    const [, key, val] = simpleMatch;
+    return {
+      key: key.trim(),
+      operator: 'is',
+      values: val.trim().split(',').map(v => v.trim())
+    };
+  }
+
+  // Handle [key value] format where key is a property name and value is the value
+  const simpleSpaceRegex = /^([^\s]+)\s+(.+)$/;
+  const simpleSpaceMatch = content.match(simpleSpaceRegex);
+  if (simpleSpaceMatch) {
+    const [, key, val] = simpleSpaceMatch;
+    return {
+      key: key.trim(),
+      operator: 'is',
+      values: val.trim().split(',').map(v => v.trim())
+    };
+  }
+
+  // If nothing matches, treat as a simple tag-like property
+  return {
+    key: content.trim(),
+    operator: 'is',
+    values: ['true'] // Default value for tag-like properties
+  };
 }
 
 /**
