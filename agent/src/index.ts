@@ -6,6 +6,7 @@ import { AgentRegistry } from './core/AgentRegistry';
 import { VoltAgentProvider } from '../voltagent/src/VoltAgentProvider';
 import { SkillRegistry } from './skills/SkillRegistry';
 import { SkillExecutor } from './skills/SkillExecutor';
+import { ConfigProcessor } from './configurator/ConfigProcessor';
 import { loadAgentConfig } from './config';
 import { Note } from '@notention/core/src/types';
 import { log, error } from './core/utils';
@@ -44,6 +45,7 @@ const uiClients = new Set<WebSocket>();
 
 const agentRegistry = new AgentRegistry();
 const skillRegistry = new SkillRegistry();
+const configProcessor = new ConfigProcessor();
 let skillExecutor: SkillExecutor;
 
 async function bootstrap() {
@@ -71,8 +73,12 @@ async function bootstrap() {
   log('Init', 'Registered app-specific tools with VoltAgent');
 
   // Event Handlers
-  voltagent.onNoteReceived((note: Note) => {
+  voltagent.onNoteReceived(async (note: Note) => {
     log('Agent', `Note received: ${note.id}`);
+
+    // Process configuration notes
+    await configProcessor.processNote(note);
+
     broadcastToUI({ type: 'note_created', payload: note });
   });
 }
@@ -115,6 +121,9 @@ async function handleUIMessage(message: any, ws: WebSocket) {
 
   switch (message.type) {
     case 'note_created':
+      // Also process config on creation via UI
+      await configProcessor.processNote(message.payload);
+
       const notes = await skillExecutor.executeForNote(message.payload);
       for (const result of notes) {
         broadcastToUI({ type: 'note_created', payload: result });
@@ -122,6 +131,9 @@ async function handleUIMessage(message: any, ws: WebSocket) {
       break;
 
     case 'note_updated':
+      // Also process config on update via UI
+      await configProcessor.processNote(message.payload);
+
       if (await shouldExecuteSkills(message.payload)) {
         const results = await skillExecutor.executeForNote(message.payload);
         for (const result of results) {

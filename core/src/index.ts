@@ -31,3 +31,6 @@ export * from './skillExecutor.js';
 
 // Sovereign Thought System (Phase 5)
 export * from './decomposer/LifeDecomposer.js';
+
+// Security (Phase 5.1/5.3)
+export * from './security/CredentialManager.js';
