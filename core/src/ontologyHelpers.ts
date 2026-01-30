@@ -1,4 +1,4 @@
-import { OntologyNode, OntologyAttribute } from './types';
+import { OntologyNode, OntologyAttribute, Note, Property } from './types';
 
 /**
  * Pure functions for manipulating the Ontology tree.
@@ -180,4 +180,68 @@ export const mergeAttributes = (
     delete node.attributes[sourceKey];
   }
   return newTree;
+};
+
+// --- Matching Operations (Phase 3) ---
+
+export const calculateSemanticOverlap = (
+  props1: Property[],
+  props2: Property[],
+  ontology?: OntologyNode[] // Optional for now, could be used for fuzzier matching
+): number => {
+  if (props1.length === 0 || props2.length === 0) return 0;
+
+  const keys1 = new Set(props1.map(p => p.key));
+  const keys2 = new Set(props2.map(p => p.key));
+
+  let intersection = 0;
+  keys1.forEach(k => {
+      if (keys2.has(k)) intersection++;
+  });
+
+  const union = new Set([...keys1, ...keys2]).size;
+  if (union === 0) return 0;
+
+  const keyJaccard = intersection / union;
+
+  // Value bonus
+  let valueScore = 0;
+  let sharedKeys = 0;
+  keys1.forEach(k => {
+      if (keys2.has(k)) {
+          sharedKeys++;
+          const p1 = props1.find(p => p.key === k)!;
+          const p2 = props2.find(p => p.key === k)!;
+          // Exact value match
+          if (p1.values.some(v => p2.values.includes(v))) {
+              valueScore += 1;
+          }
+      }
+  });
+
+  const finalValueScore = sharedKeys > 0 ? valueScore / sharedKeys : 0;
+
+  // 70% weight on keys, 30% on values
+  return (keyJaccard * 0.7) + (finalValueScore * 0.3);
+};
+
+export const calculateMatchScore = (
+  note1: Note,
+  note2: Note,
+  ontology: OntologyNode[]
+): number => {
+  // Calculate semantic overlap
+  const semanticScore = calculateSemanticOverlap(
+    note1.properties,
+    note2.properties,
+    ontology
+  );
+
+  // Weight by priority of the matched note (note2)
+  // Default to 1.0 if priority is missing (backward compatibility)
+  const priority = note2.priority ?? 1.0;
+
+  const finalScore = semanticScore * priority;
+
+  return finalScore;
 };
