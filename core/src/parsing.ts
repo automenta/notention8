@@ -269,6 +269,11 @@ export const parseGeo = (value: string): GeoCoords | null => {
     return { lat, lng };
 };
 
+export const parseGeoFromValues = (values: string[]): GeoCoords | null => {
+    if (!values || values.length === 0) return null;
+    return parseGeo(values[0]);
+};
+
 export const haversineDistance = (coords1: GeoCoords, coords2: GeoCoords): number => {
   const R = 6371; // Earth's radius in km
   const dLat = (coords2.lat - coords1.lat) * (Math.PI / 180);
