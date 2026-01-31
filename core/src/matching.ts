@@ -2,28 +2,6 @@ import type { Note, Property, OntologyNode } from './types';
 import { parseGeo, haversineDistance } from './parsing';
 import { parseQuantity, compareQuantities } from './quantities';
 
-const CANONICAL: Record<string, string> = {
-  js: 'javascript',
-  javascript: 'javascript',
-  ts: 'typescript',
-  typescript: 'typescript',
-  py: 'python',
-  python: 'python',
-  react: 'react',
-  reactjs: 'react',
-  node: 'nodejs',
-  nodejs: 'nodejs',
-  dev: 'developer',
-  developer: 'developer',
-  engineer: 'developer',
-  eng: 'engineer',
-  swe: 'software engineer',
-  'software engineer': 'software engineer',
-  remote: 'remote',
-  wfh: 'remote',
-  distributed: 'remote',
-};
-
 export interface MatchResultDetails {
   score: number;
   satisfied: Property[];
@@ -75,11 +53,29 @@ export class MatchingEngine {
 
   normalizeTerm(term: string): string {
     if (!term) return '';
-    const lower = term.toLowerCase().trim();
-    // Remove common punctuation?
-    const clean = lower.replace(/[^a-z0-9\s]/g, '');
+    const clean = term.toLowerCase().trim().replace(/[^a-z0-9\s]/g, '');
 
-    return CANONICAL[clean] || clean;
+    if (!this.ontology) return clean;
+
+    // Search ontology for matching label or alias
+    const findCanonical = (nodes: OntologyNode[]): string | null => {
+        for (const node of nodes) {
+            // Check Label
+            if (node.label.toLowerCase() === clean) return node.label;
+
+            // Check Aliases
+            if (node.aliases && node.aliases.includes(clean)) return node.label;
+
+            // Recurse
+            if (node.children) {
+                const found = findCanonical(node.children);
+                if (found) return found;
+            }
+        }
+        return null;
+    };
+
+    return findCanonical(this.ontology) || clean;
   }
 
   /**
@@ -89,17 +85,19 @@ export class MatchingEngine {
   isSubtype(candidate: string, ancestor: string): boolean {
     if (!this.ontology) return false;
 
+    // Normalize both terms to their canonical labels via the ontology
     const normCand = this.normalizeTerm(candidate);
     const normAnc = this.normalizeTerm(ancestor);
 
     if (normCand === normAnc) return true;
 
-    // BFS to find ancestor node
-    const findNode = (nodes: OntologyNode[], target: string): OntologyNode | null => {
+    // BFS to find ancestor node by its canonical label
+    // Note: We search by label equality now, assuming normalizeTerm returns the Label
+    const findNode = (nodes: OntologyNode[], targetLabel: string): OntologyNode | null => {
         for (const node of nodes) {
-            if (this.normalizeTerm(node.label) === target) return node;
+            if (node.label === targetLabel) return node;
             if (node.children) {
-                const found = findNode(node.children, target);
+                const found = findNode(node.children, targetLabel);
                 if (found) return found;
             }
         }
@@ -110,10 +108,10 @@ export class MatchingEngine {
     if (!ancestorNode) return false;
 
     // Check if candidate is in ancestor's subtree
-    const existsInSubtree = (nodes: OntologyNode[], target: string): boolean => {
+    const existsInSubtree = (nodes: OntologyNode[], targetLabel: string): boolean => {
         for (const node of nodes) {
-            if (this.normalizeTerm(node.label) === target) return true;
-            if (node.children && existsInSubtree(node.children, target)) return true;
+            if (node.label === targetLabel) return true;
+            if (node.children && existsInSubtree(node.children, targetLabel)) return true;
         }
         return false;
     };
@@ -215,8 +213,6 @@ export class MatchingEngine {
               if (cleanT === cleanC) return true;
 
               // Hierarchy Check
-              // Does Target (Candidate) IS_A Constraint (Ancestor)?
-              // e.g. Constraint: "Vehicle", Target: "Car". "Car" IS_A "Vehicle". Match = True.
               if (this.isSubtype(tVal, constraintVal)) return true;
 
               const rawT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');

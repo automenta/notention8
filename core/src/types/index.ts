@@ -45,6 +45,7 @@ export interface OntologyAttribute {
 export interface OntologyNode {
   id: string;
   label: string;
+  aliases?: string[];
   description?: string;
   attributes?: {
     [key: string]: OntologyAttribute;
