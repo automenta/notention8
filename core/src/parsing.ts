@@ -248,3 +248,36 @@ export const prettyPrintHtml = (html: string) => {
   const regex = new RegExp(`(<(?:${blockTags.join('|')})[^>]*>)`, 'g');
   return html.replace(regex, '\n$1').trim();
 };
+
+// === SPACETIME UTILS INTEGRATED HERE ===
+
+export interface GeoCoords {
+    lat: number;
+    lng: number;
+}
+
+export const parseGeo = (value: string): GeoCoords | null => {
+    // Expected format: "lat,long" or "lat, long"
+    // or maybe GeoJSON-like?
+    const parts = value.split(',');
+    if (parts.length !== 2) return null;
+
+    const lat = parseFloat(parts[0].trim());
+    const lng = parseFloat(parts[1].trim());
+
+    if (isNaN(lat) || isNaN(lng)) return null;
+    return { lat, lng };
+};
+
+export const haversineDistance = (coords1: GeoCoords, coords2: GeoCoords): number => {
+  const R = 6371; // Earth's radius in km
+  const dLat = (coords2.lat - coords1.lat) * (Math.PI / 180);
+  const dLon = (coords2.lng - coords1.lng) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(coords1.lat * (Math.PI/180)) * Math.cos(coords2.lat * (Math.PI/180)) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const d = R * c; // Distance in km
+  return d;
+};
