@@ -20,6 +20,7 @@ export interface Property {
   key: string;
   operator: string;
   values: string[];
+  quantity?: import('./quantities.js').Quantity;  // Added for semantic quantity handling
 }
 
 export interface NoteSource {
@@ -30,7 +31,7 @@ export interface NoteSource {
 }
 
 export interface OntologyAttribute {
-  type: 'string' | 'date' | 'number' | 'enum' | 'datetime' | 'geo';
+  type: 'string' | 'date' | 'number' | 'enum' | 'datetime' | 'geo' | 'relationship';
   description?: string;
   icon?: string;
   options?: string[]; // for enum type
@@ -38,6 +39,7 @@ export interface OntologyAttribute {
     real: string[];
     imaginary: string[];
   };
+  referenceType?: string; // for relationship type
 }
 
 export interface OntologyNode {

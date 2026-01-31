@@ -1,7 +1,9 @@
 import { Property } from './types/index.js';
+import type { Quantity } from './quantities.js';
 import { OntologyService } from './ontologyService.js';
 import { DEFAULT_ONTOLOGY } from './ontology.default.js';
 import { PropertyValidationError } from './errorTypes.js';
+import { parseQuantity } from './quantities.js';
 
 /**
  * PropertyExtractor - Extract ontology properties from natural language
@@ -189,6 +191,12 @@ export class PropertyExtractor {
      * Infer property type from value string
      */
     inferType(value: string): string {
+        // Check if it's a quantity with units
+        const quantity = this.parseQuantityValue(value);
+        if (quantity) {
+            return 'quantity';
+        }
+
         // Number
         if (/^-?\d+(\.\d+)?$/.test(value)) return 'number';
 
@@ -209,6 +217,13 @@ export class PropertyExtractor {
 
         // Default
         return 'string';
+    }
+
+    /**
+     * Parse quantity value from string
+     */
+    parseQuantityValue(value: string): Quantity | null {
+        return parseQuantity(value);
     }
 
     /**
@@ -251,6 +266,27 @@ export class PropertyExtractor {
         const { valid, errors } = this.validateProperty(property);
         if (!valid) {
             throw new PropertyValidationError(errors.join('; '));
+        }
+
+        // If the property has a quantity, validate it as well
+        if (property.quantity) {
+            this.validateQuantity(property.quantity, property.key);
+        }
+    }
+
+    /**
+     * Validate quantity based on property key
+     */
+    private validateQuantity(quantity: Quantity, propertyKey: string): void {
+        // Check if this is a price vs rate property
+        if (propertyKey.includes('price') || propertyKey.includes('budget')) {
+            if (quantity.unitType === 'compound' && !propertyKey.includes('Rate')) {
+                // Simple price shouldn't be a compound unit
+                console.warn(`Warning: Property ${propertyKey} appears to be a simple price but has a compound unit: ${quantity.unit}`);
+            } else if (quantity.unitType === 'simple' && propertyKey.includes('Rate')) {
+                // Rate should typically be a compound unit
+                console.warn(`Warning: Property ${propertyKey} appears to be a rate but has a simple unit: ${quantity.unit}`);
+            }
         }
     }
 

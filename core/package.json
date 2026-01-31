@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "test": "vitest run",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -24,7 +25,9 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
-    "typescript": "~5.9.2"
+    "tsx": "^4.7.1",
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.18"
   },
   "type": "module"
 }

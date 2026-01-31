@@ -1,6 +1,9 @@
 import type { Note, Property } from './types';
 import { patternRecognitionService } from './patternRecognition';
 import { predictionAccuracyTracker } from './predictionTracking';
+import { generateId, safeDivide, clamp } from './utils/common';
+import { TaskExecutionError } from './utils/errors';
+import { logInfo, logError, logWarn } from './utils/logging';
 
 export enum TaskStatus {
   PENDING = 'pending',
@@ -70,7 +73,7 @@ export class AutonomousTaskExecutor {
   private tasks: Map<string, AutonomousTask> = new Map();
   private config: TaskSchedulerConfig;
   private activeExecutions: Set<string> = new Set();
-  
+
   constructor(config?: Partial<TaskSchedulerConfig>) {
     this.config = {
       maxConcurrentTasks: 3,
@@ -81,7 +84,7 @@ export class AutonomousTaskExecutor {
       ...config
     };
   }
-  
+
   /**
    * Creates an autonomous task based on a prediction
    */
@@ -92,34 +95,46 @@ export class AutonomousTaskExecutor {
     confidence: number,
     authorization: TaskAuthorization
   ): AutonomousTask {
-    const task: AutonomousTask = {
-      id: `autotask_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      userId,
-      title: `Autonomous: ${predictedAction}`,
-      description: `Automatically created task based on pattern recognition`,
-      noteContext: note,
-      predictedAction,
-      confidence,
-      status: TaskStatus.PENDING,
-      priority: this.determinePriority(confidence),
-      authorization,
-      retryCount: 0,
-      maxRetries: this.config.taskRetryLimit,
-      requiresUserConfirmation: confidence >= this.config.confirmationRequiredThreshold
-    };
-    
-    this.tasks.set(task.id, task);
-    
-    // If auto-approval is enabled and confidence is high enough, approve automatically
-    if (this.config.autoApprovalEnabled && 
-        confidence >= authorization.autoApproveThreshold && 
-        !task.requiresUserConfirmation) {
-      this.approveTask(task.id);
+    try {
+      const task: AutonomousTask = {
+        id: generateId('autotask_'),
+        userId,
+        title: `Autonomous: ${predictedAction}`,
+        description: `Automatically created task based on pattern recognition`,
+        noteContext: note,
+        predictedAction,
+        confidence,
+        status: TaskStatus.PENDING,
+        priority: this.determinePriority(confidence),
+        authorization,
+        retryCount: 0,
+        maxRetries: this.config.taskRetryLimit,
+        requiresUserConfirmation: confidence >= this.config.confirmationRequiredThreshold
+      };
+
+      this.tasks.set(task.id, task);
+
+      // If auto-approval is enabled and confidence is high enough, approve automatically
+      if (this.config.autoApprovalEnabled &&
+          confidence >= authorization.autoApproveThreshold &&
+          !task.requiresUserConfirmation) {
+        this.approveTask(task.id);
+      }
+
+      logInfo(`Created autonomous task`, {
+        taskId: task.id,
+        userId,
+        confidence,
+        action: predictedAction
+      });
+
+      return task;
+    } catch (error) {
+      logError(`Failed to create autonomous task for user ${userId}`, error as Error);
+      throw new TaskExecutionError(`Failed to create autonomous task for user ${userId}`, undefined, error as Error);
     }
-    
-    return task;
   }
-  
+
   /**
    * Determines task priority based on confidence and other factors
    */
@@ -129,78 +144,91 @@ export class AutonomousTaskExecutor {
     if (confidence >= 0.5) return TaskPriority.MEDIUM;
     return TaskPriority.LOW;
   }
-  
+
   /**
    * Approves a task for execution
    */
   approveTask(taskId: string): boolean {
-    const task = this.tasks.get(taskId);
-    if (!task || task.status !== TaskStatus.PENDING) {
-      return false;
+    try {
+      const task = this.tasks.get(taskId);
+      if (!task || task.status !== TaskStatus.PENDING) return false;
+
+      // Check if user is authorized to perform this action
+      if (!this.isUserAuthorized(task)) {
+        task.status = TaskStatus.REJECTED;
+        logWarn(`Task rejected due to authorization failure`, { taskId, userId: task.userId });
+        return false;
+      }
+
+      task.status = TaskStatus.APPROVED;
+      task.confirmationReceived = true;
+
+      // Auto-start execution if conditions are met
+      if (this.canExecuteTask(task)) {
+        this.executeTask(taskId);
+      }
+
+      logInfo(`Task approved`, { taskId, userId: task.userId });
+      return true;
+    } catch (error) {
+      logError(`Failed to approve task ${taskId}`, error as Error);
+      throw new TaskExecutionError(`Failed to approve task ${taskId}`, taskId, error as Error);
     }
-    
-    // Check if user is authorized to perform this action
-    if (!this.isUserAuthorized(task)) {
-      task.status = TaskStatus.REJECTED;
-      return false;
-    }
-    
-    task.status = TaskStatus.APPROVED;
-    task.confirmationReceived = true;
-    
-    // Auto-start execution if conditions are met
-    if (this.canExecuteTask(task)) {
-      this.executeTask(taskId);
-    }
-    
-    return true;
   }
-  
+
   /**
    * Rejects a task
    */
   rejectTask(taskId: string): boolean {
-    const task = this.tasks.get(taskId);
-    if (!task || ![TaskStatus.PENDING, TaskStatus.APPROVED].includes(task.status)) {
-      return false;
+    try {
+      const task = this.tasks.get(taskId);
+      if (!task || ![TaskStatus.PENDING, TaskStatus.APPROVED].includes(task.status)) return false;
+
+      task.status = TaskStatus.REJECTED;
+      logInfo(`Task rejected`, { taskId, userId: task.userId });
+      return true;
+    } catch (error) {
+      logError(`Failed to reject task ${taskId}`, error as Error);
+      throw new TaskExecutionError(`Failed to reject task ${taskId}`, taskId, error as Error);
     }
-    
-    task.status = TaskStatus.REJECTED;
-    return true;
   }
-  
+
   /**
    * Confirms a task (for tasks that require user confirmation)
    */
   confirmTask(taskId: string): boolean {
-    const task = this.tasks.get(taskId);
-    if (!task || task.status !== TaskStatus.PENDING || !task.requiresUserConfirmation) {
-      return false;
-    }
-    
-    task.confirmationReceived = true;
+    try {
+      const task = this.tasks.get(taskId);
+      if (!task || task.status !== TaskStatus.PENDING || !task.requiresUserConfirmation) return false;
 
-    // If now approved, proceed to execution if possible
-    if (this.isUserAuthorized(task)) {
-      task.status = TaskStatus.APPROVED;
-      if (this.canExecuteTask(task)) {
-        this.executeTask(taskId);
+      task.confirmationReceived = true;
+
+      // If now approved, proceed to execution if possible
+      if (this.isUserAuthorized(task)) {
+        task.status = TaskStatus.APPROVED;
+        if (this.canExecuteTask(task)) {
+          this.executeTask(taskId);
+        }
       }
-    }
 
-    return true;
+      logInfo(`Task confirmed`, { taskId, userId: task.userId });
+      return true;
+    } catch (error) {
+      logError(`Failed to confirm task ${taskId}`, error as Error);
+      throw new TaskExecutionError(`Failed to confirm task ${taskId}`, taskId, error as Error);
+    }
   }
-  
+
   /**
    * Checks if user is authorized to perform the task
    */
   private isUserAuthorized(task: AutonomousTask): boolean {
     // Check if the predicted action is in the authorized actions list
-    return task.authorization.authorizedActions.some(action => 
+    return task.authorization.authorizedActions.some(action =>
       task.predictedAction.toLowerCase().includes(action.toLowerCase())
     );
   }
-  
+
   /**
    * Checks if a task can be executed
    */
@@ -209,43 +237,51 @@ export class AutonomousTaskExecutor {
            (!task.requiresUserConfirmation || !!task.confirmationReceived) &&
            task.retryCount < task.maxRetries;
   }
-  
+
   /**
    * Executes a task
    */
   async executeTask(taskId: string): Promise<TaskExecutionResult> {
-    const task = this.tasks.get(taskId);
-    if (!task || !this.canExecuteTask(task)) {
-      throw new Error(`Task ${taskId} cannot be executed`);
-    }
-    
-    if (this.activeExecutions.size >= this.config.maxConcurrentTasks) {
-      // Queue the task for later execution
-      setTimeout(() => this.executeTask(taskId), 1000);
-      return {
-        taskId,
-        success: false,
-        error: 'Task queued due to concurrency limits',
-        executionTime: 0
-      };
-    }
-    
-    task.status = TaskStatus.EXECUTING;
-    task.startTime = Date.now();
-    
-    this.activeExecutions.add(taskId);
-    
     try {
+      const task = this.tasks.get(taskId);
+      if (!task || !this.canExecuteTask(task)) {
+        throw new TaskExecutionError(`Task ${taskId} cannot be executed`, taskId);
+      }
+
+      if (this.activeExecutions.size >= this.config.maxConcurrentTasks) {
+        // Queue the task for later execution
+        setTimeout(() => this.executeTask(taskId), 1000);
+        logInfo(`Task queued due to concurrency limits`, { taskId });
+        return {
+          taskId,
+          success: false,
+          error: 'Task queued due to concurrency limits',
+          executionTime: 0
+        };
+      }
+
+      task.status = TaskStatus.EXECUTING;
+      task.startTime = Date.now();
+
+      this.activeExecutions.add(taskId);
+
       // In a real implementation, this would call the appropriate agent/skill
       // to execute the predicted action based on the note context
       const result = await this.performPredictedAction(task);
-      
+
       task.status = TaskStatus.COMPLETED;
       task.result = result;
       task.endTime = Date.now();
-      
-      const executionTime = task.endTime - task.startTime!;
-      
+
+      const executionTime = task.endTime - (task.startTime || 0);
+
+      logInfo(`Task completed`, {
+        taskId,
+        userId: task.userId,
+        executionTime,
+        success: true
+      });
+
       return {
         taskId,
         success: true,
@@ -253,36 +289,54 @@ export class AutonomousTaskExecutor {
         executionTime
       };
     } catch (error: any) {
-      task.status = TaskStatus.FAILED;
-      task.error = error.message;
-      task.endTime = Date.now();
-      
-      // Increment retry count if below limit
-      if (task.retryCount < task.maxRetries) {
-        task.retryCount++;
-        task.status = TaskStatus.PENDING; // Reset to pending for retry
-        
-        // Schedule retry after a delay
-        setTimeout(() => {
-          if (this.canExecuteTask(task)) {
-            this.executeTask(taskId);
-          }
-        }, Math.pow(2, task.retryCount) * 1000); // Exponential backoff
+      const task = this.tasks.get(taskId);
+      if (task) {
+        task.status = TaskStatus.FAILED;
+        task.error = error.message;
+        task.endTime = Date.now();
+
+        // Increment retry count if below limit
+        if (task.retryCount < task.maxRetries) {
+          task.retryCount++;
+          task.status = TaskStatus.PENDING; // Reset to pending for retry
+
+          // Schedule retry after a delay
+          setTimeout(() => {
+            if (this.canExecuteTask(task)) {
+              this.executeTask(taskId);
+            }
+          }, Math.pow(2, task.retryCount) * 1000); // Exponential backoff
+
+          logInfo(`Task retry scheduled`, {
+            taskId,
+            retryCount: task.retryCount,
+            delay: Math.pow(2, task.retryCount) * 1000
+          });
+        }
+
+        const executionTime = task.endTime - (task.startTime || 0);
+
+        logError(`Task failed`, {
+          taskId,
+          userId: task?.userId,
+          error: error.message,
+          executionTime
+        });
+
+        return {
+          taskId,
+          success: false,
+          error: error.message,
+          executionTime
+        };
+      } else {
+        throw new TaskExecutionError(`Task ${taskId} not found`, taskId, error as Error);
       }
-      
-      const executionTime = task.endTime - task.startTime!;
-      
-      return {
-        taskId,
-        success: false,
-        error: error.message,
-        executionTime
-      };
     } finally {
       this.activeExecutions.delete(taskId);
     }
   }
-  
+
   /**
    * Performs the predicted action based on the task
    */
@@ -290,15 +344,19 @@ export class AutonomousTaskExecutor {
     // This is a simplified implementation
     // In a real system, this would dispatch to appropriate skills/agents
     // based on the predicted action and note context
-    
-    console.log(`Executing predicted action: ${task.predictedAction} for user ${task.userId}`);
-    
+
+    logInfo(`Executing predicted action`, {
+      userId: task.userId,
+      action: task.predictedAction,
+      taskId: task.id
+    });
+
     // Simulate different types of actions based on the predicted action
     if (task.predictedAction.toLowerCase().includes('create note')) {
       // Simulate creating a note
       return {
         action: 'create_note',
-        noteId: `note_${Date.now()}`,
+        noteId: generateId('note_'),
         content: `Created based on pattern: ${task.noteContext.title}`
       };
     } else if (task.predictedAction.toLowerCase().includes('update note')) {
@@ -308,7 +366,7 @@ export class AutonomousTaskExecutor {
         noteId: task.noteContext.id,
         updatedFields: ['properties', 'content']
       };
-    } else if (task.predictedAction.toLowerCase().includes('schedule') || 
+    } else if (task.predictedAction.toLowerCase().includes('schedule') ||
                task.predictedAction.toLowerCase().includes('reminder')) {
       // Simulate scheduling a reminder
       return {
@@ -326,41 +384,45 @@ export class AutonomousTaskExecutor {
       };
     }
   }
-  
+
   /**
    * Gets a task by ID
    */
   getTask(taskId: string): AutonomousTask | undefined {
     return this.tasks.get(taskId);
   }
-  
+
   /**
    * Gets all tasks for a user
    */
   getUserTasks(userId: string): AutonomousTask[] {
-    return Array.from(this.tasks.values()).filter(task => task.userId === userId);
+    return Array.from(this.tasks.values()).filter(({ userId: taskUserId }) => taskUserId === userId);
   }
-  
+
   /**
    * Gets tasks by status
    */
   getTasksByStatus(status: TaskStatus): AutonomousTask[] {
-    return Array.from(this.tasks.values()).filter(task => task.status === status);
+    return Array.from(this.tasks.values()).filter(({ status: taskStatus }) => taskStatus === status);
   }
-  
+
   /**
    * Cancels a task
    */
   cancelTask(taskId: string): boolean {
-    const task = this.tasks.get(taskId);
-    if (!task || ![TaskStatus.PENDING, TaskStatus.APPROVED].includes(task.status)) {
-      return false;
+    try {
+      const task = this.tasks.get(taskId);
+      if (!task || ![TaskStatus.PENDING, TaskStatus.APPROVED].includes(task.status)) return false;
+
+      task.status = TaskStatus.CANCELLED;
+      logInfo(`Task cancelled`, { taskId, userId: task.userId });
+      return true;
+    } catch (error) {
+      logError(`Failed to cancel task ${taskId}`, error as Error);
+      throw new TaskExecutionError(`Failed to cancel task ${taskId}`, taskId, error as Error);
     }
-    
-    task.status = TaskStatus.CANCELLED;
-    return true;
   }
-  
+
   /**
    * Gets execution statistics
    */
@@ -376,9 +438,9 @@ export class AutonomousTaskExecutor {
     const completedTasks = allTasks.filter(t => t.status === TaskStatus.COMPLETED).length;
     const failedTasks = allTasks.filter(t => t.status === TaskStatus.FAILED).length;
     const pendingTasks = allTasks.filter(t => t.status === TaskStatus.PENDING).length;
-    
-    const successRate = totalTasks > 0 ? completedTasks / totalTasks : 0;
-    
+
+    const successRate = safeDivide(completedTasks, totalTasks);
+
     return {
       totalTasks,
       completedTasks,
@@ -387,14 +449,15 @@ export class AutonomousTaskExecutor {
       successRate
     };
   }
-  
+
   /**
    * Updates the scheduler configuration
    */
   updateConfig(newConfig: Partial<TaskSchedulerConfig>): void {
     this.config = { ...this.config, ...newConfig };
+    logInfo('Task executor configuration updated', { newConfig });
   }
-  
+
   /**
    * Gets current configuration
    */

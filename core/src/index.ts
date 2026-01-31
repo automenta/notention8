@@ -16,6 +16,12 @@ export * from './networkGate.js';
 export * from './skills/types.js';
 export * from './feedback/types.js';
 
+// Utilities
+export * from './utils/common.js';
+export * from './utils/errors.js';
+export * from './utils/logging.js';
+export * from './baseService.js';
+
 // Pattern Recognition and Prediction (Phase 1)
 export * from './patternRecognition.js';
 export * from './predictionTracking.js';

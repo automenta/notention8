@@ -126,11 +126,16 @@ const parsePropertyBlock = (content: string): Property | null => {
   const wordOpMatch = content.match(wordOpRegex);
   if (wordOpMatch) {
     const [, key, op, val] = wordOpMatch;
-    return {
-      key: key.trim(),
-      operator: op.trim(),
-      values: val.trim().split(',').map(v => v.trim())
-    };
+    // Only accept if key looks like a valid property name (alphanumeric, hyphens, underscores)
+    // Exclude common English words that are not likely to be property names
+    const commonWords = ['not', 'neither', 'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them'];
+    if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(key.trim()) && !commonWords.includes(key.trim().toLowerCase())) {
+      return {
+        key: key.trim(),
+        operator: op.trim(),
+        values: val.trim().split(',').map(v => v.trim())
+      };
+    }
   }
 
   // Handle [key op value] format where op is a symbol but not in our standard list
@@ -168,19 +173,20 @@ const parsePropertyBlock = (content: string): Property | null => {
   const simpleSpaceMatch = content.match(simpleSpaceRegex);
   if (simpleSpaceMatch) {
     const [, key, val] = simpleSpaceMatch;
-    return {
-      key: key.trim(),
-      operator: 'is',
-      values: val.trim().split(',').map(v => v.trim())
-    };
+    // Only accept if key looks like a valid property name (alphanumeric, hyphens, underscores)
+    // Exclude common English words that are not likely to be property names
+    const commonWords = ['not', 'neither', 'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them'];
+    if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(key.trim()) && !commonWords.includes(key.trim().toLowerCase())) {
+      return {
+        key: key.trim(),
+        operator: 'is',
+        values: val.trim().split(',').map(v => v.trim())
+      };
+    }
   }
 
-  // If nothing matches, treat as a simple tag-like property
-  return {
-    key: content.trim(),
-    operator: 'is',
-    values: ['true'] // Default value for tag-like properties
-  };
+  // If nothing matches, return null to indicate this is not a valid property
+  return null;
 }
 
 /**

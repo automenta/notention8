@@ -1,6 +1,8 @@
 import type { Note } from './types';
 import { patternRecognitionService, Prediction } from './patternRecognition';
 import { predictionAccuracyTracker, AccuracyMetrics } from './predictionTracking';
+import { clamp, formatPercentage } from './utils/common';
+import { logInfo, logWarn } from './utils/logging';
 
 export interface ValidationConfig {
   targetAccuracyRate: number; // Target accuracy rate (e.g., 0.3 for 30% in Month 1)
@@ -51,7 +53,7 @@ export class ValidationFramework {
   private validationReports: ValidationReport[] = [];
   private abTests: Map<string, ABTestConfig> = new Map();
   private abTestResults: ABTestResult[] = [];
-  
+
   constructor(config?: Partial<ValidationConfig>) {
     this.config = {
       targetAccuracyRate: 0.3, // Default: 30% target for Month 1
@@ -62,77 +64,87 @@ export class ValidationFramework {
       ...config
     };
   }
-  
+
   /**
    * Validates the prediction system against configured targets
    */
   validatePredictionSystem(userId?: string): ValidationResult {
-    let metrics: AccuracyMetrics;
-    
-    if (userId) {
-      metrics = predictionAccuracyTracker.getUserAccuracyMetrics(userId);
-    } else {
-      metrics = predictionAccuracyTracker.getAccuracyMetrics();
+    try {
+      const metrics = userId
+        ? predictionAccuracyTracker.getUserAccuracyMetrics(userId)
+        : predictionAccuracyTracker.getAccuracyMetrics();
+
+      const issues: string[] = [];
+      const recommendations: string[] = [];
+
+      // Check if accuracy meets target
+      if (metrics.predictionAccuracyRate < this.config.targetAccuracyRate) {
+        issues.push(`Accuracy rate (${formatPercentage(metrics.predictionAccuracyRate)}) below target (${formatPercentage(this.config.targetAccuracyRate)})`);
+        recommendations.push(`Implement user feedback mechanisms to improve prediction accuracy`);
+        recommendations.push(`Analyze inaccurate predictions to identify patterns in failures`);
+      }
+
+      // Check prediction volume
+      if (metrics.totalPredictions === 0) {
+        issues.push(`No predictions have been made yet`);
+        recommendations.push(`Encourage user activity to generate prediction opportunities`);
+      } else if (metrics.totalPredictions < 10) {
+        issues.push(`Low prediction volume (${metrics.totalPredictions}), insufficient data for reliable metrics`);
+        recommendations.push(`Allow more time for system to gather data`);
+      }
+
+      // Check feedback rate
+      if (this.config.feedbackCollectionEnabled && metrics.feedbackReceived === 0) {
+        issues.push(`No user feedback received, limiting learning capability`);
+        recommendations.push(`Prompt users to provide feedback on predictions`);
+      }
+
+      // Calculate overall confidence in the results
+      let confidence = 0.5; // Base confidence
+
+      // Increase confidence with more data
+      if (metrics.totalPredictions > 50) confidence += 0.3;
+      if (metrics.totalPredictions > 100) confidence += 0.2;
+
+      // Decrease confidence if too few validated predictions
+      const validatedRatio = metrics.totalPredictions > 0 ? metrics.accuratePredictions / metrics.totalPredictions : 0;
+      if (validatedRatio < 0.1) confidence -= 0.2;
+
+      confidence = clamp(confidence, 0, 1); // Clamp between 0 and 1
+
+      const isValid = issues.length === 0 && metrics.predictionAccuracyRate >= this.config.targetAccuracyRate;
+
+      logInfo(`Validation completed`, {
+        userId: userId ?? 'all_users',
+        isValid,
+        accuracyRate: formatPercentage(metrics.predictionAccuracyRate),
+        issuesCount: issues.length
+      });
+
+      return {
+        isValid,
+        metrics,
+        issues,
+        recommendations,
+        confidence
+      };
+    } catch (error) {
+      logWarn(`Validation failed`, { error: (error as Error).message });
+      throw new Error('Failed to validate prediction system'); // Simplified error handling
     }
-    
-    const issues: string[] = [];
-    const recommendations: string[] = [];
-    
-    // Check if accuracy meets target
-    if (metrics.predictionAccuracyRate < this.config.targetAccuracyRate) {
-      issues.push(`Accuracy rate (${(metrics.predictionAccuracyRate * 100).toFixed(1)}%) below target (${(this.config.targetAccuracyRate * 100).toFixed(1)}%)`);
-      recommendations.push(`Implement user feedback mechanisms to improve prediction accuracy`);
-      recommendations.push(`Analyze inaccurate predictions to identify patterns in failures`);
-    }
-    
-    // Check prediction volume
-    if (metrics.totalPredictions === 0) {
-      issues.push(`No predictions have been made yet`);
-      recommendations.push(`Encourage user activity to generate prediction opportunities`);
-    } else if (metrics.totalPredictions < 10) {
-      issues.push(`Low prediction volume (${metrics.totalPredictions}), insufficient data for reliable metrics`);
-      recommendations.push(`Allow more time for system to gather data`);
-    }
-    
-    // Check feedback rate
-    if (this.config.feedbackCollectionEnabled && metrics.feedbackReceived === 0) {
-      issues.push(`No user feedback received, limiting learning capability`);
-      recommendations.push(`Prompt users to provide feedback on predictions`);
-    }
-    
-    // Calculate overall confidence in the results
-    let confidence = 0.5; // Base confidence
-    
-    // Increase confidence with more data
-    if (metrics.totalPredictions > 50) confidence += 0.3;
-    if (metrics.totalPredictions > 100) confidence += 0.2;
-    
-    // Decrease confidence if too few validated predictions
-    const validatedRatio = metrics.totalPredictions > 0 ? metrics.accuratePredictions / metrics.totalPredictions : 0;
-    if (validatedRatio < 0.1) confidence -= 0.2;
-    
-    confidence = Math.max(0, Math.min(1, confidence)); // Clamp between 0 and 1
-    
-    return {
-      isValid: issues.length === 0 && metrics.predictionAccuracyRate >= this.config.targetAccuracyRate,
-      metrics,
-      issues,
-      recommendations,
-      confidence
-    };
   }
-  
+
   /**
    * Generates a validation report
    */
   generateValidationReport(period: 'daily' | 'weekly' | 'monthly' = 'daily'): ValidationReport {
     const validationResult = this.validatePredictionSystem();
-    
+
     // Calculate historical metrics for trend analysis
     const accuracyOverTime = this.getHistoricalAccuracy(period);
     const predictionVolume = this.getHistoricalVolume(period);
     const userEngagement = this.getHistoricalEngagement(period);
-    
+
     const report: ValidationReport = {
       timestamp: Date.now(),
       period,
@@ -143,17 +155,19 @@ export class ValidationFramework {
         userEngagement
       }
     };
-    
+
     this.validationReports.push(report);
-    
+
     // Keep only recent reports to manage memory
     if (this.validationReports.length > 100) {
       this.validationReports = this.validationReports.slice(-100);
     }
-    
+
+    logInfo(`Validation report generated`, { period, timestamp: report.timestamp });
+
     return report;
   }
-  
+
   /**
    * Gets historical accuracy data
    */
@@ -162,60 +176,60 @@ export class ValidationFramework {
     // For now, we'll simulate some historical data
     const points = period === 'daily' ? 7 : period === 'weekly' ? 4 : 12;
     const data: { date: number; rate: number }[] = [];
-    
+
     const now = Date.now();
-    const interval = period === 'daily' ? 24 * 60 * 60 * 1000 : 
-                   period === 'weekly' ? 7 * 24 * 60 * 60 * 1000 : 
+    const interval = period === 'daily' ? 24 * 60 * 60 * 1000 :
+                   period === 'weekly' ? 7 * 24 * 60 * 60 * 1000 :
                    30 * 24 * 60 * 60 * 1000;
-    
+
     for (let i = points - 1; i >= 0; i--) {
       const date = now - (i * interval);
       // Simulate gradually improving accuracy
       const baseRate = this.config.targetAccuracyRate * 0.8;
       const improvement = (this.config.targetAccuracyRate - baseRate) * (1 - i / points);
       const rate = baseRate + improvement + (Math.random() * 0.05 - 0.025); // Small random variation
-      
-      data.push({ date, rate: Math.max(0, Math.min(1, rate)) });
+
+      data.push({ date, rate: clamp(rate, 0, 1) });
     }
-    
+
     return data;
   }
-  
+
   /**
    * Gets historical prediction volume
    */
   private getHistoricalVolume(period: 'daily' | 'weekly' | 'monthly'): { date: number; count: number }[] {
     const points = period === 'daily' ? 7 : period === 'weekly' ? 4 : 12;
     const data: { date: number; count: number }[] = [];
-    
+
     const now = Date.now();
-    const interval = period === 'daily' ? 24 * 60 * 60 * 1000 : 
-                   period === 'weekly' ? 7 * 24 * 60 * 60 * 1000 : 
+    const interval = period === 'daily' ? 24 * 60 * 60 * 1000 :
+                   period === 'weekly' ? 7 * 24 * 60 * 60 * 1000 :
                    30 * 24 * 60 * 60 * 1000;
-    
+
     for (let i = points - 1; i >= 0; i--) {
       const date = now - (i * interval);
       // Simulate increasing volume over time
       const count = Math.floor(10 + (50 * (1 - i / points)) + Math.random() * 20);
-      
+
       data.push({ date, count });
     }
-    
+
     return data;
   }
-  
+
   /**
    * Gets historical user engagement
    */
   private getHistoricalEngagement(period: 'daily' | 'weekly' | 'monthly'): { date: number; engaged: number; total: number }[] {
     const points = period === 'daily' ? 7 : period === 'weekly' ? 4 : 12;
     const data: { date: number; engaged: number; total: number }[] = [];
-    
+
     const now = Date.now();
-    const interval = period === 'daily' ? 24 * 60 * 60 * 1000 : 
-                   period === 'weekly' ? 7 * 24 * 60 * 60 * 1000 : 
+    const interval = period === 'daily' ? 24 * 60 * 60 * 1000 :
+                   period === 'weekly' ? 7 * 24 * 60 * 60 * 1000 :
                    30 * 24 * 60 * 60 * 1000;
-    
+
     for (let i = points - 1; i >= 0; i--) {
       const date = now - (i * interval);
       // Simulate increasing engagement over time
@@ -223,53 +237,52 @@ export class ValidationFramework {
       const baseEngaged = 20;
       const improvement = Math.floor(30 * (1 - i / points));
       const engaged = baseEngaged + improvement + Math.floor(Math.random() * 10);
-      
       data.push({ date, engaged: Math.min(total, engaged), total });
     }
-    
+
     return data;
   }
-  
+
   /**
    * Starts an A/B test
    */
   startABTest(config: ABTestConfig): boolean {
     if (!this.config.aBTestingEnabled) {
-      console.warn('A/B testing is not enabled in the configuration');
+      logWarn('A/B testing is not enabled in the configuration');
       return false;
     }
-    
+
     this.abTests.set(config.testName, config);
-    console.log(`Started A/B test: ${config.testName}`);
+    logInfo(`Started A/B test`, { testName: config.testName });
     return true;
   }
-  
+
   /**
    * Evaluates an A/B test and returns results
    */
   evaluateABTest(testName: string): ABTestResult | null {
     if (!this.abTests.has(testName)) {
-      console.warn(`A/B test not found: ${testName}`);
+      logWarn(`A/B test not found`, { testName });
       return null;
     }
-    
+
     // In a real implementation, this would analyze actual test data
     // For now, we'll simulate results
-    
+
     const config = this.abTests.get(testName)!;
-    
+
     // Simulate results - for demonstration purposes
     const variantAResult = this.config.targetAccuracyRate + (Math.random() * 0.05 - 0.025);
     const variantBResult = this.config.targetAccuracyRate + (Math.random() * 0.05 - 0.025);
-    
+
     const difference = variantBResult - variantAResult;
     const absDifference = Math.abs(difference);
-    
+
     let winner: 'A' | 'B' | 'tie' = 'tie';
     if (absDifference > config.minimumEffectSize) {
       winner = difference > 0 ? 'B' : 'A';
     }
-    
+
     const result: ABTestResult = {
       testName,
       winner,
@@ -277,25 +290,28 @@ export class ValidationFramework {
       metricDifference: difference,
       pValue: 0.05 // Simulated statistical significance
     };
-    
+
     this.abTestResults.push(result);
+    logInfo(`A/B test evaluated`, { testName, winner, confidence: result.confidence });
+
     return result;
   }
-  
+
   /**
    * Gets the latest validation reports
    */
   getLatestReports(count: number = 5): ValidationReport[] {
     return this.validationReports.slice(-count).reverse();
   }
-  
+
   /**
    * Updates the validation configuration
    */
   updateConfig(newConfig: Partial<ValidationConfig>): void {
     this.config = { ...this.config, ...newConfig };
+    logInfo('Validation configuration updated', { newConfig });
   }
-  
+
   /**
    * Gets current configuration
    */
