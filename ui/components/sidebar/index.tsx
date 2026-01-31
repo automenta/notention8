@@ -2,15 +2,11 @@ import React from 'react';
 import type { Note } from '@notention/core';
 import { ConfirmationModal } from '../common/ConfirmationModal';
 import { NoteListItem } from './NoteListItem';
-import { Search } from './Search';
-import { SortSelector } from './SortSelector';
-import { ViewSelector } from './ViewSelector';
+import { SidebarHeader } from './SidebarHeader';
 import { NoteGridItem } from './NoteGridItem';
 import { TagCloud } from './TagCloud';
 import { SidebarEmptyState } from './SidebarEmptyState';
-import { PlusIcon } from '../common/icons';
 import { useSidebarLogic } from './useSidebarLogic';
-import { IconButton } from '../common/IconButton';
 
 interface SidebarProps {
   sortedNotes?: Note[];
@@ -50,29 +46,15 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
 
   return (
     <div className="bg-gray-900 flex flex-col h-full">
-      <div className="flex-shrink-0 border-b border-gray-700/50 p-3 space-y-3">
-        <div className="flex items-center gap-2">
-            <div className="flex-grow">
-                <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-            </div>
-            <IconButton
-                onClick={() => handleCreateNote()}
-                tooltip="New Note (Ctrl+N)"
-                tooltipPosition="bottom"
-                icon={PlusIcon}
-                variant="primary"
-                size="lg"
-                containerClassName="flex-shrink-0"
-            />
-        </div>
-
-        <div className="flex gap-2">
-            <div className="flex-grow">
-                <SortSelector sortOrder={sortOrder} onSortChange={setSortOrder} />
-            </div>
-            <ViewSelector viewMode={sidebarViewMode} onViewChange={setSidebarViewMode} />
-        </div>
-      </div>
+      <SidebarHeader
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+        viewMode={sidebarViewMode}
+        onViewChange={setSidebarViewMode}
+        onCreateNote={handleCreateNote}
+      />
 
       <div className="flex-grow p-2 overflow-y-auto custom-scrollbar">
         {sortedNotes.length > 0 ? (

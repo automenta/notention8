@@ -135,9 +135,9 @@ export const NoteListItem = React.memo(({
       {/* Property Badges & Priority */}
       <div className="flex flex-wrap gap-1 mb-2 items-center">
           {note.priority !== undefined && note.priority < 0.5 && (
-               <span className="text-[9px] uppercase font-bold text-gray-500 border border-gray-700 rounded px-1">
+               <Badge variant="default" size="sm" className="border-dashed opacity-75">
                    Low Priority
-               </span>
+               </Badge>
           )}
 
           {note.properties.length > 0 && note.properties.slice(0, 3).map((p, i) => (
