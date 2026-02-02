@@ -25,16 +25,16 @@
     "noImplicitOverride": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
-    "exactOptionalPropertyTypes": false,
-    "strict": false
+    "exactOptionalPropertyTypes": false
   },
   "include": [
-    "src/**/*",
-    "moltbot/**/*",
-    "voltagent/**/*"
+    "index.ts",
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "voltagent",
+    "moltbot"
   ]
 }

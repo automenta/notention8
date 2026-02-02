@@ -3,7 +3,7 @@ import {
   AgentAction,
   AgentConfiguration,
   NoteTranslationStrategy,
-} from '../../src/strategies/NoteTranslationStrategy';
+} from '@notention/agent';
 
 export class LMAgentTranslationStrategy implements NoteTranslationStrategy {
   private readonly name = 'LM Agent Translation Strategy';

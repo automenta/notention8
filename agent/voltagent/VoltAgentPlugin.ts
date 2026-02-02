@@ -1,10 +1,9 @@
-import { Plugin } from '../src/plugins/PluginInterface';
-import { StrategyManager } from '../src/strategies/StrategyManager';
-import { AgentAction } from '../src/strategies/NoteTranslationStrategy';
+import { Plugin, StrategyManager, AgentAction } from '@notention/agent';
 import { Agent, Memory, tool } from "@voltagent/core";
 import { createPinoLogger } from "@voltagent/logger";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
+import * as crypto from 'crypto';
 
 export class VoltAgentPlugin implements Plugin {
     id = 'voltagent-integration';
@@ -74,8 +73,6 @@ export class VoltAgentPlugin implements Plugin {
             name: "notention-assistant",
             instructions: "You are an intelligent agent managing a notebook. You can create notes, update ontology, and answer questions. Use the provided tools to perform actions.",
             model: openai("gpt-4o-mini"),
-            // @ts-ignore - Memory constructor requirements vary by version
-            memory: new Memory({}),
             tools: [createNoteTool, updateOntologyTool],
             logger
         });
@@ -89,12 +86,14 @@ export class VoltAgentPlugin implements Plugin {
         if (message.type === 'agent_request' || message.type === 'clawdbot_request') {
              const prompt = message.payload.message || message.payload.prompt;
              if (prompt) {
+                 console.log(`[VoltAgent] Received user prompt: "${prompt.slice(0, 50)}..."`);
                  await this.processAgentRequest(prompt, message.id);
              }
         } else if (message.type === 'clawdbot_execute') {
-            // Handle execution requests from ChatView
+            // Handle execution requests from ChatView (usually tool results)
             const action = message.payload;
             if (action && action.type === 'agent_instruction' && action.parameters && action.parameters.message) {
+                 console.log(`[VoltAgent] Received tool execution feedback: "${action.parameters.message.slice(0, 50)}..."`);
                  await this.processAgentRequest(action.parameters.message);
             }
         }
@@ -102,9 +101,13 @@ export class VoltAgentPlugin implements Plugin {
 
     private async processAgentRequest(prompt: string, requestId?: string) {
         try {
-            // @ts-ignore - Assuming run method exists in this version of VoltAgent
-            const result: any = await this.agent.run({ input: prompt });
-            const responseText = result.text || result.output || JSON.stringify(result);
+            const result = await this.agent.generateText(prompt, {
+                conversationId: 'default-session',
+                userId: 'user'
+            });
+            const responseText = result.text;
+
+            console.log(`[VoltAgent] Generated response: "${responseText.slice(0, 50)}..."`);
 
             this.broadcast({
                 type: 'agent_response',

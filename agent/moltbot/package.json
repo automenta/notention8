@@ -1,27 +1,30 @@
 {
-  "name": "@notention/agent",
+  "name": "@notention/moltbot",
   "version": "1.0.0",
-  "description": "Shared Agent Library for Notention",
+  "description": "MoltBot (ClawdBot) Integration for Notention",
   "main": "index.ts",
   "scripts": {
-    "build": "tsc",
-    "start:moltbot": "npm start -w @notention/moltbot",
-    "start:volt": "npm start -w @notention/voltagent"
+    "start": "tsx index.ts",
+    "build": "tsc"
   },
   "keywords": [
     "notention",
-    "agent"
+    "moltbot",
+    "clawdbot"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@notention/agent": "*",
     "@notention/core": "*",
+    "axios": "^1.7.9",
+    "clawdbot": "^2026.1.24-3",
     "express": "^4.21.2",
-    "ws": "^8.18.0",
-    "zod": "^4.3.6"
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
+    "@types/node": "^22.10.2",
     "@types/ws": "^8.18.0",
     "tsx": "^4.19.2",
     "typescript": "~5.9.2"

@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { AgentServer } from '../src/AgentServer';
+import { AgentServer } from '@notention/agent';
 import { VoltAgentPlugin } from './VoltAgentPlugin';
 
 (async () => {

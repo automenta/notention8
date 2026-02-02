@@ -1,0 +1,30 @@
+{
+  "name": "@notention/voltagent",
+  "version": "1.0.0",
+  "description": "VoltAgent Integration for Notention",
+  "main": "index.ts",
+  "scripts": {
+    "start": "tsx index.ts",
+    "build": "tsc"
+  },
+  "keywords": [
+    "notention",
+    "voltagent"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@ai-sdk/openai": "^3.0.21",
+    "@notention/agent": "*",
+    "@notention/core": "*",
+    "@voltagent/core": "^2.2.2",
+    "@voltagent/logger": "^2.0.2",
+    "@voltagent/server-hono": "^2.0.4",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "~5.9.2"
+  }
+}
