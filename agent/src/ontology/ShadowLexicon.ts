@@ -1,30 +1,62 @@
 import { Note } from '@notention/core';
 
+export interface EmergingConcept {
+    key: string;
+    frequency: number;
+    sampleValues: string[];
+    firstSeen: number;
+}
+
 export class ShadowLexicon {
+  private candidates: Map<string, EmergingConcept> = new Map();
+  private knownOntologyKeys: Set<string> = new Set();
+
+  constructor(knownKeys: string[] = []) {
+      this.knownOntologyKeys = new Set(knownKeys);
+  }
+
+  updateKnownKeys(keys: string[]) {
+      this.knownOntologyKeys = new Set(keys);
+  }
+
   /**
    * Learns ontology patterns from user notes without modifying the global ontology immediately.
    * This is the "Shadow Mode" from Phase 3.3.
    */
   async observe(note: Note): Promise<void> {
-    if (!note.content) return;
+    if (!note.properties || note.properties.length === 0) return;
 
-    // Detect patterns that look like properties but aren't in ontology yet
-    // e.g. "Meeting with [Sarah]" -> suggest "Contact" entity
-    // This is a stub for the LLM/heuristic logic.
+    for (const prop of note.properties) {
+        if (!this.knownOntologyKeys.has(prop.key)) {
+            this.recordCandidate(prop.key, prop.values[0]);
+        }
+    }
+  }
 
-    // Log potential learning opportunity
-    // console.log(`[ShadowLexicon] Observing note ${note.id} for new patterns...`);
-
-    // 1. Tokenize content
-    // 2. Identify named entities
-    // 3. Check against known ontology
-    // 4. Store candidates in local DB (e.g. SQLite/JSON) with frequency count
+  private recordCandidate(key: string, value: string) {
+      const existing = this.candidates.get(key);
+      if (existing) {
+          existing.frequency++;
+          if (existing.sampleValues.length < 5 && value) {
+              existing.sampleValues.push(value);
+          }
+          this.candidates.set(key, existing);
+      } else {
+          this.candidates.set(key, {
+              key,
+              frequency: 1,
+              sampleValues: value ? [value] : [],
+              firstSeen: Date.now()
+          });
+      }
   }
 
   /**
    * Returns suggestions for ontology updates based on accumulated observations.
    */
-  getSuggestions(): string[] {
-      return [];
+  getSuggestions(minFrequency: number = 3): EmergingConcept[] {
+      return Array.from(this.candidates.values())
+          .filter(c => c.frequency >= minFrequency)
+          .sort((a, b) => b.frequency - a.frequency);
   }
 }

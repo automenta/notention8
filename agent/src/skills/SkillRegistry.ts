@@ -1,6 +1,6 @@
-import { Agent, Tool, AgentFeature } from '@notention/core/src/types';
-import { Note } from '../../../core/src/types';
-import { Skill, SkillMetadata } from './types';
+import { Agent, Tool, AgentFeature } from '../../../core/src/types/index';
+import { Note } from '../../../core/src/types/index';
+import { Skill, SkillMetadata } from '../../../core/src/skills/types';
 import { SkillToolAdapter } from './SkillToolAdapter';
 
 export class SkillRegistry {
@@ -43,9 +43,13 @@ export class SkillRegistry {
         // Local matching logic fallback
         const matches: Array<{ skill: Skill; confidence: number }> = [];
         for (const meta of this.skills.values()) {
-            // Simple keyword matching for fallback
-            // In reality this would be more complex
-            if (note.content.includes(meta.skill.name)) {
+            if (meta.skill.canHandle) {
+                const confidence = meta.skill.canHandle(note);
+                if (confidence >= minConfidence) {
+                    matches.push({ skill: meta.skill, confidence });
+                }
+            } else if (note.content.includes(meta.skill.name)) {
+                // Fallback
                 matches.push({ skill: meta.skill, confidence: 0.8 });
             }
         }

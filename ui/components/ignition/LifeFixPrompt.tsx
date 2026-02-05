@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LifeDecomposer, ProposedThought } from '@notention/core';
 import { Button } from '../common/Button';
 import { Textarea } from '../common/Textarea';
 import { SparklesIcon, CheckIcon, XIcon, ArrowRightIcon } from '../common/icons';
 import { useNotes } from '../../hooks/useNotes';
+import { useGardener } from '../../hooks/useGardener';
 
 export function LifeFixPrompt() {
   const [input, setInput] = useState('');
@@ -11,23 +12,29 @@ export function LifeFixPrompt() {
   const [acceptedThoughts, setAcceptedThoughts] = useState<ProposedThought[]>([]);
   const [stage, setStage] = useState<'prompt' | 'selection' | 'demo'>('prompt');
   const [isDecomposing, setIsDecomposing] = useState(false);
+  const [demoLog, setDemoLog] = useState<string[]>([]);
+  const [isDemoRunning, setIsDemoRunning] = useState(false);
+
+  const { addNote } = useNotes();
+  const { provider } = useGardener();
 
   // We instantiate LifeDecomposer here.
   // In a more complex setup, this might be provided via context or dependency injection.
-  const decomposer = new LifeDecomposer();
-  const { addNote } = useNotes();
+  const decomposer = new LifeDecomposer(provider);
 
-  const handleDecompose = () => {
+  const handleDecompose = async () => {
     if (!input.trim()) return;
     setIsDecomposing(true);
 
-    // Simulate thinking delay for UX
-    setTimeout(() => {
-        const thoughts = decomposer.decompose(input);
+    try {
+        const thoughts = await decomposer.decomposeWithAI(input);
         setProposedThoughts(thoughts);
         setStage('selection');
+    } catch (e) {
+        console.error(e);
+    } finally {
         setIsDecomposing(false);
-    }, 600);
+    }
   };
 
   const handleAccept = (thought: ProposedThought) => {
@@ -58,10 +65,36 @@ export function LifeFixPrompt() {
   };
 
   const handleStartDemo = () => {
-      // Mock demo start
-      console.log('Starting VoltAgent Demo...');
-      alert('VoltAgent is starting demonstration (Mock)...');
+      if (isDemoRunning) return;
+      setIsDemoRunning(true);
+      setDemoLog(['> Initializing demonstration mode... Done', '> Target: ' + acceptedThoughts[0]?.ontology]);
   };
+
+  useEffect(() => {
+      if (!isDemoRunning) return;
+
+      const steps = [
+          '> Action: Search & Summarize',
+          '> Agent: "Searching for solutions regarding ' + (acceptedThoughts[0]?.ontology || 'unknown') + '..."',
+          '> Agent: "Found 3 potential strategies."',
+          '> Agent: "Drafting action plan..."',
+          '> Simulation complete. No side effects applied.',
+          '> Ready for manual override.'
+      ];
+
+      let i = 0;
+      const interval = setInterval(() => {
+          if (i >= steps.length) {
+              clearInterval(interval);
+              setIsDemoRunning(false);
+              return;
+          }
+          setDemoLog(prev => [...prev, steps[i]]);
+          i++;
+      }, 1500);
+
+      return () => clearInterval(interval);
+  }, [isDemoRunning, acceptedThoughts]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] w-full max-w-2xl mx-auto px-4 animate-fade-in">
@@ -171,17 +204,31 @@ export function LifeFixPrompt() {
                      I can demonstrate researching solutions for <span className="text-white font-semibold">"{acceptedThoughts[0]?.content}"</span> right now.
                  </p>
 
-                 <div className="bg-black/80 rounded-xl p-6 mb-8 text-left font-mono text-sm text-green-400 border border-gray-800 shadow-inner">
+                 <div className="bg-black/80 rounded-xl p-6 mb-8 text-left font-mono text-sm text-green-400 border border-gray-800 shadow-inner min-h-[200px]">
                      <p className="mb-2 opacity-75">{'// Sovereignty Log'}</p>
-                     <p>{'>'} Initializing demonstration mode... <span className="text-green-500">Done</span></p>
-                     <p>{'>'} Target: {acceptedThoughts[0]?.ontology}</p>
-                     <p>{'>'} Action: Search & Summarize</p>
-                     <p className="mt-4 animate-pulse text-yellow-400">{'>'} Waiting for pilot authorization...</p>
+                     {demoLog.length === 0 && (
+                         <>
+                             <p>{'>'} Initializing demonstration mode... <span className="text-green-500">Done</span></p>
+                             <p>{'>'} Target: {acceptedThoughts[0]?.ontology}</p>
+                             <p>{'>'} Action: Search & Summarize</p>
+                             <p className="mt-4 animate-pulse text-yellow-400">{'>'} Waiting for pilot authorization...</p>
+                         </>
+                     )}
+                     {demoLog.map((log, i) => (
+                         <p key={i} className="animate-fade-in">{log}</p>
+                     ))}
+                     {isDemoRunning && <p className="animate-pulse text-purple-400">{'>'} ...</p>}
                  </div>
 
                  <div className="flex flex-col md:flex-row gap-4 justify-center">
-                     <Button size="lg" variant="primary" className="bg-white text-black hover:bg-gray-200 font-bold px-8" onClick={handleStartDemo}>
-                        Watch Demo (No Side Effects)
+                     <Button
+                        size="lg"
+                        variant="primary"
+                        className="bg-white text-black hover:bg-gray-200 font-bold px-8"
+                        onClick={handleStartDemo}
+                        disabled={isDemoRunning}
+                     >
+                        {isDemoRunning ? 'Running Demo...' : 'Watch Demo (No Side Effects)'}
                      </Button>
                      <Button size="lg" variant="ghost" onClick={commitAndExit} className="hover:bg-gray-800">
                         Enter Manual Mode

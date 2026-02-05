@@ -193,17 +193,38 @@ export const replacePropertyInString = (
 export function getTextFromHtml(content: string): string {
   if (!content) return '';
 
-  const div = document.createElement('div');
-  div.innerHTML = content;
+  if (typeof document !== 'undefined') {
+    const div = document.createElement('div');
+    div.innerHTML = content;
 
-  // Add newlines after block elements for better preview readability
-  div
-    .querySelectorAll('p, h1, h2, h3, li, blockquote, pre, div')
-    .forEach((el) => {
-      el.appendChild(document.createTextNode('\n'));
-    });
+    // Add newlines after block elements for better preview readability
+    div
+      .querySelectorAll('p, h1, h2, h3, li, blockquote, pre, div')
+      .forEach((el) => {
+        el.appendChild(document.createTextNode('\n'));
+      });
 
-  return div.textContent || '';
+    return div.textContent || '';
+  }
+
+  // Node.js fallback (Regex-based)
+  // Replace block tags with newlines
+  const blockTags = ['p', 'h1', 'h2', 'h3', 'li', 'blockquote', 'pre', 'div'];
+  const blockRegex = new RegExp(`</(${blockTags.join('|')})>`, 'gi');
+  let text = content.replace(blockRegex, '\n');
+
+  // Remove all other tags
+  text = text.replace(/<[^>]+>/g, '');
+
+  // Decode entities (basic ones)
+  text = text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"');
+
+  return text.trim();
 }
 
 /**
