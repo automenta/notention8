@@ -2,25 +2,20 @@ import { WebSocket } from 'ws';
 import { PluginManager } from '../plugins/PluginInterface';
 import { ComprehensiveStateManager } from '../state-management/ComprehensiveStateManager';
 import { TransparentErrorHandler } from '../error-handling/ErrorHandler';
-import { ClawdBotCoordinator } from '../ClawdBotCoordinator';
 
 export class WSMessageHandler {
     constructor(
         private pluginManager: PluginManager,
         private stateManager: ComprehensiveStateManager,
-        private errorHandler: TransparentErrorHandler,
-        private coordinator: ClawdBotCoordinator | null
+        private errorHandler: TransparentErrorHandler
     ) {}
-
-    public setCoordinator(coordinator: ClawdBotCoordinator) {
-        this.coordinator = coordinator;
-    }
 
     async handleMessage(message: any, ws: WebSocket) {
         try {
             switch(message.type) {
-                case 'clawdbot_request':
-                    await this.handleClawdBotRequest(message, ws);
+                case 'agent_request':
+                case 'clawdbot_request': // Backwards compatibility
+                    await this.handleAgentRequest(message, ws);
                     break;
 
                 case 'note_created':
@@ -47,13 +42,21 @@ export class WSMessageHandler {
         }
     }
 
-    private async handleClawdBotRequest(message: any, ws: WebSocket) {
-        console.log('Processing ClawdBot request:', message.payload);
+    private async handleAgentRequest(message: any, ws: WebSocket) {
+        console.log('Processing Agent request:', message.payload);
+        // Delegate this to plugins or handle generically
+        this.pluginManager.broadcastMessage(message).catch(error => {
+             console.error('Error broadcasting agent request:', error);
+        });
+
+        // Use clawdbot_response for legacy compatibility if request was clawdbot_request
+        const responseType = message.type === 'clawdbot_request' ? 'clawdbot_response' : 'agent_response';
+
         ws.send(JSON.stringify({
-            type: 'clawdbot_response',
+            type: responseType,
             requestId: message.id,
             success: true,
-            result: { message: 'Request processed (mock)' }
+            result: { message: 'Request received' }
         }));
     }
 
@@ -61,17 +64,6 @@ export class WSMessageHandler {
         this.pluginManager.broadcastNoteCreated(message.payload).catch(error => {
             console.error('Error broadcasting note creation:', error);
         });
-
-        if (this.coordinator) {
-            this.coordinator.processNote(message.payload).then(results => {
-                if (results && results.length > 0) {
-                    ws.send(JSON.stringify({
-                        type: 'skills_results',
-                        payload: results
-                    }));
-                }
-            }).catch(err => console.error("Coordinator error:", err));
-        }
         console.log('Note created event received:', message.payload);
     }
 

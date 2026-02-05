@@ -1,4 +1,4 @@
-// Interface for translating notes to ClawdBot actions/configurations
+// Interface for translating notes to Agent actions/configurations
 export interface NoteTranslationStrategy {
   /**
    * Determines if this strategy can handle a given note
@@ -6,9 +6,9 @@ export interface NoteTranslationStrategy {
   canHandle(note: any): boolean;
 
   /**
-   * Translates a note into ClawdBot actions or configurations
+   * Translates a note into Agent actions or configurations
    */
-  translate(note: any): Promise<ClawdBotAction[] | ClawdBotConfiguration>;
+  translate(note: any): Promise<AgentAction[] | AgentConfiguration>;
 
   /**
    * Gets the priority of this strategy (higher numbers are tried first)
@@ -21,8 +21,8 @@ export interface NoteTranslationStrategy {
   getName(): string;
 }
 
-// Represents an action that can be sent to ClawdBot
-export interface ClawdBotAction {
+// Represents an action that can be sent to an Agent (MoltBot or VoltAgent)
+export interface AgentAction {
   id: string;
   type: string; // e.g., 'schedule', 'communicate', 'execute', 'monitor'
   description: string;
@@ -32,14 +32,18 @@ export interface ClawdBotAction {
   priority?: number;
 }
 
-// Represents a configuration for ClawdBot
-export interface ClawdBotConfiguration {
+// Represents a configuration for an Agent
+export interface AgentConfiguration {
   id: string;
   type: string; // e.g., 'agent', 'workflow', 'monitor'
   settings: Record<string, any>;
   triggers: Trigger[];
-  actions: ClawdBotAction[];
+  actions: AgentAction[];
 }
+
+// Aliases for backward compatibility during refactor
+export type ClawdBotAction = AgentAction;
+export type ClawdBotConfiguration = AgentConfiguration;
 
 // Condition that must be met for an action to execute
 export interface Condition {

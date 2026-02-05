@@ -1,5 +1,5 @@
 import { spawn, ChildProcess } from 'child_process';
-import { ClawdBotClient } from './communication/ClawdBotClient';
+import { ClawdBotClient } from './ClawdBotClient';
 
 export class Gateway {
   private process: ChildProcess | null = null;

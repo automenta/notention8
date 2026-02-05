@@ -1,15 +1,15 @@
-import { Plugin } from './PluginInterface';
-import { StrategyManager } from '../strategies/StrategyManager';
-import { LMAgentTranslationStrategy } from '../strategies/LMAgentTranslationStrategy';
-import { HeuristicTranslationStrategy } from '../strategies/HeuristicTranslationStrategy';
-import { PatternMatchingStrategy } from '../strategies/PatternMatchingStrategy';
-import { SkillBasedStrategy } from '../strategies/SkillBasedStrategy';
-import { TranslationContext } from '../strategies/NoteTranslationStrategy';
-import { UIIntegrationSystem } from '../ui-representation/UIIntegrationSystem';
-import { ClawdBotClient } from '../communication/ClawdBotClient';
-import { SkillRegistry } from '../skills/SkillRegistry';
-import { IndeedSkill } from '../skills/IndeedSkill';
-import { FeedbackCollector } from '../feedback/FeedbackCollector';
+import { Plugin } from '../src/plugins/PluginInterface';
+import { StrategyManager } from '../src/strategies/StrategyManager';
+import { LMAgentTranslationStrategy } from './strategies/LMAgentTranslationStrategy';
+import { HeuristicTranslationStrategy } from '../src/strategies/HeuristicTranslationStrategy';
+import { PatternMatchingStrategy } from '../src/strategies/PatternMatchingStrategy';
+import { SkillBasedStrategy } from '../src/strategies/SkillBasedStrategy';
+import { TranslationContext } from '../src/strategies/NoteTranslationStrategy';
+import { UIIntegrationSystem } from '../src/ui-representation/UIIntegrationSystem';
+import { ClawdBotClient } from './ClawdBotClient';
+import { SkillRegistry } from '../src/skills/SkillRegistry';
+import { IndeedSkill } from '../src/skills/IndeedSkill';
+import { FeedbackCollector } from '../src/feedback/FeedbackCollector';
 
 interface ClawdBotGateway {
   process?: any;
@@ -228,6 +228,18 @@ export class ClawdBotPlugin implements Plugin {
         break;
       case 'submit_feedback':
         await this.handleFeedback(message.payload);
+        break;
+      case 'agent_request':
+      case 'clawdbot_request':
+        // Handle direct chat messages
+        const prompt = message.payload.message || message.payload.prompt;
+        if (prompt) {
+             // Treat as an instruction
+             await this.executeTranslatedResult({
+                 type: 'agent_instruction',
+                 parameters: { message: prompt }
+             }, null);
+        }
         break;
       default:
         console.log('Unknown message type for ClawdBot plugin:', message.type);

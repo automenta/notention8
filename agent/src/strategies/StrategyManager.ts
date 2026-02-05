@@ -1,4 +1,4 @@
-import { NoteTranslationStrategy, TranslationContext, ClawdBotAction, ClawdBotConfiguration } from './NoteTranslationStrategy';
+import { NoteTranslationStrategy, TranslationContext, AgentAction, AgentConfiguration } from './NoteTranslationStrategy';
 
 export class StrategyManager {
   private strategies: NoteTranslationStrategy[] = [];
@@ -39,7 +39,7 @@ export class StrategyManager {
   /**
    * Translate a note using the best available strategy
    */
-  async translateNote(context: TranslationContext): Promise<(ClawdBotAction | ClawdBotConfiguration)[] | null> {
+  async translateNote(context: TranslationContext): Promise<(AgentAction | AgentConfiguration)[] | null> {
     const strategy = this.findBestStrategy(context.note);
 
     if (!strategy) {
