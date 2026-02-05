@@ -75,9 +75,19 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
         id: 'technology',
         label: 'Technology',
         children: [
-          { id: 'ai', label: 'AI' },
-          { id: 'blockchain', label: 'Blockchain' },
-          { id: 'webdev', label: 'Web Development' },
+          { id: 'ai', label: 'AI', aliases: ['artificial intelligence', 'ml', 'machine learning'] },
+          { id: 'blockchain', label: 'Blockchain', aliases: ['crypto', 'web3'] },
+          { id: 'webdev', label: 'Web Development', aliases: ['web dev', 'frontend', 'backend', 'fullstack'] },
+          {
+            id: 'programming-languages',
+            label: 'Programming Language',
+            children: [
+              { id: 'javascript', label: 'JavaScript', aliases: ['js', 'es6', 'node', 'nodejs'] },
+              { id: 'typescript', label: 'TypeScript', aliases: ['ts'] },
+              { id: 'python', label: 'Python', aliases: ['py'] },
+              { id: 'react', label: 'React', aliases: ['reactjs', 'react.js'] }
+            ]
+          }
         ],
       },
       { id: 'science', label: 'Science' },
@@ -174,6 +184,8 @@ export const DEFAULT_ONTOLOGY: OntologyNode[] = [
           role: {
             type: 'string',
             description: 'The job title or role.',
+            // Using unitType here slightly metaphorically or we'd need 'enum' for validation against ontology nodes?
+            // Actually, matching logic handles string vs ontology node canonicalization.
             operators: { real: ['is'], imaginary: ['is not'] },
           },
           budget: {

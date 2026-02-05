@@ -31,6 +31,8 @@ export interface NoteSource {
 
 export interface OntologyAttribute {
   type: 'string' | 'date' | 'number' | 'enum' | 'datetime' | 'geo';
+  /** Expected physical dimension for number type (e.g. 'length', 'mass', 'currency', 'time', 'temperature', 'speed') */
+  unitType?: string;
   description?: string;
   icon?: string;
   options?: string[]; // for enum type
@@ -43,6 +45,7 @@ export interface OntologyAttribute {
 export interface OntologyNode {
   id: string;
   label: string;
+  aliases?: string[];
   description?: string;
   attributes?: {
     [key: string]: OntologyAttribute;
