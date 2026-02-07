@@ -4,6 +4,7 @@ import { TrashIcon, WorldIcon, DownloadIcon, MapPinIcon, ClockIcon, PinIcon, Doc
 import { getTextFromHtml } from '@notention/core';
 import { IconButton } from '../common/IconButton';
 import { Badge } from '../common/Badge';
+import { Tooltip } from '../common/Tooltip';
 
 export const NoteListItem = React.memo(({
   note,
@@ -81,6 +82,18 @@ export const NoteListItem = React.memo(({
       }
   };
 
+  // Visual Priority Indicators
+  const opacity = note.priority !== undefined && note.priority < 0.5 ? 0.6 : 1.0;
+
+  // Public border logic
+  const borderColorClass = note.public
+      ? (isSelected ? 'border-green-400' : 'border-green-600/30')
+      : (isSelected ? 'border-blue-500/30' : 'border-transparent hover:border-gray-700/50');
+
+  // Dashed border for low priority if selected or hovered (less intrusive in list)
+  const borderStyleClass = (note.priority !== undefined && note.priority < 0.3) ? 'border-dashed' : 'border-solid';
+
+
   return (
     <div
       ref={itemRef}
@@ -88,16 +101,28 @@ export const NoteListItem = React.memo(({
       tabIndex={0}
       onClick={onSelect}
       onKeyDown={handleKeyDown}
-      className={`note-list-item group relative flex flex-col p-3 mx-2 my-1 rounded-lg cursor-pointer transition-all duration-200 border border-transparent
+      style={{ opacity }}
+      className={`note-list-item group relative flex flex-col p-3 mx-2 my-1 rounded-lg cursor-pointer transition-all duration-200 border
+        ${borderColorClass}
+        ${borderStyleClass}
         ${isSelected
-            ? 'bg-blue-900/30 border-blue-500/30 shadow-md'
-            : 'hover:bg-gray-800 border-transparent hover:border-gray-700/50'
+            ? 'bg-blue-900/30 shadow-md'
+            : 'hover:bg-gray-800'
         } focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
     >
       <div className="flex justify-between items-start mb-0.5">
-        <h3 className={`font-semibold text-sm truncate pr-8 ${isSelected ? 'text-blue-100' : 'text-gray-200'}`}>
-          {note.title || 'Untitled Note'}
-        </h3>
+        <div className="flex items-center gap-1.5 flex-1 min-w-0 pr-6">
+            {/* Provenance Icon */}
+            {note.source?.type === 'skill' && (
+                <Tooltip content={`Imported from ${note.source.identifier}`} position="right">
+                    <DownloadIcon className="w-3 h-3 text-blue-400/70 flex-shrink-0" />
+                </Tooltip>
+            )}
+            <h3 className={`font-semibold text-sm truncate ${isSelected ? 'text-blue-100' : 'text-gray-200'}`}>
+              {note.title || 'Untitled Note'}
+            </h3>
+        </div>
+
         {note.pinned && (
              <PinIcon className="h-3.5 w-3.5 text-blue-400 absolute top-3.5 right-3" />
         )}
@@ -107,19 +132,23 @@ export const NoteListItem = React.memo(({
         {contentPreview}
       </p>
 
-      {/* Property Badges */}
-      {note.properties.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-2">
-              {note.properties.slice(0, 3).map((p, i) => (
-                  <Badge key={i} size="sm" variant="outline" className={`border-opacity-50 ${isSelected ? 'text-blue-200 border-blue-400' : 'text-gray-400 border-gray-600'}`}>
-                      {p.key}: {p.values[0]}
-                  </Badge>
-              ))}
-              {note.properties.length > 3 && (
-                  <span className={`text-[10px] ${isSelected ? 'text-blue-300' : 'text-gray-600'}`}>+{note.properties.length - 3}</span>
-              )}
-          </div>
-      )}
+      {/* Property Badges & Priority */}
+      <div className="flex flex-wrap gap-1 mb-2 items-center">
+          {note.priority !== undefined && note.priority < 0.5 && (
+               <span className="text-[9px] uppercase font-bold text-gray-500 border border-gray-700 rounded px-1">
+                   Low Priority
+               </span>
+          )}
+
+          {note.properties.length > 0 && note.properties.slice(0, 3).map((p, i) => (
+              <Badge key={i} size="sm" variant="outline" className={`border-opacity-50 ${isSelected ? 'text-blue-200 border-blue-400' : 'text-gray-400 border-gray-600'}`}>
+                  {p.key}: {p.values[0]}
+              </Badge>
+          ))}
+          {note.properties.length > 3 && (
+              <span className={`text-[10px] ${isSelected ? 'text-blue-300' : 'text-gray-600'}`}>+{note.properties.length - 3}</span>
+          )}
+      </div>
 
       <div className="flex items-center justify-between h-5">
         <div className="flex items-center gap-2">

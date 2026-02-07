@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useWebSocket } from '../../hooks/useWebSocket';
 
-// Mock Spinner if not found, or replace with common one later
-const Spinner = ({ size }: { size: string }) => <span style={{ marginRight: '5px' }}>⏳</span>;
+const Spinner = () => (
+    <div className="animate-spin h-3 w-3 border-2 border-purple-500 border-t-transparent rounded-full mr-2"></div>
+);
 
 export function SkillExecutionIndicator({ noteId }: { noteId: string }) {
     const [executing, setExecuting] = useState(false);
@@ -11,21 +12,14 @@ export function SkillExecutionIndicator({ noteId }: { noteId: string }) {
     const { subscribe } = useWebSocket();
 
     useEffect(() => {
-        const unsubscribe = subscribe((message) => {
-            // In Phase 4 index.ts, we broadcast 'note_created' for results.
-            // But we need 'skill_execution_started' message type which defines `skills`
-            // usage. In VoltAgentProvider calling executeWorkflow doesn't explicitly send start events
-            // unless we instrument it. 
-            // DONE: Setup instrumented feedback in VoltAgentProvider or SkillExecutor (Phase 3).
-            // Or we just listen for 'note_created' with source 'voltagent' related to this note?
-            // TODO3.md snippet expects 'skill_execution_started'.
-            // I should have implemented that broadcast in SkillExecutor or global event handler!
-            // I'll update SkillExecutor later if strict adherence is needed, or just keep this component ready.
+        const unsubscribe = subscribe((message: any) => {
+            if (!message || typeof message !== 'object') return;
 
             if (message.type === 'skill_execution_started' && message.noteId === noteId) {
                 setExecuting(true);
                 setMatchedSkills(message.skills || []);
             }
+
             if (message.type === 'skill_execution_complete' && message.noteId === noteId) {
                 setExecuting(false);
             }
@@ -37,15 +31,11 @@ export function SkillExecutionIndicator({ noteId }: { noteId: string }) {
     if (!executing) return null;
 
     return (
-        <div className="skill-execution-indicator" style={{
-            display: 'flex',
-            alignItems: 'center',
-            fontSize: '0.8em',
-            color: '#666',
-            marginTop: '4px'
-        }}>
-            <Spinner size="sm" />
-            <span>Executing skills: {matchedSkills.join(', ')}</span>
+        <div className="flex items-center text-xs text-purple-400 mt-1 animate-fade-in bg-purple-900/10 px-2 py-1 rounded-md w-fit border border-purple-500/20">
+            <Spinner />
+            <span className="font-medium tracking-wide">
+                {matchedSkills.length > 0 ? `Running: ${matchedSkills.join(', ')}` : 'Agent working...'}
+            </span>
         </div>
     );
 }
