@@ -2,6 +2,7 @@ import React from 'react';
 import { ClockIcon, PlusIcon } from '../layout/icons';
 import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
+import { Card } from '../common/Card';
 import type { Note } from '../../types';
 
 interface RecentNotesWidgetProps {
@@ -18,22 +19,21 @@ export const RecentNotesWidget: React.FC<RecentNotesWidgetProps> = ({
   onCreateNote
 }) => {
   return (
-    <div>
-        <div className="flex items-center justify-between mb-4 px-1">
-            <h2 className="text-lg font-semibold text-gray-300 flex items-center gap-2">
-                <ClockIcon className="h-5 w-5 text-gray-400" />
-                Recent Notes
-            </h2>
-            <Button
-                onClick={onViewAll}
-                variant="ghost"
-                size="sm"
-                className="text-blue-400 hover:text-blue-300"
-            >
-                View all
-            </Button>
-        </div>
-
+    <Card
+      title="Recent Notes"
+      icon={ClockIcon}
+      className="border-none bg-transparent p-0"
+      headerAction={
+        <Button
+          onClick={onViewAll}
+          variant="ghost"
+          size="sm"
+          className="text-blue-400 hover:text-blue-300"
+        >
+          View all
+        </Button>
+      }
+    >
         {notes.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {notes.map(note => (
@@ -71,6 +71,6 @@ export const RecentNotesWidget: React.FC<RecentNotesWidgetProps> = ({
                 </Button>
             </div>
         )}
-    </div>
+    </Card>
   );
 };

@@ -16,7 +16,7 @@ import {
   HorizontalRuleIcon,
   SparklesIcon,
   CubeIcon,
-  TagIcon,
+  KeyIcon,
 } from '../layout/icons';
 
 interface TiptapToolbarProps {
@@ -148,7 +148,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
                 <IconButton
                     onClick={onInsertProperty}
                     tooltip="Insert Property"
-                    icon={TagIcon}
+                    icon={KeyIcon}
                     isActive={false}
                     className="text-purple-300 hover:text-white"
                 />
