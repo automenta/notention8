@@ -19,7 +19,7 @@ def verify_conflicts():
         try:
              page.get_by_role("button", name="Create First Note").click()
         except:
-             page.locator("button[title='New Note']").click()
+             page.locator("button[title='New Note']").first.click()
 
         page.wait_for_selector("#note-title-input")
         page.fill("#note-title-input", "Seed Ontology Note")
@@ -32,7 +32,7 @@ def verify_conflicts():
 
         # Verify it's in ontology
         page.locator("button[title='Ontology']").click()
-        page.get_by_text("price").wait_for()
+        page.locator(".text-purple-400", has_text="price").wait_for()
 
         # 3. Disable Developer Mode (Stop Evolution)
         page.get_by_title("Settings").click()
@@ -41,7 +41,7 @@ def verify_conflicts():
             dev_toggle.click()
 
         # 4. Create Conflict Note
-        page.locator("button[title='New Note']").click()
+        page.locator("button[title='New Note']").first.click()
         page.wait_for_selector("#note-title-input")
         page.fill("#note-title-input", "Conflict Note")
 
@@ -67,8 +67,8 @@ def verify_conflicts():
 
         # Verify conflict is listed
         try:
-            page.get_by_text("Conflict Note").wait_for(timeout=5000)
-            page.get_by_text("[price]").wait_for(timeout=5000)
+            page.locator("main").get_by_text("Conflict Note").wait_for(timeout=5000)
+            page.locator("main").get_by_text("[price]").wait_for(timeout=5000)
             print("Conflict verification passed.")
         except Exception as e:
             print(f"Conflict verification failed: {e}")

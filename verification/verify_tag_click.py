@@ -53,7 +53,9 @@ def test_tag_click(page):
     # So it likely becomes a propertySuggestion (class 'suggestion-item').
     # Let's check for .suggestion-item OR .suggestion-tag
 
-    html_content = '<p>Check <span data-type="mention" class="suggestion-tag" data-id="#testing" data-label="#testing">#testing</span></p>'
+    # Tiptap Mention extension uses data-type="${extension.name}" for parsing.
+    # We named our extension 'tagSuggestion'.
+    html_content = '<p>Check <span data-type="tagSuggestion" class="suggestion-tag" data-id="#testing" data-label="#testing">#testing</span></p>'
     page.fill("textarea", html_content)
 
     print("Switching back to Rich Text...")

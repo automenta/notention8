@@ -6,7 +6,7 @@ def test_relay_management(page):
 
     # 2. Go to Settings -> Nostr
     page.get_by_role("button", name="Settings").click()
-    page.get_by_role("button", name="🔑 Nostr").click()
+    page.get_by_role("button", name="🔑 Network & Keys").click()
 
     # 3. Verify Default Relays are visible
     # We check for a known default relay

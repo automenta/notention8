@@ -31,8 +31,8 @@ def run(playwright):
         # Click Conflicts tab
         conflicts_tab.click()
 
-        # Check for content
-        expect(page.get_by_text("Conflict Resolution")).to_be_visible()
+        # Check for content (No conflicts state by default)
+        expect(page.get_by_text("No Conflicts")).to_be_visible()
 
         if not os.path.exists("verification"):
             os.makedirs("verification")

@@ -5,7 +5,7 @@ def test_autotag(page):
     page.goto("http://localhost:5173")
 
     # Create new note
-    page.get_by_role("button", name="New Note").click()
+    page.get_by_role("button", name="New Note").first.click()
 
     # Type content
     # We need to find the editor. Tiptap editor usually has role "textbox" or contenteditable.

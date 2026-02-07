@@ -25,7 +25,7 @@ def run():
              page.locator("div[role='button']").first.click()
         else:
              print("No notes found, creating new note...")
-             page.get_by_role("button", name="New Note").click()
+             page.get_by_role("button", name="New Note").first.click()
 
         # Verify Detail View
         print("Verifying detail view...")
