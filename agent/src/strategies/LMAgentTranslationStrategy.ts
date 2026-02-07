@@ -63,6 +63,9 @@ Available Tools:
 2. update_ontology: Add a new category or attribute to the system ontology.
    Format: { "tool": "update_ontology", "args": { "parentId": "entity", "id": "new_id", "label": "New Label", "description": "..." } }
 
+3. execute_browser_action: Automate a web browser.
+   Format: { "tool": "execute_browser_action", "args": { "url": "...", "steps": [{"type": "navigate|click|type|wait", "selector": "...", "value": "..."}], "extractors": [...] } }
+
 If no action is needed, simply reply with a helpful text response.
 `;
     return prompt;

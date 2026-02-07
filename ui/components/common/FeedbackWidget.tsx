@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
 import { HandThumbUpIcon, HandThumbDownIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
-
-// Mock hook until FeedbackContext is created
-const useFeedback = () => {
-    return {
-        recordFeedback: (feedback: any) => console.log('Feedback recorded:', feedback)
-    };
-};
+import { useAgent } from '../contexts/AgentContext';
 
 interface FeedbackWidgetProps {
     entityId: string;
@@ -16,10 +10,10 @@ interface FeedbackWidgetProps {
 export function FeedbackWidget({ entityId, entityType }: FeedbackWidgetProps) {
   const [showDetailed, setShowDetailed] = useState(false);
   const [details, setDetails] = useState('');
-  const { recordFeedback } = useFeedback();
+  const { sendMessage } = useAgent();
 
   const submit = (value: number, context?: any) => {
-    recordFeedback({
+    sendMessage('submit_feedback', {
       id: crypto.randomUUID(),
       entityId,
       entityType,

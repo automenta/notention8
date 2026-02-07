@@ -9,11 +9,32 @@ export function AgentToolHandler() {
     const { addToast } = useToast();
 
     useEffect(() => {
-        if (lastMessage && lastMessage.type === 'agent_tool_call') {
+        if (!lastMessage) return;
+
+        if (lastMessage.type === 'agent_tool_call') {
             const { tool, args } = lastMessage.payload;
             handleToolExecution(tool, args);
+        } else if (lastMessage.type === 'notes_imported') {
+            const { notes, source } = lastMessage.payload;
+            handleNotesImport(notes, source);
         }
     }, [lastMessage]);
+
+    const handleNotesImport = (notes: any[], source: string) => {
+        if (!notes || !Array.isArray(notes)) return;
+
+        let count = 0;
+        notes.forEach(note => {
+            // We pass the note directly as overrides.
+            // Since addNote spreads overrides, it should preserve ID if provided in the note object.
+            addNote(note);
+            count++;
+        });
+
+        if (count > 0) {
+            addToast(`Imported ${count} notes from ${source || 'Skill'}`, 'success');
+        }
+    };
 
     const handleToolExecution = async (tool: string, args: any) => {
         try {
@@ -39,6 +60,14 @@ export function AgentToolHandler() {
                     sendMessage('clawdbot_execute', {
                         type: 'agent_instruction',
                         parameters: { message: `System: Ontology update request received. (Mock implementation)` }
+                    });
+                    break;
+
+                case 'execute_browser_action':
+                    addToast('Agent requested Browser Action', 'info');
+                    sendMessage('clawdbot_execute', {
+                        type: 'browser',
+                        config: args
                     });
                     break;
 
