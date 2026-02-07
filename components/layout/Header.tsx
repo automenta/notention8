@@ -20,7 +20,9 @@ import {
   ClockIcon,
   ChevronDownIcon,
   SparklesIcon,
-  CubeTransparentIcon
+  CubeTransparentIcon,
+  HomeIcon,
+  CpuChipIcon
 } from './icons';
 
 interface HeaderProps {
@@ -39,7 +41,6 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
       selectedNoteId,
       setSelectedNoteId
   } = useView();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { settings } = useSettings();
   const { addNote, updateNote } = useNotes();
 
@@ -92,6 +93,7 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
     icon: React.ReactElement<{ className?: string }>;
     badgeCount?: number;
   }[] = [
+    { view: 'dashboard', label: 'Dashboard', icon: <HomeIcon /> },
     { view: 'notes', label: 'Notes', icon: <NoteIcon /> },
     { view: 'map', label: 'Map', icon: <MapIcon /> },
     { view: 'time', label: 'Time', icon: <ClockIcon /> },
@@ -104,6 +106,14 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
     { view: 'chat', label: 'Chat', icon: <ChatIcon />, badgeCount: chatNotificationCount },
     { view: 'ontology', label: 'Ontology', icon: <OntologyIcon /> },
   ];
+
+  if (settings.developerMode) {
+    navItems.push({
+      view: 'simulator',
+      label: 'Simulator',
+      icon: <CpuChipIcon />,
+    });
+  }
 
   return (
     <header className="flex-shrink-0 bg-gray-900 h-16 px-4 flex items-center justify-between border-b border-gray-700/50">

@@ -24,7 +24,6 @@ interface Widget {
 export function DashboardView() {
   const { notes, addNote, updateNote } = useNotes();
   const { setActiveView, setSelectedNoteId } = useView();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { settings } = useSettings();
   const { logs, active: simulatorActive, setActive } = useSimulatorContext();
 
@@ -45,6 +44,19 @@ export function DashboardView() {
      setActiveView('notes');
   };
 
+  const handleUsePrompt = (prompt: string) => {
+      const content = `<h3>${prompt}</h3>\n<p></p>`;
+      const newNote = addNote({
+          title: 'Daily Prompt Response'
+      });
+      updateNote({
+          ...newNote,
+          content
+      });
+      setSelectedNoteId(newNote.id);
+      setActiveView('notes');
+  };
+
   const handleUseTemplate = (content: string) => {
     const newNote = addNote();
     const properties = parseProperties(content);
@@ -62,7 +74,7 @@ export function DashboardView() {
     {
         id: 'daily-prompt',
         component: DailyPromptWidget,
-        props: { onCreateNote: handleCreateNote }
+        props: { onUsePrompt: handleUsePrompt }
     },
     {
         id: 'matches',
@@ -77,7 +89,11 @@ export function DashboardView() {
     {
         id: 'quick-actions',
         component: QuickActionsWidget,
-        props: { onCreateNote: handleCreateNote, onNavigate: setActiveView }
+        props: {
+            onCreateNote: handleCreateNote,
+            onNavigate: setActiveView,
+            showSimulator: settings.developerMode
+        }
     },
     {
         id: 'recent-notes',
