@@ -1,7 +1,8 @@
-import React from 'react';
-import { PencilIcon, NetworkIcon, ChatIcon, CpuChipIcon, ClockIcon } from '../common/icons';
+import React, { useState } from 'react';
+import { PencilIcon, NetworkIcon, ChatIcon, CpuChipIcon, ClockIcon, PlayIcon } from '../common/icons';
 import { Card } from '../common/Card';
 import { QuickActionBtn } from './QuickActionBtn';
+import { SkillRecorder } from '../skills/SkillRecorder';
 
 interface QuickActionsWidgetProps {
   onCreateNote: () => void;
@@ -10,8 +11,12 @@ interface QuickActionsWidgetProps {
 }
 
 export function QuickActionsWidget({ onCreateNote, onNavigate, showSimulator }: QuickActionsWidgetProps) {
+  const [showRecorder, setShowRecorder] = useState(false);
+
   return (
     <Card title="Quick Actions">
+        {showRecorder && <SkillRecorder onClose={() => setShowRecorder(false)} />}
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <QuickActionBtn
                 onClick={onCreateNote}
@@ -20,6 +25,14 @@ export function QuickActionsWidget({ onCreateNote, onNavigate, showSimulator }: 
                 colorClass="bg-blue-600/20 text-blue-400 group-hover:bg-blue-600"
                 hoverBorder="hover:border-blue-500/50"
                 hoverShadow="hover:shadow-blue-900/10"
+            />
+            <QuickActionBtn
+                onClick={() => setShowRecorder(true)}
+                icon={PlayIcon}
+                label="Rec Skill"
+                colorClass="bg-red-600/20 text-red-400 group-hover:bg-red-600"
+                hoverBorder="hover:border-red-500/50"
+                hoverShadow="hover:shadow-red-900/10"
             />
             <QuickActionBtn
                 onClick={() => onNavigate('network')}

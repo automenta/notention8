@@ -12,6 +12,7 @@ import {
   SearchIcon
 } from '../common/icons';
 import { NewNoteButton } from './NewNoteButton';
+import { ControlToggle } from '../common/ControlToggle';
 import { NAV_ITEMS, SETTINGS_VIEW } from '../../utils/navigation';
 
 interface HeaderProps {
@@ -95,8 +96,13 @@ export function Header({ onNewNote }: HeaderProps) {
         />
       </div>
 
-      {/* Center Section - Navigation */}
-      <div className="flex items-center gap-2">
+      {/* Center Section - Navigation & Control */}
+      <div className="flex items-center gap-4">
+        {/* Toggle placed here centrally for visibility */}
+        <ControlToggle />
+
+        <div className="h-6 w-px bg-gray-800 hidden md:block"></div>
+
         {filteredNavItems.map((item) => {
             const badgeCount = item.badgeCountKey
                 ? (item.badgeCountKey === 'notificationCount' ? notificationCount : chatNotificationCount)

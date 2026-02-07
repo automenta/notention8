@@ -14,6 +14,7 @@ import { TimelineWidget } from '../dashboard/TimelineWidget';
 import { DashboardStats } from '../dashboard/DashboardStats';
 import { MatchesWidget } from '../dashboard/MatchesWidget';
 import { SmartInputWidget } from '../dashboard/SmartInputWidget';
+import { LifeFixPrompt } from '../ignition/LifeFixPrompt';
 
 interface Widget {
   id: string;
@@ -28,6 +29,13 @@ export function DashboardView() {
   const { settings } = useSettings();
   const { logs, active: simulatorActive, setActive } = useSimulatorContext();
   const { createNoteAndNavigate } = useNoteActions();
+
+  // Ignition Protocol: Fix My Life
+  // If no active notes exist, show the decomposition prompt instead of the dashboard.
+  const hasNotes = notes.some(n => !n.deletedAt);
+  if (!hasNotes) {
+    return <LifeFixPrompt />;
+  }
 
   const getGreeting = () => {
     const hour = new Date().getHours();
