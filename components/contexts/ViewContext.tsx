@@ -3,7 +3,14 @@ import { useLocalForage } from '../../hooks/useLocalForage';
 import { useToast } from '../../hooks/useToast';
 import type { View, SortOrder, NostrEvent } from '../../types';
 
-interface ViewContextType {
+export interface MatchResult {
+  localNoteId: string;
+  event: NostrEvent;
+  score: number;
+  timestamp: number;
+}
+
+export interface ViewContextType {
   sortOrder: SortOrder;
   setSortOrder: (order: SortOrder) => void;
   activeView: View;
@@ -26,13 +33,6 @@ interface ViewContextType {
   chatNotificationCount: number;
   incrementChatNotification: () => void;
   resetChatNotification: () => void;
-}
-
-export interface MatchResult {
-  localNoteId: string;
-  event: NostrEvent;
-  score: number;
-  timestamp: number;
 }
 
 const ViewContext = createContext<ViewContextType | undefined>(undefined);

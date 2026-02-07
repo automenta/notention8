@@ -47,7 +47,17 @@ const RANDOM_PERSONAS = [
 ];
 
 export const useSimulator = () => {
-  const { agents, agentsRef, updateAgent, deploySwarm: deploySwarmAgents, addAgent: addNewAgent } = useSimulationAgents();
+  const {
+      agents,
+      agentsRef,
+      updateAgent,
+      deploySwarm: deploySwarmAgents,
+      addAgent: addNewAgent,
+      removeAgent,
+      toggleAgent,
+      isLoading: agentsLoading
+  } = useSimulationAgents();
+
   const [active, setActive] = useState(false);
   const { notes: userNotes, addNote } = useNotes();
 
@@ -70,7 +80,7 @@ export const useSimulator = () => {
       setNetworkNotes
   } = useSimulationNetwork(ontologyRef, setOntology, gardenerRef);
 
-  const { agentMessages, sendMessageToAgent } = useAgentInteraction({
+  const { agentMessages, sendMessageToAgent, clearAgentMessages } = useAgentInteraction({
       agentsRef,
       aiRef,
       updateAgent,
@@ -181,11 +191,15 @@ export const useSimulator = () => {
     handlePublish,
     agentMessages,
     sendMessageToAgent,
+    clearAgentMessages,
     randomizeAgent,
     deploySwarm,
     optimizeOntology,
     importUserNotes,
     addAgent,
-    saveNetworkNote
+    removeAgent,
+    toggleAgent,
+    saveNetworkNote,
+    agentsLoading
   };
 };

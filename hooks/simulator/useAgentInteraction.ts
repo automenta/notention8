@@ -19,6 +19,14 @@ export function useAgentInteraction({
 }: UseAgentInteractionProps) {
     const [agentMessages, setAgentMessages] = useState<Record<string, (NostrEvent & { content: string })[]>>({});
 
+    const clearAgentMessages = useCallback((agentId: string) => {
+        setAgentMessages(prev => {
+            const next = { ...prev };
+            delete next[agentId];
+            return next;
+        });
+    }, []);
+
     const sendMessageToAgent = useCallback((agentId: string, content: string) => {
         // 1. Add user message
         const userMsg: NostrEvent & { content: string } = {
@@ -40,6 +48,24 @@ export function useAgentInteraction({
         setTimeout(async () => {
             const agent = agentsRef.current.find(a => a.id === agentId);
             if (!agent) return;
+
+            // Check if agent is enabled
+            if (agent.enabled === false) {
+                 const agentMsg: NostrEvent & { content: string } = {
+                    id: Math.random().toString(36),
+                    pubkey: agentId,
+                    created_at: Math.floor(Date.now() / 1000),
+                    kind: 4,
+                    tags: [],
+                    content: "[Agent is paused]",
+                    sig: ''
+                };
+                setAgentMessages(prev => {
+                    const existing = prev[agentId] || [];
+                    return { ...prev, [agentId]: [...existing, agentMsg] };
+                });
+                return;
+            }
 
             let responseText = `I received your message.`;
 
@@ -119,6 +145,7 @@ export function useAgentInteraction({
     return {
         agentMessages,
         setAgentMessages,
-        sendMessageToAgent
+        sendMessageToAgent,
+        clearAgentMessages
     };
 }

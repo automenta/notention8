@@ -107,6 +107,7 @@ export const useSimulationNetwork = (
     notifications,
     newAttributes,
     handlePublish,
-    addLog
+    addLog,
+    setNetworkNotes // Export this
   };
 };

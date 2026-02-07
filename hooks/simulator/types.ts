@@ -8,16 +8,30 @@ export interface SimulationAgent {
     status: string; // "Thinking", "Typing", "Idle", "Contacting"
     goal: string;
     isAgent: boolean;
+    enabled?: boolean;
 }
 
 export interface SwarmTemplate {
     id: string;
     name: string;
     description: string;
-    agents: Omit<SimulationAgent, 'id' | 'currentDraft' | 'status' | 'isAgent'>[];
+    agents: Omit<SimulationAgent, 'id' | 'currentDraft' | 'status' | 'isAgent' | 'enabled'>[];
 }
 
+export const SELF_AGENT_ID = 'self-agent-0000-0000-0000-000000000000';
+
 export const INITIAL_AGENTS: SimulationAgent[] = [
+    {
+        id: SELF_AGENT_ID,
+        name: 'Notention AI',
+        persona: 'You are the Notention System AI. You help the user write notes, organize thoughts, and explore the network.',
+        bio: 'System AI Assistant',
+        goal: 'Assist the user.',
+        currentDraft: '',
+        status: 'Idle',
+        isAgent: true,
+        enabled: true
+    },
     {
         id: '1111111111111111111111111111111111111111111111111111111111111111',
         name: 'Alice (Client)',
@@ -26,7 +40,8 @@ export const INITIAL_AGENTS: SimulationAgent[] = [
         goal: 'Create a Request Note for a React Developer.',
         currentDraft: '',
         status: 'Idle',
-        isAgent: true
+        isAgent: true,
+        enabled: true
     },
     {
         id: '2222222222222222222222222222222222222222222222222222222222222222',
@@ -36,7 +51,8 @@ export const INITIAL_AGENTS: SimulationAgent[] = [
         goal: 'Create an Offer Note listing your services.',
         currentDraft: '',
         status: 'Idle',
-        isAgent: true
+        isAgent: true,
+        enabled: true
     }
 ];
 

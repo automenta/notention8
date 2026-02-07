@@ -7,7 +7,7 @@ import { useToast } from '../../hooks/useToast';
 import type { Contact, NostrEvent } from '../../types';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
 import { parseProperties } from '../../utils/parsing';
-import { ArrowLeftIcon, SendIcon, DocumentDuplicateIcon } from '../layout/icons';
+import { ArrowLeftIcon, SendIcon, DocumentDuplicateIcon, SettingsIcon, TrashIcon } from '../layout/icons';
 
 interface ChatWindowProps {
   privkey: string;
@@ -20,6 +20,8 @@ interface ChatWindowProps {
     event: NostrEvent,
     decryptedContent: string
   ) => void;
+  onOpenSettings?: () => void;
+  onClearChat?: () => void;
 }
 
 export function ChatWindow({
@@ -29,6 +31,8 @@ export function ChatWindow({
   onBack,
   messages,
   onSendMessage,
+  onOpenSettings,
+  onClearChat,
 }: ChatWindowProps) {
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -148,6 +152,32 @@ export function ChatWindow({
               </p>
           )}
         </div>
+
+        <div className="flex-1" />
+
+        {onClearChat && (
+            <button
+                onClick={() => {
+                    if (confirm('Clear chat history with this agent?')) {
+                        onClearChat();
+                    }
+                }}
+                className="p-2 text-gray-400 hover:text-red-400 rounded hover:bg-gray-800 transition-colors"
+                title="Clear Chat"
+            >
+                <TrashIcon className="h-5 w-5" />
+            </button>
+        )}
+
+        {onOpenSettings && (
+            <button
+                onClick={onOpenSettings}
+                className="p-2 text-gray-400 hover:text-white rounded hover:bg-gray-800 transition-colors"
+                title="Agent Settings"
+            >
+                <SettingsIcon className="h-5 w-5" />
+            </button>
+        )}
       </div>
 
       {/* Messages */}
