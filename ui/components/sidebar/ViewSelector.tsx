@@ -9,7 +9,7 @@ interface ViewSelectorProps {
 }
 
 export function ViewSelector({ viewMode, onViewChange }: ViewSelectorProps) {
-  const options: { mode: SidebarViewMode; icon: React.FC<any>; label: string }[] = [
+  const options: { mode: SidebarViewMode; icon: React.ComponentType<{ className?: string }>; label: string }[] = [
     { mode: 'list', icon: ListUlIcon, label: 'List' },
     { mode: 'grid', icon: CubeIcon, label: 'Grid' },
     { mode: 'cloud', icon: TagIcon, label: 'Tag Cloud' },

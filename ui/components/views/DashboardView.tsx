@@ -6,14 +6,13 @@ import { useSimulatorContext } from '../../hooks/useSimulatorContext';
 import { useNoteActions } from '../../hooks/useNoteActions';
 
 import { DailyPromptWidget } from '../dashboard/DailyPromptWidget';
-import { QuickActionsWidget } from '../dashboard/QuickActionsWidget';
 import { RecentNotesWidget } from '../dashboard/RecentNotesWidget';
 import { TemplatesWidget } from '../dashboard/TemplatesWidget';
 import { NetworkPulseWidget } from '../dashboard/NetworkPulseWidget';
 import { TimelineWidget } from '../dashboard/TimelineWidget';
 import { DashboardStats } from '../dashboard/DashboardStats';
 import { MatchesWidget } from '../dashboard/MatchesWidget';
-import { SmartInputWidget } from '../dashboard/SmartInputWidget';
+import { CommandCenterWidget } from '../dashboard/CommandCenterWidget';
 import { LifeFixPrompt } from '../ignition/LifeFixPrompt';
 
 interface Widget {
@@ -78,15 +77,6 @@ export function DashboardView() {
         }
     },
     {
-        id: 'quick-actions',
-        component: QuickActionsWidget,
-        props: {
-            onCreateNote: handleCreateNote,
-            onNavigate: setActiveView,
-            showSimulator: settings.developerMode
-        }
-    },
-    {
         id: 'recent-notes',
         component: RecentNotesWidget,
         props: {
@@ -141,7 +131,11 @@ export function DashboardView() {
             />
         </div>
 
-        <SmartInputWidget />
+        <CommandCenterWidget
+            onCreateNote={handleCreateNote}
+            onNavigate={setActiveView}
+            showSimulator={settings.developerMode}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column (2/3) */}
