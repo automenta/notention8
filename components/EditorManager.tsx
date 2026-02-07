@@ -8,6 +8,7 @@ import { parseProperties } from '../utils/parsing';
 import { useDebouncedSave } from '../hooks/useDebouncedSave';
 import { EditorHeader } from './EditorHeader';
 import { useView } from '../hooks/useViewContext';
+import { useSettings } from '../hooks/useSettingsContext';
 
 interface EditorManagerProps {
   note: Note;
@@ -21,6 +22,7 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
   const { dirtyNote, setDirtyNote } = useDebouncedSave(note, onSave);
   const { publishNote, isPublishing } = usePublish();
   const { setActiveView, setMatchingNoteId } = useView();
+  const { settings } = useSettings();
   const [isAutoTagging, setIsAutoTagging] = useState(false);
 
   const handleTitleChange = useCallback(
@@ -118,6 +120,7 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
         key={note.id}
         note={dirtyNote}
         onSave={handleContentSave}
+        ontology={settings.ontology}
       />
     </div>
   );

@@ -3,6 +3,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { EditorManager } from '../../components/EditorManager';
 import { ViewContext } from '../../components/contexts/ViewContext';
+import { SettingsContext } from '../../components/contexts/SettingsContext';
 import type { Note } from '../../types';
 
 // Mock TiptapEditor
@@ -54,17 +55,31 @@ describe('EditorManager', () => {
   });
 
   const renderWithContext = (ui: React.ReactElement) => {
+    const mockSettingsContext = {
+        settings: {
+            aiEnabled: false,
+            developerMode: true,
+            theme: 'dark' as const,
+            nostr: { privkey: null },
+            ontology: []
+        },
+        setSettings: vi.fn(),
+        settingsLoading: false
+    };
+
     return render(
-      <ViewContext.Provider value={{
-        activeView: 'notes',
-        setActiveView: vi.fn(),
-        selectedNoteId: null,
-        setSelectedNoteId: vi.fn(),
-        matchingNoteId: null,
-        setMatchingNoteId: vi.fn()
-      }}>
-        {ui}
-      </ViewContext.Provider>
+      <SettingsContext.Provider value={mockSettingsContext}>
+        <ViewContext.Provider value={{
+          activeView: 'notes',
+          setActiveView: vi.fn(),
+          selectedNoteId: null,
+          setSelectedNoteId: vi.fn(),
+          matchingNoteId: null,
+          setMatchingNoteId: vi.fn()
+        }}>
+          {ui}
+        </ViewContext.Provider>
+      </SettingsContext.Provider>
     );
   };
 

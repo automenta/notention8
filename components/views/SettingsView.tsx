@@ -3,6 +3,7 @@ import { useSettings } from '../../hooks/useSettingsContext';
 import { AITab } from '../settings/AITab';
 import { NostrTab } from '../settings/NostrTab';
 import { DataTab } from '../settings/DataTab';
+import { OntologyTab } from '../settings/OntologyTab';
 
 const TabButton: React.FC<{
   label: string;
@@ -25,7 +26,7 @@ import { Toggle } from '../common/Toggle';
 
 export const SettingsView: React.FC = () => {
   const { settings, setSettings } = useSettings();
-  const [activeTab, setActiveTab] = useState<'ai' | 'nostr' | 'data'>('ai');
+  const [activeTab, setActiveTab] = useState<'ai' | 'nostr' | 'data' | 'ontology'>('ai');
 
   return (
     <div className="p-8 h-full overflow-y-auto bg-gray-800/50 rounded-lg">
@@ -57,6 +58,13 @@ export const SettingsView: React.FC = () => {
             isActive={activeTab === 'data'}
             onClick={() => setActiveTab('data')}
           />
+          {settings.developerMode && (
+            <TabButton
+              label="🧬 Ontology"
+              isActive={activeTab === 'ontology'}
+              onClick={() => setActiveTab('ontology')}
+            />
+          )}
         </nav>
       </div>
 
@@ -68,6 +76,7 @@ export const SettingsView: React.FC = () => {
           <NostrTab settings={settings} setSettings={setSettings} />
         )}
         {activeTab === 'data' && <DataTab />}
+        {activeTab === 'ontology' && settings.developerMode && <OntologyTab />}
       </div>
     </div>
   );
