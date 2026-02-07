@@ -12,12 +12,34 @@ export class LocalAIProvider implements AIProvider {
   }
 
   async suggestTags(text: string): Promise<string[]> {
-    // Simple heuristic: extract hashtags from text
-    const matches = text.match(/#[\w-]+/g);
-    if (!matches) return [];
+    const tags = new Set<string>();
 
-    // Remove # prefix and return unique
-    return Array.from(new Set(matches.map((t) => t.slice(1))));
+    // 1. Extract existing hashtags
+    const matches = text.match(/#[\w-]+/g);
+    if (matches) {
+        matches.forEach(t => tags.add(t.slice(1)));
+    }
+
+    // 2. Keyword heuristics
+    const lower = text.toLowerCase();
+
+    if (lower.includes('todo') || lower.includes('task') || lower.includes('do:')) {
+        tags.add('task');
+    }
+    if (lower.includes('meeting') || lower.includes('call with') || lower.includes('sync')) {
+        tags.add('meeting');
+    }
+    if (lower.includes('idea') || lower.includes('concept') || lower.includes('maybe')) {
+        tags.add('idea');
+    }
+    if (lower.includes('bug') || lower.includes('fix') || lower.includes('error')) {
+        tags.add('bug');
+    }
+    if (lower.includes('http') || lower.includes('www')) {
+        tags.add('link');
+    }
+
+    return Array.from(tags);
   }
 
   async analyzeOntology(notes: Note[]): Promise<InferredAttribute[]> {

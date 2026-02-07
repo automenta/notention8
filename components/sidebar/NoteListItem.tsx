@@ -86,92 +86,93 @@ export const NoteListItem = React.memo(({
       tabIndex={0}
       onClick={onSelect}
       onKeyDown={handleKeyDown}
-      className={`note-list-item group flex justify-between items-center p-3 rounded-md cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
-        isSelected ? 'bg-blue-600/30' : 'hover:bg-gray-800'
-      }`}
+      className={`note-list-item group relative flex flex-col p-3 mx-2 my-1 rounded-lg cursor-pointer transition-all duration-200 border border-transparent
+        ${isSelected
+            ? 'bg-blue-900/30 border-blue-500/30 shadow-md'
+            : 'hover:bg-gray-800 border-transparent hover:border-gray-700/50'
+        } focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
     >
-      <div className="flex-1 overflow-hidden flex items-center gap-3 pointer-events-none">
-        <div className="flex flex-col gap-1">
-            {note.pinned && (
-                <span title="Pinned Note">
-                    <PinIcon className="h-4 w-4 text-blue-400 flex-shrink-0" />
-                </span>
-            )}
+      <div className="flex justify-between items-start mb-0.5">
+        <h3 className={`font-semibold text-sm truncate pr-8 ${isSelected ? 'text-blue-100' : 'text-gray-200'}`}>
+          {note.title || 'Untitled Note'}
+        </h3>
+        {note.pinned && (
+             <PinIcon className="h-3.5 w-3.5 text-blue-400 absolute top-3.5 right-3" />
+        )}
+      </div>
+
+      <p className={`text-xs truncate mb-2 ${isSelected ? 'text-blue-200/70' : 'text-gray-500'}`}>
+        {contentPreview}
+      </p>
+
+      <div className="flex items-center justify-between h-5">
+        <div className="flex items-center gap-2">
             {note.nostrEventId && note.publishedAt && (
-            <span
-                title={`Published on Nostr at ${new Date(note.publishedAt).toLocaleString()}`}
-            >
-                <WorldIcon className="h-4 w-4 text-green-400 flex-shrink-0" />
-            </span>
+                <span title={`Published on Nostr at ${new Date(note.publishedAt).toLocaleString()}`}>
+                    <WorldIcon className={`h-3.5 w-3.5 ${isSelected ? 'text-green-300' : 'text-green-500/70'}`} />
+                </span>
             )}
             {hasLocation && (
                 <span title="Has location data">
-                    <MapPinIcon className="h-4 w-4 text-blue-400 flex-shrink-0" />
+                    <MapPinIcon className={`h-3.5 w-3.5 ${isSelected ? 'text-blue-300' : 'text-blue-500/70'}`} />
                 </span>
             )}
             {hasTime && (
                 <span title="Has time data">
-                    <ClockIcon className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                    <ClockIcon className={`h-3.5 w-3.5 ${isSelected ? 'text-yellow-300' : 'text-yellow-500/70'}`} />
                 </span>
             )}
         </div>
-        <div className="flex-1 overflow-hidden">
-          <h3
-            className={`font-semibold truncate ${isSelected ? 'text-white' : 'text-gray-200'}`}
-          >
-            {note.title || 'Untitled Note'}
-          </h3>
-          <p className="text-sm text-gray-400 truncate">{contentPreview}</p>
+
+        <div className={`flex items-center gap-1 transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} focus-within:opacity-100`}>
+             {isTrash && onRestore && (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onRestore();
+                    }}
+                    tabIndex={-1}
+                    className="p-1 text-gray-400 rounded hover:bg-green-900/30 hover:text-green-400 transition-colors"
+                    title="Restore Note"
+                >
+                    <DocumentDuplicateIcon className="h-3.5 w-3.5 transform rotate-180" />
+                </button>
+            )}
+            {onPin && !isTrash && (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onPin();
+                    }}
+                    tabIndex={-1}
+                    className={`p-1 rounded hover:bg-gray-700/50 transition-colors ${note.pinned ? 'text-blue-400' : 'text-gray-400 hover:text-white'}`}
+                    title={note.pinned ? "Unpin Note" : "Pin Note"}
+                >
+                    <PinIcon className="h-3.5 w-3.5" />
+                </button>
+            )}
+            {!isTrash && (
+                <button
+                    onClick={handleExport}
+                    tabIndex={-1}
+                    className="p-1 text-gray-400 rounded hover:bg-gray-700/50 hover:text-white transition-colors"
+                    title="Export Note"
+                >
+                    <DownloadIcon className="h-3.5 w-3.5" />
+                </button>
+            )}
+            <button
+                onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+                }}
+                tabIndex={-1}
+                className="p-1 text-gray-400 rounded hover:bg-red-900/30 hover:text-red-400 transition-colors"
+                title={isTrash ? "Delete Permanently" : "Move to Trash"}
+            >
+                <TrashIcon className="h-3.5 w-3.5" />
+            </button>
         </div>
-      </div>
-      <div className="flex items-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity focus-within:opacity-100">
-        {isTrash && onRestore && (
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onRestore();
-                }}
-                tabIndex={-1}
-                className="p-1 text-gray-500 rounded-full hover:bg-green-900/50 hover:text-green-400"
-                title="Restore Note"
-            >
-                <DocumentDuplicateIcon className="h-4 w-4 transform rotate-180" />
-            </button>
-        )}
-        {onPin && !isTrash && (
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onPin();
-                }}
-                tabIndex={-1}
-                className="p-1 text-gray-500 rounded-full hover:bg-gray-700 hover:text-white"
-                title={note.pinned ? "Unpin Note" : "Pin Note"}
-            >
-                <PinIcon className={`h-4 w-4 ${note.pinned ? 'text-blue-400' : ''}`} />
-            </button>
-        )}
-        {!isTrash && (
-            <button
-                onClick={handleExport}
-                tabIndex={-1}
-                className="p-1 text-gray-500 rounded-full hover:bg-gray-700 hover:text-white"
-                title="Export Note"
-            >
-                <DownloadIcon className="h-4 w-4" />
-            </button>
-        )}
-        <button
-            onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-            }}
-            tabIndex={-1} // Prevent tabbing into delete button for simpler nav
-            className="ml-1 p-1 text-gray-500 rounded-full hover:bg-red-900/50 hover:text-red-400"
-            title={isTrash ? "Delete Permanently" : "Move to Trash"}
-        >
-            <TrashIcon className="h-4 w-4" />
-        </button>
       </div>
     </div>
   );

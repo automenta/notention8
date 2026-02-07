@@ -67,9 +67,27 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
   };
 
   const handleCreateNote = (title?: string) => {
-      // Use the provided title or undefined (which defaults to empty/untitled in addNote)
-      // If title is passed (e.g. from search), use it.
-      const newNote = addNote(title && typeof title === 'string' ? { title } : undefined);
+      const overrides: Partial<Note> = {};
+      if (title && typeof title === 'string') {
+          overrides.title = title;
+      }
+
+      // If this is the very first note (empty list and not a search query), add welcome content
+      if (sortedNotes.length === 0 && !title && !searchTerm) {
+          overrides.title = "Welcome to Notention";
+          overrides.content = `
+<h2>Getting Started</h2>
+<p>Notention is a tool for thought that evolves into a peer-to-peer network.</p>
+<ul>
+    <li><strong>Semantic:</strong> Type <code>[status:is:Active]</code> to add properties.</li>
+    <li><strong>Heuristic:</strong> Click the "Magic" wand to auto-tag your notes.</li>
+    <li><strong>Network:</strong> Publish to Nostr to find matches.</li>
+</ul>
+<p>Try it out! Type "I have a meeting tomorrow" and click the Magic wand.</p>
+          `.trim();
+      }
+
+      const newNote = addNote(overrides);
       setSelectedNoteId(newNote.id);
       setActiveView('notes');
       if (title) setSearchTerm('');
@@ -101,7 +119,7 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
         <TemplateList />
       </div>
 
-      <div className="flex-grow p-2 space-y-1 overflow-y-auto">
+      <div className="flex-grow p-2 overflow-y-auto custom-scrollbar">
         {sortedNotes.length > 0 ? (
           sortedNotes.map((note) => (
             <NoteListItem

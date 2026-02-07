@@ -45,17 +45,17 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
   <button
     onClick={onClick}
     disabled={disabled}
-    className={`p-2 rounded-md transition-colors ${
+    className={`p-1.5 rounded-lg transition-all duration-200 ${
       isActive
-        ? 'bg-blue-500 text-white'
-        : 'hover:bg-gray-700/80 text-gray-400 hover:text-gray-200'
-    }`}
+        ? 'bg-blue-600/90 text-white shadow-sm'
+        : 'text-gray-400 hover:text-white hover:bg-gray-800'
+    } disabled:opacity-40 disabled:cursor-not-allowed`}
     title={title}
     aria-label={ariaLabel || title}
     aria-pressed={isActive}
     type="button"
   >
-    <Icon className="h-5 w-5" />
+    <Icon className="h-4 w-4" />
   </button>
 );
 
@@ -153,34 +153,35 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
   ];
 
   return (
-    <div className="flex-shrink-0 p-2 border-b border-gray-700/50 flex items-center flex-wrap gap-1">
-      <div className="flex items-center gap-1 mr-2">
-        {onMagic && (
-          <ToolbarButton
-            onClick={onMagic}
-            title="Magic Align (Auto-generate semantic properties)"
-            icon={SparklesIcon}
-            isActive={false}
-          />
-        )}
-        {onTemplates && (
-          <ToolbarButton
-            onClick={onTemplates}
-            title="Insert Template"
-            icon={CubeIcon}
-            isActive={false}
-          />
-        )}
-      </div>
+    <div className="flex-shrink-0 px-3 py-2 border-b border-gray-700/50 flex items-center flex-wrap gap-2 bg-gray-900/50 backdrop-blur-sm">
+      {(onMagic || onTemplates) && (
+        <div className="flex items-center gap-1 bg-purple-900/20 p-0.5 rounded-lg border border-purple-500/20">
+            {onMagic && (
+            <ToolbarButton
+                onClick={onMagic}
+                title="Magic Align (Auto-generate semantic properties)"
+                icon={SparklesIcon}
+                isActive={false}
+            />
+            )}
+            {onTemplates && (
+            <ToolbarButton
+                onClick={onTemplates}
+                title="Insert Template"
+                icon={CubeIcon}
+                isActive={false}
+            />
+            )}
+        </div>
+      )}
 
-      <div className="flex items-center flex-wrap gap-1 flex-grow">
-        <div className="w-px h-6 bg-gray-700 mx-1 hidden sm:block"></div>
+      <div className="flex items-center flex-wrap gap-0.5 flex-grow">
         {actions.map((item, index) => {
           if (item.type === 'separator') {
             return (
               <div
                 key={`sep-${index}`}
-                className="w-px h-6 bg-gray-700 mx-1 hidden sm:block"
+                className="w-px h-4 bg-gray-700/50 mx-1.5 hidden sm:block"
               ></div>
             );
           }
@@ -197,7 +198,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
         })}
       </div>
 
-      <div className="border-l border-gray-700 pl-1 ml-1">
+      <div className="border-l border-gray-700/50 pl-2 ml-1">
         <ToolbarButton
           onClick={toggleViewMode}
           isActive={viewMode === 'code'}
