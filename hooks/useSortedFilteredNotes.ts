@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react';
 import type { Note, SortOrder } from '../types';
-import { getTextFromHtml } from '../utils/nostr';
+import { getTextFromHtml } from '../utils/htmlSemantics';
 import { parseProperties } from '../utils/parsing';
 import { checkConstraint } from '../utils/matching';
 

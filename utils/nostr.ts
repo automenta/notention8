@@ -22,27 +22,6 @@ export const { bytesToHex, hexToBytes } = utils;
 export const formatNpub = (npub: string) =>
   `${npub.slice(0, 10)}...${npub.slice(-4)}`;
 
-/**
- * Extracts plain text from an HTML string.
- * @param content - An HTML string.
- * @returns A single string containing all the text from the document.
- */
-export function getTextFromHtml(content: string): string {
-  if (!content) return '';
-
-  const div = document.createElement('div');
-  div.innerHTML = content;
-
-  // Add newlines after block elements for better preview readability
-  div
-    .querySelectorAll('p, h1, h2, h3, li, blockquote, pre, div')
-    .forEach((el) => {
-      el.appendChild(document.createTextNode('\n'));
-    });
-
-  return div.textContent || '';
-}
-
 export const extractPropertiesFromTags = (tags: string[][]): Property[] => {
   const propsMap = tags.reduce((acc, t) => {
     if (t[0] === 'property') {

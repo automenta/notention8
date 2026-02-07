@@ -3,6 +3,29 @@ import type { Note, Property } from '../types';
 
 export type NoteIntent = 'Real' | 'Imaginary' | 'Ambiguous';
 
+const INDEFINITE_OPS = new Set([
+    'greater than',
+    'less than',
+    'between',
+    'is not',
+    'contains',
+    'is near',
+    // Symbolic fallbacks if not normalized
+    '<',
+    '>',
+    '!=',
+    '≈',
+    '∋'
+]);
+
+export const isIndefiniteOperator = (operator: string): boolean => {
+    return INDEFINITE_OPS.has(operator);
+};
+
+export const isIndefiniteProperty = (prop: Property): boolean => {
+    return isIndefiniteOperator(prop.operator);
+};
+
 /**
  * Infers the intent of a note based on the definiteness of its properties.
  *
@@ -29,18 +52,4 @@ export const inferNoteIntent = (note: Note): NoteIntent => {
 
     // If we only have definite properties, it's likely describing a Real entity
     return 'Real';
-};
-
-const isIndefiniteProperty = (prop: Property): boolean => {
-    // Operators that imply a range, exclusion, or fuzzy match are Indefinite constraints
-    const indefiniteOps = ['greater than', 'less than', 'between', 'is not', 'contains'];
-
-    if (indefiniteOps.includes(prop.operator)) {
-        return true;
-    }
-
-    // "is" can be indefinite if the value is a wildcard or variable (future feature)
-    // For now, "is" is treated as Definite (Equality constraint or Fact).
-
-    return false;
 };

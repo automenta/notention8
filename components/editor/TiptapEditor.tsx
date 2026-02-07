@@ -3,7 +3,7 @@ import { EditorContent } from '@tiptap/react';
 import type { Note, OntologyNode, Template } from '../../types';
 import { TiptapToolbar } from './TiptapToolbar';
 import { sanitizeHTML } from '../../utils/sanitize';
-import { formatHtmlForDisplay } from '../../utils/editor';
+import { prettyPrintHtml } from '../../utils/htmlSemantics';
 import { useTiptapConfig } from './useTiptapConfig';
 import { useView } from '../../hooks/useViewContext';
 import { useToast } from '../../hooks/useToast';
@@ -139,7 +139,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(({
         ) : (
           <textarea
             className="w-full h-full p-4 bg-gray-900 text-gray-300 font-mono focus:outline-none resize-none"
-            value={formatHtmlForDisplay(note.content)}
+            value={prettyPrintHtml(note.content)}
             onChange={handleCodeChange}
             placeholder="Enter HTML..."
           />

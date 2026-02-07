@@ -50,8 +50,9 @@ describe('useNoteSemantics', () => {
 
     // Updated state check
     expect(result.current.tags).toEqual(['updated']);
+    // Operator is normalized to canonical name
     expect(result.current.properties).toEqual([
-      { key: 'price', operator: '>', values: ['100'] },
+      { key: 'price', operator: 'greater than', values: ['100'] },
     ]);
     expect(result.current.isImaginary).toBe(true);
   });

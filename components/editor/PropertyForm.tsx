@@ -8,7 +8,7 @@ import {
   SearchSparkleIcon
 } from '../layout/icons';
 import type { OntologyNode } from '../../types';
-import { getCurrentPosition } from '../../utils/geolocation';
+import { getCurrentPosition } from '../../utils/spacetime';
 import { useToast } from '../../hooks/useToast';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';

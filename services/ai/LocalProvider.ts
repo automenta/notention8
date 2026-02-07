@@ -1,7 +1,7 @@
 import type { AIProvider, InferredAttribute } from './types';
 import type { Note, OntologyNode } from '../../types';
 import { parseProperties } from '../../utils/parsing';
-import { getTextFromHtml } from '../../utils/nostr';
+import { getTextFromHtml } from '../../utils/htmlSemantics';
 import { addDays, format } from 'date-fns';
 import { parseQuantity } from '../../utils/quantities';
 

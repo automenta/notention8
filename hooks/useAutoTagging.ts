@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { RemoteAIProvider, isGeminiApiKeyAvailable } from '../services/ai/RemoteProvider';
 import { LocalAIProvider } from '../services/ai/LocalProvider';
-import { getTextFromHtml } from '../utils/nostr';
+import { getTextFromHtml } from '../utils/htmlSemantics';
 import { useSettings } from './useSettingsContext';
 import type { AIProvider } from '../services/ai/types';
 
