@@ -1,48 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { OntologyNode } from '../../types';
-import { ChevronDownIcon } from '../icons';
 import { SimulatorView } from '../simulator/SimulatorView';
 import { useOntologyView } from '../../hooks/useOntologyView';
-
-interface OntologyNodeProps {
-  node: OntologyNode;
-  level: number;
-}
-
-const OntologyNodeItem: React.FC<OntologyNodeProps> = ({ node, level }) => {
-  const [isOpen, setIsOpen] = useState(level < 2); // Auto-expand first few levels
-  const hasChildren = node.children && node.children.length > 0;
-
-  return (
-    <div style={{ paddingLeft: `${level * 1.5}rem` }}>
-      <div
-        className="flex items-center py-2 cursor-pointer group"
-        onClick={() => hasChildren && setIsOpen(!isOpen)}
-      >
-        {hasChildren ? (
-          <ChevronDownIcon
-            className={`h-5 w-5 mr-2 text-gray-500 transition-transform transform ${isOpen ? 'rotate-0' : '-rotate-90'}`}
-          />
-        ) : (
-          <div className="w-5 h-5 mr-2" /> // Placeholder for alignment
-        )}
-        <span className="font-semibold text-blue-400">#{node.label}</span>
-        {node.description && (
-          <span className="ml-4 text-sm text-gray-400 hidden md:inline group-hover:inline">
-            - {node.description}
-          </span>
-        )}
-      </div>
-      {isOpen && hasChildren && (
-        <div>
-          {node.children!.map((child) => (
-            <OntologyNodeItem key={child.id} node={child} level={level + 1} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
+import { OntologyNodeItem } from '../ontology/OntologyNodeItem';
 
 export const OntologyView: React.FC = () => {
   const {
@@ -57,10 +17,10 @@ export const OntologyView: React.FC = () => {
   return (
     <div className="p-4 md:p-8 h-full overflow-y-auto bg-gray-800/50 rounded-lg">
       <div className="max-w-4xl mx-auto h-full flex flex-col">
-        <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-white">Ontology</h1>
+        <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-2">
+            {/* Removed Header */}
             {settings.developerMode && (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 ml-auto">
                     <button
                         onClick={handleEvolve}
                         disabled={isEvolving}

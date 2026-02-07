@@ -8,6 +8,8 @@ export const usePublish = () => {
   const { settings } = useSettings();
   const [isPublishing, setIsPublishing] = useState(false);
 
+  const relays = settings.nostr.relays || DEFAULT_RELAYS;
+
   const publishNote = useCallback(async (note: Note) => {
     if (!settings.nostr.privkey) {
       throw new Error('No private key found in settings. Please configure your Nostr identity.');
@@ -39,7 +41,7 @@ export const usePublish = () => {
 
       const signedEvent = finalizeEvent(eventTemplate, privkeyBytes);
 
-      const pubs = pool.publish(DEFAULT_RELAYS, signedEvent);
+      const pubs = pool.publish(relays, signedEvent);
       await Promise.any(pubs);
 
       return signedEvent.id;
@@ -49,7 +51,7 @@ export const usePublish = () => {
     } finally {
       setIsPublishing(false);
     }
-  }, [settings.nostr.privkey]);
+  }, [settings.nostr.privkey, relays]);
 
   const publishProfile = useCallback(async (metadata: { name: string; about: string; picture: string }) => {
     if (!settings.nostr.privkey) {
@@ -69,7 +71,7 @@ export const usePublish = () => {
         };
 
         const signedEvent = finalizeEvent(eventTemplate, privkeyBytes);
-        const pubs = pool.publish(DEFAULT_RELAYS, signedEvent);
+        const pubs = pool.publish(relays, signedEvent);
         await Promise.any(pubs);
 
     } catch (error) {
@@ -78,7 +80,7 @@ export const usePublish = () => {
     } finally {
         setIsPublishing(false);
     }
-  }, [settings.nostr.privkey]);
+  }, [settings.nostr.privkey, relays]);
 
   return { publishNote, publishProfile, isPublishing };
 };

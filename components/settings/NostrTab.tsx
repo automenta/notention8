@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { generateSecretKey, getPublicKey, nip19 } from 'nostr-tools';
-import { bytesToHex, hexToBytes } from '@/utils/nostr';
-import { KeyIcon, UserPlusIcon } from '../icons';
+import { bytesToHex, hexToBytes, DEFAULT_RELAYS } from '@/utils/nostr';
+import { KeyIcon, UserPlusIcon, NetworkIcon, PlusIcon, TrashIcon } from '../icons';
 import type { AppSettings } from '@/types';
 import { CopyableField } from '../common/CopyableField';
 import { usePublish } from '@/hooks/usePublish';
@@ -22,9 +22,47 @@ export const NostrTab: React.FC<NostrTabProps> = ({
   const [about, setAbout] = useState('');
   const [picture, setPicture] = useState('');
 
+  // Local state for import
+  const [importKey, setImportKey] = useState('');
+  const [importError, setImportError] = useState<string | null>(null);
+
+  // Local state for relays
+  const [newRelay, setNewRelay] = useState('');
+
+  const currentRelays = settings.nostr.relays || DEFAULT_RELAYS;
+
   const handleGenerateKeys = () => {
     const newPrivKeyHex = bytesToHex(generateSecretKey());
-    setSettings((prev) => ({ ...prev, nostr: { privkey: newPrivKeyHex } }));
+    setSettings((prev) => ({ ...prev, nostr: { ...prev.nostr, privkey: newPrivKeyHex } }));
+  };
+
+  const handleImportKey = () => {
+      setImportError(null);
+      const key = importKey.trim();
+      if (!key) return;
+
+      try {
+          if (key.startsWith('nsec')) {
+              const { type, data } = nip19.decode(key);
+              if (type !== 'nsec') {
+                  setImportError('Invalid key type. Must be an nsec.');
+                  return;
+              }
+              const hex = bytesToHex(data as Uint8Array);
+              setSettings((prev) => ({ ...prev, nostr: { ...prev.nostr, privkey: hex } }));
+          } else {
+              // Assume Hex
+              if (!/^[0-9a-fA-F]{64}$/.test(key)) {
+                  setImportError('Invalid hex private key. Must be 64 characters.');
+                  return;
+              }
+              setSettings((prev) => ({ ...prev, nostr: { ...prev.nostr, privkey: key.toLowerCase() } }));
+          }
+          setImportKey('');
+      } catch (e) {
+          setImportError('Invalid key format.');
+          console.error(e);
+      }
   };
 
   const handleLogout = () => {
@@ -33,7 +71,7 @@ export const NostrTab: React.FC<NostrTabProps> = ({
         'Are you sure? This will remove your Nostr private key from this device. This action cannot be undone.'
       )
     ) {
-      setSettings((prev) => ({ ...prev, nostr: { privkey: null } }));
+      setSettings((prev) => ({ ...prev, nostr: { ...prev.nostr, privkey: null } }));
     }
   };
 
@@ -43,6 +81,40 @@ export const NostrTab: React.FC<NostrTabProps> = ({
           alert('Profile published to network!');
       } catch (e: any) {
           alert('Failed to publish profile: ' + e.message);
+      }
+  };
+
+  const handleAddRelay = () => {
+      if (!newRelay) return;
+      let url = newRelay.trim();
+      if (!url.startsWith('wss://') && !url.startsWith('ws://')) {
+          url = 'wss://' + url;
+      }
+
+      if (currentRelays.includes(url)) {
+          alert('Relay already exists.');
+          return;
+      }
+
+      setSettings(prev => ({
+          ...prev,
+          nostr: {
+              ...prev.nostr,
+              relays: [...(prev.nostr.relays || DEFAULT_RELAYS), url]
+          }
+      }));
+      setNewRelay('');
+  };
+
+  const handleRemoveRelay = (url: string) => {
+      if (confirm(`Remove relay ${url}?`)) {
+          setSettings(prev => ({
+              ...prev,
+              nostr: {
+                  ...prev.nostr,
+                  relays: (prev.nostr.relays || DEFAULT_RELAYS).filter(r => r !== url)
+              }
+          }));
       }
   };
 
@@ -85,19 +157,98 @@ export const NostrTab: React.FC<NostrTabProps> = ({
             </button>
             </div>
         ) : (
-            <div className="text-center py-6">
-            <p className="text-gray-400 mb-4">
-                You don&apos;t have a Nostr identity set up on this device yet.
-            </p>
-            <button
-                onClick={handleGenerateKeys}
-                className="flex items-center justify-center gap-3 mx-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-            >
-                <KeyIcon className="h-5 w-5" /> Generate New Keys
-            </button>
+            <div className="text-center py-6 space-y-6">
+                <div className="space-y-2">
+                    <p className="text-gray-400">
+                        New to Nostr? Generate a fresh identity.
+                    </p>
+                    <button
+                        onClick={handleGenerateKeys}
+                        className="flex items-center justify-center gap-3 mx-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        <KeyIcon className="h-5 w-5" /> Generate New Keys
+                    </button>
+                </div>
+
+                <div className="border-t border-gray-700/50 w-1/2 mx-auto"></div>
+
+                <div className="max-w-md mx-auto space-y-2">
+                     <p className="text-gray-400 text-sm">
+                        Already have an account? Import your private key.
+                    </p>
+                    <div className="flex gap-2">
+                        <input
+                            type="password"
+                            value={importKey}
+                            onChange={(e) => setImportKey(e.target.value)}
+                            placeholder="nsec1... or hex key"
+                            className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none text-sm"
+                        />
+                        <button
+                            onClick={handleImportKey}
+                            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm font-medium"
+                        >
+                            Import
+                        </button>
+                    </div>
+                    {importError && (
+                        <p className="text-red-400 text-xs text-left">{importError}</p>
+                    )}
+                </div>
             </div>
         )}
       </div>
+
+       {/* Relay Management Section */}
+       <div className="border-t border-gray-700 pt-6">
+            <h2 className="text-xl font-semibold text-gray-100 mb-4 flex items-center gap-3">
+                <NetworkIcon className="h-6 w-6 text-purple-400" />
+                Network Relays
+            </h2>
+            <div className="space-y-4 max-w-lg">
+                <p className="text-sm text-gray-400">
+                    Manage the relays you connect to. These servers store and broadcast your notes.
+                </p>
+
+                <div className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
+                    {currentRelays.map((relay, idx) => (
+                        <div key={idx} className="flex justify-between items-center px-4 py-3 border-b border-gray-700 last:border-0 hover:bg-gray-750">
+                            <span className="text-gray-300 text-sm font-mono truncate">{relay}</span>
+                            <button
+                                onClick={() => handleRemoveRelay(relay)}
+                                className="text-gray-500 hover:text-red-400 transition-colors p-1"
+                                title="Remove Relay"
+                            >
+                                <TrashIcon className="h-4 w-4" />
+                            </button>
+                        </div>
+                    ))}
+                    {currentRelays.length === 0 && (
+                        <div className="px-4 py-3 text-gray-500 text-sm italic">
+                            No relays configured. Using defaults internally if not set.
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        value={newRelay}
+                        onChange={(e) => setNewRelay(e.target.value)}
+                        placeholder="wss://relay.example.com"
+                        className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none text-sm"
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddRelay()}
+                    />
+                    <button
+                        onClick={handleAddRelay}
+                        disabled={!newRelay}
+                        className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded font-medium disabled:opacity-50 flex items-center gap-2"
+                    >
+                         <PlusIcon className="h-4 w-4" /> Add
+                    </button>
+                </div>
+            </div>
+       </div>
 
       {/* Profile Section */}
       {settings.nostr.privkey && (

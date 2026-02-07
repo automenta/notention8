@@ -17,6 +17,8 @@ export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
   const { setActiveView, setMatchingNoteId } = useView();
   const { learnFromProperties } = useGardener();
 
+  const relays = useMemo(() => settings.nostr.relays || DEFAULT_RELAYS, [settings.nostr.relays]);
+
   const onNavigateToSettings = () => setActiveView('settings');
   const pubkey = useMemo(
     () =>
@@ -61,7 +63,7 @@ export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
     };
 
     const sub = pool.subscribeMany(
-      DEFAULT_RELAYS,
+      relays,
       [{ kinds: [1], limit: 50 }],
       {
         onevent: (event) => {
@@ -84,7 +86,7 @@ export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
       if (batchTimeoutRef.current) clearTimeout(batchTimeoutRef.current);
       sub.close();
     };
-  }, [pubkey, learnFromProperties]);
+  }, [pubkey, learnFromProperties, relays]);
 
   const sortedEvents = useMemo(() => {
     let filtered = [...events];

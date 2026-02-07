@@ -3,6 +3,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useLocalForage } from '../../hooks/useLocalForage';
 import type { AppSettings } from '../../types';
 import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
+import { DEFAULT_RELAYS } from '../../utils/nostr';
 
 interface SettingsContextType {
   settings: AppSettings;
@@ -25,6 +26,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
       theme: 'dark',
       nostr: {
         privkey: null,
+        relays: DEFAULT_RELAYS,
       },
       ontology: [],
     }
@@ -39,6 +41,20 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
       setSettings((s) => ({ ...s, ontology: DEFAULT_ONTOLOGY }));
     }
   }, [settings.ontology, settingsLoading, setSettings]);
+
+  // Ensure relays are populated if missing (migration for existing users)
+  useEffect(() => {
+      if (!settingsLoading && !settings.nostr.relays) {
+          setSettings(s => ({
+              ...s,
+              nostr: {
+                  ...s.nostr,
+                  relays: DEFAULT_RELAYS
+              }
+          }));
+      }
+  }, [settings.nostr.relays, settingsLoading, setSettings]);
+
 
   return (
     <SettingsContext.Provider

@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Note } from '../types';
 import { TiptapEditor } from './TiptapEditor';
 import { EditorHeader } from './EditorHeader';
 import { PropertyInspector } from './editor/PropertyInspector';
 import { useEditorLogic } from '../hooks/useEditorLogic';
+import { useView } from '../hooks/useViewContext';
 
 interface EditorManagerProps {
   note: Note;
@@ -30,6 +31,9 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
     isPublished
   } = useEditorLogic({ note, onSave });
 
+  const { setSelectedNoteId } = useView();
+  const [isInspectorOpen, setIsInspectorOpen] = useState(false);
+
   return (
     <div className="flex flex-col h-full">
       <EditorHeader
@@ -37,6 +41,7 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
         onTitleChange={handleTitleChange}
         onPublish={handlePublish}
         onFindMatches={handleFindMatches}
+        onBack={() => setSelectedNoteId(null)}
         isPublishing={isPublishing}
         isPublished={isPublished}
         tags={dirtyNote.tags}
@@ -44,6 +49,8 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
         onAutoTag={handleAutoTag}
         isAutoTagging={isAutoTagging}
         isApiKeyAvailable={isApiKeyAvailable}
+        isInspectorOpen={isInspectorOpen}
+        onToggleInspector={() => setIsInspectorOpen(!isInspectorOpen)}
       />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col">
@@ -54,11 +61,13 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
                 ontology={settings.ontology}
             />
         </div>
-        <PropertyInspector
-            properties={dirtyNote.properties ? Object.values(dirtyNote.properties).flat() : []}
-            onUpdateText={handleUpdateTextFromInspector}
-            onPropertyChange={() => {}} // Read only for now (updates text)
-        />
+        {isInspectorOpen && (
+            <PropertyInspector
+                properties={dirtyNote.properties ? Object.values(dirtyNote.properties).flat() : []}
+                onUpdateText={handleUpdateTextFromInspector}
+                onPropertyChange={() => {}} // Read only for now (updates text)
+            />
+        )}
       </div>
     </div>
   );

@@ -62,7 +62,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
                         <ArrowLeftIcon className="w-6 h-6" />
                     </button>
                 )}
-                <h1 className="text-2xl font-bold text-white truncate">
+                <h1 className="text-xl font-bold text-white truncate">
                     {matchAgainst ? `Matches for "${matchAgainst.title}"` : '⚡️ Public Feed'}
                 </h1>
             </div>

@@ -1,12 +1,14 @@
-import React from 'react';
-import { SendIcon, LoadingSpinner } from './icons';
+import React, { useState } from 'react';
+import { SendIcon, LoadingSpinner, ArrowLeftIcon, CubeTransparentIcon } from './icons';
 import { TagInput } from './TagInput';
+import { HelpModal } from './common/HelpModal';
 
 interface EditorHeaderProps {
   title: string;
   onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onPublish: () => void;
   onFindMatches?: () => void;
+  onBack?: () => void;
   isPublishing: boolean;
   isPublished: boolean;
   tags: string[];
@@ -14,6 +16,8 @@ interface EditorHeaderProps {
   onAutoTag?: () => void;
   isAutoTagging: boolean;
   isApiKeyAvailable: boolean;
+  isInspectorOpen?: boolean;
+  onToggleInspector?: () => void;
 }
 
 export const EditorHeader: React.FC<EditorHeaderProps> = ({
@@ -28,17 +32,55 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   isAutoTagging,
   isApiKeyAvailable,
   onFindMatches,
+  onBack,
+  isInspectorOpen,
+  onToggleInspector,
 }) => {
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+
   return (
     <div className="flex-shrink-0 bg-gray-900/30">
       <div className="p-2 flex items-center gap-2">
+        {onBack && (
+             <button
+                onClick={onBack}
+                className="md:hidden p-2 text-gray-400 hover:text-white transition-colors"
+                title="Back to List"
+            >
+                <ArrowLeftIcon className="h-5 w-5" />
+            </button>
+        )}
+
         <input
           type="text"
           value={title || ''}
           onChange={onTitleChange}
           placeholder="Note Title"
-          className="flex-grow bg-transparent text-white text-lg font-bold focus:outline-none placeholder-gray-500"
+          className="flex-grow bg-transparent text-white text-lg font-bold focus:outline-none placeholder-gray-500 min-w-0"
         />
+
+        {/* Help Button */}
+        <button
+            onClick={() => setIsHelpOpen(true)}
+            title="Help & Syntax"
+            aria-label="Help & Syntax"
+            className="p-2 text-gray-400 hover:text-white transition-colors"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </button>
+
+        {onToggleInspector && (
+            <button
+                onClick={onToggleInspector}
+                title={isInspectorOpen ? "Hide Properties" : "Show Properties"}
+                className={`p-2 transition-colors ${isInspectorOpen ? 'text-green-400 hover:text-green-300' : 'text-gray-400 hover:text-white'}`}
+            >
+                <CubeTransparentIcon className="h-5 w-5" />
+            </button>
+        )}
+
         {onFindMatches && (
             <button
               onClick={onFindMatches}
@@ -73,6 +115,8 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
         />
       </div>
       <div className="border-b border-gray-700/50" />
+
+      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
     </div>
   );
 };

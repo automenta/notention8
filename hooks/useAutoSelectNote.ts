@@ -17,6 +17,11 @@ export const useAutoSelectNote = ({
   setSelectedNoteId,
 }: UseAutoSelectNoteProps) => {
   useEffect(() => {
+    // on mobile, we don't want to auto-select the first note
+    // because that would force the user into the detail view
+    // skipping the list view.
+    if (window.innerWidth < 768) return;
+
     if (
       activeView === 'notes' &&
       !notesLoading &&
