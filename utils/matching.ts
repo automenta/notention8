@@ -32,7 +32,7 @@ export const matchNotes = (request: Note, offer: Note): number => {
   return matches / constraints.length;
 };
 
-const checkConstraint = (constraint: Property, target: Note): boolean => {
+export const checkConstraint = (constraint: Property, target: Note): boolean => {
   // Find corresponding property in target
   // We look for a "Real" property in target with the same key
   // Usually target has [key:is:value].

@@ -22,6 +22,26 @@ export const parseGeo = (value: string): GeoCoords | null => {
 };
 
 /**
+ * Parses a list of property values into a GeoCoords object.
+ * Handles both ["lat", "lng"] (split by parser) and ["lat,lng"] (single string).
+ */
+export const parseGeoFromValues = (values: string[]): GeoCoords | null => {
+    if (!values || values.length === 0) return null;
+
+    // Case: [lat, lng]
+    if (values.length >= 2) {
+        const lat = parseFloat(values[0]);
+        const lng = parseFloat(values[1]);
+        if (!isNaN(lat) && !isNaN(lng)) {
+            return { lat, lng };
+        }
+    }
+
+    // Case: ["lat,lng"]
+    return parseGeo(values[0]);
+};
+
+/**
  * Calculates the Haversine distance between two points in Kilometers.
  */
 export const haversineDistance = (coords1: GeoCoords, coords2: GeoCoords): number => {

@@ -4,6 +4,7 @@ import { useToast } from '../components/contexts/ToastContext';
 import { Gardener } from '../services/gardener';
 import { LocalAIProvider } from '../services/ai/LocalProvider';
 import { RemoteAIProvider } from '../services/ai/RemoteProvider';
+import { WebLLMProvider } from '../services/ai/WebLLMProvider';
 import type { Note, Property, OntologyNode } from '../types';
 
 // Helper to merge attributes into the "Emergent" node
@@ -36,12 +37,20 @@ export const useGardener = () => {
 
   const gardener = useMemo(() => {
     // Instantiate provider based on settings
-    const provider = settings.aiEnabled
-      ? new RemoteAIProvider(settings.googleGeminiApiKey) // Pass user key
-      : new LocalAIProvider();
+    let provider;
+
+    if (settings.aiEnabled) {
+        if (settings.aiProvider === 'webllm') {
+            provider = new WebLLMProvider(settings.aiModel);
+        } else {
+            provider = new RemoteAIProvider(settings.googleGeminiApiKey);
+        }
+    } else {
+        provider = new LocalAIProvider();
+    }
 
     return new Gardener(provider);
-  }, [settings.aiEnabled, settings.googleGeminiApiKey]);
+  }, [settings.aiEnabled, settings.aiProvider, settings.aiModel, settings.googleGeminiApiKey]);
 
   const evolveOntology = useCallback(async (notes: Note[]) => {
     const newAttributes = await gardener.evolveOntology(notes);

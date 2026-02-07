@@ -1,6 +1,8 @@
 import { useMemo, useRef } from 'react';
 import type { Note, SortOrder } from '../types';
 import { getTextFromHtml } from '../utils/nostr';
+import { parseProperties } from '../utils/parsing';
+import { checkConstraint } from '../utils/matching';
 
 const sortStrategies: Record<SortOrder, (a: Note, b: Note) => number> = {
   updatedAt_desc: (a, b) => b.updatedAt.localeCompare(a.updatedAt),
@@ -67,9 +69,19 @@ export const useSortedFilteredNotes = (
       return notesWithMetadata; // Return parsed notes (which are already filtered by deletion status)
     }
 
-    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    // 1. Extract Semantic Constraints from search term
+    const constraints = parseProperties(searchTerm);
 
-    // Parse search terms
+    // Remove the semantic blocks from the search term to get the remaining text query
+    // e.g. "project A [price > 100]" -> "project A "
+    let remainingSearch = searchTerm;
+    // We can't easily reconstruct the exact string without regex replacement matching the parsed blocks
+    // A simple approach is to remove anything matching [...]
+    remainingSearch = remainingSearch.replace(/\[[^\]]+\]/g, '').trim();
+
+    const lowerCaseSearchTerm = remainingSearch.toLowerCase();
+
+    // Parse text search parts
     const searchParts: string[] =
       lowerCaseSearchTerm.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
 
@@ -81,7 +93,9 @@ export const useSortedFilteredNotes = (
       .filter((p) => p.startsWith('#'))
       .map((p) => p.substring(1));
 
-    const propQueries = searchParts
+    // Legacy simple property search (key:value without brackets)
+    // We might want to deprecate this or keep it for quick typing "status:active"
+    const simplePropQueries = searchParts
       .filter((p) => p.includes(':'))
       .map((p) => {
         const [key, value] = p.split(':', 2);
@@ -89,16 +103,23 @@ export const useSortedFilteredNotes = (
       });
 
     return notesWithMetadata.filter((note) => {
+      // 1. Check Semantic Constraints
+      const semanticMatch = constraints.every(constraint => checkConstraint(constraint, note));
+      if (!semanticMatch) return false;
+
+      // 2. Check Text Queries
       const textMatch = textQueries.every(
         (query) =>
           note.lowerTitle.includes(query) || note.textContent.includes(query)
       );
 
+      // 3. Check Tag Queries
       const tagMatch = tagQueries.every((query) =>
         note.lowerTags.some((tag) => tag.includes(query))
       );
 
-      const propMatch = propQueries.every((query) =>
+      // 4. Check Simple Prop Queries
+      const simplePropMatch = simplePropQueries.every((query) =>
         note.lowerProps.some(
           (prop) =>
             prop.key === query.key &&
@@ -106,7 +127,7 @@ export const useSortedFilteredNotes = (
         )
       );
 
-      return textMatch && tagMatch && propMatch;
+      return textMatch && tagMatch && simplePropMatch;
     });
   }, [notes, notesWithMetadata, searchTerm]);
 

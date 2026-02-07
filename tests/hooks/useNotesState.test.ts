@@ -102,7 +102,21 @@ describe('services/notes', () => {
     expect(mockSetNotes).toHaveBeenCalledTimes(1);
     const updater = mockSetNotes.mock.calls[0][0];
     const newNotes = updater(initialNotes);
-    expect(newNotes.length).toBe(1);
-    expect(newNotes[0].id).toBe('2');
+    // Soft delete: length should remain 2, but deletedAt should be set on note 1
+    expect(newNotes.length).toBe(2);
+    const deletedNote = newNotes.find(n => n.id === '1');
+    expect(deletedNote?.deletedAt).toBeDefined();
+
+    // Test permanentlyDeleteNote for hard delete
+    mockSetNotes.mockClear();
+    act(() => {
+        result.current.permanentlyDeleteNote('1');
+    });
+
+    expect(mockSetNotes).toHaveBeenCalledTimes(1);
+    const updaterPerm = mockSetNotes.mock.calls[0][0];
+    const finalNotes = updaterPerm(initialNotes);
+    expect(finalNotes.length).toBe(1);
+    expect(finalNotes[0].id).toBe('2');
   });
 });

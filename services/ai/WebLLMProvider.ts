@@ -2,15 +2,21 @@ import { CreateMLCEngine, MLCEngine } from "@mlc-ai/web-llm";
 import type { AIProvider, InferredAttribute } from './types';
 import type { Note, OntologyAttribute, OntologyNode } from '../../types';
 
+export const AVAILABLE_MODELS = [
+    { id: "Llama-3.2-3B-Instruct-q4f16_1-MLC", label: "Llama 3.2 3B (Balanced)" },
+    { id: "Llama-3.2-1B-Instruct-q4f16_1-MLC", label: "Llama 3.2 1B (Fast, Lower Quality)" },
+    { id: "RedPajama-INCITE-Chat-3B-v1-q4f16_1-MLC", label: "RedPajama 3B" }
+];
+
 export class WebLLMProvider implements AIProvider {
   name = 'WebLLM (In-Browser)';
   isAvailable = true;
   private engine: MLCEngine | null = null;
-  private modelId = "Llama-3.2-3B-Instruct-q4f16_1-MLC";
+  private modelId: string;
   private initPromise: Promise<void> | null = null;
 
-  constructor() {
-    // Lazy init on first use
+  constructor(modelId: string = "Llama-3.2-3B-Instruct-q4f16_1-MLC") {
+    this.modelId = modelId;
   }
 
   private async getEngine(): Promise<MLCEngine | null> {
@@ -147,5 +153,11 @@ export class WebLLMProvider implements AIProvider {
         console.warn("Failed to parse AI ontology:", content);
         return [];
     }
+  }
+
+  async alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]> {
+    // Re-use suggestTags but with stricter ontology prompting if needed.
+    // For now, suggestTags already handles ontology context.
+    return this.suggestTags(text, ontology);
   }
 }

@@ -168,7 +168,12 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
             onSave={handleContentSave}
             ontology={settings.ontology}
             templates={allTemplates}
-            onMagic={handleMagic}
+            onMagic={() => {
+                if (settings.aiProvider === 'webllm' && settings.aiEnabled) {
+                    addToast('Loading local model... this may take a while.', 'info');
+                }
+                handleMagic();
+            }}
             onTemplates={() => setIsTemplateSelectorOpen(!isTemplateSelectorOpen)}
             notes={notes}
           />
