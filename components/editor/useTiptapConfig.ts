@@ -4,16 +4,17 @@ import Mention from '@tiptap/extension-mention';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { useOntologyIndex } from '../../hooks/useOntologyIndex';
 import { configureSuggestions } from './configureSuggestions';
-import type { OntologyNode } from '../../types';
+import type { OntologyNode, Template } from '../../types';
 
 interface UseTiptapConfigProps {
     content: string;
     onUpdate: (content: string) => void;
     ontology: OntologyNode[];
+    templates?: Template[];
     minimal?: boolean;
 }
 
-export const useTiptapConfig = ({ content, onUpdate, ontology, minimal }: UseTiptapConfigProps) => {
+export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], minimal }: UseTiptapConfigProps) => {
   const { allTags, allProperties } = useOntologyIndex(ontology);
 
   return useEditor({
@@ -44,6 +45,35 @@ export const useTiptapConfig = ({ content, onUpdate, ontology, minimal }: UseTip
                   .map(t => ({ id: t.id, label: t.label, description: t.description }));
           }, '#'),
       }).extend({ name: 'tagSuggestion' }),
+
+      Mention.configure({
+          HTMLAttributes: {
+            class: 'suggestion-slash',
+          },
+          suggestion: configureSuggestions((query) => {
+              const lower = query.toLowerCase();
+
+              const templateItems = templates
+                  .filter(t => t.label.toLowerCase().includes(lower))
+                  .map(t => ({
+                      id: t.content, // Insert content
+                      label: t.label,
+                      description: 'Template',
+                      type: 'template'
+                  }));
+
+               const propertyItems = allProperties
+                  .filter(p => p.label.toLowerCase().includes(lower))
+                  .map(p => ({
+                      id: `[${p.label}:is:?]`, // Insert semantic property syntax
+                      label: p.label,
+                      description: 'Property',
+                      type: 'property'
+                  }));
+
+               return [...templateItems, ...propertyItems].slice(0, 10);
+          }, '/'),
+      }).extend({ name: 'slashCommand' }),
     ],
     content: sanitizeHTML(content),
     editorProps: {

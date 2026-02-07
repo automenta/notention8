@@ -49,6 +49,13 @@ export interface Note {
   publishedAt?: string;
 }
 
+export interface Template {
+  id: string;
+  label: string;
+  content: string;
+  icon?: string;
+}
+
 export interface AppSettings {
   aiEnabled: boolean;
   googleGeminiApiKey?: string; // Added user-configurable API key
@@ -59,6 +66,7 @@ export interface AppSettings {
     relays?: string[];
   };
   ontology: OntologyNode[];
+  customTemplates: Template[];
 }
 
 export interface NostrProfile {

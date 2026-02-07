@@ -30,6 +30,7 @@ export function NetworkView({ matchAgainst }: NetworkViewProps) {
     sortedEvents,
     profiles,
     applyMatchToNote,
+    forkNote,
   } = useNetworkView({ matchAgainst });
 
   if (!pubkey) {
@@ -133,6 +134,7 @@ export function NetworkView({ matchAgainst }: NetworkViewProps) {
                 event={event}
                 profile={profiles[event.pubkey]}
                 onApplyMatch={matchAgainst ? applyMatchToNote : undefined}
+                onFork={() => forkNote(event)}
               />
             ))}
           </div>

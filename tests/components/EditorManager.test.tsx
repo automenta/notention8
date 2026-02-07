@@ -68,7 +68,8 @@ describe('EditorManager', () => {
             developerMode: true,
             theme: 'dark' as const,
             nostr: { privkey: null },
-            ontology: []
+            ontology: [],
+            customTemplates: []
         },
         setSettings: vi.fn(),
         settingsLoading: false

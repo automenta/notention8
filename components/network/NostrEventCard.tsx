@@ -4,7 +4,7 @@ import { nip19 } from 'nostr-tools';
 import { useView } from '../../hooks/useViewContext';
 import type { NostrEvent, NostrProfile } from '../../types';
 import { formatNpub, extractPropertiesFromTags } from '../../utils/nostr';
-import { ChatIcon, SparklesIcon, MergeIcon } from '../icons';
+import { ChatIcon, SparklesIcon, MergeIcon, DocumentDuplicateIcon } from '../icons';
 
 // Extend NostrEvent to include score if available
 export type ScoredNostrEvent = NostrEvent & { score?: number };
@@ -13,12 +13,14 @@ interface NostrEventCardProps {
   event: ScoredNostrEvent;
   profile: NostrProfile | undefined;
   onApplyMatch?: (event: ScoredNostrEvent) => void;
+  onFork?: () => void;
 }
 
 export function NostrEventCard({
   event,
   profile,
   onApplyMatch,
+  onFork,
 }: NostrEventCardProps) {
   const { setActiveView, setSelectedChatPubkey } = useView();
 
@@ -81,6 +83,16 @@ export function NostrEventCard({
             >
               <MergeIcon className="w-3 h-3" />
               Apply Match
+            </button>
+        )}
+        {onFork && (
+            <button
+                onClick={onFork}
+                className="flex items-center gap-1 text-xs px-2 py-1 bg-gray-700 hover:bg-green-600 text-gray-300 hover:text-white rounded transition-colors"
+                title="Fork this note to your collection"
+            >
+                <DocumentDuplicateIcon className="w-3 h-3" />
+                Fork
             </button>
         )}
         <button

@@ -17,7 +17,7 @@ interface UseEditorLogicProps {
 export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
   const { publishNote, isPublishing } = usePublish();
   const { setActiveView, setMatchingNoteId, showToast } = useView();
-  const { settings } = useSettings();
+  const { settings, setSettings } = useSettings();
   const { evolveOntology, alignToOntology } = useGardener();
 
   const handlePersist = useCallback((n: Note) => {
@@ -111,6 +111,26 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       }
   }, [dirtyNote.content, handleContentSave]);
 
+  const handleUpdateLocation = useCallback((latlng: string) => {
+      // Find existing location property if any
+      const existingProp = dirtyNote.properties.find(p => p.key === 'location');
+
+      const newProp = {
+          key: 'location',
+          operator: 'is',
+          values: [latlng]
+      };
+
+      const newContent = replacePropertyInString(dirtyNote.content, existingProp || null, newProp);
+
+      // If no existing location prop was found and replaced (because it might not exist in text but exist in parsed props?
+      // replacePropertyInString handles null oldProp by appending.
+
+      if (newContent !== dirtyNote.content) {
+          handleContentSave(newContent);
+      }
+  }, [dirtyNote, handleContentSave]);
+
   const handleMagic = useCallback(async () => {
       const cleanText = getTextFromHtml(dirtyNote.content);
       const suggestions = await alignToOntology(cleanText, settings.ontology);
@@ -124,6 +144,22 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       }
   }, [dirtyNote.content, alignToOntology, settings.ontology, handleContentSave]);
 
+  const handleSaveTemplate = useCallback((name: string) => {
+      const template = {
+          id: crypto.randomUUID(),
+          label: name,
+          content: dirtyNote.content,
+          icon: '📄' // Default icon
+      };
+
+      setSettings(prev => ({
+          ...prev,
+          customTemplates: [...prev.customTemplates, template]
+      }));
+
+      showToast(`Saved as template: ${name}`);
+  }, [dirtyNote.content, setSettings, showToast]);
+
   return {
     dirtyNote,
     isPublishing,
@@ -133,8 +169,10 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     handleFindMatches,
     handleContentSave,
     handleUpdateTextFromInspector,
+    handleUpdateLocation,
     handleAutoTag,
     handleMagic,
+    handleSaveTemplate,
     isAutoTagging,
     isApiKeyAvailable,
     settings, // needed for ontology

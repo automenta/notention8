@@ -15,9 +15,9 @@ interface UseNetworkViewProps {
 
 export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
   const { settings } = useSettings();
-  const { setActiveView, setMatchingNoteId, showToast } = useView();
+  const { setActiveView, setMatchingNoteId, setSelectedNoteId, showToast } = useView();
   const { learnFromProperties } = useGardener();
-  const { updateNote } = useNotes();
+  const { addNote, updateNote } = useNotes();
 
   const relays = useMemo(() => settings.nostr.relays || DEFAULT_RELAYS, [settings.nostr.relays]);
 
@@ -149,6 +149,24 @@ export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
       showToast(`Applied ${props.length} properties from match!`);
   };
 
+  const forkNote = (event: NostrEvent) => {
+      const newNote = addNote();
+      const eventNote = convertEventToNote(event);
+
+      const updatedNote = {
+          ...newNote,
+          title: `Fork of ${eventNote.title || 'Untitled'}`,
+          content: eventNote.content,
+          properties: eventNote.properties,
+          tags: eventNote.tags
+      };
+
+      updateNote(updatedNote);
+      setSelectedNoteId(newNote.id);
+      setActiveView('notes');
+      showToast('Note forked successfully!');
+  };
+
   return {
     settings,
     pubkey,
@@ -160,5 +178,6 @@ export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
     sortedEvents,
     profiles,
     applyMatchToNote,
+    forkNote,
   };
 };

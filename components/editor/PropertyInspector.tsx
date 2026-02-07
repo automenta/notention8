@@ -8,17 +8,20 @@ import {
   TagIcon,
   TrashIcon,
   XIcon,
+  MapPinIcon,
 } from '../icons';
 
 interface PropertyInspectorProps {
   properties: Property[];
   onPropertyChange: (newProperties: Property[]) => void;
   onUpdateText: (oldProp: Property | null, newProp: Property | null) => void;
+  onPickLocation?: () => void;
 }
 
 export function PropertyInspector({
   properties,
   onUpdateText,
+  onPickLocation,
 }: PropertyInspectorProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -93,8 +96,13 @@ export function PropertyInspector({
       <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
         {(isAdding || editingIndex !== null) && (
           <div className="bg-gray-800 p-3 rounded-md border border-blue-500/50 space-y-3 animate-fade-in shadow-lg">
-            <div className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">
-              {isAdding ? 'New Property' : 'Edit Property'}
+            <div className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1 flex justify-between items-center">
+              <span>{isAdding ? 'New Property' : 'Edit Property'}</span>
+              {onPickLocation && (editKey === 'location' || editKey === '') && (
+                  <button onClick={onPickLocation} className='text-xs text-blue-300 hover:text-white flex items-center gap-1 bg-blue-900/30 px-2 py-0.5 rounded'>
+                      <MapPinIcon className="w-3 h-3" /> Pick
+                  </button>
+              )}
             </div>
             <input
               className="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:border-blue-500 outline-none transition-colors"

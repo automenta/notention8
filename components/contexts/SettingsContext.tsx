@@ -29,6 +29,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
         relays: DEFAULT_RELAYS,
       },
       ontology: [],
+      customTemplates: [],
     }
   );
 

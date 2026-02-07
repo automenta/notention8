@@ -3,7 +3,7 @@ import { useSettings } from './useSettingsContext';
 import { useNotes } from './useNotes';
 import { useGardener } from './useGardener';
 
-export type OntologyTab = 'graph' | 'simulator';
+export type OntologyTab = 'graph' | 'simulator' | 'conflicts';
 
 import { useMemo } from 'react';
 
