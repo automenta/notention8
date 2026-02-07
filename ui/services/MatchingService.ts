@@ -1,6 +1,6 @@
 import type { Note, Property } from '@notention/core';
 import { parseGeo, haversineDistance } from '@notention/core';
-import { parseQuantity, compareQuantities } from '../utils/quantities';
+import { parseQuantity, compareQuantities } from '@notention/core';
 
 const CANONICAL: Record<string, string> = {
   js: 'javascript',

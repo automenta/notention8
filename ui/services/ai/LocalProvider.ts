@@ -2,7 +2,7 @@ import type { AIProvider, InferredAttribute } from '@notention/core';
 import type { Note, OntologyNode } from '@notention/core';
 import { parseProperties, getTextFromHtml } from '@notention/core';
 import { addDays, format } from 'date-fns';
-import { parseQuantity } from '../../utils/quantities';
+import { parseQuantity } from '@notention/core';
 
 export class LocalAIProvider implements AIProvider {
   name = 'Local (Heuristic)';
