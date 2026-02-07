@@ -3,7 +3,7 @@ import { finalizeEvent, nip19 } from 'nostr-tools';
 import { useNostrProfile } from '../../hooks/useNostrProfile';
 import type { Contact } from '../../types';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
-import { UserPlusIcon, PlusIcon, SearchIcon } from '../icons';
+import { UserPlusIcon, PlusIcon, SearchIcon, CpuChipIcon } from '../icons';
 
 interface ContactListProps {
   privkey: string;
@@ -167,20 +167,33 @@ export const ContactList: React.FC<ContactListProps> = ({
                   <img
                     src={
                       profile?.picture ||
+                      contact.picture ||
                       `https://api.dicebear.com/8.x/bottts-neutral/svg?seed=${contact.pubkey}`
                     }
                     className="h-10 w-10 rounded-full bg-gray-700 object-cover"
                   />
-                  {/* Status indicator could go here */}
+                  {contact.isAgent && (
+                      <div className="absolute -bottom-1 -right-1 bg-gray-900 rounded-full p-0.5 border border-gray-700" title="AI Agent">
+                          <CpuChipIcon className="w-3 h-3 text-green-400" />
+                      </div>
+                  )}
               </div>
               <div className="overflow-hidden flex-1 min-w-0">
                 <div className="flex justify-between items-baseline">
                     <p className={`font-semibold truncate text-sm ${isSelected ? 'text-white' : 'text-gray-200'}`}>
-                      {profile?.name || formatNpub(nip19.npubEncode(contact.pubkey))}
+                      {contact.name || profile?.name || (
+                        (() => {
+                            try {
+                                return formatNpub(nip19.npubEncode(contact.pubkey));
+                            } catch {
+                                return contact.pubkey;
+                            }
+                        })()
+                      )}
                     </p>
                 </div>
                 <p className="text-xs text-gray-500 truncate">
-                  {profile?.about || 'No bio available'}
+                  {contact.about || profile?.about || 'No bio available'}
                 </p>
               </div>
             </div>

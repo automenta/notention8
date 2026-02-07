@@ -3,9 +3,12 @@ import { useChatView } from '../../hooks/useChatView';
 import { useView } from '../../hooks/useViewContext';
 import { ChatWindow } from '../chat/ChatWindow';
 import { ContactList } from '../chat/ContactList';
+import { useSimulatorContext } from '../contexts/SimulatorContext';
+import type { Contact } from '../../types';
 
 export function ChatView() {
   const { resetChatNotification } = useView();
+  const { agents, agentMessages, sendMessageToAgent } = useSimulatorContext();
 
   // Clear notifications when entering chat view
   useEffect(() => {
@@ -22,6 +25,27 @@ export function ChatView() {
     addMessage,
     handleSelectContact,
   } = useChatView();
+
+  // Merge Agent Contacts
+  const agentContacts: Contact[] = agents.map(a => ({
+      pubkey: a.id,
+      name: a.name,
+      about: a.bio,
+      picture: a.avatar,
+      isAgent: true
+  }));
+
+  const allContacts = [...agentContacts, ...contacts];
+
+  // Resolve full contact object (to ensure properties like isAgent are present)
+  const fullSelectedContact = localSelectedContact
+      ? allContacts.find(c => c.pubkey === localSelectedContact.pubkey) || localSelectedContact
+      : null;
+
+  // Determine messages to display
+  const displayMessages = fullSelectedContact?.isAgent
+      ? (agentMessages[fullSelectedContact.pubkey] || [])
+      : (fullSelectedContact ? messages[fullSelectedContact.pubkey] || [] : []);
 
   if (!privkey || !pubkey) {
     return (
@@ -40,34 +64,34 @@ export function ChatView() {
   return (
     <div className="flex h-full bg-gray-800/50 rounded-lg overflow-hidden">
       <div
-        className={`w-full md:w-1/3 md:flex-shrink-0 ${localSelectedContact ? 'hidden md:block' : 'block'}`}
+        className={`w-full md:w-1/3 md:flex-shrink-0 ${fullSelectedContact ? 'hidden md:block' : 'block'}`}
       >
         <ContactList
           privkey={privkey}
           pubkey={pubkey}
-          contacts={contacts}
+          contacts={allContacts}
           setContacts={setContacts}
-          selectedContact={localSelectedContact}
+          selectedContact={fullSelectedContact}
           onSelectContact={handleSelectContact}
           isLoading={isLoading}
         />
       </div>
       <div
-        className={`w-full ${!localSelectedContact ? 'hidden md:block' : 'block'}`}
+        className={`w-full ${!fullSelectedContact ? 'hidden md:block' : 'block'}`}
       >
         <ChatWindow
           privkey={privkey}
           pubkey={pubkey}
-          selectedContact={localSelectedContact}
+          selectedContact={fullSelectedContact}
           onBack={() => handleSelectContact(null)}
-          messages={
-            localSelectedContact
-              ? messages[localSelectedContact.pubkey] || []
-              : []
-          }
-          onSendMessage={(peerPubkey, event, decryptedContent) =>
-            addMessage(peerPubkey, event, decryptedContent)
-          }
+          messages={displayMessages}
+          onSendMessage={(peerPubkey, event, decryptedContent) => {
+            if (fullSelectedContact?.isAgent) {
+                sendMessageToAgent(peerPubkey, decryptedContent);
+            } else {
+                addMessage(peerPubkey, event, decryptedContent);
+            }
+          }}
         />
       </div>
     </div>
