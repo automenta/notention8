@@ -29,33 +29,45 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
     }, [matches]);
 
     return (
-        <DashboardCard title="Intentional Opportunities" icon={SearchSparkleIcon}>
+        <DashboardCard title="Network Matches" icon={SearchSparkleIcon}>
             <div className="space-y-4">
                 {groupedMatches.length === 0 ? (
-                    <div className="p-6 bg-gray-800/30 rounded-xl border border-gray-800 border-dashed text-center">
-                        <p className="text-gray-500 text-sm mb-2">No active matches found.</p>
-                        <p className="text-xs text-gray-600">
-                            Create a note with constraints (e.g. <code>[price &lt; 100]</code>) to find matches.
-                        </p>
+                    <div className="p-6 bg-gray-800/30 rounded-xl border border-gray-800 border-dashed text-center flex flex-col items-center gap-3">
+                        <div className="bg-gray-800 p-3 rounded-full">
+                            <SearchSparkleIcon className="w-6 h-6 text-purple-400" />
+                        </div>
+                        <div>
+                            <p className="text-gray-300 text-sm font-medium mb-1">No active opportunities.</p>
+                            <p className="text-xs text-gray-500 max-w-[250px] mx-auto leading-relaxed">
+                                Express your intent clearly. Try adding constraints like <code className="bg-gray-800 px-1 py-0.5 rounded text-purple-300">[price &lt; 100]</code> or <code className="bg-gray-800 px-1 py-0.5 rounded text-blue-300">[skill:coding]</code>.
+                            </p>
+                        </div>
                     </div>
                 ) : (
                     groupedMatches.map(([noteId, groupMatches]) => {
                         const note = notes.find(n => n.id === noteId);
-                        const noteTitle = note?.title || 'Untitled Intent';
+                        const noteTitle = note?.title || 'Untitled Note';
+
+                        // Infer category from note content or tags
+                        // Simple heuristic for now: check for intent tag
+                        const isRequest = note?.content.includes('[intent:is:request]');
+                        const isOffer = note?.content.includes('[intent:is:offer]');
+                        const categoryLabel = isRequest ? 'Your Request' : isOffer ? 'Your Offer' : 'Your Note';
+                        const categoryColor = isRequest ? 'bg-purple-500' : isOffer ? 'bg-green-500' : 'bg-blue-500';
 
                         return (
                             <div key={noteId} className="bg-gray-900/50 rounded-lg border border-gray-700/50 overflow-hidden">
-                                {/* Header: The Intent */}
+                                {/* Header */}
                                 <div className="p-3 bg-gray-800 flex justify-between items-center border-b border-gray-700/50 cursor-pointer hover:bg-gray-750 transition-colors"
                                      onClick={() => onSelectNote(noteId)}>
                                     <div className="flex items-center gap-2 overflow-hidden">
-                                        <div className="w-1 h-8 bg-purple-500 rounded-full flex-shrink-0" />
+                                        <div className={`w-1 h-8 ${categoryColor} rounded-full flex-shrink-0`} />
                                         <div className="min-w-0">
                                             <h4 className="text-sm font-bold text-gray-200 truncate">{noteTitle}</h4>
                                             <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                <span>Your Request</span>
+                                                <span>{categoryLabel}</span>
                                                 <span>•</span>
-                                                <span className="text-purple-400">{groupMatches.length} Candidates</span>
+                                                <span className="text-purple-400">{groupMatches.length} Matches</span>
                                             </div>
                                         </div>
                                     </div>
@@ -85,6 +97,18 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
                                                         {match.event.pubkey.slice(0, 8)}...
                                                     </span>
                                                 </div>
+                                                {match.satisfied && match.satisfied.length > 0 && (
+                                                    <div className="mt-1 flex flex-wrap gap-1">
+                                                        {match.satisfied.slice(0, 2).map((p, i) => (
+                                                            <span key={i} className="text-[10px] px-1 py-0.5 rounded bg-green-900/30 text-green-300 border border-green-900/50">
+                                                                ✅ {p.key}
+                                                            </span>
+                                                        ))}
+                                                        {match.satisfied.length > 2 && (
+                                                            <span className="text-[10px] text-gray-500">+{match.satisfied.length - 2}</span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))}

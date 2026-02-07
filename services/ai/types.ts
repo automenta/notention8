@@ -11,9 +11,10 @@ export interface AIProvider {
 
   /**
    * Analyzes a set of notes to infer ontology attributes.
+   * Optionally accepts a context (concept name) to guide analysis.
    * Returns a list of inferred attributes (key, type, stats).
    */
-  analyzeOntology(notes: Note[]): Promise<InferredAttribute[]>;
+  analyzeOntology(notes: Note[], context?: string): Promise<InferredAttribute[]>;
 
   /**
    * Analyzes the current ontology to identify redundancies or improvements.

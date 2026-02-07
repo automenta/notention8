@@ -16,7 +16,7 @@ vi.mock('../../hooks/useViewContext', () => ({
 }));
 
 // Mock useToast
-vi.mock('../../components/contexts/ToastContext', () => ({
+vi.mock('../../hooks/useToast', () => ({
     useToast: () => ({
         addToast: vi.fn(),
     }),
@@ -72,7 +72,8 @@ describe('useGardener', () => {
       await result.current.evolveOntology(mockNotes);
     });
 
-    expect(mockAnalyzeOntology).toHaveBeenCalledWith(mockNotes);
+    // called with mockNotes and undefined context
+    expect(mockAnalyzeOntology).toHaveBeenCalledWith(mockNotes, undefined);
     expect(setSettingsMock).toHaveBeenCalled();
     // Check if the update function logic is correct would require more complex mocking of setSettings behavior,
     // but verifying it's called is a good first step.

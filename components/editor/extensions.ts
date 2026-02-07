@@ -11,9 +11,10 @@ interface GetExtensionsProps {
     getNotes: () => Note[];
     templates: Template[];
     onOpenPropertyModal?: (key: string) => void;
+    onMagic?: () => void;
 }
 
-export const getExtensions = ({ allProperties, allTags, getNotes, templates, onOpenPropertyModal }: GetExtensionsProps) => {
+export const getExtensions = ({ allProperties, allTags, getNotes, templates, onOpenPropertyModal, onMagic }: GetExtensionsProps) => {
     return [
       StarterKit,
       BubbleMenu,
@@ -118,7 +119,33 @@ export const getExtensions = ({ allProperties, allTags, getNotes, templates, onO
                         type: 'property'
                     }));
 
-                 return [...templateItems, ...propertyItems].slice(0, 10);
+                 const commandItems = [];
+                 if ('magic align'.includes(lower)) {
+                     commandItems.push({
+                         id: 'magic',
+                         label: 'Magic Align',
+                         description: 'Auto-detect properties',
+                         type: 'command'
+                     });
+                 }
+                 if ('current date'.includes(lower)) {
+                     commandItems.push({
+                         id: 'date',
+                         label: 'Current Date',
+                         description: new Date().toISOString().split('T')[0],
+                         type: 'command'
+                     });
+                 }
+                 if ('current time'.includes(lower)) {
+                     commandItems.push({
+                         id: 'time',
+                         label: 'Current Time',
+                         description: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                         type: 'command'
+                     });
+                 }
+
+                 return [...commandItems, ...templateItems, ...propertyItems].slice(0, 10);
             }, '/'),
             command: ({ editor, range, props }) => {
                 // Delete the slash command text
@@ -126,6 +153,17 @@ export const getExtensions = ({ allProperties, allTags, getNotes, templates, onO
 
                 if (props.type === 'property' && onOpenPropertyModal) {
                     onOpenPropertyModal(props.label);
+                    return;
+                }
+
+                if (props.type === 'command') {
+                    if (props.id === 'magic' && onMagic) {
+                        onMagic();
+                    } else if (props.id === 'date') {
+                        editor.chain().focus().insertContent(new Date().toISOString().split('T')[0]).run();
+                    } else if (props.id === 'time') {
+                        editor.chain().focus().insertContent(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})).run();
+                    }
                     return;
                 }
 

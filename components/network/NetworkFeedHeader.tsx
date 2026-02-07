@@ -4,12 +4,18 @@ import { ArrowLeftIcon } from '../layout/icons';
 import { IconButton } from '../common/IconButton';
 import { Input } from '../common/Input';
 
+import { Button } from '../common/Button';
+import type { OntologyNode } from '../../types';
+
 interface NetworkFeedHeaderProps {
     matchAgainstTitle?: string;
     onClearMatch: () => void;
     filter: string;
     setFilter: (filter: string) => void;
     sortedEvents: NostrEvent[];
+    ontology?: OntologyNode[];
+    activeFilterId?: string;
+    setActiveFilterId?: (id: string) => void;
 }
 
 export const NetworkFeedHeader: React.FC<NetworkFeedHeaderProps> = ({
@@ -17,10 +23,13 @@ export const NetworkFeedHeader: React.FC<NetworkFeedHeaderProps> = ({
     onClearMatch,
     filter,
     setFilter,
-    sortedEvents
+    sortedEvents,
+    ontology,
+    activeFilterId = 'all',
+    setActiveFilterId
 }) => {
     return (
-        <div className="flex justify-between items-center mb-6 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div className="flex items-center gap-3 overflow-hidden">
                 {matchAgainstTitle && (
                     <IconButton
@@ -38,11 +47,30 @@ export const NetworkFeedHeader: React.FC<NetworkFeedHeaderProps> = ({
                 </h1>
             </div>
 
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-col md:flex-row items-end md:items-center gap-3 w-full md:w-auto">
+                 {setActiveFilterId && ontology && (
+                    <div className="flex bg-gray-900 rounded-lg p-1 border border-gray-700 overflow-x-auto max-w-xs md:max-w-md custom-scrollbar">
+                        <button
+                            onClick={() => setActiveFilterId('all')}
+                            className={`whitespace-nowrap px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeFilterId === 'all' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
+                        >
+                            All
+                        </button>
+                        {ontology.map(node => (
+                            <button
+                                key={node.id}
+                                onClick={() => setActiveFilterId(node.id)}
+                                className={`whitespace-nowrap px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeFilterId === node.id ? 'bg-blue-900/50 text-blue-200 shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
+                            >
+                                {node.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
                 <Input
                     type="text"
                     placeholder="Search notes..."
-                    className="w-48"
+                    className="w-full md:w-48"
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
                 />

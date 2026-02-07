@@ -57,8 +57,8 @@ export function useSingleNoteMatch(note: Note) {
             // Don't match with self (if published)
             if (offer.nostrEventId === note.nostrEventId) return null;
 
-            const score = matchNotes(note, offer);
-            return { event, score };
+            const result = matchNotes(note, offer);
+            return { event, score: result.score, satisfied: result.satisfied };
         })
         .filter((m): m is { event: NostrEvent, score: number } => m !== null && m.score > 0.4)
         .sort((a, b) => b.score - a.score);

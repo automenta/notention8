@@ -24,6 +24,7 @@ interface TiptapEditorProps {
   onTemplates?: () => void;
   notes?: Note[];
   onPickLocation?: () => Promise<string>;
+  saveStatus?: 'saved' | 'saving' | 'error';
 }
 
 export interface TiptapEditorRef {
@@ -40,7 +41,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(({
   onMagic,
   onTemplates,
   notes = [],
-  onPickLocation
+  onPickLocation,
+  saveStatus
 }, ref) => {
   const [viewMode, setViewMode] = useState<'rich' | 'code'>('rich');
 
@@ -71,7 +73,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(({
       templates,
       minimal,
       notes,
-      onOpenPropertyModal: handleOpenPropertyModal
+      onOpenPropertyModal: handleOpenPropertyModal,
+      onMagic
   });
 
   // Sync content from parent
@@ -142,7 +145,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(({
           />
         )}
       </div>
-      {!minimal && <EditorStatusBar editor={editor} />}
+      {!minimal && <EditorStatusBar editor={editor} saveStatus={saveStatus} />}
     </div>
   );
 });

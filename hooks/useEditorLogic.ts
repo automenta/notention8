@@ -34,7 +34,7 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     }
   }, [onSave, settings.developerMode, evolveOntology, addToast]);
 
-  const { dirtyNote, setDirtyNote } = useDebouncedSave(note, handlePersist);
+  const { dirtyNote, setDirtyNote, saveStatus } = useDebouncedSave(note, handlePersist);
 
   // Expose immediate save for Ctrl+S
   const saveImmediately = useCallback(() => {
@@ -165,6 +165,7 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     actionLabel,
     validationErrors,
     missingProperties,
-    matchingOntologyNode
+    matchingOntologyNode,
+    saveStatus
   };
 };

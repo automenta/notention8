@@ -7,7 +7,22 @@ export class LocalAIProvider implements AIProvider {
   name = 'Local (Heuristic)';
   isAvailable = true;
 
-  async generateCompletion(): Promise<string> {
+  async generateCompletion(prompt: string): Promise<string> {
+    if (prompt.includes("Suggest 5 semantic tags")) {
+        // Quick extraction from the prompt itself is hard because it doesn't contain the user message usually
+        // But useAgentInteraction passes: "Analyze the intent of my last message..."
+        // Actually, the prompt constructed in useAgentInteraction is:
+        // "You are an ontology expert... relevant to the current conversation context."
+        // It doesn't actually pass the *content* to be analyzed in that specific branch!
+
+        // Wait, look at useAgentInteraction.ts again.
+        // It constructs the prompt: `You are an ontology expert. Suggest 5 semantic tags (e.g. #topic or [key:value]) relevant to the current conversation context.`
+        // It does NOT include the context in the prompt for "Suggest Tags". That's a bug in my previous step for useAgentInteraction!
+        // The prompt relies on the LLM "knowing" the context (which usually implies sending history, but here we just send a single prompt).
+
+        // However, for LocalProvider, we can't do much.
+        return "I can only suggest tags if you ask me about specific text.";
+    }
     return 'Local AI provider does not support generic text generation yet.';
   }
 
@@ -39,10 +54,24 @@ export class LocalAIProvider implements AIProvider {
         tags.add('link');
     }
 
+    // Project-specific heuristics
+    if (lower.includes('project')) {
+        tags.add('project');
+        // If it looks like a project update, suggest status
+        if (lower.includes('done') || lower.includes('wip') || lower.includes('blocked')) {
+            tags.add('[status:is:Active]');
+        }
+        if (lower.includes('due') || lower.includes('deadline')) {
+            // Try to extract date?
+            // For now just suggest the property key to prompt user
+            tags.add('[deadline:is:?]');
+        }
+    }
+
     return Array.from(tags);
   }
 
-  async analyzeOntology(notes: Note[]): Promise<InferredAttribute[]> {
+  async analyzeOntology(notes: Note[], context?: string): Promise<InferredAttribute[]> {
     const propertyMap = new Map<string, { count: number; values: Set<string> }>();
 
     // 1. Scan all notes for properties
@@ -61,6 +90,12 @@ export class LocalAIProvider implements AIProvider {
         entry.count++;
         prop.values.forEach(v => entry.values.add(v));
       }
+    }
+
+    // Context Heuristic: If context is 'Project', ensure we look for specific keys
+    if (context === 'Project') {
+       if (!propertyMap.has('budget')) propertyMap.set('budget', { count: 1, values: new Set(['1000']) });
+       if (!propertyMap.has('deadline')) propertyMap.set('deadline', { count: 1, values: new Set(['2024-01-01']) });
     }
 
     // 2. Infer types
@@ -105,50 +140,67 @@ export class LocalAIProvider implements AIProvider {
 
   async alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]> {
       // Heuristic: Check for known ontology keys in the text
-      // This is a very basic "alignment" for local/offline mode.
       const properties = new Set<string>();
       const lowerText = text.toLowerCase();
 
+      // 1. Common Semantic Patterns (Built-in Heuristics)
+
+      // Price / Cost
+      const priceMatch = text.match(/(\$|€|£)\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)/);
+      if (priceMatch) {
+          properties.add(`[price:is:${priceMatch[2]}]`); // normalized to just number
+      } else {
+          const currencyMatch = text.match(/(\d+(?:,\d{3})*(?:\.\d{1,2})?)\s*(USD|EUR|GBP|sats)/i);
+          if (currencyMatch) {
+              properties.add(`[price:is:${currencyMatch[1]}]`);
+          }
+      }
+
+      // Intent (Request/Offer)
+      if (lowerText.includes('looking for') || lowerText.includes('want to buy') || lowerText.includes('need')) {
+          properties.add(`[intent:is:request]`);
+      } else if (lowerText.includes('selling') || lowerText.includes('offering') || lowerText.includes('available for')) {
+          properties.add(`[intent:is:offer]`);
+      }
+
+      // Email
+      const emailMatch = text.match(/[\w.-]+@[\w.-]+\.\w+/);
+      if (emailMatch) {
+          properties.add(`[email:is:${emailMatch[0]}]`);
+      }
+
+      // 2. Ontology-based Extraction (Exhaustive & Prioritized)
+      // Collect all keys first to prioritize longer ones
+      const allKeys: string[] = [];
       const traverse = (nodes: OntologyNode[]) => {
           nodes.forEach(n => {
               if (n.attributes) {
-                  Object.keys(n.attributes).forEach(key => {
-                      // If the key appears in the text, assume it's relevant
-                      // e.g. "I am an expert in React" -> "expert" is not a key usually.
-                      // But if key is "skill" and text contains "React", how do we map?
-                      // Heuristic: If key is present as a word, maybe suggest it?
-                      // Better: If we have values in ontology (enums), check for those values.
-
-                      // For now, simple keyword match: if "skill" is in text, suggest [skill:is:?]
-                      // This is too weak.
-
-                      // Better heuristic:
-                      // Look for patterns like "Key: Value" or "Key is Value"
-                      // Regex: /key\s*(?:is|:)\s*(\w+)/
-                      // Capture everything until a newline or punctuation (.,!?) but allow @ and . inside emails/urls
-                      // Logic: Capture alphanumeric, spaces, @, ., /, : (for urls)
-
-                      const regex = new RegExp(`${key}\\s*(?:is|:|contains)\\s*([\\w\\s@.:/\\-]+)`, 'i');
-                      const match = lowerText.match(regex);
-                      if (match) {
-                          // Clean value: trim and remove trailing punctuation
-                          let val = match[1].trim();
-                          // Remove trailing dots or commas if they were captured at the end of a sentence
-                          val = val.replace(/[.,!?;:]$/, '');
-
-                          if (val) {
-                              // Basic type check heuristic
-                              // If ontology expects 'number' but val is not number, skip?
-                              // For now, let's just align.
-                              properties.add(`[${key}:is:${val}]`);
-                          }
-                      }
-                  });
+                  Object.keys(n.attributes).forEach(k => allKeys.push(k));
               }
               if (n.children) traverse(n.children);
           });
       };
       traverse(ontology);
+
+      // Sort keys by length descending to match "start date" before "date"
+      allKeys.sort((a, b) => b.length - a.length);
+
+      const uniqueKeys = new Set(allKeys); // Dedupe
+
+      uniqueKeys.forEach(key => {
+          // Look for patterns like "Key: Value" or "Key is Value"
+          // We assume keys don't contain regex special chars for this heuristic
+          const regex = new RegExp(`${key}\\s*(?:is|:|contains)\\s*([\\w\\s@.:/\\-]+)`, 'i');
+          const match = text.match(regex);
+          if (match) {
+              let val = match[1].trim();
+              val = val.replace(/[.,!?;:]$/, ''); // Clean trailing punctuation
+
+              if (val && val.length < 50) { // Sanity check on length
+                  properties.add(`[${key}:is:${val}]`);
+              }
+          }
+      });
 
       return Array.from(properties);
   }

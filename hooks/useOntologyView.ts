@@ -1,13 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useSettings } from './useSettingsContext';
 import { useNotes } from './useNotes';
 import { useGardener } from './useGardener';
 import { detectConflicts } from '../utils/conflicts';
+import { addNode, deleteNode } from '../utils/ontologyHelpers';
 
 export type OntologyTab = 'graph' | 'simulator' | 'conflicts';
 
 export const useOntologyView = () => {
-  const { settings } = useSettings();
+  const { settings, setSettings } = useSettings();
   const ontology = settings.ontology;
   const { notes } = useNotes();
   const { evolveOntology, optimizeOntology } = useGardener();
@@ -58,6 +59,28 @@ export const useOntologyView = () => {
       }
   };
 
+  const handleAddNode = useCallback((parentId: string | null, label: string) => {
+      setSettings(prev => {
+          const newNode = {
+              id: label.toLowerCase().replace(/\s+/g, '-'),
+              label,
+              attributes: {},
+              children: []
+          };
+          return {
+              ...prev,
+              ontology: addNode(prev.ontology, parentId, newNode)
+          };
+      });
+  }, [setSettings]);
+
+  const handleDeleteNode = useCallback((nodeId: string) => {
+      setSettings(prev => ({
+          ...prev,
+          ontology: deleteNode(prev.ontology, nodeId)
+      }));
+  }, [setSettings]);
+
   return {
     settings,
     ontology,
@@ -66,6 +89,8 @@ export const useOntologyView = () => {
     isEvolving,
     handleEvolve,
     handleOptimize,
+    handleAddNode,
+    handleDeleteNode,
     usageStats,
     conflicts
   };

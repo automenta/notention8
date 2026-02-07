@@ -47,6 +47,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     saveImmediately,
     actionLabel,
     missingProperties,
+    saveStatus,
   } = useEditorLogic({ note, onSave });
 
   const {
@@ -167,6 +168,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
             onTemplates={() => setIsTemplateSelectorOpen(!isTemplateSelectorOpen)}
             notes={notes}
             onPickLocation={handleRequestLocationPick}
+            saveStatus={saveStatus}
           />
           <ContextPanel note={dirtyNote} />
           <EditorMatches note={dirtyNote} />

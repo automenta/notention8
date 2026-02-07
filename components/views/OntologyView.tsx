@@ -1,11 +1,15 @@
 import React from 'react';
 
+import { useState } from 'react';
+
 import { useOntologyView, OntologyTab } from '../../hooks/useOntologyView';
 import { OntologyNodeItem } from '../ontology/OntologyNodeItem';
 import { OntologyConflicts } from '../ontology/OntologyConflicts';
 import { useView } from '../../hooks/useViewContext';
 import { Tabs } from '../common/Tabs';
 import { Button } from '../common/Button';
+import { Toggle } from '../common/Toggle';
+import { EditIcon } from '../layout/icons';
 
 export function OntologyView() {
   const {
@@ -16,15 +20,31 @@ export function OntologyView() {
     isEvolving,
     handleEvolve,
     handleOptimize,
+    handleAddNode,
+    handleDeleteNode,
     usageStats,
     conflicts
   } = useOntologyView();
 
   const { setSelectedNoteId, setActiveView } = useView();
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleSelectNote = (noteId: string) => {
       setSelectedNoteId(noteId);
       setActiveView('notes');
+  };
+
+  const onAddChild = (parentId: string) => {
+      const name = prompt("Enter name for new child node:");
+      if (name) {
+          handleAddNode(parentId, name);
+      }
+  };
+
+  const onDeleteNode = (nodeId: string) => {
+      if (confirm("Are you sure you want to delete this node and all its children?")) {
+          handleDeleteNode(nodeId);
+      }
   };
 
   const tabs = [
@@ -40,6 +60,12 @@ export function OntologyView() {
       <div className="flex-shrink-0 flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-gray-700 pb-4 gap-4">
           <div className="flex items-center gap-4">
               <h2 className="text-xl font-bold text-white">Ontology</h2>
+              {safeActiveTab === 'graph' && (
+                  <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400">Edit Mode</span>
+                      <Toggle checked={isEditing} onChange={setIsEditing} />
+                  </div>
+              )}
           </div>
 
           <div className="flex items-center gap-4 ml-auto">
@@ -93,6 +119,22 @@ export function OntologyView() {
                 </div>
             </div>
 
+            {isEditing && (
+                <div className="mb-4 flex justify-end">
+                    <Button
+                        onClick={() => {
+                            const name = prompt("Enter name for new root node:");
+                            if (name) handleAddNode(null, name);
+                        }}
+                        variant="secondary"
+                        size="sm"
+                        icon={EditIcon}
+                    >
+                        Add Root Node
+                    </Button>
+                </div>
+            )}
+
             <div className="bg-gray-900/70 p-6 rounded-lg border border-gray-700/50">
               {ontology.length === 0 ? (
                   <div className="text-center text-gray-500 py-12">
@@ -101,7 +143,15 @@ export function OntologyView() {
                   </div>
               ) : (
                   ontology.map((rootNode) => (
-                    <OntologyNodeItem key={rootNode.id} node={rootNode} level={0} usageStats={usageStats} />
+                    <OntologyNodeItem
+                        key={rootNode.id}
+                        node={rootNode}
+                        level={0}
+                        usageStats={usageStats}
+                        isEditing={isEditing}
+                        onAddChild={onAddChild}
+                        onDeleteNode={onDeleteNode}
+                    />
                   ))
               )}
             </div>

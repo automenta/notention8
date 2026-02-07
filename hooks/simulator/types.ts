@@ -9,6 +9,7 @@ export interface SimulationAgent {
     goal: string;
     isAgent: boolean;
     enabled?: boolean;
+    memory?: string[];
 }
 
 export interface SwarmTemplate {

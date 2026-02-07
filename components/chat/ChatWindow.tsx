@@ -241,6 +241,88 @@ export function ChatWindow({
 
       {/* Input */}
       <div className="flex-shrink-0 p-4 bg-gray-900/50 border-t border-gray-700/50">
+        {selectedContact.isAgent && (
+          <div className="flex gap-2 mb-2 overflow-x-auto pb-2 custom-scrollbar">
+              <button
+                  type="button"
+                  onClick={() => {
+                      const msg = "Analyze the intent of my last message and suggest improvements.";
+                      const dummyEvent = {
+                         id: 'local-' + Date.now(),
+                         pubkey: pubkey,
+                         created_at: Math.floor(Date.now() / 1000),
+                         kind: 1,
+                         tags: [],
+                         content: msg,
+                         sig: ''
+                      };
+                      onSendMessage(selectedContact.pubkey, dummyEvent, msg);
+                  }}
+                  className="whitespace-nowrap px-3 py-1 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-full text-xs text-blue-300 transition-colors"
+              >
+                  Analyze Intent
+              </button>
+              <button
+                  type="button"
+                   onClick={() => {
+                      const msg = "Suggest semantic tags for this conversation context.";
+                      const dummyEvent = {
+                         id: 'local-' + Date.now(),
+                         pubkey: pubkey,
+                         created_at: Math.floor(Date.now() / 1000),
+                         kind: 1,
+                         tags: [],
+                         content: msg,
+                         sig: ''
+                      };
+                      onSendMessage(selectedContact.pubkey, dummyEvent, msg);
+                  }}
+                  className="whitespace-nowrap px-3 py-1 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-full text-xs text-purple-300 transition-colors"
+              >
+                  Suggest Tags
+              </button>
+              <button
+                  type="button"
+                   onClick={() => {
+                      const msg = "Summarize our chat so far.";
+                      const dummyEvent = {
+                         id: 'local-' + Date.now(),
+                         pubkey: pubkey,
+                         created_at: Math.floor(Date.now() / 1000),
+                         kind: 1,
+                         tags: [],
+                         content: msg,
+                         sig: ''
+                      };
+                      onSendMessage(selectedContact.pubkey, dummyEvent, msg);
+                  }}
+                  className="whitespace-nowrap px-3 py-1 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-full text-xs text-green-300 transition-colors"
+              >
+                  Summarize
+              </button>
+               <button
+                  type="button"
+                   onClick={() => {
+                      const fact = prompt("What should I remember?");
+                      if (!fact) return;
+                      const msg = `Remember this: ${fact}`;
+                      const dummyEvent = {
+                         id: 'local-' + Date.now(),
+                         pubkey: pubkey,
+                         created_at: Math.floor(Date.now() / 1000),
+                         kind: 1,
+                         tags: [],
+                         content: msg,
+                         sig: ''
+                      };
+                      onSendMessage(selectedContact.pubkey, dummyEvent, msg);
+                  }}
+                  className="whitespace-nowrap px-3 py-1 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-full text-xs text-yellow-300 transition-colors"
+              >
+                  Remember This
+              </button>
+          </div>
+        )}
         <form onSubmit={handleSendMessage} className="flex gap-2 max-w-4xl mx-auto">
           <input
             type="text"

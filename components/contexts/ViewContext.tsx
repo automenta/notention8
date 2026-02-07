@@ -3,11 +3,14 @@ import { useLocalForage } from '../../hooks/useLocalForage';
 import { useToast } from '../../hooks/useToast';
 import type { View, SortOrder, NostrEvent } from '../../types';
 
+import type { Property } from '../../types';
+
 export interface MatchResult {
   localNoteId: string;
   event: NostrEvent;
   score: number;
   timestamp: number;
+  satisfied?: Property[];
 }
 
 export interface ViewContextType {

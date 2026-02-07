@@ -1,6 +1,12 @@
 import type { Note, Property } from '../types';
 import { parseGeo, haversineDistance } from './spacetime';
 
+export interface MatchResultDetails {
+    score: number;
+    satisfied: Property[];
+    failed: Property[];
+}
+
 /**
  * Calculates a match score between a Request Note (Query) and an Offer Note (Target).
  *
@@ -13,23 +19,50 @@ import { parseGeo, haversineDistance } from './spacetime';
  *
  * Score = (Satisfied Constraints) / (Total Constraints)
  */
-export const matchNotes = (request: Note, offer: Note): number => {
+export const matchNotes = (request: Note, offer: Note): MatchResultDetails => {
   // All properties in the request are constraints to be satisfied
   const constraints = request.properties;
 
   if (constraints.length === 0) {
-    return 0;
+    return { score: 0, satisfied: [], failed: [] };
   }
 
-  let matches = 0;
+  const satisfied: Property[] = [];
+  const failed: Property[] = [];
 
   for (const constraint of constraints) {
     if (checkConstraint(constraint, offer)) {
-      matches++;
+      satisfied.push(constraint);
+    } else {
+        failed.push(constraint);
     }
   }
 
-  return matches / constraints.length;
+  return {
+      score: satisfied.length / constraints.length,
+      satisfied,
+      failed
+  };
+};
+
+/**
+ * Calculates a semantic overlap score between two notes based on shared property keys.
+ * This is useful for "See also" or "Related" suggestions where exact constraints might not match.
+ */
+export const calculateSemanticOverlap = (noteA: Note, noteB: Note): number => {
+    const keysA = new Set(noteA.properties.map(p => p.key));
+    const keysB = new Set(noteB.properties.map(p => p.key));
+
+    if (keysA.size === 0 || keysB.size === 0) return 0;
+
+    let overlap = 0;
+    keysA.forEach(key => {
+        if (keysB.has(key)) overlap++;
+    });
+
+    // Jaccard index
+    const union = new Set([...keysA, ...keysB]);
+    return overlap / union.size;
 };
 
 export const checkConstraint = (constraint: Property, target: Note): boolean => {
@@ -66,10 +99,23 @@ export const checkConstraint = (constraint: Property, target: Note): boolean => 
 
         switch (constraint.operator) {
           case 'is':
-            // Exact match (string or number equality)
+            // Exact match (string or number equality) or soft semantic match
+            // Handle simple variations: trim, lower case, removing common punctuation
+            if (typeof tVal === 'string' && typeof constraintVal === 'string') {
+                const cleanT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const cleanC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                return cleanT === cleanC || cleanT.includes(cleanC) || cleanC.includes(cleanT);
+            }
             return tVal == constraintVal; // loose equality for "100" == 100
 
           case 'is not':
+            if (typeof tVal === 'string' && typeof constraintVal === 'string') {
+                const cleanT = tVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const cleanC = constraintVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+                // It is NOT a match if they ARE equal (or soft equal)
+                const isSoftEqual = cleanT === cleanC || cleanT.includes(cleanC) || cleanC.includes(cleanT);
+                return !isSoftEqual;
+            }
             return tVal != constraintVal;
 
           case 'less than':

@@ -5,8 +5,10 @@ import { describe, it, expect } from 'vitest';
 describe('useSimulationAgents', () => {
     it('should initialize with default agents', () => {
         const { result } = renderHook(() => useSimulationAgents());
-        expect(result.current.agents).toHaveLength(2);
-        expect(result.current.agents[0].name).toContain('Alice');
+        // Default agents now include 'The Assistant' + Alice + Bob = 3
+        expect(result.current.agents).toHaveLength(3);
+        // The first agent is now The Assistant, Alice is second
+        expect(result.current.agents[1].name).toContain('Alice');
     });
 
     it('should update agent state', () => {
