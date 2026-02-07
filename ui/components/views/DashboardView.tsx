@@ -14,6 +14,7 @@ import { TimelineWidget } from '../dashboard/TimelineWidget';
 import { DashboardStats } from '../dashboard/DashboardStats';
 import { MatchesWidget } from '../dashboard/MatchesWidget';
 import { SmartInputWidget } from '../dashboard/SmartInputWidget';
+import { AgentActivityWidget } from '../dashboard/AgentActivityWidget';
 
 interface Widget {
   id: string;
@@ -94,6 +95,11 @@ export function DashboardView() {
   ];
 
   const rightWidgets: Widget[] = [
+    {
+        id: 'agent-activity',
+        component: AgentActivityWidget,
+        props: {}
+    },
     {
         id: 'timeline',
         component: TimelineWidget,

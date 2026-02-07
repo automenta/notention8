@@ -161,6 +161,19 @@ const wss = new WebSocketServer({
 // Store connected UI clients
 const uiClients = new Set<WebSocket>();
 
+// Function to broadcast messages to all connected UI clients
+function broadcastToUIClients(message: any) {
+  uiClients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      try {
+        client.send(JSON.stringify(message));
+      } catch (e) {
+        console.error('Error sending message to UI client:', e);
+      }
+    }
+  });
+}
+
 wss.on('connection', (ws) => {
   console.log('UI client connected to ClawdBot gateway');
   uiClients.add(ws);
@@ -204,14 +217,14 @@ const uiReplacementSystem = new ComprehensiveUIReplacementSystem();
 const stateManager = new ComprehensiveStateManager(null); // Will be initialized with gateway
 const errorHandler = new TransparentErrorHandler();
 const configManager = new ComprehensiveConfigurationManager();
-let coordinator: ClawdBotCoordinator | null = null;
+// let coordinator: ClawdBotCoordinator | null = null; // Deprecated in favor of plugin architecture
 
 // Initialize Message Handler
 const wsMessageHandler = new WSMessageHandler(
     pluginManager,
     stateManager,
     errorHandler,
-    coordinator
+    null // Disable coordinator to rely on plugins
 );
 
 // Initialize and register extensions
@@ -239,6 +252,16 @@ let gateway: any;
       // Add any other ClawdBot configuration here
     });
 
+    gateway.setOnLog((log: string) => {
+        broadcastToUIClients({
+            type: 'clawdbot_log',
+            payload: {
+                message: log,
+                timestamp: new Date().toISOString()
+            }
+        });
+    });
+
     // Initialize extensions
     await initializeExtensions();
 
@@ -251,11 +274,12 @@ let gateway: any;
       errorHandler,
       configManager
     );
+    clawdBotPlugin.setBroadcaster(broadcastToUIClients);
     pluginManager.register(clawdBotPlugin);
 
-    // Initialize Coordinator
-    coordinator = new ClawdBotCoordinator(gateway);
-    wsMessageHandler.setCoordinator(coordinator);
+    // Initialize Coordinator (Deprecated)
+    // coordinator = new ClawdBotCoordinator(gateway);
+    // wsMessageHandler.setCoordinator(coordinator);
 
     // Initialize the state manager with the gateway
     stateManager.initialize().catch((err: any) => {
@@ -279,12 +303,6 @@ let gateway: any;
         }).catch((err: any) => {
           console.error('Error updating state:', err);
         });
-
-        // Set up event listeners for ClawdBot events
-        // and forward them to connected UI clients
-
-        // Example: Listen for ClawdBot events and broadcast to UI
-        // This would be specific to ClawdBot's API
       })
       .catch((err: any) => {
         console.error('Failed to start ClawdBot gateway:', err);
@@ -295,19 +313,6 @@ let gateway: any;
     console.error('Failed to initialize ClawdBot gateway:', error);
   }
 })();
-
-// Function to broadcast messages to all connected UI clients
-function broadcastToUIClients(message: any) {
-  uiClients.forEach(client => {
-    if (client.readyState === WebSocket.OPEN) {
-      try {
-        client.send(JSON.stringify(message));
-      } catch (e) {
-        console.error('Error sending message to UI client:', e);
-      }
-    }
-  });
-}
 
 // Periodically broadcast status to UI clients
 setInterval(() => {

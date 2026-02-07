@@ -5,7 +5,6 @@ import { HeuristicTranslationStrategy } from '../strategies/HeuristicTranslation
 import { PatternMatchingStrategy } from '../strategies/PatternMatchingStrategy';
 import { TranslationContext } from '../strategies/NoteTranslationStrategy';
 import { UIIntegrationSystem } from '../ui-representation/UIIntegrationSystem';
-
 import { ClawdBotClient } from '../communication/ClawdBotClient';
 
 interface ClawdBotGateway {
@@ -24,12 +23,13 @@ export class ClawdBotPlugin implements Plugin {
   private gateway: any = null;
   private wsClients: Set<any> = new Set();
   private strategyManager: StrategyManager;
-  private extensionManager: any; // Will be passed in
+  private extensionManager: any;
   private uiIntegrationSystem: UIIntegrationSystem;
-  private uiReplacementSystem: any; // Will be passed in
-  private stateManager: any; // Will be passed in
-  private errorHandler: any; // Will be passed in
-  private configManager: any; // Will be passed in
+  private uiReplacementSystem: any;
+  private stateManager: any;
+  private errorHandler: any;
+  private configManager: any;
+  private broadcaster: ((message: any) => void) | null = null;
 
   constructor(
     gateway: any,
@@ -61,21 +61,21 @@ export class ClawdBotPlugin implements Plugin {
   destroy(): void {
     console.log('ClawdBot plugin destroyed');
   }
+
+  setBroadcaster(broadcaster: (message: any) => void) {
+    this.broadcaster = broadcaster;
+  }
   
   async onNoteCreated(note: any): Promise<void> {
-    console.log('Note created:', note.id);
-    // Trigger ClawdBot workflows based on note content
     await this.processNoteForExecution(note);
   }
 
   async onNoteUpdated(note: any): Promise<void> {
-    console.log('Note updated:', note.id);
-    // Trigger ClawdBot workflows based on note changes
     await this.processNoteForExecution(note);
   }
   
   onNoteDeleted(noteId: string): void {
-    console.log('Note deleted:', noteId);
+    // No-op for now
   }
   
   injectUI(): string {
@@ -193,8 +193,6 @@ export class ClawdBotPlugin implements Plugin {
   }
   
   async handleMessage(message: any): Promise<void> {
-    console.log('ClawdBot plugin received message:', message.type);
-
     switch(message.type) {
       case 'clawdbot_execute':
         await this.executeClawdBotAction(message.payload);
@@ -229,8 +227,6 @@ export class ClawdBotPlugin implements Plugin {
 
   private async handleGetMetaphors(): Promise<void> {
     const metaphors = this.uiIntegrationSystem.getAvailableMetaphors();
-
-    // Broadcast to UI clients
     this.broadcastToUI({
       type: 'available_metaphors',
       payload: metaphors
@@ -238,11 +234,7 @@ export class ClawdBotPlugin implements Plugin {
   }
 
   private async handleCreateAgentFromNote(payload: any): Promise<void> {
-    console.log('Creating agent from note:', payload.noteId);
-
-    // In a real implementation, this would create an actual agent
-    // For now, we'll just simulate the process
-
+    // Simulate process
     this.broadcastToUI({
       type: 'agent_creation_initiated',
       payload: {
@@ -254,11 +246,7 @@ export class ClawdBotPlugin implements Plugin {
   }
 
   private async handleAgentControl(payload: any): Promise<void> {
-    console.log('Controlling agent:', payload);
-
-    // In a real implementation, this would control the actual agent
-    // For now, we'll just simulate the process
-
+    // Simulate process
     this.broadcastToUI({
       type: 'agent_control_response',
       payload: {
@@ -270,9 +258,7 @@ export class ClawdBotPlugin implements Plugin {
   }
 
   private async handleGetActiveAgents(): Promise<void> {
-    // In a real implementation, this would fetch actual agents from ClawdBot
-    // For now, we'll return empty list
-
+    // Return empty list
     this.broadcastToUI({
       type: 'active_agents_overview',
       payload: {
@@ -294,8 +280,6 @@ export class ClawdBotPlugin implements Plugin {
     }
 
     try {
-      console.log('Executing ClawdBot action:', payload);
-
       // Use the client to execute the action
       const result = await this.gateway.client.executeAction(payload);
 
@@ -365,18 +349,14 @@ export class ClawdBotPlugin implements Plugin {
   }
   
   private async processNoteForExecution(note: any): Promise<void> {
-    // Use the strategy system to translate the note into ClawdBot actions
-    console.log(`Processing note for execution: ${note.id}`);
-
     const context: TranslationContext = {
       note,
       gateway: this.gateway,
-      pluginManager: this, // or however plugin manager is accessed
+      pluginManager: this,
       logger: console
     };
 
     try {
-      // First, run extensions to preprocess the note
       if (this.extensionManager) {
         const extensionContext = {
           request: { note },
@@ -389,12 +369,9 @@ export class ClawdBotPlugin implements Plugin {
         await this.extensionManager.executeExtensions(extensionContext);
       }
 
-      // Then use the strategy manager to translate the note
       const result = await this.strategyManager.translateNote(context);
 
       if (result) {
-        console.log(`Note translation successful for: ${note.id}`, result);
-
         // Execute the translated actions/configurations
         await this.executeTranslatedResult(result, note);
 
@@ -408,17 +385,12 @@ export class ClawdBotPlugin implements Plugin {
           }
         });
       } else {
-        console.log(`No translation result for note: ${note.id}. Using monitoring fallback.`);
-
-        // Set up monitoring for future changes
+        // Fallback
         this.setupMonitoringForNote(note);
       }
     } catch (error) {
       console.error(`Error processing note with strategies:`, error);
-
-      // Fallback: set up basic monitoring
       this.setupMonitoringForNote(note);
-
       this.broadcastToUI({
         type: 'execution_error',
         payload: {
@@ -431,12 +403,6 @@ export class ClawdBotPlugin implements Plugin {
   }
 
   private async executeTranslatedResult(result: any, note: any): Promise<void> {
-    // Execute the translated actions/configurations
-    console.log(`Executing translated result for note: ${note.id}`);
-
-    // In a real implementation, this would send the actions/configurations to ClawdBot
-    // For now, we'll just log what would be executed
-
     if (Array.isArray(result)) {
       for (const item of result) {
         await this.executeSingleResult(item, note);
@@ -447,31 +413,77 @@ export class ClawdBotPlugin implements Plugin {
   }
 
   private async executeSingleResult(item: any, note: any): Promise<void> {
-    console.log(`Executing item:`, item);
+    if (item.type === 'agent_instruction') {
+        const message = item.parameters.message;
+        if (this.gateway && this.gateway.client) {
+             try {
+                 const response = await this.gateway.client.sendAgentMessage(message);
 
-    // In a real implementation, this would send the action/configuration to ClawdBot
-    // For now, we'll just log what would be executed
-    if (item.type === 'lm_generated_workflow' || item.type === 'pattern_based_workflow') {
-      console.log(`Setting up workflow: ${item.id}`);
+                 // Check if response is a tool call (JSON)
+                 const responseText = response.data?.message || response.message || '';
+                 try {
+                     const parsed = JSON.parse(responseText);
+                     if (parsed.tool && parsed.args) {
+                         this.broadcastToUI({
+                             type: 'agent_tool_call',
+                             payload: {
+                                 tool: parsed.tool,
+                                 args: parsed.args,
+                                 agentId: 'clawdbot',
+                                 timestamp: new Date().toISOString()
+                             }
+                         });
+                         return; // Don't broadcast as simple text response
+                     }
+                 } catch (e) {
+                     // Not JSON, continue as text
+                 }
+
+                 // Broadcast response to UI as text
+                 this.broadcastToUI({
+                     type: 'agent_response',
+                     payload: {
+                         message: responseText,
+                         agentId: 'clawdbot',
+                         timestamp: new Date().toISOString()
+                     }
+                 });
+
+             } catch (e) {
+                 console.error('Error sending agent message:', e);
+                 this.broadcastToUI({
+                     type: 'agent_response_error',
+                     payload: {
+                         error: e instanceof Error ? e.message : 'Unknown error sending message to agent'
+                     }
+                 });
+             }
+        } else {
+            console.error('Cannot send agent message: Gateway client not available');
+        }
+    } else if (item.type === 'lm_generated_workflow' || item.type === 'pattern_based_workflow') {
       // Execute the workflow configuration
-      for (const action of item.actions) {
-        console.log(`Scheduling action: ${action.description}`);
-      }
+      // Placeholder for actual implementation
     } else {
-      console.log(`Executing action: ${item.description || item.type}`);
+      // Also try to execute other actions via gateway if possible
+       if (this.gateway && this.gateway.client) {
+            try {
+                await this.gateway.client.executeAction(item);
+            } catch (e) {
+                console.error('Error executing action:', e);
+            }
+       }
     }
   }
 
   private setupMonitoringForNote(note: any): void {
-    console.log(`Setting up basic monitoring for note: ${note.id}`);
-
     // In a real implementation, this would set up ClawdBot to monitor this note
     // for changes and re-process it if it changes
   }
   
   private broadcastToUI(message: any): void {
-    // This would broadcast to connected UI clients
-    // Implementation depends on how the server manages UI connections
-    console.log('Broadcasting to UI:', message);
+    if (this.broadcaster) {
+        this.broadcaster(message);
+    }
   }
 }

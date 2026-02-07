@@ -74,6 +74,19 @@ export class ClawdBotClient {
     }
   }
 
+  async sendAgentMessage(message: string): Promise<any> {
+    try {
+      // Use executeAction to send an instruction to the agent
+      return await this.executeAction({
+        type: 'agent_instruction',
+        payload: { message }
+      });
+    } catch (error) {
+      console.error('Error sending agent message:', error);
+      throw error;
+    }
+  }
+
   async createAgent(agentConfig: any): Promise<any> {
     try {
       const response = await axios.post(`${this.baseUrl}/agents`, agentConfig, {

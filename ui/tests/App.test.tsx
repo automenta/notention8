@@ -5,6 +5,7 @@ import { NotesProvider } from '../components/contexts/NotesContext';
 import { SettingsProvider } from '../components/contexts/SettingsContext';
 import { ToastProvider } from '../components/contexts/ToastProvider';
 import { ViewProvider } from '../components/contexts/ViewContext';
+import { AgentProvider } from '../components/contexts/AgentContext';
 
 // Mock the hooks
 vi.mock('../hooks/useNotes', () => ({
@@ -29,15 +30,15 @@ vi.mock('../hooks/useViewContext', () => ({
 
 describe('App component', () => {
   it('should render without crashing', () => {
-    // We just want to make sure rendering doesn't throw an error.
-    // We don't need to assert anything about the output for a simple smoke test.
     expect(() =>
       render(
         <ToastProvider>
           <SettingsProvider>
             <NotesProvider>
               <ViewProvider>
-                <App />
+                <AgentProvider>
+                  <App />
+                </AgentProvider>
               </ViewProvider>
             </NotesProvider>
           </SettingsProvider>
