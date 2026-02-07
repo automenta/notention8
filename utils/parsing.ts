@@ -22,7 +22,7 @@ const SYMBOL_TO_OP: Record<string, string> = {
 export const parseProperties = (text: string): Property[] => {
   const properties: Property[] = [];
 
-  // Iterate all [...] blocks and parse content.
+  // 1. Parse standard [...] bracket syntax
   const bracketRegex = /\[([^\]]+)\]/g;
   let match;
 
@@ -32,6 +32,28 @@ export const parseProperties = (text: string): Property[] => {
     if (parsed) {
       properties.push(parsed);
     }
+  }
+
+  // 2. Parse HTML Chip syntax: <span data-type="property" ...>
+  // We use a regex that is robust enough for simple attributes
+  const spanRegex = /<span\s+[^>]*data-type=["']property["'][^>]*>/g;
+  let spanMatch;
+
+  while ((spanMatch = spanRegex.exec(text)) !== null) {
+      const tag = spanMatch[0];
+
+      // Extract attributes
+      const nameMatch = tag.match(/data-name=["']([^"']+)["']/);
+      const opMatch = tag.match(/data-operator=["']([^"']+)["']/);
+      const valMatch = tag.match(/data-value=["']([^"']+)["']/);
+
+      if (nameMatch && valMatch) {
+          properties.push({
+              key: nameMatch[1],
+              operator: opMatch ? opMatch[1] : 'is',
+              values: valMatch[1].split(',').map(v => v.trim())
+          });
+      }
   }
 
   return properties;

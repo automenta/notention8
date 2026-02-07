@@ -66,9 +66,9 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
                   }
               }
 
-              // Fallback: Check if tags contain the full label (normalized)
+              // Fallback: Check if tags contain the full label (normalized) or ID
               // This supports monolithic tags like "Job Request" if slices fail or aren't defined
-              if (noteTags.some(t => t.includes(label))) {
+              if (noteTags.some(t => t.includes(label) || t === node.id.toLowerCase())) {
                   return node;
               }
           }
@@ -129,9 +129,9 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
   const handleContentSave = useCallback(
     (content: string) => {
       // Parse properties from content and update note
-      // We use getTextFromHtml to get clean text for regex parsing
-      const text = getTextFromHtml(content);
-      const properties = parseProperties(text);
+      // We pass the raw content (HTML) to parseProperties because it handles both
+      // text-based brackets and HTML-based property chips.
+      const properties = parseProperties(content);
 
       // Auto-convert natural dates if present in properties
       // This logic could be more sophisticated (e.g., suggest changes instead of auto-replace)
@@ -239,7 +239,8 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       const suggestions = await alignToOntology(cleanText, settings.ontology);
 
       // Also look for natural language date conversions in existing properties
-      const existingProps = parseProperties(cleanText);
+      // We check raw content to find all properties including chips
+      const existingProps = parseProperties(dirtyNote.content);
       let content = dirtyNote.content;
       let convertedCount = 0;
 
@@ -311,6 +312,7 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     isPublished: !!dirtyNote.nostrEventId,
     actionLabel,
     validationErrors,
-    missingProperties
+    missingProperties,
+    matchingOntologyNode
   };
 };

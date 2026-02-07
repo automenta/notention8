@@ -13,13 +13,27 @@ import { SaveTemplateModal } from './editor/SaveTemplateModal';
 import { MapPickerModal } from './map/MapPickerModal';
 import { TimePickerModal } from './common/TimePickerModal';
 import { InsertPropertyModal } from './editor/InsertPropertyModal';
-import { OntologyNode } from '../types';
+import { OntologyNode, OntologyAttribute } from '../types';
+import { escapeAttribute } from '../utils/sanitize';
 
 interface EditorManagerProps {
   note: Note;
   onSave: (note: Note) => void;
   sortedNotes?: Note[];
 }
+
+const findAttributeDef = (key: string, nodes: OntologyNode[]): OntologyAttribute | undefined => {
+  for (const node of nodes) {
+    if (node.attributes && node.attributes[key]) {
+      return node.attributes[key];
+    }
+    if (node.children) {
+      const found = findAttributeDef(key, node.children);
+      if (found) return found;
+    }
+  }
+  return undefined;
+};
 
 export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps) {
   const { notes } = useNotes();
@@ -43,7 +57,8 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     isPublished,
     saveImmediately,
     actionLabel,
-    missingProperties
+    missingProperties,
+    matchingOntologyNode
   } = useEditorLogic({ note, onSave });
 
   const { setSelectedNoteId } = useView();
@@ -116,6 +131,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
   const [pickingTimeKey, setPickingTimeKey] = useState<string>('');
   const [isInsertPropertyModalOpen, setIsInsertPropertyModalOpen] = useState(false);
   const [prefilledPropertyKey, setPrefilledPropertyKey] = useState('');
+  const [prefilledAttributeDef, setPrefilledAttributeDef] = useState<OntologyAttribute | undefined>(undefined);
 
   const allTemplates = [
       ...settings.customTemplates,
@@ -149,11 +165,20 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
 
   const handleAddPropertyHint = (key: string) => {
       setPrefilledPropertyKey(key);
+
+      let attr = findAttributeDef(key, settings.ontology);
+      setPrefilledAttributeDef(attr);
+
       setIsInsertPropertyModalOpen(true);
   };
 
   const handleInsertProperty = (key: string, operator: string, value: string) => {
-      const newContent = dirtyNote.content + (dirtyNote.content ? '\n' : '') + `[${key}:${operator}:${value}]`;
+      // We append the HTML representation of the property node so Tiptap can parse it into a chip
+      const safeKey = escapeAttribute(key);
+      const safeOperator = escapeAttribute(operator);
+      const safeValue = escapeAttribute(value);
+      const propertyHtml = `<span data-type="property" data-name="${safeKey}" data-operator="${safeOperator}" data-value="${safeValue}"></span> `;
+      const newContent = dirtyNote.content + (dirtyNote.content ? '<p></p>' : '') + propertyHtml;
       handleContentSave(newContent);
   };
 
@@ -248,9 +273,14 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
       />
       <InsertPropertyModal
           isOpen={isInsertPropertyModalOpen}
-          onClose={() => setIsInsertPropertyModalOpen(false)}
+          onClose={() => {
+            setIsInsertPropertyModalOpen(false);
+            setPrefilledAttributeDef(undefined);
+            setPrefilledPropertyKey('');
+          }}
           onInsert={handleInsertProperty}
           initialKey={prefilledPropertyKey}
+          attributeDef={prefilledAttributeDef}
       />
     </div>
   );
