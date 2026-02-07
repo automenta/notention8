@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import type { OntologyNode, NostrEvent } from '../../types';
+import type { OntologyNode, NostrEvent, Note } from '../../types';
 import type { AIProvider } from '../../services/ai/types';
 import { Gardener } from '../../services/gardener';
 import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
+import { mergeAttributes, deleteAttribute, findNode, renameAttribute } from '../../utils/ontologyHelpers';
 import { WebLLMProvider } from '../../services/ai/WebLLMProvider';
 import { MockLLMProvider } from '../../services/ai/MockLLMProvider';
 import { useSimulationAgents } from './useSimulationAgents';
 import { useSimulationNetwork } from './useSimulationNetwork';
 import { useSimulationLoop } from './useSimulationLoop';
+import { useNotes } from '../useNotes';
+import type { SimulationAgent } from './types';
 
 const RANDOM_PERSONAS = [
     {
@@ -43,8 +46,9 @@ const RANDOM_PERSONAS = [
 ];
 
 export const useSimulator = () => {
-  const { agents, agentsRef, updateAgent } = useSimulationAgents();
+  const { agents, agentsRef, updateAgent, deploySwarm: deploySwarmAgents, addAgent: addNewAgent } = useSimulationAgents();
   const [active, setActive] = useState(false);
+  const { notes: userNotes, addNote } = useNotes();
 
   const [ontology, setOntology] = useState<OntologyNode[]>(DEFAULT_ONTOLOGY);
   const ontologyRef = useRef(ontology);
@@ -64,7 +68,8 @@ export const useSimulator = () => {
       notifications,
       newAttributes,
       handlePublish,
-      addLog
+      addLog,
+      setNetworkNotes
   } = useSimulationNetwork(ontologyRef, setOntology, gardenerRef);
 
   // Initialize AI Provider
@@ -126,6 +131,87 @@ export const useSimulator = () => {
       });
       addLog(`Randomized agent to: ${random.name}`, 'info');
   }, [updateAgent, addLog]);
+
+  const deploySwarm = useCallback((newAgents: SimulationAgent[]) => {
+      deploySwarmAgents(newAgents);
+      addLog(`Swarm deployed with ${newAgents.length} agents.`, 'info');
+  }, [deploySwarmAgents, addLog]);
+
+  const addAgent = useCallback(() => {
+      addNewAgent();
+      addLog("New agent added manually.", 'info');
+  }, [addNewAgent, addLog]);
+
+  const importUserNotes = useCallback(() => {
+      setNetworkNotes(prev => {
+          const imported = userNotes.filter(un => !prev.some(pn => pn.id === un.id));
+          addLog(`Imported ${imported.length} user notes into simulator.`, 'info');
+          return [...prev, ...imported];
+      });
+  }, [userNotes, addLog, setNetworkNotes]);
+
+  const saveNetworkNote = useCallback((note: Note) => {
+      addNote(note);
+      addLog(`Saved note ${note.id.slice(0,6)} to local notes.`, 'info');
+  }, [addNote, addLog]);
+
+  const optimizeOntology = useCallback(async () => {
+      if (!gardenerRef.current) return;
+
+      addLog("Starting ontology optimization...", 'info');
+      const result = await gardenerRef.current.optimizeOntology(ontologyRef.current);
+
+      if (result.merged.length === 0 && result.pruned.length === 0) {
+          addLog("Ontology is already optimized.", 'info');
+          return;
+      }
+
+      let newOntology = [...ontologyRef.current];
+
+      // Helper to find all nodes containing a key
+      const findNodeIdsForKey = (nodes: OntologyNode[], key: string): string[] => {
+          let ids: string[] = [];
+          for (const node of nodes) {
+              if (node.attributes && node.attributes[key]) {
+                  ids.push(node.id);
+              }
+              if (node.children) {
+                  ids = ids.concat(findNodeIdsForKey(node.children, key));
+              }
+          }
+          return ids;
+      };
+
+      result.merged.forEach(merge => {
+          addLog(`[Optimization] Merging '${merge.source}' -> '${merge.target}'`, 'ontology');
+          const nodeIds = findNodeIdsForKey(newOntology, merge.source);
+
+          nodeIds.forEach(nodeId => {
+             const node = findNode(newOntology, nodeId);
+             if (node) {
+                 if (node.attributes && node.attributes[merge.target]) {
+                     // Target exists: Merge (delete source, keep target)
+                     newOntology = mergeAttributes(newOntology, nodeId, merge.source, merge.target);
+                 } else {
+                     // Target missing: Rename source to target
+                     newOntology = renameAttribute(newOntology, nodeId, merge.source, merge.target);
+                 }
+             }
+          });
+      });
+
+      result.pruned.forEach(key => {
+          addLog(`[Optimization] Pruning '${key}'`, 'ontology');
+          const nodeIds = findNodeIdsForKey(newOntology, key);
+          nodeIds.forEach(nodeId => {
+              newOntology = deleteAttribute(newOntology, nodeId, key);
+          });
+      });
+
+      setOntology(newOntology);
+      addLog("Optimization applied to Simulator Ontology.", 'info');
+
+  }, [addLog]);
 
   const sendMessageToAgent = useCallback((agentId: string, content: string) => {
     // 1. Add user message
@@ -238,6 +324,11 @@ export const useSimulator = () => {
     handlePublish,
     agentMessages,
     sendMessageToAgent,
-    randomizeAgent
+    randomizeAgent,
+    deploySwarm,
+    optimizeOntology,
+    importUserNotes,
+    addAgent,
+    saveNetworkNote
   };
 };

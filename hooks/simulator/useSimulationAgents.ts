@@ -15,14 +15,38 @@ export const useSimulationAgents = () => {
   const updateAgent = useCallback((index: number, updates: Partial<SimulationAgent>) => {
     setAgents(prev => {
         const next = [...prev];
-        next[index] = { ...next[index], ...updates };
+        if (next[index]) {
+            next[index] = { ...next[index], ...updates };
+        }
         return next;
     });
+  }, []);
+
+  const deploySwarm = useCallback((newAgents: SimulationAgent[]) => {
+      setAgents(prev => [...prev, ...newAgents]);
+  }, []);
+
+  const addAgent = useCallback(() => {
+      setAgents(prev => [
+          ...prev,
+          {
+              id: Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join(''),
+              name: `Agent ${prev.length + 1}`,
+              persona: "You are a new agent.",
+              bio: "New Agent.",
+              goal: "Set a goal.",
+              currentDraft: "",
+              status: "Idle",
+              isAgent: true
+          }
+      ]);
   }, []);
 
   return {
     agents,
     agentsRef,
-    updateAgent
+    updateAgent,
+    deploySwarm,
+    addAgent
   };
 };

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSettings } from './useSettingsContext';
 import { useNotes } from './useNotes';
 import { useGardener } from './useGardener';
@@ -6,13 +6,11 @@ import { detectConflicts, Conflict } from '../utils/conflicts';
 
 export type OntologyTab = 'graph' | 'simulator' | 'conflicts';
 
-import { useMemo } from 'react';
-
 export const useOntologyView = () => {
   const { settings } = useSettings();
   const ontology = settings.ontology;
   const { notes } = useNotes();
-  const { evolveOntology } = useGardener();
+  const { evolveOntology, optimizeOntology } = useGardener();
   const [activeTab, setActiveTab] = useState<OntologyTab>('graph');
   const [isEvolving, setIsEvolving] = useState(false);
 
@@ -46,7 +44,18 @@ export const useOntologyView = () => {
     setIsEvolving(true);
     await evolveOntology(notes);
     setIsEvolving(false);
-    alert('Ontology updated based on local notes!');
+    // Alert handled by hook? No, alert was here.
+    // Let's rely on Toast in useGardener if possible, or keep alert.
+    // alert('Ontology updated based on local notes!');
+  };
+
+  const handleOptimize = async () => {
+      setIsEvolving(true);
+      const res = await optimizeOntology();
+      setIsEvolving(false);
+      if (res.merged.length > 0) {
+          alert(`Optimization Suggestion:\n${res.merged.join('\n')}`);
+      }
   };
 
   return {
@@ -56,6 +65,7 @@ export const useOntologyView = () => {
     setActiveTab,
     isEvolving,
     handleEvolve,
+    handleOptimize,
     usageStats,
     conflicts
   };

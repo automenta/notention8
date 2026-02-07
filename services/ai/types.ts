@@ -16,6 +16,12 @@ export interface AIProvider {
   analyzeOntology(notes: Note[]): Promise<InferredAttribute[]>;
 
   /**
+   * Analyzes the current ontology to identify redundancies or improvements.
+   * Returns a report of actions to take.
+   */
+  optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: { source: string, target: string }[], pruned: string[] }>;
+
+  /**
    * Suggests tags for a given text.
    * Optionally takes the current ontology to encourage reuse of terms.
    */

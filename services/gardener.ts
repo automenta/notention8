@@ -1,5 +1,5 @@
 import type { AIProvider } from './ai/types';
-import type { Note, OntologyAttribute } from '../types';
+import type { Note, OntologyAttribute, OntologyNode } from '../types';
 
 export class Gardener {
   private provider: AIProvider;
@@ -13,12 +13,6 @@ export class Gardener {
 
     try {
       const attributes = await this.provider.analyzeOntology(notes);
-
-      // Convert to AttributeDefinition (if strictly different, but types look compatible)
-      // Our AppSettings uses OntologyNode[], but here we return flat list of attributes to be merged?
-      // types/index.ts has OntologyAttribute and OntologyNode.
-      // We need to map InferredAttribute to OntologyAttribute logic.
-
       return attributes;
     } catch (e) {
       console.error('Gardener failed to evolve ontology:', e);
@@ -26,12 +20,21 @@ export class Gardener {
     }
   }
 
-  async alignToOntology(text: string, ontology: any[]): Promise<string[]> {
+  async alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]> {
       try {
           return await this.provider.alignToOntology(text, ontology);
       } catch (e) {
           console.error('Gardener failed to align text:', e);
           return [];
+      }
+  }
+
+  async optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: { source: string, target: string }[], pruned: string[] }> {
+      try {
+          return await this.provider.optimizeOntology(ontology);
+      } catch (e) {
+          console.error('Gardener failed to optimize ontology:', e);
+          return { merged: [], pruned: [] };
       }
   }
 }

@@ -1,5 +1,5 @@
 import type { AIProvider, InferredAttribute } from './types';
-import type { OntologyNode } from '../../types';
+import type { Note, OntologyNode } from '../../types';
 
 export class MockLLMProvider implements AIProvider {
   name = 'Mock AI (Fallback)';
@@ -99,5 +99,39 @@ export class MockLLMProvider implements AIProvider {
         usageCount: 1,
         sampleValues: ["Remote", "5 years", "Immediate"]
     }];
+  }
+
+  async alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]> {
+      return this.suggestTags(text, ontology);
+  }
+
+  async optimizeOntology(ontology: OntologyNode[]): Promise<{ merged: { source: string, target: string }[], pruned: string[] }> {
+      // Mock optimization:
+      // Check for 'cost' and 'price' -> merge to 'price'
+      // Check for unused keys (we don't have usage stats here easily, but we can simulate pruning)
+
+      const keys = new Set<string>();
+      const traverse = (nodes: OntologyNode[]) => {
+          nodes.forEach(n => {
+              if (n.attributes) Object.keys(n.attributes).forEach(k => keys.add(k));
+              if (n.children) traverse(n.children);
+          });
+      };
+      traverse(ontology);
+
+      const merged: { source: string, target: string }[] = [];
+      if (keys.has('cost') && keys.has('price')) {
+          merged.push({ source: 'cost', target: 'price' });
+      }
+
+      // Mock random advice for demo purposes if nothing obvious
+      if (merged.length === 0 && keys.size > 5 && keys.has('rate') && keys.has('salary')) {
+           merged.push({ source: 'rate', target: 'salary' });
+      }
+
+      return {
+          merged,
+          pruned: []
+      };
   }
 }

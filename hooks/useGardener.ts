@@ -134,5 +134,16 @@ export const useGardener = () => {
       return await gardener.alignToOntology(text, ontology);
   }, [gardener]);
 
-  return { evolveOntology, learnFromProperties, alignToOntology };
+  const optimizeOntology = useCallback(async () => {
+      const result = await gardener.optimizeOntology(settings.ontology);
+
+      if (result.merged.length > 0 || result.pruned.length > 0) {
+           addToast(`Optimization Report: ${result.merged.length} potential merges`, 'info');
+      } else {
+           addToast('No obvious optimizations found.', 'info');
+      }
+      return result;
+  }, [gardener, settings.ontology, addToast]);
+
+  return { evolveOntology, learnFromProperties, alignToOntology, optimizeOntology };
 };
