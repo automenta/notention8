@@ -93,4 +93,5 @@ export type View =
   | 'chat'
   | 'settings'
   | 'map'
+  | 'time'
   | 'simulator';

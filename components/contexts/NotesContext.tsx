@@ -4,7 +4,7 @@ import type { Note } from '../../types';
 
 interface NotesContextType {
   notes: Note[];
-  addNote: () => Note;
+  addNote: (overrides?: Partial<Note>) => Note;
   updateNote: (note: Note) => void;
   deleteNote: (id: string) => void;
   notesLoading: boolean;

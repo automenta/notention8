@@ -1,10 +1,16 @@
-import React from 'react';
-
+import React, { useEffect } from 'react';
 import { useChatView } from '../../hooks/useChatView';
+import { useView } from '../../hooks/useViewContext';
 import { ChatWindow } from '../chat/ChatWindow';
 import { ContactList } from '../chat/ContactList';
 
 export function ChatView() {
+  const { resetChatNotification } = useView();
+
+  // Clear notifications when entering chat view
+  useEffect(() => {
+      resetChatNotification();
+  }, [resetChatNotification]);
   const {
     privkey,
     pubkey,

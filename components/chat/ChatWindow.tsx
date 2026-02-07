@@ -2,9 +2,12 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { finalizeEvent, nip04, nip19 } from 'nostr-tools';
 
 import { useNostrProfile } from '../../hooks/useNostrProfile';
+import { useNotes } from '../../hooks/useNotes';
+import { useView } from '../../hooks/useViewContext';
 import type { Contact, NostrEvent } from '../../types';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
-import { ArrowLeftIcon, SendIcon } from '../icons';
+import { parseProperties } from '../../utils/parsing';
+import { ArrowLeftIcon, SendIcon, DocumentDuplicateIcon } from '../icons';
 
 interface ChatWindowProps {
   privkey: string;
@@ -29,6 +32,8 @@ export function ChatWindow({
 }: ChatWindowProps) {
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { addNote } = useNotes();
+  const { showToast } = useView();
 
   const contactPubkey = useMemo(
     () => (selectedContact ? [selectedContact.pubkey] : []),
@@ -135,19 +140,39 @@ export function ChatWindow({
             return (
               <div
                 key={msg.id}
-                className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+                className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} group`}
               >
-                <div
-                  className={`
-                    max-w-[85%] sm:max-w-lg px-4 py-2 rounded-2xl text-sm leading-relaxed shadow-sm
-                    ${isMe
-                        ? 'bg-blue-600 text-white rounded-tr-sm'
-                        : 'bg-gray-700 text-gray-100 rounded-tl-sm border border-gray-600'}
-                  `}
-                >
-                  <p className="whitespace-pre-wrap break-words">
-                    {msg.content}
-                  </p>
+                <div className="flex items-center gap-2">
+                    {!isMe && (
+                        <button
+                            onClick={() => {
+                                const properties = parseProperties(msg.content);
+                                addNote({
+                                    title: 'Chat Note',
+                                    content: msg.content,
+                                    tags: [],
+                                    properties
+                                });
+                                showToast('Forked to Notes');
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 text-gray-500 hover:text-white transition-opacity"
+                            title="Fork to Notes"
+                        >
+                            <DocumentDuplicateIcon className="w-4 h-4" />
+                        </button>
+                    )}
+                    <div
+                      className={`
+                        max-w-[85%] sm:max-w-lg px-4 py-2 rounded-2xl text-sm leading-relaxed shadow-sm
+                        ${isMe
+                            ? 'bg-blue-600 text-white rounded-tr-sm'
+                            : 'bg-gray-700 text-gray-100 rounded-tl-sm border border-gray-600'}
+                      `}
+                    >
+                      <p className="whitespace-pre-wrap break-words">
+                        {msg.content}
+                      </p>
+                    </div>
                 </div>
                 {showTime && (
                     <span className="text-[10px] text-gray-500 mt-1 px-1">

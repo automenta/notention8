@@ -14,6 +14,7 @@ import {
   SettingsIcon,
   SearchIcon,
   SidebarIcon,
+  ClockIcon,
 } from './icons';
 
 interface HeaderProps {
@@ -57,7 +58,7 @@ function NavButton({
 }
 
 export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
-  const { activeView, setActiveView, notificationCount, isSidebarOpen, setIsSidebarOpen } = useView();
+  const { activeView, setActiveView, notificationCount, isSidebarOpen, setIsSidebarOpen, chatNotificationCount } = useView();
   const { settings } = useSettings();
 
   const navItems: {
@@ -68,13 +69,14 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
   }[] = [
     { view: 'notes', label: 'Notes', icon: <NoteIcon /> },
     { view: 'map', label: 'Map', icon: <MapIcon /> },
+    { view: 'time', label: 'Time', icon: <ClockIcon /> },
     {
       view: 'network',
       label: 'Network',
       icon: <NetworkIcon />,
       badgeCount: notificationCount,
     },
-    { view: 'chat', label: 'Chat', icon: <ChatIcon /> },
+    { view: 'chat', label: 'Chat', icon: <ChatIcon />, badgeCount: chatNotificationCount },
     { view: 'ontology', label: 'Ontology', icon: <OntologyIcon /> },
   ];
 

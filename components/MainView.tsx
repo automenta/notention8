@@ -5,10 +5,12 @@ import { useNotes } from '../hooks/useNotes';
 import { useSettings } from '../hooks/useSettingsContext';
 import { useView } from '../hooks/useViewContext';
 import { useBackgroundMatcher } from '../hooks/useBackgroundMatcher';
+import { useChatNotifications } from '../hooks/useChatNotifications';
 import { LoadingSpinner } from './icons';
 import { SimulatorView } from './simulator/SimulatorView';
 import { ChatView } from './views/ChatView';
 import { MapView } from './views/MapView';
+import { TimeView } from './views/TimeView';
 import { NetworkView } from './views/NetworkView';
 import { NotesView } from './views/NotesView';
 import { OntologyView } from './views/OntologyView';
@@ -25,6 +27,7 @@ export function MainView({ sortedNotes }: MainViewProps) {
 
   // Run background matching
   useBackgroundMatcher();
+  useChatNotifications();
 
   if (notesLoading || settingsLoading) {
     return (
@@ -42,6 +45,8 @@ export function MainView({ sortedNotes }: MainViewProps) {
         return <OntologyView />;
       case 'map':
         return <MapView />;
+      case 'time':
+        return <TimeView />;
       case 'network':
         const matchNote = matchingNoteId
           ? notes.find((n) => n.id === matchingNoteId)

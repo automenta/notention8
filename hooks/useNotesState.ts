@@ -10,8 +10,8 @@ export const useNotesState = (driver?: LocalForage) => {
     driver
   );
 
-  const addNote = useCallback(() => {
-    const newNote = createNote();
+  const addNote = useCallback((overrides?: Partial<Note>) => {
+    const newNote = { ...createNote(), ...overrides };
     setNotes((prev) => [newNote, ...prev]);
     return newNote;
   }, [setNotes]);

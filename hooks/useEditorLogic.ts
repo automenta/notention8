@@ -136,6 +136,23 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       }
   }, [dirtyNote, handleContentSave]);
 
+  const handleUpdateProperty = useCallback((key: string, value: string) => {
+    // Find existing property with this key
+    const existingProp = dirtyNote.properties.find(p => p.key === key);
+
+    const newProp = {
+        key,
+        operator: 'is',
+        values: [value]
+    };
+
+    const newContent = replacePropertyInString(dirtyNote.content, existingProp || null, newProp);
+
+    if (newContent !== dirtyNote.content) {
+        handleContentSave(newContent);
+    }
+}, [dirtyNote, handleContentSave]);
+
   const handleMagic = useCallback(async () => {
       const cleanText = getTextFromHtml(dirtyNote.content);
       const suggestions = await alignToOntology(cleanText, settings.ontology);
@@ -175,6 +192,7 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     handleContentSave,
     handleUpdateTextFromInspector,
     handleUpdateLocation,
+    handleUpdateProperty,
     handleAutoTag,
     handleMagic,
     handleSaveTemplate,
