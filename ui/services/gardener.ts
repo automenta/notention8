@@ -1,5 +1,6 @@
 import type { AIProvider } from '@notention/core';
-import type { Note, OntologyAttribute, OntologyNode } from '@notention/core';
+import type { Note, OntologyAttribute, OntologyNode, Property } from '@notention/core';
+import { createPropertyExtractor } from './ai/propertyExtraction';
 
 export class Gardener {
   private provider: AIProvider;
@@ -25,6 +26,16 @@ export class Gardener {
           return await this.provider.alignToOntology(text, ontology);
       } catch (e) {
           console.error('Gardener failed to align text:', e);
+          return [];
+      }
+  }
+
+  async extractProperties(text: string, ontology: OntologyNode[]): Promise<Property[]> {
+      try {
+          const extractor = createPropertyExtractor(this.provider, ontology);
+          return await extractor.extractProperties(text);
+      } catch (e) {
+          console.error('Gardener failed to extract properties:', e);
           return [];
       }
   }

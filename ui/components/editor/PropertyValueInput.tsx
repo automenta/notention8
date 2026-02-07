@@ -49,7 +49,7 @@ export function PropertyValueInput({
   if (attributeDef?.type === 'number') {
     return (
       <Input
-        type="number"
+        type="text"
         placeholder="e.g. 100"
         value={value}
         onChange={(e) => onChange(e.target.value)}

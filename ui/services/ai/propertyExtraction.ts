@@ -1,3 +1,4 @@
+import { parseProperties } from '@notention/core';
 import type { Property } from '@notention/core';
 import type { AIProvider } from './types';
 import type { OntologyNode } from '@notention/core';
@@ -37,10 +38,22 @@ export class PropertyExtractionService {
             const prompt = this.buildExtractionPrompt(text);
             const response = await this.aiProvider.generateCompletion(prompt);
 
+            if (response.includes('does not support generic text generation')) {
+                 throw new Error('Provider does not support completion');
+            }
+
             return this.parsePropertiesFromResponse(response);
         } catch (error) {
-            console.error('Property extraction failed:', error);
-            return [];
+            console.warn('LLM extraction failed, falling back to heuristic:', error);
+            // Fallback to alignToOntology (regex/heuristic)
+            try {
+                const tags = await this.aiProvider.alignToOntology(text, this.ontology);
+                // tags are like "[key:op:val]"
+                return tags.flatMap(tag => parseProperties(tag));
+            } catch (fallbackError) {
+                console.error('Fallback extraction failed:', fallbackError);
+                return [];
+            }
         }
     }
 

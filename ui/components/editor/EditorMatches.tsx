@@ -1,15 +1,14 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSingleNoteMatch } from '../../hooks/useSingleNoteMatch';
 import { useNotes } from '../../hooks/useNotes';
-import type { Note } from '@notention/core';
+import type { Note, Feedback } from '@notention/core';
 import { Badge } from '../common/Badge';
 import { SearchSparkleIcon, PlusIcon, ChatIcon } from '../common/icons';
-import { parseProperties } from '@notention/core';
+import { parseProperties, getTextFromHtml, convertEventToNote } from '@notention/core';
 import { useToast } from '../../hooks/useToast';
 import { useGardener } from '../../hooks/useGardener';
 import { useView } from '../../hooks/useViewContext';
-import { useEffect, useRef } from 'react';
-import { convertEventToNote } from '@notention/core';
+import { FeedbackWidget } from '../common/FeedbackWidget';
 
 export const EditorMatches = ({ note }: { note: Note }) => {
     const { matches } = useSingleNoteMatch(note);
@@ -37,14 +36,20 @@ export const EditorMatches = ({ note }: { note: Note }) => {
     if (matches.length === 0) return null;
 
     const handleReply = (content: string) => {
+        const cleanContent = getTextFromHtml(content);
         const properties = parseProperties(content);
         addNote({
             title: `Reply to ${note.title}`,
-            content: `> ${content}\n\n`,
+            content: `> ${cleanContent}\n\n`,
             tags: [],
             properties
         });
         addToast("Reply draft created.", "success");
+    };
+
+    const handleFeedback = (feedback: Feedback) => {
+        console.log("Feedback received:", feedback);
+        addToast("Thanks for your feedback!", "success");
     };
 
     return (
@@ -59,7 +64,7 @@ export const EditorMatches = ({ note }: { note: Note }) => {
 
             <div className="p-3 space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar">
                 {matches.map(({ event, score, satisfied, failed }) => (
-                     <div key={event.id} className="bg-gray-800 p-3 rounded-lg border border-gray-700 hover:border-purple-500/50 transition-colors group">
+                     <div key={event.id} className="bg-gray-800 p-3 rounded-lg border border-gray-700 hover:border-purple-500/50 transition-colors group relative">
                          <div className="flex justify-between items-start mb-1">
                              <div className="flex items-center gap-1.5">
                                  <div className={`w-2 h-2 rounded-full ${score > 0.8 ? 'bg-green-500' : 'bg-purple-500'}`} />
@@ -67,11 +72,23 @@ export const EditorMatches = ({ note }: { note: Note }) => {
                                      {Math.round(score * 100)}% Match
                                  </span>
                              </div>
-                             <span className="text-[10px] text-gray-500">
-                                 {new Date(event.created_at * 1000).toLocaleDateString()}
-                             </span>
+                             <div className="flex items-center gap-2">
+                                 <span className="text-[10px] text-gray-500">
+                                     {new Date(event.created_at * 1000).toLocaleDateString()}
+                                 </span>
+                                 <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <FeedbackWidget
+                                        entityId={event.id}
+                                        entityType="match"
+                                        onFeedback={handleFeedback}
+                                        compact
+                                    />
+                                 </div>
+                             </div>
                          </div>
-                         <p className="text-sm text-gray-300 line-clamp-3">{event.content}</p>
+                         <p className="text-sm text-gray-300 line-clamp-3">
+                            {getTextFromHtml(event.content)}
+                         </p>
 
                          {satisfied && satisfied.length > 0 && (
                              <div className="mt-2 space-y-1">

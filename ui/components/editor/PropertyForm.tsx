@@ -16,7 +16,6 @@ import { IconButton } from '../common/IconButton';
 import { Select } from '../common/Select';
 import { Textarea } from '../common/Textarea';
 import { useGardener } from '../../hooks/useGardener';
-import { parseProperties } from '@notention/core';
 import { PropertyValueInput } from './PropertyValueInput';
 
 interface PropertyFormProps {
@@ -81,27 +80,22 @@ export function PropertyForm({
       }
   };
 
-  const { alignToOntology } = useGardener();
+  const { extractProperties } = useGardener();
 
   const handleMagicFill = async () => {
       if (!extractionText) return;
 
       try {
-          const results = await alignToOntology(extractionText, ontology);
+          const props = await extractProperties(extractionText, ontology);
 
-          if (results.length > 0) {
+          if (props.length > 0) {
               // Take the first one for now
-              const parsed = parseProperties(results[0]);
-              if (parsed.length > 0) {
-                  const p = parsed[0];
-                  setKey(p.key);
-                  setOp(p.operator);
-                  setValue(p.values.join(','));
-                  setShowExtraction(false);
-                  addToast('Property extracted!', 'success');
-              } else {
-                  addToast('Could not parse extracted property.', 'error');
-              }
+              const p = props[0];
+              setKey(p.key);
+              setOp(p.operator);
+              setValue(p.values.join(','));
+              setShowExtraction(false);
+              addToast('Property extracted!', 'success');
           } else {
               addToast('No properties found in text.', 'info');
           }

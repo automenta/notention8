@@ -4,7 +4,7 @@ import { useGardener } from './useGardener';
 import { useAutoTagging } from './useAutoTagging';
 import { useToast } from './useToast';
 import { useSuggestions } from '../components/contexts/SuggestionContext';
-import { parseProperties, replacePropertyInString, getTextFromHtml } from '@notention/core';
+import { parseProperties, replacePropertyInString, getTextFromHtml, formatPropertyTag } from '@notention/core';
 import { parseNaturalDate } from '@notention/core';
 
 interface UseEditorMagicProps {
@@ -17,7 +17,7 @@ interface UseEditorMagicProps {
 }
 
 export function useEditorMagic({ noteId, content, tags, onTagsChange, onContentSave, ontology }: UseEditorMagicProps) {
-    const { alignToOntology } = useGardener();
+    const { extractProperties } = useGardener();
     const { addToast } = useToast();
     const { addSuggestions } = useSuggestions();
 
@@ -29,7 +29,8 @@ export function useEditorMagic({ noteId, content, tags, onTagsChange, onContentS
 
     const handleMagic = useCallback(async () => {
         const cleanText = getTextFromHtml(content);
-        const suggestions = await alignToOntology(cleanText, ontology);
+        const properties = await extractProperties(cleanText, ontology);
+        const suggestions = properties.map(formatPropertyTag);
 
         // Also look for natural language date conversions in existing properties
         const existingProps = parseProperties(content);
@@ -66,7 +67,7 @@ export function useEditorMagic({ noteId, content, tags, onTagsChange, onContentS
         // Always trigger auto-tagging
         handleAutoTag();
 
-    }, [content, alignToOntology, ontology, onContentSave, addToast, handleAutoTag, noteId, addSuggestions]);
+    }, [content, extractProperties, ontology, onContentSave, addToast, handleAutoTag, noteId, addSuggestions]);
 
     return {
         handleMagic,

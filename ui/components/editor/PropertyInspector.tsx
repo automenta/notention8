@@ -12,7 +12,6 @@ import {
 import { PropertyForm } from './PropertyForm';
 import { IconButton } from '../common/IconButton';
 import { useGardener } from '../../hooks/useGardener';
-import { parseProperties } from '@notention/core';
 import { Button } from '../common/Button';
 import { useToast } from '../../hooks/useToast';
 import { useNotes } from '../../hooks/useNotes';
@@ -37,7 +36,7 @@ export function PropertyInspector({
   ontology = [],
   onClose
 }: PropertyInspectorProps) {
-  const { alignToOntology } = useGardener();
+  const { extractProperties } = useGardener();
   const { addToast } = useToast();
   const { notes } = useNotes();
   const { selectedNoteId } = useView();
@@ -68,24 +67,20 @@ export function PropertyInspector({
       }
 
       addToast("Scanning note for properties...", "info");
-      const results = await alignToOntology(currentNote.content, ontology);
+      const props = await extractProperties(currentNote.content, ontology);
 
-      if (results.length === 0) {
+      if (props.length === 0) {
           addToast("No new properties found.", "info");
           return;
       }
 
       let addedCount = 0;
-      results.forEach(tag => {
-          const parsed = parseProperties(tag);
-          if (parsed.length > 0) {
-              const p = parsed[0];
-              // Check for duplicate
-              const exists = properties.some(ex => ex.key === p.key && ex.operator === p.operator && ex.values.join(',') === p.values.join(','));
-              if (!exists) {
-                  onUpdateText(null, p);
-                  addedCount++;
-              }
+      props.forEach(p => {
+          // Check for duplicate
+          const exists = properties.some(ex => ex.key === p.key && ex.operator === p.operator && ex.values.join(',') === p.values.join(','));
+          if (!exists) {
+              onUpdateText(null, p);
+              addedCount++;
           }
       });
 
