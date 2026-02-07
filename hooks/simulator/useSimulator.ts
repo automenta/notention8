@@ -4,12 +4,13 @@ import type { AIProvider } from '../../services/ai/types';
 import { Gardener } from '../../services/gardener';
 import { DEFAULT_ONTOLOGY } from '../../utils/ontology.default';
 import { mergeAttributes, deleteAttribute, findNode, renameAttribute } from '../../utils/ontologyHelpers';
-import { WebLLMProvider } from '../../services/ai/WebLLMProvider';
-import { MockLLMProvider } from '../../services/ai/MockLLMProvider';
 import { useSimulationAgents } from './useSimulationAgents';
 import { useSimulationNetwork } from './useSimulationNetwork';
 import { useSimulationLoop } from './useSimulationLoop';
 import { useNotes } from '../useNotes';
+import { useSettings } from '../useSettingsContext';
+import { useView } from '../useViewContext';
+import { createAIProvider } from '../../services/ai/factory';
 import type { SimulationAgent } from './types';
 
 const RANDOM_PERSONAS = [
@@ -49,6 +50,8 @@ export const useSimulator = () => {
   const { agents, agentsRef, updateAgent, deploySwarm: deploySwarmAgents, addAgent: addNewAgent } = useSimulationAgents();
   const [active, setActive] = useState(false);
   const { notes: userNotes, addNote } = useNotes();
+  const { settings } = useSettings();
+  const { chatContextNoteId } = useView();
 
   const [ontology, setOntology] = useState<OntologyNode[]>(DEFAULT_ONTOLOGY);
   const ontologyRef = useRef(ontology);
@@ -72,35 +75,22 @@ export const useSimulator = () => {
       setNetworkNotes
   } = useSimulationNetwork(ontologyRef, setOntology, gardenerRef);
 
-  // Initialize AI Provider
+  // Initialize AI Provider from Global Settings
   useEffect(() => {
     const initAI = async () => {
         try {
-            // Attempt to load WebLLM
-            const provider = new WebLLMProvider();
-
-            if (('gpu' in navigator)) {
-                 // Simple check, robust check involves requesting adapter
-            } else {
-                 throw new Error("WebGPU not supported");
-            }
-
-            // Note: We might want to properly initialize/check WebLLM here
+            const provider = createAIProvider(settings, (msg) => addLog(msg, 'info'));
             aiRef.current = provider;
             setAiProviderName(provider.name);
+            gardenerRef.current = new Gardener(provider);
         } catch (e) {
-            console.warn("WebLLM failed to initialize, falling back to Mock:", e);
-            aiRef.current = new MockLLMProvider();
-            setAiProviderName(aiRef.current.name);
-        }
-
-        if (aiRef.current) {
-            gardenerRef.current = new Gardener(aiRef.current);
+            console.error("AI Init Failed:", e);
+            setAiProviderName("Offline");
         }
     };
 
     initAI();
-  }, []);
+  }, [settings, addLog]);
 
   // Keep refs in sync
   useEffect(() => {
@@ -232,6 +222,61 @@ export const useSimulator = () => {
 
     // 2. Simulate response (async)
     setTimeout(async () => {
+        // Special Case: System AI
+        if (agentId === 'system-ai') {
+             let responseText = "I am ready to help.";
+             if (aiRef.current) {
+                 try {
+                     // RAG-lite: Fetch relevant notes for context
+                     let contextNotes = userNotes.slice(0, 5);
+                     let contextLabel = "recent notes";
+
+                     // If context note is selected, prioritize it
+                     if (chatContextNoteId) {
+                         const note = userNotes.find(n => n.id === chatContextNoteId);
+                         if (note) {
+                             contextNotes = [note];
+                             contextLabel = "the active note";
+                         }
+                     }
+
+                     const notesText = contextNotes
+                        .map(n => `[Note ${n.id.slice(0,4)}]: ${n.title} - ${n.content.replace(/<[^>]*>/g, '')}`)
+                        .join('\n');
+
+                     responseText = await aiRef.current.generateCompletion(
+                         `You are a helpful AI Assistant in a note-taking application.
+                          You have access to ${contextLabel}:
+                          ${notesText}
+
+                          User said: "${content}".
+                          Reply helpfully and concisely. If the user asks about their notes, use the context above.`
+                     );
+                 } catch (e) {
+                     console.error("AI generation failed for System AI", e);
+                     responseText = "I'm having trouble connecting to the AI provider.";
+                 }
+             } else {
+                 responseText = "AI Provider is not initialized.";
+             }
+
+             const agentMsg: NostrEvent & { content: string } = {
+                id: Math.random().toString(36),
+                pubkey: agentId,
+                created_at: Math.floor(Date.now() / 1000),
+                kind: 4,
+                tags: [],
+                content: responseText,
+                sig: ''
+            };
+
+            setAgentMessages(prev => {
+                const existing = prev[agentId] || [];
+                return { ...prev, [agentId]: [...existing, agentMsg] };
+            });
+            return;
+        }
+
         const agent = agentsRef.current.find(a => a.id === agentId);
         if (!agent) return;
 

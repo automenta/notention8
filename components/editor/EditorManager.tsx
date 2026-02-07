@@ -7,7 +7,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useNotes } from '../../hooks/useNotes';
 import { useEditorActions } from '../../hooks/useEditorActions';
 import { useEditorShortcuts } from '../../hooks/useEditorShortcuts';
-import type { Note, OntologyAttribute, OntologyNode } from '../../types';
+import type { Note, OntologyNode } from '../../types';
 import { EditorHeader } from './EditorHeader';
 import { TiptapEditor, TiptapEditorRef } from './TiptapEditor';
 import { PropertyInspector } from './PropertyInspector';
@@ -15,6 +15,7 @@ import { TemplateSelector } from './TemplateSelector';
 import { SaveTemplateModal } from './SaveTemplateModal';
 import { MapPickerModal } from '../map/MapPickerModal';
 import { TimePickerModal } from '../common/TimePickerModal';
+import { MagicModal } from './MagicModal';
 
 interface EditorManagerProps {
   note: Note;
@@ -45,6 +46,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     saveImmediately,
     actionLabel,
     missingProperties,
+    handlePrompt
   } = useEditorLogic({ note, onSave });
 
   const {
@@ -64,6 +66,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
   const { addToast } = useToast();
   const editorRef = useRef<TiptapEditorRef>(null);
   const [isToolbarVisible, setIsToolbarVisible] = useState(true);
+  const [isMagicModalOpen, setIsMagicModalOpen] = useState(false);
 
   const currentIndex = (sortedNotes || []).findIndex((n) => n.id === note.id);
   const hasPrevious = currentIndex > 0;
@@ -121,30 +124,36 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         key={note.id}
         title={dirtyNote.title}
         onTitleChange={handleTitleChange}
-        onPublish={handlePublish}
-        onFindMatches={handleFindMatches}
-        onBack={() => setSelectedNoteId(null)}
-        isPublishing={isPublishing}
-        isPublished={isPublished}
         tags={dirtyNote.tags}
         onTagsChange={handleTagsChange}
         onAutoTag={handleAutoTag}
         isAutoTagging={isAutoTagging}
         isApiKeyAvailable={isApiKeyAvailable}
-        isInspectorOpen={isInspectorOpen}
-        onToggleInspector={() => setIsInspectorOpen(!isInspectorOpen)}
-        onSaveTemplate={() => setIsSaveTemplateModalOpen(true)}
-        onNext={handleNext}
-        onPrevious={handlePrevious}
-        hasNext={hasNext}
-        hasPrevious={hasPrevious}
-        onExport={handleExport}
-        onCopyContent={handleCopyContent}
-        isToolbarVisible={isToolbarVisible}
-        onToggleToolbar={() => setIsToolbarVisible(!isToolbarVisible)}
-        actionLabel={actionLabel}
-        missingProperties={missingProperties}
-        onAddProperty={handleAddPropertyHint}
+        onBack={() => setSelectedNoteId(null)}
+        navigation={{
+            onNext: handleNext,
+            onPrevious: handlePrevious,
+            hasNext,
+            hasPrevious
+        }}
+        toolbar={{
+            onSaveTemplate: () => setIsSaveTemplateModalOpen(true),
+            onToggleToolbar: () => setIsToolbarVisible(!isToolbarVisible),
+            isToolbarVisible,
+            onExport: handleExport,
+            onCopyContent: handleCopyContent,
+            onToggleInspector: () => setIsInspectorOpen(!isInspectorOpen),
+            isInspectorOpen
+        }}
+        network={{
+            onPublish: handlePublish,
+            onFindMatches: handleFindMatches,
+            isPublishing,
+            isPublished,
+            actionLabel,
+            missingProperties,
+            onAddProperty: handleAddPropertyHint
+        }}
       />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col relative">
@@ -160,7 +169,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
                 if (settings.aiProvider === 'webllm' && settings.aiEnabled) {
                     addToast('Loading local model... this may take a while.', 'info');
                 }
-                handleMagic();
+                setIsMagicModalOpen(true);
             }}
             onTemplates={() => setIsTemplateSelectorOpen(!isTemplateSelectorOpen)}
             notes={notes}
@@ -205,6 +214,15 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         onClose={() => setIsTimePickerOpen(false)}
         onTimeSelect={handleTimeSelected}
         title={`Pick Time for ${pickingTimeKey}`}
+      />
+      <MagicModal
+          isOpen={isMagicModalOpen}
+          onClose={() => setIsMagicModalOpen(false)}
+          onAutoTag={handleMagic}
+          onRunPrompt={(prompt) => {
+              const selection = editorRef.current?.getSelection();
+              return handlePrompt(prompt, selection);
+          }}
       />
     </div>
   );

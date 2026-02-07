@@ -28,7 +28,8 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
       handleDeleteConfirmed,
       handleRestore,
       handleCreateNote,
-      handleTogglePin
+      handleTogglePin,
+      handleChatWithNote
   } = useSidebarLogic(sortedNotes);
 
   return (
@@ -64,6 +65,7 @@ export function Sidebar({ sortedNotes = [] }: SidebarProps) {
               onPin={!isTrashView ? () => handleTogglePin(note) : undefined}
               isTrash={isTrashView}
               onRestore={() => handleRestore(note.id)}
+              onChatWithNote={!isTrashView ? () => handleChatWithNote(note.id) : undefined}
             />
           ))
         ) : (

@@ -26,6 +26,8 @@ interface ViewContextType {
   chatNotificationCount: number;
   incrementChatNotification: () => void;
   resetChatNotification: () => void;
+  chatContextNoteId: string | null;
+  setChatContextNoteId: (id: string | null) => void;
 }
 
 export interface MatchResult {
@@ -53,6 +55,7 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [chatNotificationCount, setChatNotificationCount] = useState(0);
+  const [chatContextNoteId, setChatContextNoteId] = useState<string | null>(null);
 
   const notificationCount = matches.length;
 
@@ -108,7 +111,9 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
         setIsSidebarOpen,
         chatNotificationCount,
         incrementChatNotification,
-        resetChatNotification
+        resetChatNotification,
+        chatContextNoteId,
+        setChatContextNoteId
       }}
     >
       {children}

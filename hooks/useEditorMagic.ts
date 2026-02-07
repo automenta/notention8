@@ -16,7 +16,7 @@ interface UseEditorMagicProps {
 }
 
 export function useEditorMagic({ content, tags, onTagsChange, onContentSave, ontology }: UseEditorMagicProps) {
-    const { alignToOntology } = useGardener();
+    const { alignToOntology, generateCompletion } = useGardener();
     const { addToast } = useToast();
 
     const { isAutoTagging, handleAutoTag, isApiKeyAvailable } = useAutoTagging({
@@ -65,8 +65,47 @@ export function useEditorMagic({ content, tags, onTagsChange, onContentSave, ont
         }
     }, [content, alignToOntology, ontology, onContentSave, addToast, handleAutoTag]);
 
+    const handlePrompt = useCallback(async (prompt: string, selection?: string) => {
+        const cleanText = selection || getTextFromHtml(content);
+        const fullPrompt = `${prompt}\n\nInput Text:\n${cleanText}`;
+
+        try {
+            const result = await generateCompletion(fullPrompt);
+            if (!result) throw new Error("No response from AI provider");
+
+            const formatted = result.split('\n').map(line => line.trim() ? `<p>${line}</p>` : '').join('');
+
+            // Heuristic for "replace" vs "append"
+            const lower = prompt.toLowerCase();
+            const isReplace = lower.includes('fix') || lower.includes('rewrite') || lower.includes('translate');
+
+            if (selection) {
+                // If text was selected, we likely want to replace the selection or append after it.
+                // However, Tiptap API is needed to replace selection cleanly.
+                // Since we only have access to `content` string here, implementing robust "replace selection"
+                // requires passing a callback or referencing editor instance higher up.
+                // For simplicity in this architecture, we will append the result to the note if a selection was used,
+                // treating it as an "analysis of selection".
+                onContentSave(content + '\n<hr>\n<h3>AI Analysis of Selection:</h3>' + formatted);
+                addToast('AI analysis of selection appended.', 'success');
+            } else {
+                if (isReplace) {
+                     onContentSave(formatted);
+                     addToast('Content updated by AI.', 'success');
+                } else {
+                     onContentSave(content + '\n<hr>\n' + formatted);
+                     addToast('AI response appended.', 'success');
+                }
+            }
+        } catch (e) {
+            console.error(e);
+            addToast('AI Request Failed: ' + (e instanceof Error ? e.message : String(e)), 'error');
+        }
+    }, [content, generateCompletion, onContentSave, addToast]);
+
     return {
         handleMagic,
+        handlePrompt,
         handleAutoTag,
         isAutoTagging,
         isApiKeyAvailable

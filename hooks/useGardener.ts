@@ -2,9 +2,7 @@ import { useMemo, useCallback } from 'react';
 import { useSettings } from './useSettingsContext';
 import { useToast } from '../components/contexts/ToastContext';
 import { Gardener } from '../services/gardener';
-import { LocalAIProvider } from '../services/ai/LocalProvider';
-import { RemoteAIProvider } from '../services/ai/RemoteProvider';
-import { WebLLMProvider } from '../services/ai/WebLLMProvider';
+import { createAIProvider } from '../services/ai/factory';
 import type { Note, Property, OntologyNode } from '../types';
 
 // Helper to merge attributes into the "Emergent" node
@@ -36,21 +34,9 @@ export const useGardener = () => {
   const { addToast } = useToast();
 
   const gardener = useMemo(() => {
-    // Instantiate provider based on settings
-    let provider;
-
-    if (settings.aiEnabled) {
-        if (settings.aiProvider === 'webllm') {
-            provider = new WebLLMProvider(settings.aiModel);
-        } else {
-            provider = new RemoteAIProvider(settings.googleGeminiApiKey);
-        }
-    } else {
-        provider = new LocalAIProvider();
-    }
-
+    const provider = createAIProvider(settings, (msg) => addToast(msg, 'info'));
     return new Gardener(provider);
-  }, [settings.aiEnabled, settings.aiProvider, settings.aiModel, settings.googleGeminiApiKey]);
+  }, [settings, addToast]); // createAIProvider depends on settings
 
   const evolveOntology = useCallback(async (notes: Note[]) => {
     const newAttributes = await gardener.evolveOntology(notes);
@@ -145,5 +131,9 @@ export const useGardener = () => {
       return result;
   }, [gardener, settings.ontology, addToast]);
 
-  return { evolveOntology, learnFromProperties, alignToOntology, optimizeOntology };
+  const generateCompletion = useCallback(async (prompt: string) => {
+      return await gardener.generateCompletion(prompt);
+  }, [gardener]);
+
+  return { evolveOntology, learnFromProperties, alignToOntology, optimizeOntology, generateCompletion };
 };

@@ -10,6 +10,11 @@ export interface AIProvider {
   generateCompletion(prompt: string): Promise<string>;
 
   /**
+   * validats the connection to the provider.
+   */
+  validateConnection?(): Promise<boolean>;
+
+  /**
    * Analyzes a set of notes to infer ontology attributes.
    * Returns a list of inferred attributes (key, type, stats).
    */

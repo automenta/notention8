@@ -37,6 +37,15 @@ export class Gardener {
           return { merged: [], pruned: [] };
       }
   }
+
+  async generateCompletion(prompt: string): Promise<string> {
+      try {
+          return await this.provider.generateCompletion(prompt);
+      } catch (e) {
+          console.error('Gardener failed to generate completion:', e);
+          return '';
+      }
+  }
 }
 
 // Re-export type for convenience

@@ -24,6 +24,14 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
       aiEnabled: false,
       developerMode: false,
       theme: 'dark',
+      aiProvider: 'gemini',
+      aiConfig: {
+          provider: 'gemini',
+          gemini: { apiKey: '' },
+          openai: { apiKey: '', modelName: 'gpt-3.5-turbo' },
+          ollama: { baseUrl: 'http://localhost:11434', modelName: 'llama3' },
+          webllm: { modelId: 'Llama-3.2-3B-Instruct-q4f16_1-MLC' }
+      },
       nostr: {
         privkey: null,
         relays: DEFAULT_RELAYS,
@@ -55,6 +63,22 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
           }));
       }
   }, [settings.nostr.relays, settingsLoading, setSettings]);
+
+  // Migration: Move old googleGeminiApiKey to aiConfig.gemini.apiKey
+  useEffect(() => {
+      if (!settingsLoading && settings.googleGeminiApiKey && !settings.aiConfig?.gemini?.apiKey) {
+          setSettings(s => ({
+              ...s,
+              aiConfig: {
+                  ...s.aiConfig,
+                  gemini: {
+                      apiKey: s.googleGeminiApiKey || ''
+                  }
+              },
+              googleGeminiApiKey: undefined // Clear old key
+          }));
+      }
+  }, [settings.googleGeminiApiKey, settings.aiConfig, settingsLoading, setSettings]);
 
 
   return (

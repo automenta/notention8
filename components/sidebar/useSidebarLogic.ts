@@ -14,6 +14,8 @@ export function useSidebarLogic(sortedNotes: Note[]) {
     setSelectedNoteId,
     setActiveView,
     activeView,
+    setChatContextNoteId,
+    setSelectedChatPubkey
   } = useView();
 
   const { deleteNote, addNote, updateNote, restoreNote, permanentlyDeleteNote } = useNotes();
@@ -89,6 +91,12 @@ export function useSidebarLogic(sortedNotes: Note[]) {
       addToast(note.pinned ? 'Note unpinned' : 'Note pinned', 'info');
   };
 
+  const handleChatWithNote = (id: string) => {
+      setChatContextNoteId(id);
+      setSelectedChatPubkey('system-ai');
+      setActiveView('chat');
+  };
+
   return {
       searchTerm,
       setSearchTerm,
@@ -103,6 +111,7 @@ export function useSidebarLogic(sortedNotes: Note[]) {
       handleDeleteConfirmed,
       handleRestore,
       handleCreateNote,
-      handleTogglePin
+      handleTogglePin,
+      handleChatWithNote
   };
 }

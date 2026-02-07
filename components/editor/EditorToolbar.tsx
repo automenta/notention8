@@ -9,7 +9,7 @@ import {
     CubeTransparentIcon
 } from '../layout/icons';
 
-interface EditorToolbarProps {
+export interface EditorToolbarProps {
     onSaveTemplate?: () => void;
     onToggleToolbar?: () => void;
     isToolbarVisible?: boolean;

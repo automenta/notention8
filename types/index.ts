@@ -62,11 +62,31 @@ export interface Template {
   icon?: string;
 }
 
+export interface AIConfig {
+    provider: 'gemini' | 'webllm' | 'openai' | 'ollama';
+    gemini?: {
+        apiKey: string;
+    };
+    openai?: {
+        apiKey: string;
+        baseUrl?: string;
+        modelName: string;
+    };
+    ollama?: {
+        baseUrl: string;
+        modelName: string;
+    };
+    webllm?: {
+        modelId: string;
+    };
+}
+
 export interface AppSettings {
   aiEnabled: boolean;
-  aiProvider?: 'remote' | 'webllm';
-  aiModel?: string; // Specific model ID for the provider (mostly for WebLLM)
-  googleGeminiApiKey?: string; // Added user-configurable API key
+  aiProvider?: 'remote' | 'webllm' | 'gemini' | 'openai' | 'ollama'; // Deprecated "remote" for "gemini"
+  aiConfig: AIConfig;
+  aiModel?: string; // Deprecated, use aiConfig
+  googleGeminiApiKey?: string; // Deprecated, use aiConfig
   developerMode: boolean;
   theme: 'light' | 'dark';
   nostr: {

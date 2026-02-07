@@ -1,7 +1,7 @@
 import React from 'react';
 import { SearchSparkleIcon, SendIcon, LoadingSpinner } from '../layout/icons';
 
-interface EditorNetworkActionsProps {
+export interface EditorNetworkActionsProps {
     missingProperties: string[];
     onAddProperty?: (key: string) => void;
     onFindMatches?: () => void;
