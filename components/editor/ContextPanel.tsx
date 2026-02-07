@@ -14,7 +14,7 @@ interface ContextPanelProps {
     onPickTime?: (key: string) => void;
 }
 
-export const ContextPanel: React.FC<ContextPanelProps> = ({ note, onPickLocation, onPickTime }) => {
+export function ContextPanel({ note, onPickLocation, onPickTime }: ContextPanelProps) {
     const context = useMemo(() => {
         let location: { lat: number, lng: number } | null = null;
         let date: Date | null = null;

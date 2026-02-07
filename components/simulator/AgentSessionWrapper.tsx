@@ -13,7 +13,7 @@ interface Props {
   children: ReactNode;
 }
 
-export const AgentSessionWrapper: React.FC<Props> = ({ agentId, ontology, children }) => {
+export function AgentSessionWrapper({ agentId, ontology, children }: Props) {
   // Create a unique localForage instance for this agent
   const driver = useMemo(() => {
     return localforage.createInstance({

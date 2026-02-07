@@ -7,12 +7,12 @@ export interface TooltipProps {
   className?: string;
 }
 
-export const Tooltip: React.FC<TooltipProps> = ({
+export function Tooltip({
   content,
   children,
   position = 'top',
   className = ''
-}) => {
+}: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   // Position logic

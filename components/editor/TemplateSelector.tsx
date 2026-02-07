@@ -8,7 +8,7 @@ interface TemplateSelectorProps {
   onClose: () => void;
 }
 
-export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ ontology, onSelect, onClose }) => {
+export function TemplateSelector({ ontology, onSelect, onClose }: TemplateSelectorProps) {
   const templates = ontology.find(n => n.id === 'templates')?.children || [];
 
   return (

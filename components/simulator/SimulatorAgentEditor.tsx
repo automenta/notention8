@@ -11,11 +11,11 @@ interface SimulatorAgentEditorProps {
     onRandomize: () => void;
 }
 
-export const SimulatorAgentEditor: React.FC<SimulatorAgentEditorProps> = ({
+export function SimulatorAgentEditor({
     agent,
     onUpdate,
     onRandomize
-}) => {
+}: SimulatorAgentEditorProps) {
   return (
     <div className="bg-gray-900 p-4 rounded-lg border border-gray-800 shadow-sm flex flex-col gap-3 shrink-0">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

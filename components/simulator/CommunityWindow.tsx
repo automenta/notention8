@@ -10,7 +10,7 @@ interface Props {
   onSaveNote?: (note: Note) => void;
 }
 
-export const CommunityWindow: React.FC<Props> = ({ networkNotes, onSaveNote }) => {
+export function CommunityWindow({ networkNotes, onSaveNote }: Props) {
   const matches = useNetworkMatching(networkNotes);
 
   return (

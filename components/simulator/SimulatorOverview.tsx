@@ -12,13 +12,13 @@ interface SimulatorOverviewProps {
     newAttributes: { key: string; type: string }[];
 }
 
-export const SimulatorOverview: React.FC<SimulatorOverviewProps> = ({
+export function SimulatorOverview({
     networkNotes,
     onSaveNote,
     logs,
     optimizeOntology,
     newAttributes
-}) => {
+}: SimulatorOverviewProps) {
     return (
         <div className="h-full grid grid-cols-2 gap-2">
             {/* Community Stream */}

@@ -45,9 +45,9 @@ export interface ViewContextType {
 
 const ViewContext = createContext<ViewContextType | undefined>(undefined);
 
-export const ViewProvider: React.FC<{ children: ReactNode }> = ({
+export function ViewProvider({
   children,
-}) => {
+}: { children: ReactNode }) {
   const [sortOrder, setSortOrder] = useLocalForage<SortOrder>(
     'notention-sort-order',
     'updatedAt_desc'

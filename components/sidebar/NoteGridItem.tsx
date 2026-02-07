@@ -8,7 +8,7 @@ interface NoteGridItemProps {
   onSelect: () => void;
 }
 
-export const NoteGridItem: React.FC<NoteGridItemProps> = ({ note, isSelected, onSelect }) => {
+export function NoteGridItem({ note, isSelected, onSelect }: NoteGridItemProps) {
   return (
     <div
       onClick={onSelect}

@@ -16,9 +16,9 @@ interface AgentSettingsModalProps {
     onToggle: () => void;
 }
 
-export const AgentSettingsModal: React.FC<AgentSettingsModalProps> = ({
+export function AgentSettingsModal({
     isOpen, onClose, agent, onUpdate, onRandomize, onDelete, onToggle
-}) => {
+}: AgentSettingsModalProps) {
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={`Settings: ${agent.name}`}>
             <div className="space-y-4">

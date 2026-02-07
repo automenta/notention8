@@ -12,12 +12,12 @@ interface RecentNotesWidgetProps {
   onCreateNote: () => void;
 }
 
-export const RecentNotesWidget: React.FC<RecentNotesWidgetProps> = ({
+export function RecentNotesWidget({
   notes,
   onSelectNote,
   onViewAll,
   onCreateNote
-}) => {
+}: RecentNotesWidgetProps) {
   return (
     <DashboardWidget
       title="Recent Notes"

@@ -8,7 +8,7 @@ interface ViewSelectorProps {
   onViewChange: (mode: SidebarViewMode) => void;
 }
 
-export const ViewSelector: React.FC<ViewSelectorProps> = ({ viewMode, onViewChange }) => {
+export function ViewSelector({ viewMode, onViewChange }: ViewSelectorProps) {
   const options: { mode: SidebarViewMode; icon: React.FC<any>; label: string }[] = [
     { mode: 'list', icon: ListUlIcon, label: 'List' },
     { mode: 'grid', icon: CubeIcon, label: 'Grid' },

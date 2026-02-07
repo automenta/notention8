@@ -9,14 +9,14 @@ export interface CardProps {
   variant?: 'default' | 'glass' | 'gradient';
 }
 
-export const Card: React.FC<CardProps> = ({
+export function Card({
   title,
   icon: Icon,
   children,
   className = '',
   headerAction,
   variant = 'default',
-}) => {
+}: CardProps) {
   const variantClasses = {
     default: "bg-gray-800 border border-gray-700/50",
     glass: "bg-gray-900/50 backdrop-blur-sm border border-gray-700/30",

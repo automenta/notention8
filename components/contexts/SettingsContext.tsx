@@ -15,9 +15,9 @@ const SettingsContext = createContext<SettingsContextType | undefined>(
   undefined
 );
 
-export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
+export function SettingsProvider({
   children,
-}) => {
+}: { children: ReactNode }) {
   const [settings, setSettings, settingsLoading] = useLocalForage<AppSettings>(
     'notention-settings-v2',
     {

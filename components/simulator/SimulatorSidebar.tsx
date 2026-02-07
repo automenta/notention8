@@ -18,7 +18,7 @@ interface SimulatorSidebarProps {
   notifications: Record<string, unknown[]>;
 }
 
-export const SimulatorSidebar: React.FC<SimulatorSidebarProps> = ({
+export function SimulatorSidebar({
   aiProviderName,
   active,
   setActive,
@@ -29,7 +29,7 @@ export const SimulatorSidebar: React.FC<SimulatorSidebarProps> = ({
   onOpenSwarmModal,
   agents,
   notifications
-}) => {
+}: SimulatorSidebarProps) {
   const isMock = aiProviderName.includes("Mock");
 
   return (

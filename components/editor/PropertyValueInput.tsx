@@ -11,12 +11,12 @@ interface PropertyValueInputProps {
   onPickLocation?: () => Promise<string> | void;
 }
 
-export const PropertyValueInput: React.FC<PropertyValueInputProps> = ({
+export function PropertyValueInput({
   value,
   onChange,
   attributeDef,
   onPickLocation
-}) => {
+}: PropertyValueInputProps) {
   if (attributeDef?.type === 'enum' && attributeDef.options) {
     return (
       <select

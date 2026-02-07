@@ -6,7 +6,7 @@ interface AttributeListProps {
     usageStats?: Map<string, number>;
 }
 
-export const AttributeList: React.FC<AttributeListProps> = ({ attributes, usageStats }) => {
+export function AttributeList({ attributes, usageStats }: AttributeListProps) {
     return (
         <div className="ml-8 mb-2 border-l-2 border-gray-700 pl-4">
             {Object.entries(attributes).map(([key, attr]) => {

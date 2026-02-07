@@ -7,7 +7,7 @@ import { useView } from '../../hooks/useViewContext';
 import { useBackgroundMatcher } from '../../hooks/useBackgroundMatcher';
 import { useChatNotifications } from '../../hooks/useChatNotifications';
 import { LoadingSpinner } from './icons';
-import { SimulatorView } from '../simulator/SimulatorView';
+import { SimulatorView } from '../views/SimulatorView';
 import { ChatView } from '../views/ChatView';
 import { MapView } from '../views/MapView';
 import { TimeView } from '../views/TimeView';

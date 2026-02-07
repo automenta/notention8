@@ -8,7 +8,7 @@ interface TemplatesWidgetProps {
   onViewAll: () => void;
 }
 
-export const TemplatesWidget: React.FC<TemplatesWidgetProps> = ({ onUseTemplate, onViewAll }) => {
+export function TemplatesWidget({ onUseTemplate, onViewAll }: TemplatesWidgetProps) {
   return (
      <DashboardWidget title="Start from Template" icon={DocumentDuplicateIcon}>
         <div className="space-y-3">

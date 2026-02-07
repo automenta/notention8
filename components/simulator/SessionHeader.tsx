@@ -7,11 +7,11 @@ interface SessionHeaderProps {
     minimal?: boolean;
 }
 
-export const SessionHeader: React.FC<SessionHeaderProps> = ({
+export function SessionHeader({
     agentName,
     status,
     minimal = false
-}) => {
+}: SessionHeaderProps) {
     return (
         <div className={`bg-gray-800 px-3 flex justify-between items-center border-b border-gray-700 ${minimal ? 'py-1.5' : 'py-2'}`}>
             <div className="flex items-center gap-2.5">

@@ -8,7 +8,7 @@ interface ToastProps {
   onClose: () => void;
 }
 
-export const Toast: React.FC<ToastProps> = ({ message, type, duration = 3000, onClose }) => {
+export function Toast({ message, type, duration = 3000, onClose }: ToastProps) {
   useEffect(() => {
     if (duration > 0) {
       const timer = setTimeout(() => {

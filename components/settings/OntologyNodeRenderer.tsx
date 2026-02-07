@@ -16,7 +16,7 @@ interface OntologyNodeRendererProps {
   onDeleteAttribute: (nodeId: string, key: string) => void;
 }
 
-export const OntologyNodeRenderer: React.FC<OntologyNodeRendererProps> = ({
+export function OntologyNodeRenderer({
   node,
   expandedNodes,
   toggleExpand,
@@ -27,7 +27,7 @@ export const OntologyNodeRenderer: React.FC<OntologyNodeRendererProps> = ({
   onRenameAttribute,
   onMergeAttribute,
   onDeleteAttribute
-}) => {
+}: OntologyNodeRendererProps) {
     const isExpanded = expandedNodes.has(node.id);
     const hasChildren = node.children && node.children.length > 0;
     const hasAttributes = node.attributes && Object.keys(node.attributes).length > 0;

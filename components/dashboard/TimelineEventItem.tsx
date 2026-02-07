@@ -7,7 +7,7 @@ interface TimelineEventItemProps {
     onClick: (noteId: string) => void;
 }
 
-export const TimelineEventItem: React.FC<TimelineEventItemProps> = ({ event, activeTab, onClick }) => {
+export function TimelineEventItem({ event, activeTab, onClick }: TimelineEventItemProps) {
     return (
         <div
             className="flex items-center gap-3 p-2 hover:bg-gray-800 rounded cursor-pointer transition-colors group"

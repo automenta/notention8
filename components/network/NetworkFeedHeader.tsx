@@ -18,7 +18,7 @@ interface NetworkFeedHeaderProps {
     setActiveFilterId?: (id: string) => void;
 }
 
-export const NetworkFeedHeader: React.FC<NetworkFeedHeaderProps> = ({
+export function NetworkFeedHeader({
     matchAgainstTitle,
     onClearMatch,
     filter,
@@ -27,7 +27,7 @@ export const NetworkFeedHeader: React.FC<NetworkFeedHeaderProps> = ({
     ontology,
     activeFilterId = 'all',
     setActiveFilterId
-}) => {
+}: NetworkFeedHeaderProps) {
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div className="flex items-center gap-3 overflow-hidden">

@@ -1,27 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 import { useSettings } from '../../hooks/useSettingsContext';
 import { useView } from '../../hooks/useViewContext';
-import { useNotes } from '../../hooks/useNotes';
-import { parseProperties } from '../../utils/parsing';
+import { useNoteActions } from '../../hooks/useNoteActions';
 import { DEFAULT_TEMPLATES } from '../../utils/templates';
 import type { View, Template } from '../../types';
 import { NavButton } from './NavButton';
 import { IconButton } from '../common/IconButton';
 import {
-  ChatIcon,
-  MapIcon,
-  NetworkIcon,
-  NoteIcon,
-  OntologyIcon,
-  SettingsIcon,
-  SearchIcon,
   SidebarIcon,
-  ClockIcon,
-  HomeIcon,
-  CpuChipIcon
+  SearchIcon
 } from './icons';
 import { NewNoteButton } from './NewNoteButton';
+import { NAV_ITEMS, SETTINGS_VIEW } from '../../utils/navigation';
 
 interface HeaderProps {
   onNewNote: () => void;
@@ -40,7 +31,7 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
       setSelectedNoteId
   } = useView();
   const { settings } = useSettings();
-  const { addNote, updateNote } = useNotes();
+  const { createNoteAndNavigate } = useNoteActions();
 
   const handleNavClick = (view: View) => {
       if (view === 'notes' && activeView === 'notes' && selectedNoteId) {
@@ -56,64 +47,22 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
         ? `#request\n[intent:is:request]\n[status:is:open]\n\nI am looking for...`
         : `#offer\n[intent:is:offer]\n[status:is:available]\n\nI can provide...`;
 
-      const newNote = addNote({
-          title: isRequest ? 'New Request' : 'New Offer'
-      });
-
-      const properties = parseProperties(content);
-      updateNote({
-          ...newNote,
-          content,
-          properties
-      });
-
-      setSelectedNoteId(newNote.id);
-      setActiveView('notes');
+      createNoteAndNavigate(
+          isRequest ? 'New Request' : 'New Offer',
+          content
+      );
   };
 
   const handleCreateFromTemplate = (template: Template) => {
-      const newNote = addNote();
-      const properties = parseProperties(template.content);
-
-      updateNote({
-          ...newNote,
-          content: template.content,
-          properties
-      });
-
-      setSelectedNoteId(newNote.id);
-      setActiveView('notes');
+      createNoteAndNavigate(undefined, template.content);
   };
 
   const allTemplates = [...DEFAULT_TEMPLATES, ...settings.customTemplates];
 
-  const navItems: {
-    view: View;
-    label: string;
-    icon: React.ReactElement<{ className?: string }>;
-    badgeCount?: number;
-  }[] = [
-    { view: 'dashboard', label: 'Dashboard', icon: <HomeIcon /> },
-    { view: 'notes', label: 'Notes', icon: <NoteIcon /> },
-    { view: 'map', label: 'Map', icon: <MapIcon /> },
-    { view: 'time', label: 'Time', icon: <ClockIcon /> },
-    {
-      view: 'network',
-      label: 'Network',
-      icon: <NetworkIcon />,
-      badgeCount: notificationCount,
-    },
-    { view: 'chat', label: 'Chat', icon: <ChatIcon />, badgeCount: chatNotificationCount },
-    { view: 'ontology', label: 'Ontology', icon: <OntologyIcon /> },
-  ];
-
-  if (settings.developerMode) {
-    navItems.push({
-      view: 'simulator',
-      label: 'Simulator',
-      icon: <CpuChipIcon />,
-    });
-  }
+  const filteredNavItems = NAV_ITEMS.filter(item => {
+      if (item.requiresDeveloperMode && !settings.developerMode) return false;
+      return true;
+  });
 
   return (
     <header className="flex-shrink-0 bg-gray-900 h-16 px-4 flex items-center justify-between border-b border-gray-700/50">
@@ -148,27 +97,32 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
 
       {/* Center Section - Navigation */}
       <div className="flex items-center gap-2">
-        {navItems.map((item) => (
-          <NavButton
-            key={item.view}
-            icon={item.icon}
-            label={item.label}
-            tooltip={item.label}
-            isActive={activeView === item.view}
-            onClick={() => handleNavClick(item.view)}
-            badgeCount={item.badgeCount}
-          />
-        ))}
+        {filteredNavItems.map((item) => {
+            const badgeCount = item.badgeCountKey
+                ? (item.badgeCountKey === 'notificationCount' ? notificationCount : chatNotificationCount)
+                : undefined;
+            return (
+              <NavButton
+                key={item.id}
+                icon={<item.icon />}
+                label={item.label}
+                tooltip={item.label}
+                isActive={activeView === item.id}
+                onClick={() => handleNavClick(item.id)}
+                badgeCount={badgeCount}
+              />
+            );
+        })}
       </div>
 
       {/* Right Section */}
       <div className="flex items-center">
         <NavButton
-          icon={<SettingsIcon />}
-          label="Settings"
-          tooltip="Settings"
-          isActive={activeView === 'settings'}
-          onClick={() => setActiveView('settings')}
+          icon={<SETTINGS_VIEW.icon />}
+          label={SETTINGS_VIEW.label}
+          tooltip={SETTINGS_VIEW.label}
+          isActive={activeView === SETTINGS_VIEW.id}
+          onClick={() => setActiveView(SETTINGS_VIEW.id)}
         />
       </div>
     </header>

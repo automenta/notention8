@@ -10,7 +10,7 @@ interface NetworkPulseWidgetProps {
   onStartSimulator: () => void;
 }
 
-export const NetworkPulseWidget: React.FC<NetworkPulseWidgetProps> = ({ logs, simulatorActive, onStartSimulator }) => {
+export function NetworkPulseWidget({ logs, simulatorActive, onStartSimulator }: NetworkPulseWidgetProps) {
   const recentLogs = [...logs].reverse().slice(0, 5);
 
   const title = (

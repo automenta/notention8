@@ -14,7 +14,7 @@ interface AITabProps {
   setSettings: (updater: (settings: AppSettings) => AppSettings) => void;
 }
 
-export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
+export function AITab({ settings, setSettings }: AITabProps) {
   const { addToast } = useToast();
   const [keyInput, setKeyInput] = useState(settings.googleGeminiApiKey || '');
 

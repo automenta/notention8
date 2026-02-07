@@ -3,7 +3,7 @@ import { SparklesIcon } from '../layout/icons';
 import { useView } from '../../hooks/useViewContext';
 import { SuggestedMatchItem } from './SuggestedMatchItem';
 
-export const SuggestedMatches: React.FC = () => {
+export function SuggestedMatches() {
     const { matches, setMatchingNoteId } = useView();
 
     if (matches.length === 0) return null;

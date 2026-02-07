@@ -10,14 +10,14 @@ interface TagInputProps {
   className?: string;
 }
 
-export const TagInput: React.FC<TagInputProps> = ({
+export function TagInput({
   tags,
   onChange,
   onAutoTag,
   isAutoTagging,
   autoFocus,
   className = "p-2 bg-gray-900/50 rounded-md border border-gray-700/30"
-}) => {
+}: TagInputProps) {
   const [input, setInput] = useState('');
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {

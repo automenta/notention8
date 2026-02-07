@@ -3,7 +3,7 @@ import { useNotes } from '../../hooks/useNotes';
 import { useView } from '../../hooks/useViewContext';
 import { useSettings } from '../../hooks/useSettingsContext';
 import { useSimulatorContext } from '../../hooks/useSimulatorContext';
-import { parseProperties } from '../../utils/parsing';
+import { useNoteActions } from '../../hooks/useNoteActions';
 
 import { DailyPromptWidget } from '../dashboard/DailyPromptWidget';
 import { QuickActionsWidget } from '../dashboard/QuickActionsWidget';
@@ -23,10 +23,11 @@ interface Widget {
 }
 
 export function DashboardView() {
-  const { notes, addNote, updateNote } = useNotes();
+  const { notes } = useNotes();
   const { setActiveView, setSelectedNoteId } = useView();
   const { settings } = useSettings();
   const { logs, active: simulatorActive, setActive } = useSimulatorContext();
+  const { createNoteAndNavigate } = useNoteActions();
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -40,35 +41,16 @@ export function DashboardView() {
     .slice(0, 6);
 
   const handleCreateNote = () => {
-     const newNote = addNote();
-     setSelectedNoteId(newNote.id);
-     setActiveView('notes');
+     createNoteAndNavigate(undefined, '');
   };
 
   const handleUsePrompt = (prompt: string) => {
       const content = `<h3>${prompt}</h3>\n<p></p>`;
-      const newNote = addNote({
-          title: 'Daily Prompt Response'
-      });
-      updateNote({
-          ...newNote,
-          content
-      });
-      setSelectedNoteId(newNote.id);
-      setActiveView('notes');
+      createNoteAndNavigate('Daily Prompt Response', content);
   };
 
   const handleUseTemplate = (content: string) => {
-    const newNote = addNote();
-    const properties = parseProperties(content);
-    const updated = {
-        ...newNote,
-        content,
-        properties
-    };
-    updateNote(updated);
-    setSelectedNoteId(newNote.id);
-    setActiveView('notes');
+    createNoteAndNavigate(undefined, content);
   };
 
   const leftWidgets: Widget[] = [

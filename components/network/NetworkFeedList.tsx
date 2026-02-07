@@ -11,13 +11,13 @@ interface NetworkFeedListProps {
     onFork: (event: NostrEvent) => void;
 }
 
-export const NetworkFeedList: React.FC<NetworkFeedListProps> = ({
+export function NetworkFeedList({
     isLoading,
     sortedEvents,
     profiles,
     onApplyMatch,
     onFork
-}) => {
+}: NetworkFeedListProps) {
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-48">

@@ -12,12 +12,12 @@ interface MapPickerModalProps {
   initialValue?: string;
 }
 
-export const MapPickerModal: React.FC<MapPickerModalProps> = ({
+export function MapPickerModal({
   isOpen,
   onClose,
   onLocationSelect,
   initialValue,
-}) => {
+}: MapPickerModalProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<L.Marker | null>(null);

@@ -7,7 +7,7 @@ interface DashboardStatsProps {
   pinnedNotes: number;
 }
 
-export const DashboardStats: React.FC<DashboardStatsProps> = ({ totalNotes, pinnedNotes }) => {
+export function DashboardStats({ totalNotes, pinnedNotes }: DashboardStatsProps) {
   const stats = [
     { label: 'Total Notes', value: totalNotes, icon: NoteIcon, color: 'text-blue-400', bg: 'bg-blue-600/20' },
     { label: 'Pinned', value: pinnedNotes, icon: HomeIcon, color: 'text-yellow-400', bg: 'bg-yellow-600/20' },

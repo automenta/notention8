@@ -9,7 +9,7 @@ interface DailyPromptWidgetProps {
   onUsePrompt: (prompt: string) => void;
 }
 
-export const DailyPromptWidget: React.FC<DailyPromptWidgetProps> = ({ onUsePrompt }) => {
+export function DailyPromptWidget({ onUsePrompt }: DailyPromptWidgetProps) {
   const [promptIndex, setPromptIndex] = useState(() => {
        const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
        return dayOfYear % DAILY_PROMPTS.length;

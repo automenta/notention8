@@ -6,7 +6,7 @@ interface OntologyConflictsProps {
     onSelectNote: (noteId: string) => void;
 }
 
-export const OntologyConflicts: React.FC<OntologyConflictsProps> = ({ conflicts, onSelectNote }) => {
+export function OntologyConflicts({ conflicts, onSelectNote }: OntologyConflictsProps) {
     // Group conflicts by Note ID
     const groupedConflicts = useMemo(() => {
         const groups: Record<string, Conflict[]> = {};

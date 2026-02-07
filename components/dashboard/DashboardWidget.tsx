@@ -11,7 +11,7 @@ export interface DashboardWidgetProps extends CardProps {
   subHeader?: React.ReactNode;
 }
 
-export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
+export function DashboardWidget({
   isEmpty,
   emptyState,
   onRefresh,
@@ -19,7 +19,7 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
   subHeader,
   children,
   ...cardProps
-}) => {
+}: DashboardWidgetProps) {
   const combinedHeaderAction = (
       <div className="flex items-center gap-1">
           {onRefresh && (

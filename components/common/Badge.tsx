@@ -10,13 +10,13 @@ interface BadgeProps {
   icon?: React.ComponentType<{ className?: string }>;
 }
 
-export const Badge: React.FC<BadgeProps> = ({
+export function Badge({
   children,
   variant = 'default',
   className = '',
   size = 'md',
   icon: Icon
-}) => {
+}: BadgeProps) {
   const baseStyles = "inline-flex items-center justify-center rounded border font-medium";
 
   const sizeStyles = {

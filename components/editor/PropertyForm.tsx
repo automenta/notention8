@@ -31,7 +31,7 @@ interface PropertyFormProps {
   ontology: OntologyNode[];
 }
 
-export const PropertyForm: React.FC<PropertyFormProps> = ({
+export function PropertyForm({
   initialKey,
   initialOp,
   initialValue,
@@ -41,7 +41,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   onPickLocation,
   onPickTime,
   ontology
-}) => {
+}: PropertyFormProps) {
   const [key, setKey] = useState(initialKey);
   const [op, setOp] = useState(initialOp);
   const [value, setValue] = useState(initialValue);

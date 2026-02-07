@@ -18,7 +18,7 @@ interface PendingImport {
     message: string;
 }
 
-export const ImportExportSection: React.FC<ImportExportSectionProps> = ({ notes, settings }) => {
+export function ImportExportSection({ notes, settings }: ImportExportSectionProps) {
     const { addToast } = useToast();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);

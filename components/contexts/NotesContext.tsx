@@ -14,9 +14,9 @@ interface NotesContextType {
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined);
 
-export const NotesProvider: React.FC<{ children: ReactNode }> = ({
+export function NotesProvider({
   children,
-}) => {
+}: { children: ReactNode }) {
   const { notes, addNote, updateNote, deleteNote, restoreNote, permanentlyDeleteNote, notesLoading } =
     useNotesState();
 

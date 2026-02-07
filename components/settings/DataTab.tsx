@@ -6,7 +6,7 @@ import { Button } from '../common/Button';
 import { ConfirmationModal } from '../common/ConfirmationModal';
 import { ImportExportSection } from './ImportExportSection';
 
-export const DataTab: React.FC = () => {
+export function DataTab() {
   const { notes } = useNotes();
   const { settings } = useSettings();
   const [showClearConfirm, setShowClearConfirm] = useState(false);

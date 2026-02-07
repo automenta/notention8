@@ -9,11 +9,11 @@ interface SaveTemplateModalProps {
   onSave: (name: string) => void;
 }
 
-export const SaveTemplateModal: React.FC<SaveTemplateModalProps> = ({
+export function SaveTemplateModal({
   isOpen,
   onClose,
   onSave,
-}) => {
+}: SaveTemplateModalProps) {
   const [name, setName] = useState('');
 
   const handleSave = () => {
