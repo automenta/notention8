@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { MainView } from './components/MainView';
 import { Sidebar } from './components/sidebar';
-import { useAutoSelectNote } from './hooks/useAutoSelectNote';
 import { useNotes } from './hooks/useNotes';
 import { useSortedFilteredNotes } from './hooks/useSortedFilteredNotes';
 import { useView } from './hooks/useViewContext';
@@ -50,14 +49,6 @@ function App() {
       setActiveView,
       selectedNoteId,
       setSelectedNoteId
-  });
-
-  useAutoSelectNote({
-    activeView,
-    notesLoading,
-    selectedNoteId,
-    sortedNotes,
-    setSelectedNoteId,
   });
 
   const handleNewNote = () => {
