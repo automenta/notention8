@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Editor } from '@tiptap/react';
+import { IconButton } from '../common/IconButton';
 import {
   BoldIcon,
   ItalicIcon,
@@ -26,40 +27,6 @@ interface TiptapToolbarProps {
   onTemplates?: () => void;
   onInsertProperty?: () => void;
 }
-
-interface ToolbarButtonProps {
-  onClick: () => void;
-  isActive?: boolean;
-  disabled?: boolean;
-  title: string;
-  icon: React.ComponentType<{ className?: string }>;
-  ariaLabel?: string;
-}
-
-const ToolbarButton: React.FC<ToolbarButtonProps> = ({
-  onClick,
-  isActive,
-  disabled,
-  title,
-  icon: Icon,
-  ariaLabel,
-}) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className={`p-1.5 rounded-lg transition-all duration-200 ${
-      isActive
-        ? 'bg-blue-600/90 text-white shadow-sm'
-        : 'text-gray-400 hover:text-white hover:bg-gray-800'
-    } disabled:opacity-40 disabled:cursor-not-allowed`}
-    title={title}
-    aria-label={ariaLabel || title}
-    aria-pressed={isActive}
-    type="button"
-  >
-    <Icon className="h-4 w-4" />
-  </button>
-);
 
 type ToolbarItem =
   | { type: 'separator' }
@@ -160,7 +127,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
       {(onMagic || onTemplates || onInsertProperty) && (
         <div className="flex items-center gap-1 bg-purple-900/20 p-0.5 rounded-lg border border-purple-500/20">
             {onMagic && (
-            <ToolbarButton
+            <IconButton
                 onClick={onMagic}
                 title="Magic Align (Auto-generate semantic properties)"
                 icon={SparklesIcon}
@@ -168,7 +135,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
             />
             )}
             {onTemplates && (
-            <ToolbarButton
+            <IconButton
                 onClick={onTemplates}
                 title="Insert Template"
                 icon={CubeIcon}
@@ -176,7 +143,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
             />
             )}
             {onInsertProperty && (
-                <ToolbarButton
+                <IconButton
                     onClick={onInsertProperty}
                     title="Insert Property"
                     icon={TagIcon}
@@ -197,7 +164,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
             );
           }
           return (
-            <ToolbarButton
+            <IconButton
               key={item.title}
               onClick={item.action}
               disabled={item.disabled ? item.disabled() : false}
@@ -210,7 +177,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
       </div>
 
       <div className="border-l border-gray-700/50 pl-2 ml-1">
-        <ToolbarButton
+        <IconButton
           onClick={toggleViewMode}
           isActive={viewMode === 'code'}
           title={
