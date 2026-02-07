@@ -1,0 +1,74 @@
+import { renderHook, act } from '@testing-library/react';
+import { useGardener } from '../../hooks/useGardener';
+import { useSettings } from '../../hooks/useSettingsContext';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Note } from '../../types';
+
+// Mock useSettings
+vi.mock('../../hooks/useSettingsContext', () => ({
+  useSettings: vi.fn(),
+}));
+
+// Mock Gardener
+const mockAnalyzeOntology = vi.fn();
+vi.mock('../../services/gardener', () => ({
+  Gardener: vi.fn().mockImplementation(() => ({
+    evolveOntology: mockAnalyzeOntology,
+  })),
+}));
+
+// Mock Remote/Local AI providers
+vi.mock('../../services/ai/LocalProvider', () => ({
+  LocalAIProvider: vi.fn(),
+}));
+vi.mock('../../services/ai/RemoteProvider', () => ({
+  RemoteAIProvider: vi.fn(),
+}));
+
+
+describe('useGardener', () => {
+  const setSettingsMock = vi.fn();
+  const mockSettings = {
+    settings: {
+      aiEnabled: false,
+      ontology: [],
+    },
+    setSettings: setSettingsMock,
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (useSettings as any).mockReturnValue(mockSettings);
+  });
+
+  it('should call evolveOntology and update settings', async () => {
+    const { result } = renderHook(() => useGardener());
+
+    const mockNotes: Note[] = [{ id: '1', content: 'test', published: false, createdAt: '', updatedAt: '', tags: [], properties: {} }];
+    const mockNewAttributes = [
+      { key: 'newAttr', type: 'string', description: 'desc', usageCount: 1, sampleValues: [] }
+    ];
+
+    mockAnalyzeOntology.mockResolvedValue(mockNewAttributes);
+
+    await act(async () => {
+      await result.current.evolveOntology(mockNotes);
+    });
+
+    expect(mockAnalyzeOntology).toHaveBeenCalledWith(mockNotes);
+    expect(setSettingsMock).toHaveBeenCalled();
+    // Check if the update function logic is correct would require more complex mocking of setSettings behavior,
+    // but verifying it's called is a good first step.
+  });
+
+  it('should not update settings if no new attributes', async () => {
+    const { result } = renderHook(() => useGardener());
+    mockAnalyzeOntology.mockResolvedValue([]);
+
+    await act(async () => {
+      await result.current.evolveOntology([]);
+    });
+
+    expect(setSettingsMock).not.toHaveBeenCalled();
+  });
+});

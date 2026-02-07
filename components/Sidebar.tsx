@@ -7,6 +7,7 @@ import type { SortOrder } from '../types';
 import { useSortedFilteredNotes } from '../hooks/useSortedFilteredNotes';
 import { useLocalForage } from '../hooks/useLocalForage';
 import { SortSelector } from './sidebar/SortSelector';
+import { TemplateList } from './sidebar/TemplateList';
 
 export const Sidebar: React.FC = () => {
   const { notes, deleteNote } = useNotes();
@@ -42,6 +43,8 @@ export const Sidebar: React.FC = () => {
       </div>
 
       <SortSelector sortOrder={sortOrder} onSortChange={setSortOrder} />
+
+      <TemplateList />
 
       <div className="flex-grow p-2 space-y-1 overflow-y-auto">
         {sortedNotes.length > 0 ? (

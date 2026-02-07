@@ -6,9 +6,11 @@ import { getTextFromHtml } from '../utils/nostr';
 import { parseProperties } from '../utils/parsing';
 import { useDebouncedSave } from '../hooks/useDebouncedSave';
 import { EditorHeader } from './EditorHeader';
+import { PropertyInspector } from './editor/PropertyInspector';
 import { useView } from '../hooks/useViewContext';
 import { useSettings } from '../hooks/useSettingsContext';
 import { useAutoTagging } from '../hooks/useAutoTagging';
+import type { Property } from '../types';
 
 interface EditorManagerProps {
   note: Note;
@@ -87,6 +89,25 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
       setActiveView('network');
   };
 
+  const handleUpdateTextFromInspector = useCallback((_oldProp: Property | null, newProp: Property) => {
+      // Append new property to content
+      // Format: [key:op:value]
+      // We map op back to symbol or word? Standard parser prefers [key:op:value]
+      // If op is 'is', we can use [key:value] or [key:is:value]
+
+      let opStr = newProp.operator;
+      // Simple mapping for display friendliness if needed, but parser handles words too.
+      // Ideally we use standard format [key:op:value]
+
+      const newTag = `<p>[${newProp.key}:${opStr}:${newProp.values.join(',')}]</p>`;
+
+      // We need to update content.
+      // Ideally we insert at cursor, but here we just append to end for MVP
+      const newContent = dirtyNote.content + newTag;
+
+      handleContentSave(newContent);
+  }, [dirtyNote.content, handleContentSave]);
+
   return (
     <div className="flex flex-col h-full">
       <EditorHeader
@@ -102,12 +123,21 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
         isAutoTagging={isAutoTagging}
         isApiKeyAvailable={isApiKeyAvailable}
       />
-      <TiptapEditor
-        key={note.id}
-        note={dirtyNote}
-        onSave={handleContentSave}
-        ontology={settings.ontology}
-      />
+      <div className="flex flex-1 overflow-hidden">
+        <div className="flex-1 flex flex-col">
+            <TiptapEditor
+                key={note.id}
+                note={dirtyNote}
+                onSave={handleContentSave}
+                ontology={settings.ontology}
+            />
+        </div>
+        <PropertyInspector
+            properties={dirtyNote.properties ? Object.values(dirtyNote.properties).flat() : []}
+            onUpdateText={handleUpdateTextFromInspector}
+            onPropertyChange={() => {}} // Read only for now (updates text)
+        />
+      </div>
     </div>
   );
 };

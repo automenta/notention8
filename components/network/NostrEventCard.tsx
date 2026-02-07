@@ -13,8 +13,15 @@ export const NostrEventCard: React.FC<{
     [event.pubkey]
   );
 
+  const matchScore = (event as any).score; // Hacky access to score injected by parent for now
+
   return (
-    <div className="bg-gray-800 p-4 rounded-lg border border-gray-700/80 animate-fade-in">
+    <div className="bg-gray-800 p-4 rounded-lg border border-gray-700/80 animate-fade-in relative overflow-hidden">
+      {matchScore !== undefined && (
+          <div className="absolute top-0 right-0 px-2 py-1 bg-green-900/80 text-green-400 text-xs font-bold rounded-bl-lg">
+              {Math.round(matchScore)}% Match
+          </div>
+      )}
       <div className="flex items-center text-sm text-gray-400 mb-2">
         {profile?.picture && (
           <img
