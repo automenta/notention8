@@ -1,134 +1,26 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
-import { getPublicKey } from 'nostr-tools';
-import type { NostrEvent } from '../../types';
-import { KeyIcon, LoadingSpinner, SettingsIcon, ArrowLeftIcon } from '../icons';
-import { DEFAULT_RELAYS, hexToBytes, pool, extractPropertiesFromTags, convertEventToNote } from '../../utils/nostr';
-import { matchNotes } from '../../utils/matching';
+import React from 'react';
 import type { Note } from '../../types';
-import { useNostrProfile } from '../../hooks/useNostrProfile';
+import { KeyIcon, LoadingSpinner, SettingsIcon, ArrowLeftIcon } from '../icons';
 import { ProfileHeader } from '../network/ProfileHeader';
 import { NostrEventCard } from '../network/NostrEventCard';
-import { useView } from '../../hooks/useViewContext';
-import { useSettings } from '../../hooks/useSettingsContext';
-import { useGardener } from '../../hooks/useGardener';
-import type { Property } from '../../types';
+import { useNetworkView } from '../../hooks/useNetworkView';
 
 interface NetworkViewProps {
     matchAgainst?: Note | null;
 }
 
 export const NetworkView: React.FC<NetworkViewProps> = ({ matchAgainst }) => {
-  const { settings } = useSettings();
-  const { setActiveView, setMatchingNoteId } = useView();
-  const { learnFromProperties } = useGardener();
-
-  const onNavigateToSettings = () => setActiveView('settings');
-  const pubkey = useMemo(
-    () =>
-      settings.nostr?.privkey
-        ? getPublicKey(hexToBytes(settings.nostr.privkey))
-        : null,
-    [settings.nostr?.privkey]
-  );
-  const [events, setEvents] = useState<NostrEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState(''); // Simple text filter for now
-
-  // Batching refs
-  const pendingEventsRef = useRef<NostrEvent[]>([]);
-  const seenEventIdsRef = useRef(new Set<string>());
-  const batchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (!pubkey) return;
-
-    setEvents([]); // Clear previous events
-    setIsLoading(true);
-    seenEventIdsRef.current = new Set();
-    pendingEventsRef.current = [];
-    if (batchTimeoutRef.current) clearTimeout(batchTimeoutRef.current);
-
-    const flushBatch = () => {
-      if (pendingEventsRef.current.length > 0) {
-        const newEvents = pendingEventsRef.current;
-        setEvents((prev) => [...prev, ...newEvents]);
-
-        // Passive Learning: Extract properties from new events
-        const allProps: Property[] = newEvents.flatMap(evt => extractPropertiesFromTags(evt.tags));
-
-        if (allProps.length > 0) {
-            learnFromProperties(allProps);
-        }
-
-        pendingEventsRef.current = [];
-      }
-      batchTimeoutRef.current = null;
-    };
-
-    const sub = pool.subscribeMany(
-      DEFAULT_RELAYS,
-      [{ kinds: [1], limit: 50 }],
-      {
-        onevent: (event) => {
-          if (!seenEventIdsRef.current.has(event.id)) {
-            seenEventIdsRef.current.add(event.id);
-            pendingEventsRef.current.push(event);
-
-            if (!batchTimeoutRef.current) {
-              batchTimeoutRef.current = setTimeout(flushBatch, 500);
-            }
-          }
-        },
-      }
-    );
-
-    const timer = setTimeout(() => setIsLoading(false), 3000);
-
-    return () => {
-      clearTimeout(timer);
-      if (batchTimeoutRef.current) clearTimeout(batchTimeoutRef.current);
-      sub.close();
-    };
-  }, [pubkey, learnFromProperties]);
-
-  const sortedEvents = useMemo(() => {
-    // Clone before sort to avoid mutating state
-    let filtered = [...events];
-
-    // Filter by simple text search for now
-    if (filter) {
-        filtered = filtered.filter(e => e.content.toLowerCase().includes(filter.toLowerCase()));
-    }
-
-    // If matching mode, sort by match score
-    if (matchAgainst) {
-        return filtered.map(event => {
-            const offerNote: Note = convertEventToNote(event);
-            const score = matchNotes(matchAgainst, offerNote) * 100;
-            return { event, score };
-        })
-        .sort((a, b) => b.score - a.score) // Sort by score desc
-        .map(item => {
-             // Inject score into event object for Card to read
-             return { ...item.event, score: item.score };
-        })
-        .slice(0, 100);
-    }
-
-    return filtered
-      .sort((a, b) => b.created_at - a.created_at)
-      .slice(0, 100);
-  }, [events, filter, matchAgainst]);
-
-  const authorPubkeys = useMemo(() => {
-    const pubkeys = new Set(sortedEvents.map((e) => e.pubkey));
-    if (pubkey) {
-      pubkeys.add(pubkey);
-    }
-    return Array.from(pubkeys);
-  }, [sortedEvents, pubkey]);
-
-  const profiles = useNostrProfile(authorPubkeys);
+  const {
+    settings,
+    pubkey,
+    onNavigateToSettings,
+    setMatchingNoteId,
+    filter,
+    setFilter,
+    isLoading,
+    sortedEvents,
+    profiles,
+  } = useNetworkView({ matchAgainst });
 
   if (!pubkey) {
     return (

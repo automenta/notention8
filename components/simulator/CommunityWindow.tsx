@@ -71,7 +71,7 @@ export const CommunityWindow: React.FC<Props> = ({ networkNotes }) => {
                                 // For now, just styling.
                                 return (
                                     <span key={i} className={`text-[9px] px-1 rounded font-mono border ${isMatch ? 'bg-indigo-950 border-indigo-400 text-indigo-300' : 'bg-gray-950/50 border-green-500/30 text-green-400'}`}>
-                                        [{p.key}:{p.operator === 'is' ? 'is' : p.operator}:{p.value}]
+                                        [{p.key}:{p.operator === 'is' ? 'is' : p.operator}:{p.values.join(', ')}]
                                     </span>
                                 );
                             })}

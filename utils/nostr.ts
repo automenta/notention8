@@ -58,25 +58,17 @@ export function getTextFromHtml(content: string): string {
 }
 
 export const extractPropertiesFromTags = (tags: string[][]): Property[] => {
-  const propsMap = new Map<string, Property>();
-
-  tags.forEach((t) => {
+  const propsMap = tags.reduce((acc, t) => {
     if (t[0] === 'property') {
-      const key = t[1];
-      const op = t[2];
-      const val = t[3];
-
-      if (propsMap.has(key)) {
-        propsMap.get(key)!.values.push(val);
+      const [, key, op, val] = t;
+      if (acc.has(key)) {
+        acc.get(key)!.values.push(val);
       } else {
-        propsMap.set(key, {
-          key,
-          operator: op,
-          values: [val],
-        });
+        acc.set(key, { key, operator: op, values: [val] });
       }
     }
-  });
+    return acc;
+  }, new Map<string, Property>());
 
   return Array.from(propsMap.values());
 };
@@ -86,10 +78,14 @@ export const convertEventToNote = (event: NostrEvent): Note => {
     id: event.id,
     title: '',
     content: event.content,
-    tags: event.tags.filter((t) => t[0] === 't').map((t) => t[1]),
-    published: true,
+    tags: event.tags.reduce<string[]>((acc, t) => {
+      if (t[0] === 't') acc.push(t[1]);
+      return acc;
+    }, []),
+    publishedAt: new Date(event.created_at * 1000).toISOString(), // Use publishedAt for event time
     properties: extractPropertiesFromTags(event.tags),
     createdAt: new Date(event.created_at * 1000).toISOString(),
     updatedAt: new Date(event.created_at * 1000).toISOString(),
+    nostrEventId: event.id, // Explicitly set this
   };
 };

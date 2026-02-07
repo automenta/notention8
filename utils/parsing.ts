@@ -1,4 +1,5 @@
 import type { Property } from '../types';
+import { arePropertiesEqual } from './properties';
 
 // Map symbolic operators to canonical operator names
 const SYMBOL_TO_OP: Record<string, string> = {
@@ -150,13 +151,3 @@ export const replacePropertyInString = (
   return text;
 };
 
-const arePropertiesEqual = (p1: Property, p2: Property) => {
-    if (p1.key !== p2.key) return false;
-    // Operator comparison might need normalization (symbol vs word)
-    // But parsePropertyBlock normalizes to words.
-    if (p1.operator !== p2.operator) return false;
-    if (p1.values.length !== p2.values.length) return false;
-    // Compare values (order matters?)
-    // Let's assume order matters for now
-    return p1.values.every((v, i) => v === p2.values[i]);
-};

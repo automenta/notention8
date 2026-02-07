@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { Property } from '../types';
 import { getNoteSemantics } from '../utils/noteSemantics';
 
 export const useNoteSemantics = (htmlContent: string) => {

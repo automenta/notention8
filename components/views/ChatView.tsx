@@ -1,45 +1,20 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { getPublicKey } from 'nostr-tools';
-import type { Contact } from '../../types';
-import { hexToBytes } from '../../utils/nostr';
+import React from 'react';
 import { ContactList } from '../chat/ContactList';
 import { ChatWindow } from '../chat/ChatWindow';
-import { useSettings } from '../../hooks/useSettingsContext';
-import { useView } from '../../hooks/useViewContext';
-import { useChat } from '../../hooks/useChat';
+import { useChatView } from '../../hooks/useChatView';
 
 export const ChatView: React.FC = () => {
-  const { settings } = useSettings();
-  const { selectedChatPubkey, setSelectedChatPubkey } = useView();
-
-  const privkey = settings.nostr.privkey;
-  const pubkey = useMemo(
-    () => (privkey ? getPublicKey(hexToBytes(privkey)) : null),
-    [privkey]
-  );
-
-  // Sync selected contact with ViewContext
-  const [localSelectedContact, setLocalSelectedContact] = useState<Contact | null>(null);
-
-  useEffect(() => {
-      if (selectedChatPubkey) {
-          setLocalSelectedContact({ pubkey: selectedChatPubkey });
-      } else {
-          setLocalSelectedContact(null);
-      }
-  }, [selectedChatPubkey]);
-
-  const handleSelectContact = (contact: Contact | null) => {
-      setSelectedChatPubkey(contact ? contact.pubkey : null);
-  };
-
   const {
-      contacts,
-      setContacts,
-      messages,
-      isLoading,
-      addMessage
-  } = useChat({ privkey, pubkey, selectedContact: localSelectedContact });
+    privkey,
+    pubkey,
+    localSelectedContact,
+    contacts,
+    setContacts,
+    messages,
+    isLoading,
+    addMessage,
+    handleSelectContact
+  } = useChatView();
 
   if (!privkey || !pubkey) {
     return (
