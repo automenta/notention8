@@ -12,6 +12,7 @@ export function OntologyView() {
     setActiveTab,
     isEvolving,
     handleEvolve,
+    usageStats,
   } = useOntologyView();
 
   return (
@@ -57,7 +58,7 @@ export function OntologyView() {
             </p>
             <div className="bg-gray-900/70 p-6 rounded-lg">
               {ontology.map((rootNode) => (
-                <OntologyNodeItem key={rootNode.id} node={rootNode} level={0} />
+                <OntologyNodeItem key={rootNode.id} node={rootNode} level={0} usageStats={usageStats} />
               ))}
             </div>
           </>

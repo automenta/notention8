@@ -82,7 +82,15 @@ describe('EditorManager', () => {
           selectedNoteId: null,
           setSelectedNoteId: vi.fn(),
           matchingNoteId: null,
-          setMatchingNoteId: vi.fn()
+          setMatchingNoteId: vi.fn(),
+          showToast: vi.fn(),
+          toast: null,
+          notificationCount: 0,
+          matches: [],
+          addMatch: vi.fn(),
+          clearNotifications: vi.fn(),
+          selectedChatPubkey: null,
+          setSelectedChatPubkey: vi.fn()
         }}>
           {ui}
         </ViewContext.Provider>

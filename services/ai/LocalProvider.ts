@@ -1,5 +1,5 @@
 import type { AIProvider, InferredAttribute } from './types';
-import type { Note } from '../../types';
+import type { Note, OntologyNode } from '../../types';
 import { parseProperties } from '../../utils/parsing';
 import { getTextFromHtml } from '../../utils/nostr';
 
@@ -79,5 +79,55 @@ export class LocalAIProvider implements AIProvider {
     if (values.length < 5) return 'enum';
 
     return 'string';
+  }
+
+  async alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]> {
+      // Heuristic: Check for known ontology keys in the text
+      // This is a very basic "alignment" for local/offline mode.
+      const properties = new Set<string>();
+      const lowerText = text.toLowerCase();
+
+      const traverse = (nodes: OntologyNode[]) => {
+          nodes.forEach(n => {
+              if (n.attributes) {
+                  Object.keys(n.attributes).forEach(key => {
+                      // If the key appears in the text, assume it's relevant
+                      // e.g. "I am an expert in React" -> "expert" is not a key usually.
+                      // But if key is "skill" and text contains "React", how do we map?
+                      // Heuristic: If key is present as a word, maybe suggest it?
+                      // Better: If we have values in ontology (enums), check for those values.
+
+                      // For now, simple keyword match: if "skill" is in text, suggest [skill:is:?]
+                      // This is too weak.
+
+                      // Better heuristic:
+                      // Look for patterns like "Key: Value" or "Key is Value"
+                      // Regex: /key\s*(?:is|:)\s*(\w+)/
+                      // Capture everything until a newline or punctuation (.,!?) but allow @ and . inside emails/urls
+                      // Logic: Capture alphanumeric, spaces, @, ., /, : (for urls)
+
+                      const regex = new RegExp(`${key}\\s*(?:is|:|contains)\\s*([\\w\\s@.:/\\-]+)`, 'i');
+                      const match = lowerText.match(regex);
+                      if (match) {
+                          // Clean value: trim and remove trailing punctuation
+                          let val = match[1].trim();
+                          // Remove trailing dots or commas if they were captured at the end of a sentence
+                          val = val.replace(/[.,!?;:]$/, '');
+
+                          if (val) {
+                              // Basic type check heuristic
+                              // If ontology expects 'number' but val is not number, skip?
+                              // For now, let's just align.
+                              properties.add(`[${key}:is:${val}]`);
+                          }
+                      }
+                  });
+              }
+              if (n.children) traverse(n.children);
+          });
+      };
+      traverse(ontology);
+
+      return Array.from(properties);
   }
 }

@@ -25,6 +25,15 @@ export class Gardener {
       return [];
     }
   }
+
+  async alignToOntology(text: string, ontology: any[]): Promise<string[]> {
+      try {
+          return await this.provider.alignToOntology(text, ontology);
+      } catch (e) {
+          console.error('Gardener failed to align text:', e);
+          return [];
+      }
+  }
 }
 
 // Re-export type for convenience

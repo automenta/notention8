@@ -1,12 +1,18 @@
 import { renderHook, act } from '@testing-library/react';
 import { useGardener } from '../../hooks/useGardener';
 import { useSettings } from '../../hooks/useSettingsContext';
+import { useView } from '../../hooks/useViewContext'; // Import useView
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Note } from '../../types';
 
 // Mock useSettings
 vi.mock('../../hooks/useSettingsContext', () => ({
   useSettings: vi.fn(),
+}));
+
+// Mock useView
+vi.mock('../../hooks/useViewContext', () => ({
+  useView: vi.fn(),
 }));
 
 // Mock Gardener
@@ -28,6 +34,7 @@ vi.mock('../../services/ai/RemoteProvider', () => ({
 
 describe('useGardener', () => {
   const setSettingsMock = vi.fn();
+  const showToastMock = vi.fn();
   const mockSettings = {
     settings: {
       aiEnabled: false,
@@ -39,6 +46,7 @@ describe('useGardener', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (useSettings as any).mockReturnValue(mockSettings);
+    (useView as any).mockReturnValue({ showToast: showToastMock });
   });
 
   it('should call evolveOntology and update settings', async () => {

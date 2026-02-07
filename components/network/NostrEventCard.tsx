@@ -3,19 +3,23 @@ import { nip19 } from 'nostr-tools';
 
 import { useView } from '../../hooks/useViewContext';
 import type { NostrEvent, NostrProfile } from '../../types';
-import { formatNpub } from '../../utils/nostr';
-import { ChatIcon } from '../icons';
+import { formatNpub, extractPropertiesFromTags } from '../../utils/nostr';
+import { ChatIcon, SparklesIcon, MergeIcon } from '../icons';
 
 // Extend NostrEvent to include score if available
 export type ScoredNostrEvent = NostrEvent & { score?: number };
 
+interface NostrEventCardProps {
+  event: ScoredNostrEvent;
+  profile: NostrProfile | undefined;
+  onApplyMatch?: (event: ScoredNostrEvent) => void;
+}
+
 export function NostrEventCard({
   event,
   profile,
-}: {
-  event: ScoredNostrEvent;
-  profile: NostrProfile | undefined;
-}) {
+  onApplyMatch,
+}: NostrEventCardProps) {
   const { setActiveView, setSelectedChatPubkey } = useView();
 
   const eventDate = new Date(event.created_at * 1000).toLocaleString();
@@ -30,6 +34,8 @@ export function NostrEventCard({
     setSelectedChatPubkey(event.pubkey);
     setActiveView('chat');
   };
+
+  const hasProperties = extractPropertiesFromTags(event.tags).length > 0;
 
   return (
     <div className="bg-gray-800 p-4 rounded-lg border border-gray-700/80 animate-fade-in relative overflow-hidden group">
@@ -66,7 +72,17 @@ export function NostrEventCard({
         {event.content}
       </p>
 
-      <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        {onApplyMatch && hasProperties && (
+            <button
+              onClick={() => onApplyMatch(event)}
+              className="flex items-center gap-1 text-xs px-2 py-1 bg-gray-700 hover:bg-purple-600 text-gray-300 hover:text-white rounded transition-colors"
+              title="Apply semantic properties to your note"
+            >
+              <MergeIcon className="w-3 h-3" />
+              Apply Match
+            </button>
+        )}
         <button
           onClick={handleChat}
           className="flex items-center gap-1 text-xs px-2 py-1 bg-gray-700 hover:bg-blue-600 text-gray-300 hover:text-white rounded transition-colors"

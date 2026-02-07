@@ -13,12 +13,16 @@ import {
   CodeBlockIcon,
   CodeBracketsIcon,
   HorizontalRuleIcon,
+  SparklesIcon,
+  CubeIcon,
 } from './icons';
 
 interface TiptapToolbarProps {
   editor: Editor | null;
   viewMode: 'rich' | 'code';
   toggleViewMode: () => void;
+  onMagic?: () => void;
+  onTemplates?: () => void;
 }
 
 interface ToolbarButtonProps {
@@ -70,6 +74,8 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
   editor,
   viewMode,
   toggleViewMode,
+  onMagic,
+  onTemplates,
 }) => {
   if (!editor) return null;
 
@@ -148,6 +154,23 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
 
   return (
     <div className="flex-shrink-0 p-2 border-b border-gray-700/50 flex items-center flex-wrap gap-1">
+      {onMagic && (
+        <ToolbarButton
+          onClick={onMagic}
+          title="Magic Align (Auto-generate semantic properties)"
+          icon={SparklesIcon}
+          isActive={false}
+        />
+      )}
+      {onTemplates && (
+        <ToolbarButton
+          onClick={onTemplates}
+          title="Insert Template"
+          icon={CubeIcon}
+          isActive={false}
+        />
+      )}
+      <div className="w-px h-6 bg-gray-700 mx-1"></div>
       {actions.map((item, index) => {
         if (item.type === 'separator') {
           return (

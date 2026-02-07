@@ -7,6 +7,7 @@ import { useNostrProfile } from './useNostrProfile';
 import { useView } from './useViewContext';
 import { useSettings } from './useSettingsContext';
 import { useGardener } from './useGardener';
+import { useNotes } from './useNotes';
 
 interface UseNetworkViewProps {
   matchAgainst?: Note | null;
@@ -14,8 +15,9 @@ interface UseNetworkViewProps {
 
 export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
   const { settings } = useSettings();
-  const { setActiveView, setMatchingNoteId } = useView();
+  const { setActiveView, setMatchingNoteId, showToast } = useView();
   const { learnFromProperties } = useGardener();
+  const { updateNote } = useNotes();
 
   const relays = useMemo(() => settings.nostr.relays || DEFAULT_RELAYS, [settings.nostr.relays]);
 
@@ -123,6 +125,30 @@ export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
 
   const profiles = useNostrProfile(authorPubkeys);
 
+  const applyMatchToNote = (event: NostrEvent) => {
+      if (!matchAgainst) return;
+
+      const props = extractPropertiesFromTags(event.tags);
+      if (props.length === 0) {
+          showToast("No semantic properties found in this note.");
+          return;
+      }
+
+      const tagsToAdd = props.map(p => {
+          // Flatten simple values
+          return p.values.map(v => `[${p.key}:${p.operator}:${v}]`).join('');
+      }).join('\n');
+
+      const newContent = matchAgainst.content + '\n\n' + tagsToAdd;
+
+      updateNote({
+          ...matchAgainst,
+          content: newContent,
+      });
+
+      showToast(`Applied ${props.length} properties from match!`);
+  };
+
   return {
     settings,
     pubkey,
@@ -133,5 +159,6 @@ export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
     isLoading,
     sortedEvents,
     profiles,
+    applyMatchToNote,
   };
 };

@@ -6,6 +6,8 @@ import type { Note } from '../types';
 import { EditorHeader } from './EditorHeader';
 import { TiptapEditor } from './TiptapEditor';
 import { PropertyInspector } from './editor/PropertyInspector';
+import { TemplateSelector } from './editor/TemplateSelector';
+import { OntologyNode } from '../types';
 
 interface EditorManagerProps {
   note: Note;
@@ -23,6 +25,7 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
     handleContentSave,
     handleUpdateTextFromInspector,
     handleAutoTag,
+    handleMagic,
     isAutoTagging,
     isApiKeyAvailable,
     settings,
@@ -31,9 +34,23 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
 
   const { setSelectedNoteId } = useView();
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
+  const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
+
+  const handleInsertTemplate = (template: OntologyNode) => {
+      // Create empty semantic tags for each attribute in the template
+      const attributes = template.attributes || {};
+      const tags = Object.keys(attributes).map(key => `[${key}:is:?]`);
+
+      const newContent = dirtyNote.content + (dirtyNote.content ? '\n\n' : '') +
+          `<h2>${template.label}</h2>\n` +
+          tags.map(t => `<p>${t}</p>`).join('');
+
+      handleContentSave(newContent);
+      setIsTemplateSelectorOpen(false);
+  };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
       <EditorHeader
         title={dirtyNote.title}
         onTitleChange={handleTitleChange}
@@ -51,13 +68,22 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
         onToggleInspector={() => setIsInspectorOpen(!isInspectorOpen)}
       />
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col relative">
           <TiptapEditor
             key={note.id}
             note={dirtyNote}
             onSave={handleContentSave}
             ontology={settings.ontology}
+            onMagic={handleMagic}
+            onTemplates={() => setIsTemplateSelectorOpen(!isTemplateSelectorOpen)}
           />
+          {isTemplateSelectorOpen && (
+              <TemplateSelector
+                  ontology={settings.ontology}
+                  onSelect={handleInsertTemplate}
+                  onClose={() => setIsTemplateSelectorOpen(false)}
+              />
+          )}
         </div>
         {isInspectorOpen && (
           <PropertyInspector
