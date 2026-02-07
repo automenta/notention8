@@ -65,25 +65,16 @@ export const arePropertiesEqual = (p1: Property | null, p2: Property | null): bo
   if (p1 === p2) return true;
   if (!p1 || !p2) return false;
 
-  if (p1.key !== p2.key) return false;
-  if (p1.operator !== p2.operator) return false;
-  if (p1.values.length !== p2.values.length) return false;
-
-  // Assuming order matters for values
-  for (let i = 0; i < p1.values.length; i++) {
-    if (p1.values[i] !== p2.values[i]) return false;
-  }
-  return true;
+  return (
+    p1.key === p2.key &&
+    p1.operator === p2.operator &&
+    p1.values.length === p2.values.length &&
+    p1.values.every((val, i) => val === p2.values[i])
+  );
 };
 
 /**
  * Checks if two arrays of properties are equal.
  */
-export const arePropertyArraysEqual = (a: Property[], b: Property[]): boolean => {
-  if (a === b) return true;
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (!arePropertiesEqual(a[i], b[i])) return false;
-  }
-  return true;
-};
+export const arePropertyArraysEqual = (a: Property[], b: Property[]): boolean =>
+  a === b || (a.length === b.length && a.every((p, i) => arePropertiesEqual(p, b[i])));

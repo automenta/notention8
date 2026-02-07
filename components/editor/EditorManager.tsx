@@ -68,9 +68,10 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
   const editorRef = useRef<TiptapEditorRef>(null);
   const [isToolbarVisible, setIsToolbarVisible] = useState(true);
 
-  const currentIndex = (sortedNotes || []).findIndex((n) => n.id === note.id);
+  const safeSortedNotes = sortedNotes ?? [];
+  const currentIndex = safeSortedNotes.findIndex((n) => n.id === note.id);
   const hasPrevious = currentIndex > 0;
-  const hasNext = currentIndex !== -1 && currentIndex < (sortedNotes || []).length - 1;
+  const hasNext = currentIndex !== -1 && currentIndex < safeSortedNotes.length - 1;
 
   const handlePrevious = React.useCallback(() => {
     if (hasPrevious && sortedNotes) {
@@ -95,9 +96,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
       setSelectedNoteId
   });
 
-  const allTemplates = [
-      ...settings.customTemplates,
-  ];
+  const allTemplates = settings.customTemplates;
 
   const handleInsertTemplate = (template: OntologyNode) => {
       // Create empty semantic tags for each attribute in the template
@@ -182,11 +181,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         </div>
         {isInspectorOpen && (
           <PropertyInspector
-            properties={
-              dirtyNote.properties
-                ? Object.values(dirtyNote.properties).flat()
-                : []
-            }
+            properties={dirtyNote.properties ?? []}
             onUpdateText={handleUpdateTextFromInspector}
             onPropertyChange={() => {}} // Read only for now (updates text)
             onPickLocation={() => setIsMapPickerOpen(true)}

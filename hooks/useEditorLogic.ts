@@ -109,23 +109,6 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       }
   }, [dirtyNote.content, handleContentSave]);
 
-  const handleUpdateLocation = useCallback((latlng: string) => {
-      // Find existing location property if any
-      const existingProp = dirtyNote.properties.find(p => p.key === 'location');
-
-      const newProp = {
-          key: 'location',
-          operator: 'is',
-          values: [latlng]
-      };
-
-      const newContent = replacePropertyInString(dirtyNote.content, existingProp || null, newProp);
-
-      if (newContent !== dirtyNote.content) {
-          handleContentSave(newContent);
-      }
-  }, [dirtyNote, handleContentSave]);
-
   const handleUpdateProperty = useCallback((key: string, value: string) => {
     // Find existing property with this key
     const existingProp = dirtyNote.properties.find(p => p.key === key);
@@ -141,7 +124,11 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     if (newContent !== dirtyNote.content) {
         handleContentSave(newContent);
     }
-}, [dirtyNote, handleContentSave]);
+  }, [dirtyNote, handleContentSave]);
+
+  const handleUpdateLocation = useCallback((latlng: string) => {
+      handleUpdateProperty('location', latlng);
+  }, [handleUpdateProperty]);
 
   return {
     dirtyNote,

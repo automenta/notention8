@@ -1,5 +1,6 @@
 import React from 'react';
 import { NoteIcon, HomeIcon } from '../layout/icons';
+import { Card } from '../common/Card';
 
 interface DashboardStatsProps {
   totalNotes: number;
@@ -15,7 +16,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ totalNotes, pinn
   return (
     <div className="flex gap-4 overflow-x-auto pb-2 md:pb-0">
          {stats.map((stat, i) => (
-            <div key={i} className="flex items-center gap-3 bg-gray-800/50 px-4 py-2 rounded-lg border border-gray-700/30 min-w-[140px]">
+            <Card key={i} className="flex items-center gap-3 !p-2 min-w-[140px] bg-gray-800/50 border-gray-700/30">
                 <div className={`p-2 rounded-md ${stat.bg} ${stat.color}`}>
                     <stat.icon className="h-5 w-5" />
                 </div>
@@ -23,7 +24,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ totalNotes, pinn
                     <p className="text-xs text-gray-500 uppercase font-semibold tracking-wider">{stat.label}</p>
                     <p className="text-xl font-bold">{stat.value}</p>
                 </div>
-            </div>
+            </Card>
         ))}
     </div>
   );

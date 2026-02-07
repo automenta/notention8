@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import { UI_STYLES } from '../../utils/ui';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -22,7 +23,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   return (
     <div className={className}>
       {label && (
-        <label htmlFor={inputId} className="block text-xs uppercase font-bold text-gray-500 mb-2 tracking-wider">
+        <label htmlFor={inputId} className={UI_STYLES.input.label}>
           {label}
         </label>
       )}
@@ -36,12 +37,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
             ref={ref}
             id={inputId}
             className={`
-                w-full bg-gray-900/50 border border-gray-700/50 rounded-lg py-2.5 text-white
-                focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50
-                transition-all placeholder-gray-500 disabled:opacity-50 disabled:cursor-not-allowed
-                ${leftIcon ? 'pl-10' : 'px-3'}
-                ${rightIcon ? 'pr-10' : 'px-3'}
-                ${error ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/50' : ''}
+                ${UI_STYLES.input.base}
+                ${UI_STYLES.input.padding}
+                ${leftIcon ? 'pl-10' : ''}
+                ${rightIcon ? 'pr-10' : ''}
+                ${error ? UI_STYLES.input.error : ''}
             `}
             {...props}
           />
@@ -52,7 +52,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
           )}
       </div>
       {error && (
-        <p className="mt-1 text-xs text-red-500">{error}</p>
+        <p className={UI_STYLES.input.errorText}>{error}</p>
       )}
     </div>
   );
