@@ -4,8 +4,10 @@ import { TiptapEditor } from './TiptapEditor';
 import { usePublish } from '../hooks/usePublish';
 import { suggestTags, isApiKeyAvailable } from '../services/geminiService';
 import { getTextFromHtml } from '../utils/nostr';
+import { parseProperties } from '../utils/parsing';
 import { useDebouncedSave } from '../hooks/useDebouncedSave';
 import { EditorHeader } from './EditorHeader';
+import { useView } from '../hooks/useViewContext';
 
 interface EditorManagerProps {
   note: Note;
@@ -18,6 +20,7 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
 }) => {
   const { dirtyNote, setDirtyNote } = useDebouncedSave(note, onSave);
   const { publishNote, isPublishing } = usePublish();
+  const { setActiveView, setMatchingNoteId } = useView();
   const [isAutoTagging, setIsAutoTagging] = useState(false);
 
   const handleTitleChange = useCallback(
@@ -34,7 +37,14 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
   );
 
   const handleContentSave = useCallback(
-    (content: string) => setDirtyNote((prev) => ({ ...prev, content })),
+    (content: string) => {
+      // Parse properties from content and update note
+      // We use getTextFromHtml to get clean text for regex parsing
+      const text = getTextFromHtml(content);
+      const properties = parseProperties(text);
+
+      setDirtyNote((prev) => ({ ...prev, content, properties }));
+    },
     [setDirtyNote]
   );
 
@@ -84,12 +94,18 @@ export const EditorManager: React.FC<EditorManagerProps> = ({
     }
   };
 
+  const handleFindMatches = () => {
+      setMatchingNoteId(dirtyNote.id);
+      setActiveView('network');
+  };
+
   return (
     <div className="flex flex-col h-full">
       <EditorHeader
         title={dirtyNote.title}
         onTitleChange={handleTitleChange}
         onPublish={handlePublish}
+        onFindMatches={handleFindMatches}
         isPublishing={isPublishing}
         isPublished={!!dirtyNote.nostrEventId}
         tags={dirtyNote.tags}

@@ -51,6 +51,7 @@ export interface Note {
 
 export interface AppSettings {
   aiEnabled: boolean;
+  developerMode: boolean;
   theme: 'light' | 'dark';
   nostr: {
     privkey: string | null;

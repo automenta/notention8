@@ -11,9 +11,9 @@ import { ChatView } from './views/ChatView';
 import { SettingsView } from './views/SettingsView';
 
 export const MainView: React.FC = () => {
-  const { activeView } = useView();
+  const { activeView, matchingNoteId } = useView();
   const { settingsLoading } = useSettings();
-  const { notesLoading } = useNotes();
+  const { notes, notesLoading } = useNotes();
 
   if (notesLoading || settingsLoading) {
     return (
@@ -31,7 +31,8 @@ export const MainView: React.FC = () => {
     case 'map':
       return <MapView />;
     case 'network':
-      return <NetworkView />;
+        const matchNote = matchingNoteId ? notes.find(n => n.id === matchingNoteId) : null;
+      return <NetworkView matchAgainst={matchNote} />;
     case 'chat':
       return <ChatView />;
     case 'settings':

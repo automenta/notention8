@@ -21,6 +21,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
     'notention-settings',
     {
       aiEnabled: false,
+      developerMode: false,
       theme: 'dark',
       nostr: {
         privkey: null,
