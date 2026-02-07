@@ -125,13 +125,14 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
   return (
     <div className="flex-shrink-0 px-3 py-2 border-b border-gray-700/50 flex items-center flex-wrap gap-2 bg-gray-900/50 backdrop-blur-sm">
       {(onMagic || onTemplates || onInsertProperty) && (
-        <div className="flex items-center gap-1 bg-purple-900/20 p-0.5 rounded-lg border border-purple-500/20">
+        <div className="flex items-center gap-1 bg-purple-900/20 p-0.5 rounded-lg border border-purple-500/20 mr-2">
             {onMagic && (
             <IconButton
                 onClick={onMagic}
                 tooltip="Magic Align (Auto-generate semantic properties)"
                 icon={SparklesIcon}
                 isActive={false}
+                className="text-purple-300 hover:text-white"
             />
             )}
             {onTemplates && (
@@ -140,6 +141,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
                 tooltip="Insert Template"
                 icon={CubeIcon}
                 isActive={false}
+                className="text-purple-300 hover:text-white"
             />
             )}
             {onInsertProperty && (
@@ -148,6 +150,7 @@ export const TiptapToolbar: React.FC<TiptapToolbarProps> = ({
                     tooltip="Insert Property"
                     icon={TagIcon}
                     isActive={false}
+                    className="text-purple-300 hover:text-white"
                 />
             )}
         </div>

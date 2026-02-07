@@ -10,6 +10,7 @@ import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { IconButton } from '../common/IconButton';
 import { Textarea } from '../common/Textarea';
+import { ConfirmationModal } from '../common/ConfirmationModal';
 
 interface NostrTabProps {
   settings: AppSettings;
@@ -34,6 +35,10 @@ export const NostrTab: React.FC<NostrTabProps> = ({
 
   // Local state for relays
   const [newRelay, setNewRelay] = useState('');
+
+  // Modals state
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [relayToRemove, setRelayToRemove] = useState<string | null>(null);
 
   const currentRelays = settings.nostr.relays || DEFAULT_RELAYS;
 
@@ -74,14 +79,8 @@ export const NostrTab: React.FC<NostrTabProps> = ({
   };
 
   const handleLogout = () => {
-    if (
-      window.confirm(
-        'Are you sure? This will remove your Nostr private key from this device. This action cannot be undone.'
-      )
-    ) {
       setSettings((prev) => ({ ...prev, nostr: { ...prev.nostr, privkey: null } }));
-        addToast('Logged out', 'info');
-    }
+      addToast('Logged out', 'info');
   };
 
   const handleSaveProfile = async () => {
@@ -117,16 +116,17 @@ export const NostrTab: React.FC<NostrTabProps> = ({
       addToast('Relay added', 'success');
   };
 
-  const handleRemoveRelay = (url: string) => {
-      if (confirm(`Remove relay ${url}?`)) {
+  const handleRemoveRelayConfirm = () => {
+      if (relayToRemove) {
           setSettings(prev => ({
               ...prev,
               nostr: {
                   ...prev.nostr,
-                  relays: (prev.nostr.relays || DEFAULT_RELAYS).filter(r => r !== url)
+                  relays: (prev.nostr.relays || DEFAULT_RELAYS).filter(r => r !== relayToRemove)
               }
           }));
           addToast('Relay removed', 'info');
+          setRelayToRemove(null);
       }
   };
 
@@ -162,7 +162,7 @@ export const NostrTab: React.FC<NostrTabProps> = ({
             <CopyableField label="Public Key (npub)" value={npub} />
             <CopyableField label="Private Key (nsec)" value={nsec} isSecret />
             <Button
-                onClick={handleLogout}
+                onClick={() => setShowLogoutConfirm(true)}
                 variant="danger"
                 className="w-full mt-4"
                 icon={KeyIcon}
@@ -231,7 +231,7 @@ export const NostrTab: React.FC<NostrTabProps> = ({
                         <div key={idx} className="flex justify-between items-center px-4 py-3 border-b border-gray-700 last:border-0 hover:bg-gray-750">
                             <span className="text-gray-300 text-sm font-mono truncate">{relay}</span>
                             <IconButton
-                                onClick={() => handleRemoveRelay(relay)}
+                                onClick={() => setRelayToRemove(relay)}
                                 variant="ghost"
                                 size="sm"
                                 className="text-gray-500 hover:text-red-400"
@@ -312,6 +312,25 @@ export const NostrTab: React.FC<NostrTabProps> = ({
           </div>
       )}
 
+      <ConfirmationModal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleLogout}
+        title="Log Out?"
+        message="Are you sure? This will remove your Nostr private key from this device. This action cannot be undone."
+        confirmLabel="Log Out"
+        isDestructive
+      />
+
+      <ConfirmationModal
+        isOpen={!!relayToRemove}
+        onClose={() => setRelayToRemove(null)}
+        onConfirm={handleRemoveRelayConfirm}
+        title="Remove Relay?"
+        message={`Are you sure you want to remove ${relayToRemove} from your relay list?`}
+        confirmLabel="Remove"
+        isDestructive
+      />
     </div>
   );
 };

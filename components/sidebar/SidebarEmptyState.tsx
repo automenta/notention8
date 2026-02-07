@@ -1,5 +1,6 @@
 import React from 'react';
 import { NoteIcon, PlusIcon } from '../layout/icons';
+import { Button } from '../common/Button';
 
 interface SidebarEmptyStateProps {
     searchTerm: string;
@@ -20,21 +21,19 @@ export const SidebarEmptyState: React.FC<SidebarEmptyStateProps> = ({ searchTerm
                 {searchTerm ? `Try adjusting your search for '${searchTerm}'` : 'Capture your ideas, daily tasks, and knowledge.'}
             </p>
             {searchTerm ? (
-                <button
+                <Button
                     onClick={() => onCreateNote(searchTerm)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm font-medium"
+                    icon={PlusIcon}
                 >
-                    <PlusIcon className="h-4 w-4" />
                     Create note &apos;{searchTerm}&apos;
-                </button>
+                </Button>
             ) : (
-                <button
+                <Button
                     onClick={() => onCreateNote()}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm font-medium"
+                    icon={PlusIcon}
                 >
-                    <PlusIcon className="h-4 w-4" />
                     Create First Note
-                </button>
+                </Button>
             )}
         </div>
     );

@@ -3,7 +3,7 @@ import { useNotes } from '../../hooks/useNotes';
 import { useView } from '../../hooks/useViewContext';
 import { ClockIcon, ArrowRightIcon, PlusIcon } from '../layout/icons';
 import { Button } from '../common/Button';
-import { DashboardCard } from './DashboardCard';
+import { Card } from '../common/Card';
 import { Tabs } from '../common/Tabs';
 import type { Note } from '../../types';
 
@@ -92,7 +92,7 @@ export const TimelineWidget = () => {
     ];
 
     return (
-        <DashboardCard title="Timeline" icon={ClockIcon}>
+        <Card title="Timeline" icon={ClockIcon}>
              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <Tabs
@@ -143,7 +143,8 @@ export const TimelineWidget = () => {
                         variant="ghost"
                         size="xs"
                         onClick={handleCreateEvent}
-                        leftIcon={PlusIcon}
+                        icon={PlusIcon}
+                        iconPosition="left"
                         className="text-gray-500 hover:text-white"
                     >
                         New Event
@@ -153,13 +154,14 @@ export const TimelineWidget = () => {
                         variant="ghost"
                         size="xs"
                         onClick={() => setActiveView('time')}
-                        rightIcon={ArrowRightIcon}
+                        icon={ArrowRightIcon}
+                        iconPosition="right"
                         className="text-blue-400 hover:text-blue-300"
                     >
                         Full Calendar
                     </Button>
                 </div>
              </div>
-        </DashboardCard>
+        </Card>
     );
 };

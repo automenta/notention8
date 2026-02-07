@@ -1,7 +1,7 @@
 import React from 'react';
 import { DocumentDuplicateIcon } from '../layout/icons';
 import { DEFAULT_TEMPLATES } from '../../utils/templates';
-import { DashboardCard } from './DashboardCard';
+import { Card } from '../common/Card';
 
 interface TemplatesWidgetProps {
   onUseTemplate: (content: string) => void;
@@ -10,11 +10,7 @@ interface TemplatesWidgetProps {
 
 export const TemplatesWidget: React.FC<TemplatesWidgetProps> = ({ onUseTemplate, onViewAll }) => {
   return (
-     <DashboardCard>
-        <h3 className="text-lg font-semibold text-gray-300 mb-4 flex items-center gap-2">
-            <DocumentDuplicateIcon className="h-5 w-5" />
-            Start from Template
-        </h3>
+     <Card title="Start from Template" icon={DocumentDuplicateIcon}>
         <div className="space-y-3">
             {DEFAULT_TEMPLATES.slice(0, 3).map(tmpl => (
                 <button
@@ -36,6 +32,6 @@ export const TemplatesWidget: React.FC<TemplatesWidgetProps> = ({ onUseTemplate,
                 View all templates in Sidebar
             </button>
         </div>
-     </DashboardCard>
+     </Card>
   );
 };

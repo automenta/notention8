@@ -6,12 +6,15 @@ import { useToast } from '../../hooks/useToast';
 import localforage from 'localforage';
 import type { Note } from '../../types';
 import { Button } from '../common/Button';
+import { ConfirmationModal } from '../common/ConfirmationModal';
+import { useState } from 'react';
 
 export const DataTab: React.FC = () => {
-  const { notes } = useNotes(); // We need raw data access, useNotes gives notes from state which is synced with localforage on load.
+  const { notes } = useNotes();
   const { settings } = useSettings();
   const { addToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const handleExport = async () => {
       // Create a JSON object with notes and settings
@@ -135,21 +138,25 @@ export const DataTab: React.FC = () => {
         <Button
             variant="danger"
             icon={TrashIcon}
-            onClick={() => {
-            if (
-                window.confirm(
-                'Are you sure you want to delete all data? This action cannot be undone.'
-                )
-            ) {
-                window.localStorage.clear();
-                window.indexedDB.deleteDatabase('localforage');
-                window.location.reload();
-            }
-            }}
+            onClick={() => setShowClearConfirm(true)}
         >
             Clear All Local Data
         </Button>
       </div>
+
+      <ConfirmationModal
+        isOpen={showClearConfirm}
+        onClose={() => setShowClearConfirm(false)}
+        onConfirm={() => {
+            window.localStorage.clear();
+            window.indexedDB.deleteDatabase('localforage');
+            window.location.reload();
+        }}
+        title="Clear All Data?"
+        message="Are you sure you want to delete all data? This action cannot be undone."
+        confirmLabel="Clear Everything"
+        isDestructive
+      />
     </div>
   );
 };
