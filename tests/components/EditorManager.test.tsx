@@ -7,9 +7,11 @@ import { SettingsContext } from '../../components/contexts/SettingsContext';
 import type { Note } from '../../types';
 
 // Mock TiptapEditor
-vi.mock('../../components/editor/TiptapEditor', () => ({
-  TiptapEditor: React.forwardRef((props, ref) => <div data-testid="mock-editor">Editor</div>),
-}));
+vi.mock('../../components/editor/TiptapEditor', () => {
+  const MockEditor = React.forwardRef((_props, _ref) => <div data-testid="mock-editor">Editor</div>);
+  MockEditor.displayName = 'TiptapEditor';
+  return { TiptapEditor: MockEditor };
+});
 
 // Mock usePublish
 const mockPublishNote = vi.fn();
@@ -23,7 +25,7 @@ vi.mock('../../hooks/usePublish', () => ({
 // Mock useAutoTagging
 const mockHandleAutoTag = vi.fn();
 vi.mock('../../hooks/useAutoTagging', () => ({
-  useAutoTagging: ({ onTagsChange }: any) => ({
+  useAutoTagging: ({ onTagsChange }: { onTagsChange: (tags: string[]) => void }) => ({
     isAutoTagging: false,
     handleAutoTag: () => {
         mockHandleAutoTag();

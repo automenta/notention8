@@ -1,12 +1,14 @@
 import { renderHook, act } from '@testing-library/react';
 import { useAgentInteraction } from '../../../hooks/simulator/useAgentInteraction';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
+import type { SimulationAgent } from '../../../hooks/simulator/types';
+import type { AIProvider } from '../../../services/ai/types';
 
 describe('useAgentInteraction', () => {
-    let agentsRefMock: any;
-    let aiRefMock: any;
-    let updateAgentMock: any;
-    let addLogMock: any;
+    let agentsRefMock: { current: SimulationAgent[] };
+    let aiRefMock: { current: AIProvider | null };
+    let updateAgentMock: Mock;
+    let addLogMock: Mock;
 
     beforeEach(() => {
         agentsRefMock = {

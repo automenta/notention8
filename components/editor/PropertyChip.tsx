@@ -1,8 +1,9 @@
 import React from 'react';
-import { NodeViewWrapper } from '@tiptap/react';
-import { TagIcon, ICON_MAP } from '../layout/icons';
+import { NodeViewWrapper, NodeViewProps } from '@tiptap/react';
+import { TagIcon } from '../layout/icons';
+import { ICON_MAP } from '../layout/iconMap';
 
-export const PropertyChip = (props: any) => {
+export const PropertyChip = (props: NodeViewProps) => {
   const { node } = props;
   const { name, operator, value, icon } = node.attrs;
 

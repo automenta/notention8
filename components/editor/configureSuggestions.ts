@@ -12,6 +12,10 @@ interface SuggestionProps {
   range: { from: number; to: number };
 }
 
+interface SuggestionListRef {
+  onKeyDown: (props: { event: KeyboardEvent }) => boolean;
+}
+
 export const configureSuggestions = (
   getItems: (query: string) => SuggestionItem[],
   char: string
@@ -65,7 +69,7 @@ export const configureSuggestions = (
             return true;
           }
 
-          return (component.ref as any)?.onKeyDown(props);
+          return (component.ref as SuggestionListRef)?.onKeyDown(props);
         },
 
         onExit: () => {

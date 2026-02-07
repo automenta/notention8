@@ -1,4 +1,4 @@
-import { Note, OntologyNode } from '../types';
+import { Note, OntologyNode, OntologyAttribute } from '../types';
 
 export interface Conflict {
     noteId: string;
@@ -39,8 +39,8 @@ export const detectConflicts = (notes: Note[], ontology: OntologyNode[]): Confli
 };
 
 // Helper to flatten ontology to key -> attribute map
-const flattenOntology = (nodes: OntologyNode[]): Record<string, any> => {
-    let map: Record<string, any> = {};
+const flattenOntology = (nodes: OntologyNode[]): Record<string, OntologyAttribute> => {
+    let map: Record<string, OntologyAttribute> = {};
     nodes.forEach(node => {
         if (node.attributes) {
             Object.assign(map, node.attributes);

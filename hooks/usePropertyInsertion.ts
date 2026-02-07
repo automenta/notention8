@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { Editor } from '@tiptap/react';
-import type { OntologyNode } from '../types';
+import type { OntologyNode, OntologyAttribute } from '../types';
 
 export function usePropertyInsertion() {
     const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
@@ -53,7 +53,7 @@ export function usePropertyInsertion() {
         setInitialModalData(undefined);
     };
 
-    const findAttributeDef = (key: string, nodes: OntologyNode[]): any => {
+    const findAttributeDef = (key: string, nodes: OntologyNode[]): OntologyAttribute | undefined => {
         for (const node of nodes) {
             if (node.attributes && node.attributes[key]) {
                 return node.attributes[key];

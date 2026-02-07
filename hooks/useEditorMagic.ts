@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import type { OntologyNode } from '../types';
 import { useGardener } from './useGardener';
 import { useAutoTagging } from './useAutoTagging';
-import { useToast } from '../components/contexts/ToastContext';
+import { useToast } from './useToast';
 import { getTextFromHtml } from '../utils/nostr';
 import { parseProperties, replacePropertyInString } from '../utils/parsing';
 import { parseNaturalDate } from '../utils/dateParsing';

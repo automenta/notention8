@@ -1,10 +1,17 @@
 import React, { useCallback } from 'react';
 import { Editor } from '@tiptap/react';
 
+interface InitialModalData {
+  key: string;
+  operator: string;
+  value: string;
+  icon?: string;
+}
+
 interface UseEditorClickProps {
   editor: Editor | null;
   setEditingPropertyPos: (pos: number) => void;
-  setInitialModalData: (data: any) => void;
+  setInitialModalData: (data: InitialModalData | undefined) => void;
   setIsPropertyModalOpen: (open: boolean) => void;
   setSearchTerm: (term: string) => void;
   setActiveView: (view: string) => void;

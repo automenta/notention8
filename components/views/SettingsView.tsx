@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useSettingsView } from '../../hooks/useSettingsView';
+import { useSettingsView, SettingsTab } from '../../hooks/useSettingsView';
 import { Toggle } from '../common/Toggle';
 import { Tabs } from '../common/Tabs';
 import { AITab } from '../settings/AITab';
@@ -53,7 +53,7 @@ export function SettingsView() {
         <Tabs
             tabs={tabs}
             activeTab={activeTab}
-            onChange={(id) => setActiveTab(id as any)}
+            onChange={(id) => setActiveTab(id as SettingsTab)}
             className="bg-gray-900/50 p-1 inline-flex min-w-max"
         />
       </div>

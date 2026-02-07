@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from './Modal';
 import { Input } from './Input';
 import { format, isValid, parseISO } from 'date-fns';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../../hooks/useToast';
 
 interface TimePickerModalProps {
   isOpen: boolean;

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Note } from '../../types';
 import { useView } from '../../hooks/useViewContext';
 import { useNotes } from '../../hooks/useNotes';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../../hooks/useToast';
 
 export function useSidebarLogic(sortedNotes: Note[]) {
   const {

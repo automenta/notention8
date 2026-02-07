@@ -182,3 +182,5 @@ export const NoteListItem = React.memo(({
     </div>
   );
 });
+
+NoteListItem.displayName = 'NoteListItem';

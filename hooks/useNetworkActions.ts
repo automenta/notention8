@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import type { Note, NostrEvent } from '../types';
 import { extractPropertiesFromTags, convertEventToNote } from '../utils/nostr';
 import { useNotes } from './useNotes';
-import { useToast } from '../components/contexts/ToastContext';
+import { useToast } from './useToast';
 import { useView } from './useViewContext';
 
 export function useNetworkActions() {

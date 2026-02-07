@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import { useSettings } from './useSettingsContext';
-import { useToast } from '../components/contexts/ToastContext';
+import { useToast } from './useToast';
 import { Gardener } from '../services/gardener';
 import { LocalAIProvider } from '../services/ai/LocalProvider';
 import { RemoteAIProvider } from '../services/ai/RemoteProvider';

@@ -3,7 +3,7 @@ import { finalizeEvent, nip04, nip19 } from 'nostr-tools';
 
 import { useNostrProfile } from '../../hooks/useNostrProfile';
 import { useNotes } from '../../hooks/useNotes';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../../hooks/useToast';
 import type { Contact, NostrEvent } from '../../types';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
 import { parseProperties } from '../../utils/parsing';

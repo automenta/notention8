@@ -4,7 +4,7 @@ import { usePublish } from './usePublish';
 import { parseProperties, replacePropertyInString } from '../utils/parsing';
 import { useDebouncedSave } from './useDebouncedSave';
 import { useView } from './useViewContext';
-import { useToast } from '../components/contexts/ToastContext';
+import { useToast } from './useToast';
 import { useSettings } from './useSettingsContext';
 import { useGardener } from './useGardener';
 import { useOntologyMatching } from './useOntologyMatching';

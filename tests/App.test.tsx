@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 import App from '../App';
 import { NotesProvider } from '../components/contexts/NotesContext';
 import { SettingsProvider } from '../components/contexts/SettingsContext';
+import { ToastProvider } from '../components/contexts/ToastProvider';
 import { ViewProvider } from '../components/contexts/ViewContext';
-import { ToastProvider } from '../components/contexts/ToastContext';
 
 // Mock the hooks
 vi.mock('../hooks/useNotes', () => ({

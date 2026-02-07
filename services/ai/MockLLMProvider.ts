@@ -1,5 +1,5 @@
 import type { AIProvider, InferredAttribute } from './types';
-import type { Note, OntologyNode } from '../../types';
+import type { OntologyNode } from '../../types';
 
 export class MockLLMProvider implements AIProvider {
   name = 'Mock AI (Fallback)';

@@ -2,7 +2,7 @@ import React from 'react';
 import { useNotes } from './useNotes';
 import { useView } from './useViewContext';
 import { useSettings } from './useSettingsContext';
-import { useToast } from '../components/contexts/ToastContext';
+import { useToast } from './useToast';
 import {
     PlusIcon,
     SettingsIcon,

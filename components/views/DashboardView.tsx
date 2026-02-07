@@ -2,7 +2,7 @@ import React from 'react';
 import { useNotes } from '../../hooks/useNotes';
 import { useView } from '../../hooks/useViewContext';
 import { useSettings } from '../../hooks/useSettingsContext';
-import { useSimulatorContext } from '../contexts/SimulatorContext';
+import { useSimulatorContext } from '../../hooks/useSimulatorContext';
 import { parseProperties } from '../../utils/parsing';
 
 import { DailyPromptWidget } from '../dashboard/DailyPromptWidget';
@@ -14,8 +14,9 @@ import { DashboardStats } from '../dashboard/DashboardStats';
 
 interface Widget {
   id: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component: React.ComponentType<any>;
-  props: any;
+  props: Record<string, unknown>;
 }
 
 export function DashboardView() {

@@ -8,7 +8,7 @@ import {
 } from '../layout/icons';
 import type { OntologyNode } from '../../types';
 import { getCurrentPosition } from '../../utils/geolocation';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../../hooks/useToast';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { IconButton } from '../common/IconButton';

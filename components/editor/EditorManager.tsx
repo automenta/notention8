@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { useEditorLogic } from '../../hooks/useEditorLogic';
 import { useEditorModals } from '../../hooks/useEditorModals';
 import { useView } from '../../hooks/useViewContext';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../../hooks/useToast';
 import { useNotes } from '../../hooks/useNotes';
 import { useEditorActions } from '../../hooks/useEditorActions';
 import { useEditorShortcuts } from '../../hooks/useEditorShortcuts';

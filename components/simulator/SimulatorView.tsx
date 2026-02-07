@@ -3,7 +3,7 @@ import { SwarmModal } from './SwarmModal';
 import { SimulatorSidebar } from './SimulatorSidebar';
 import { SimulatorOverview } from './SimulatorOverview';
 import { SimulatorAgentView } from './SimulatorAgentView';
-import { useSimulatorContext } from '../contexts/SimulatorContext';
+import { useSimulatorContext } from '../../hooks/useSimulatorContext';
 import { useSwarmActions } from '../../hooks/simulator/useSwarmActions';
 
 export const SimulatorView: React.FC = () => {

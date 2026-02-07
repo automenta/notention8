@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useToast } from '../components/contexts/ToastContext';
+import { useToast } from './useToast';
 import type { Note } from '../types';
 
 export const useEditorActions = (dirtyNote: Note) => {
