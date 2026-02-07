@@ -1,11 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { getPublicKey, nip04 } from 'nostr-tools';
-import type { Contact, NostrEvent } from '../../types';
-import { DEFAULT_RELAYS, hexToBytes, pool } from '../../utils/nostr';
+import React, { useEffect, useMemo, useState } from 'react';
+import { getPublicKey } from 'nostr-tools';
+import type { Contact } from '../../types';
+import { hexToBytes } from '../../utils/nostr';
 import { ContactList } from '../chat/ContactList';
 import { ChatWindow } from '../chat/ChatWindow';
 import { useSettings } from '../../hooks/useSettingsContext';
 import { useView } from '../../hooks/useViewContext';
+import { useChat } from '../../hooks/useChat';
 
 export const ChatView: React.FC = () => {
   const { settings } = useSettings();
@@ -17,21 +18,11 @@ export const ChatView: React.FC = () => {
     [privkey]
   );
 
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [messages, setMessages] = useState<
-    Record<string, (NostrEvent & { content: string })[]>
-  >({});
-
-  // Use local state if we want isolated contact selection, or sync with ViewContext?
-  // Let's sync with ViewContext for deep linking from NetworkView
-  // We need to map selectedChatPubkey to a Contact object
-
+  // Sync selected contact with ViewContext
   const [localSelectedContact, setLocalSelectedContact] = useState<Contact | null>(null);
 
   useEffect(() => {
       if (selectedChatPubkey) {
-          // If we have a pubkey from context, ensure it's selected
-          // We might not have it in contacts list yet.
           setLocalSelectedContact({ pubkey: selectedChatPubkey });
       } else {
           setLocalSelectedContact(null);
@@ -42,95 +33,13 @@ export const ChatView: React.FC = () => {
       setSelectedChatPubkey(contact ? contact.pubkey : null);
   };
 
-  const [isLoading, setIsLoading] = useState(true);
-
-  const addMessage = useCallback(
-    (peerPubkey: string, event: NostrEvent, decryptedContent: string) => {
-      setMessages((prev) => {
-        const existing = prev[peerPubkey] || [];
-        if (existing.some((m) => m.id === event.id)) return prev;
-        const newMessages = [
-          ...existing,
-          { ...event, content: decryptedContent },
-        ];
-        newMessages.sort((a, b) => a.created_at - b.created_at);
-        return { ...prev, [peerPubkey]: newMessages.slice(-100) };
-      });
-    },
-    []
-  );
-
-  const handleDecryption = useCallback(
-    async (event: NostrEvent) => {
-      if (!privkey) return;
-      try {
-        const peerPubkey =
-          event.pubkey === pubkey
-            ? event.tags.find((t) => t[0] === 'p')?.[1]
-            : event.pubkey;
-        if (!peerPubkey) return;
-
-        const decryptedContent = await nip04.decrypt(
-          privkey,
-          peerPubkey,
-          event.content
-        );
-        addMessage(peerPubkey, event, decryptedContent);
-      } catch {
-        // Decryption errors are expected if a message is not intended for the user, so they are suppressed.
-      }
-    },
-    [privkey, pubkey, addMessage]
-  );
-
-  // Fetch initial contact list (kind: 3)
-  useEffect(() => {
-    if (!pubkey) {
-      setIsLoading(false);
-      return;
-    }
-
-    const sub = pool.subscribeMany(
-      DEFAULT_RELAYS,
-      [{ kinds: [3], authors: [pubkey], limit: 1 }],
-      {
-        onevent: (event) => {
-          const newContacts: Contact[] = event.tags
-            .filter((tag) => tag[0] === 'p' && tag[1])
-            .map((tag) => ({ pubkey: tag[1] }));
-          setContacts(newContacts);
-          setIsLoading(false);
-        },
-        onclose: () => setIsLoading(false),
-      }
-    );
-
-    const timer = setTimeout(() => {
-      if (contacts.length === 0) setIsLoading(false);
-      sub.close();
-    }, 3000);
-
-    return () => {
-      clearTimeout(timer);
-      sub.close();
-    };
-  }, [pubkey, contacts.length]);
-
-  // Subscribe to messages for the selected contact
-  useEffect(() => {
-    if (!localSelectedContact || !pubkey || !privkey) return;
-
-    const sub = pool.subscribeMany(
-      DEFAULT_RELAYS,
-      [
-        { kinds: [4], authors: [pubkey], '#p': [localSelectedContact.pubkey] },
-        { kinds: [4], authors: [localSelectedContact.pubkey], '#p': [pubkey] },
-      ],
-      { onevent: handleDecryption }
-    );
-
-    return () => sub.close();
-  }, [localSelectedContact, pubkey, privkey, handleDecryption]);
+  const {
+      contacts,
+      setContacts,
+      messages,
+      isLoading,
+      addMessage
+  } = useChat({ privkey, pubkey, selectedContact: localSelectedContact });
 
   if (!privkey || !pubkey) {
     return (

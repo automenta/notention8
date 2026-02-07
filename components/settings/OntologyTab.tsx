@@ -16,8 +16,9 @@ import { Modal } from '../common/Modal';
 export const OntologyTab: React.FC = () => {
   const { settings, setSettings } = useSettings();
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
-  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
-  const [editingAttrKey, setEditingAttrKey] = useState<{ nodeId: string, key: string } | null>(null);
+
+  // Removed unused state vars: editingNodeId, setEditingNodeId, editingAttrKey, setEditingAttrKey
+  // These were likely intended for inline editing which is not fully implemented or replaced by prompts/modals.
 
   // Merge state
   const [mergingAttr, setMergingAttr] = useState<{ nodeId: string, sourceKey: string } | null>(null);
@@ -101,8 +102,9 @@ export const OntologyTab: React.FC = () => {
                 ...prev,
                 ontology: renameAttribute(prev.ontology, nodeId, oldKey, newKey)
             }));
-        } catch (e: any) {
-            alert(e.message);
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : String(e);
+            alert(message);
         }
     }
   };
@@ -126,8 +128,9 @@ export const OntologyTab: React.FC = () => {
         }));
         setMergingAttr(null);
         setTargetMergeKey('');
-    } catch (e: any) {
-        alert(e.message);
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        alert(message);
     }
   };
 

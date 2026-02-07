@@ -1,7 +1,5 @@
 import type { AIProvider } from './ai/types';
 import type { Note, OntologyAttribute } from '../types';
-import { useSettings } from '../hooks/useSettingsContext'; // Wait, this is a hook. Can't use in class/service directly if it's singleton.
-// Gardener should be a class or function we invoke.
 
 export class Gardener {
   private provider: AIProvider;

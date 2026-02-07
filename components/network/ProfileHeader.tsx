@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { finalizeEvent, nip19 } from 'nostr-tools';
 import type { AppSettings, NostrProfile } from '../../types';
 import { EditIcon, LoadingSpinner } from '../icons';
@@ -13,7 +13,7 @@ const ProfileEditorModal: React.FC<{
 }> = ({ isOpen, onClose, onSave, initialProfile, isSaving }) => {
   const [profile, setProfile] = useState(initialProfile);
 
-  React.useEffect(() => setProfile(initialProfile), [initialProfile]);
+  useEffect(() => setProfile(initialProfile), [initialProfile]);
 
   if (!isOpen) return null;
 

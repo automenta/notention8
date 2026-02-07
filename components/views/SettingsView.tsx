@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSettings } from '../../hooks/useSettingsContext';
 import { AITab } from '../settings/AITab';
 import { NostrTab } from '../settings/NostrTab';

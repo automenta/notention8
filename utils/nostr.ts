@@ -1,4 +1,5 @@
 import { SimplePool } from 'nostr-tools';
+import type { NostrEvent, Note, Property } from '../types';
 
 export const DEFAULT_RELAYS = [
   'wss://relay.damus.io',
@@ -55,3 +56,40 @@ export function getTextFromHtml(content: string): string {
 
   return div.textContent || '';
 }
+
+export const extractPropertiesFromTags = (tags: string[][]): Property[] => {
+  const propsMap = new Map<string, Property>();
+
+  tags.forEach((t) => {
+    if (t[0] === 'property') {
+      const key = t[1];
+      const op = t[2];
+      const val = t[3];
+
+      if (propsMap.has(key)) {
+        propsMap.get(key)!.values.push(val);
+      } else {
+        propsMap.set(key, {
+          key,
+          operator: op,
+          values: [val],
+        });
+      }
+    }
+  });
+
+  return Array.from(propsMap.values());
+};
+
+export const convertEventToNote = (event: NostrEvent): Note => {
+  return {
+    id: event.id,
+    title: '',
+    content: event.content,
+    tags: event.tags.filter((t) => t[0] === 't').map((t) => t[1]),
+    published: true,
+    properties: extractPropertiesFromTags(event.tags),
+    createdAt: new Date(event.created_at * 1000).toISOString(),
+    updatedAt: new Date(event.created_at * 1000).toISOString(),
+  };
+};

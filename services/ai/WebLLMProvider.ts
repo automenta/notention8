@@ -27,7 +27,7 @@ export class WebLLMProvider implements AIProvider {
             this.engine = await CreateMLCEngine(
                 this.modelId,
                 {
-                    initProgressCallback: (_report) => {
+                    initProgressCallback: () => {
                         // Suppress logs
                     }
                 }
@@ -42,7 +42,7 @@ export class WebLLMProvider implements AIProvider {
     try {
         await this.initPromise;
         return this.engine;
-    } catch (e) {
+    } catch {
         // If init failed, we can't return an engine.
         // The calling methods will have to handle null or re-throw.
         return null;
@@ -102,7 +102,7 @@ export class WebLLMProvider implements AIProvider {
     try {
         const jsonStr = content.replace(/```json/g, '').replace(/```/g, '').trim();
         return JSON.parse(jsonStr);
-    } catch (e) {
+    } catch {
         console.warn("Failed to parse AI tags:", content);
         return [];
     }
@@ -135,6 +135,7 @@ export class WebLLMProvider implements AIProvider {
         const jsonStr = content.replace(/```json/g, '').replace(/```/g, '').trim();
         const raw = JSON.parse(jsonStr);
         // Map to expected interface
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return raw.map((r: any) => ({
             key: r.key,
             type: r.type as OntologyAttribute['type'],
@@ -142,7 +143,7 @@ export class WebLLMProvider implements AIProvider {
             usageCount: 0,
             sampleValues: r.sampleValues || []
         }));
-    } catch (e) {
+    } catch {
         console.warn("Failed to parse AI ontology:", content);
         return [];
     }

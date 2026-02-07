@@ -43,35 +43,22 @@ export const SimulatorView: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-4 gap-2 flex-grow overflow-hidden h-full">
-        {/* Agent 1 */}
-        <div className="col-span-1 h-full overflow-hidden">
-             <AgentSessionWrapper agentId={agents[0].id} ontology={ontology}>
-                <AgentSessionView
-                    agentName={agents[0].name}
-                    currentDraft={agents[0].currentDraft}
-                    onDraftChange={(val) => updateAgent(0, { currentDraft: val })}
-                    status={agents[0].status}
-                    onPublish={handlePublish}
-                    notifications={notifications[agents[0].id] || []}
-                    minimal={true}
-                />
-            </AgentSessionWrapper>
-        </div>
-
-        {/* Agent 2 */}
-        <div className="col-span-1 h-full overflow-hidden">
-            <AgentSessionWrapper agentId={agents[1].id} ontology={ontology}>
-                <AgentSessionView
-                    agentName={agents[1].name}
-                    currentDraft={agents[1].currentDraft}
-                    onDraftChange={(val) => updateAgent(1, { currentDraft: val })}
-                    status={agents[1].status}
-                    onPublish={handlePublish}
-                    notifications={notifications[agents[1].id] || []}
-                    minimal={true}
-                />
-            </AgentSessionWrapper>
-        </div>
+        {/* Agents */}
+        {agents.map((agent, index) => (
+             <div key={agent.id} className="col-span-1 h-full overflow-hidden">
+                 <AgentSessionWrapper agentId={agent.id} ontology={ontology}>
+                    <AgentSessionView
+                        agentName={agent.name}
+                        currentDraft={agent.currentDraft}
+                        onDraftChange={(val) => updateAgent(index, { currentDraft: val })}
+                        status={agent.status}
+                        onPublish={handlePublish}
+                        notifications={notifications[agent.id] || []}
+                        minimal={true}
+                    />
+                </AgentSessionWrapper>
+            </div>
+        ))}
 
         {/* Community Stream */}
         <div className="col-span-1 h-full overflow-hidden">
