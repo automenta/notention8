@@ -4,7 +4,8 @@ import Mention from '@tiptap/extension-mention';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { useOntologyIndex } from '../../hooks/useOntologyIndex';
 import { configureSuggestions } from './configureSuggestions';
-import type { OntologyNode, Template } from '../../types';
+import type { OntologyNode, Template, Note } from '../../types';
+import { useRef, useEffect } from 'react';
 
 interface UseTiptapConfigProps {
     content: string;
@@ -12,10 +13,17 @@ interface UseTiptapConfigProps {
     ontology: OntologyNode[];
     templates?: Template[];
     minimal?: boolean;
+    notes?: Note[];
 }
 
-export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], minimal }: UseTiptapConfigProps) => {
+export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], minimal, notes = [] }: UseTiptapConfigProps) => {
   const { allTags, allProperties } = useOntologyIndex(ontology);
+
+  // Use ref to access latest notes in callbacks without re-initializing editor
+  const notesRef = useRef(notes);
+  useEffect(() => {
+      notesRef.current = notes;
+  }, [notes]);
 
   return useEditor({
     extensions: [
@@ -45,6 +53,23 @@ export const useTiptapConfig = ({ content, onUpdate, ontology, templates = [], m
                   .map(t => ({ id: t.id, label: t.label, description: t.description }));
           }, '#'),
       }).extend({ name: 'tagSuggestion' }),
+
+      Mention.configure({
+          HTMLAttributes: {
+            class: 'suggestion-note',
+          },
+          suggestion: configureSuggestions((query) => {
+              const lower = query.toLowerCase();
+              return notesRef.current
+                  .filter(n => (n.title || 'Untitled').toLowerCase().includes(lower))
+                  .slice(0, 5)
+                  .map(n => ({
+                      id: n.id,
+                      label: n.title || 'Untitled',
+                      description: 'Note'
+                  }));
+          }, '@'),
+      }).extend({ name: 'noteSuggestion' }),
 
       Mention.configure({
           HTMLAttributes: {

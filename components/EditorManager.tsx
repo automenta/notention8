@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { useEditorLogic } from '../hooks/useEditorLogic';
 import { useView } from '../hooks/useViewContext';
+import { useNotes } from '../hooks/useNotes';
 import type { Note } from '../types';
 import { EditorHeader } from './EditorHeader';
 import { TiptapEditor } from './TiptapEditor';
@@ -17,6 +18,7 @@ interface EditorManagerProps {
 }
 
 export function EditorManager({ note, onSave }: EditorManagerProps) {
+  const { notes } = useNotes();
   const {
     dirtyNote,
     isPublishing,
@@ -36,9 +38,21 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
     isPublished,
   } = useEditorLogic({ note, onSave });
 
-  const { setSelectedNoteId } = useView();
+  const { setSelectedNoteId, showToast } = useView();
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        onSave(dirtyNote);
+        showToast('Saved');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [dirtyNote, onSave, showToast]);
   const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
 
@@ -89,6 +103,7 @@ export function EditorManager({ note, onSave }: EditorManagerProps) {
             templates={allTemplates}
             onMagic={handleMagic}
             onTemplates={() => setIsTemplateSelectorOpen(!isTemplateSelectorOpen)}
+            notes={notes}
           />
           {isTemplateSelectorOpen && (
               <TemplateSelector

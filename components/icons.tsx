@@ -423,3 +423,20 @@ export const HorizontalRuleIcon = (props: IconProps) => (
     <path d="M3 11h18v2H3v-2z" />
   </SolidIcon>
 );
+
+export const HelpIcon = (props: IconProps) => (
+  <OutlineIcon {...props}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  </OutlineIcon>
+);
+
+export const SearchSparkleIcon = (props: IconProps) => (
+    <SolidIcon {...props}>
+        <path d="M9 9a2 2 0 114 0 2 2 0 01-4 0z" />
+        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a4 4 0 00-3.446 6.032l-2.261 2.26a1 1 0 101.414 1.415l2.261-2.261A4 4 0 1011 5z" clipRule="evenodd" />
+    </SolidIcon>
+);

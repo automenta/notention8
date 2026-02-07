@@ -40,3 +40,9 @@
 
 - Code structure: Keep functions focused (single responsibility), limit function length, organize methods logically,
   prefer composition over inheritance, maintain consistent class structure
+
+- Verification Scripts:
+    - Located in `verification/` directory.
+    - Use Playwright (sync API) for UI verification.
+    - Refer to existing scripts (e.g., `verify_essential.py`, `verify_shortcuts.py`) for patterns.
+    - Ensure tests are robust and handle timing (wait_for_selector) correctly.

@@ -16,6 +16,8 @@ interface ViewContextType {
   matches: MatchResult[];
   addMatch: (match: MatchResult) => void;
   clearNotifications: () => void;
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
 }
 
 export interface MatchResult {
@@ -36,6 +38,7 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
   const [selectedChatPubkey, setSelectedChatPubkey] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [matches, setMatches] = useState<MatchResult[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const lastToastTimeRef = React.useRef(0);
 
   const notificationCount = matches.length;
@@ -87,7 +90,9 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
         notificationCount,
         matches,
         addMatch,
-        clearNotifications
+        clearNotifications,
+        searchTerm,
+        setSearchTerm
       }}
     >
       {children}
