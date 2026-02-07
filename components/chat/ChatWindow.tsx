@@ -8,6 +8,8 @@ import type { Contact, NostrEvent } from '../../types';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
 import { parseProperties } from '../../utils/parsing';
 import { ArrowLeftIcon, SendIcon, DocumentDuplicateIcon, SettingsIcon, TrashIcon } from '../layout/icons';
+import { Avatar } from '../common/Avatar';
+import { IconButton } from '../common/IconButton';
 
 interface ChatWindowProps {
   privkey: string;
@@ -110,28 +112,26 @@ export function ChatWindow({
     );
   }
 
-  // Group messages by user and time proximity?
-  // For now, simple list.
-
   return (
     <div className="h-full flex flex-col bg-gray-900/30">
       {/* Header */}
       <div className="flex-shrink-0 p-3 border-b border-gray-700/50 flex items-center gap-3 bg-gray-900/50">
-        <button
-          onClick={onBack}
-          className="md:hidden p-2 -ml-1 text-gray-400 hover:text-white rounded hover:bg-gray-800"
-        >
-          <ArrowLeftIcon className="h-5 w-5" />
-        </button>
+        <div className="md:hidden -ml-1">
+          <IconButton
+            onClick={onBack}
+            icon={ArrowLeftIcon}
+            title="Back"
+            variant="ghost"
+          />
+        </div>
         <div className="relative">
-             <img
-              src={
-                selectedProfile?.picture ||
-                `https://api.dicebear.com/8.x/bottts-neutral/svg?seed=${selectedContact.pubkey}`
-              }
-              className="h-10 w-10 rounded-full bg-gray-700 object-cover border border-gray-600"
-            />
-            {/* Online status could go here */}
+             <Avatar
+               src={selectedProfile?.picture || selectedContact.picture}
+               pubkey={selectedContact.pubkey}
+               size="md"
+               className="border border-gray-600"
+             />
+             {/* Online status could go here */}
         </div>
 
         <div className="min-w-0">
@@ -156,27 +156,25 @@ export function ChatWindow({
         <div className="flex-1" />
 
         {onClearChat && (
-            <button
+            <IconButton
                 onClick={() => {
                     if (confirm('Clear chat history with this agent?')) {
                         onClearChat();
                     }
                 }}
-                className="p-2 text-gray-400 hover:text-red-400 rounded hover:bg-gray-800 transition-colors"
+                icon={TrashIcon}
                 title="Clear Chat"
-            >
-                <TrashIcon className="h-5 w-5" />
-            </button>
+                variant="danger"
+            />
         )}
 
         {onOpenSettings && (
-            <button
+            <IconButton
                 onClick={onOpenSettings}
-                className="p-2 text-gray-400 hover:text-white rounded hover:bg-gray-800 transition-colors"
+                icon={SettingsIcon}
                 title="Agent Settings"
-            >
-                <SettingsIcon className="h-5 w-5" />
-            </button>
+                variant="ghost"
+            />
         )}
       </div>
 
@@ -199,7 +197,7 @@ export function ChatWindow({
               >
                 <div className="flex items-center gap-2">
                     {!isMe && (
-                        <button
+                        <IconButton
                             onClick={() => {
                                 const properties = parseProperties(msg.content);
                                 addNote({
@@ -210,11 +208,12 @@ export function ChatWindow({
                                 });
                                 addToast('Forked to Notes', 'success');
                             }}
-                            className="opacity-0 group-hover:opacity-100 p-1 text-gray-500 hover:text-white transition-opacity"
+                            icon={DocumentDuplicateIcon}
                             title="Fork to Notes"
-                        >
-                            <DocumentDuplicateIcon className="w-4 h-4" />
-                        </button>
+                            variant="ghost"
+                            size="xs"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        />
                     )}
                     <div
                       className={`
@@ -250,13 +249,13 @@ export function ChatWindow({
             placeholder="Type a message..."
             className="flex-grow p-3 bg-gray-800 border border-gray-700 rounded-full text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
           />
-          <button
+          <IconButton
             type="submit"
             disabled={!newMessage.trim()}
-            className="p-3 bg-blue-600 rounded-full text-white hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors shadow-lg"
-          >
-            <SendIcon className="h-5 w-5 translate-x-0.5" />
-          </button>
+            icon={SendIcon}
+            variant="primary"
+            className="rounded-full shadow-lg p-3"
+          />
         </form>
       </div>
     </div>

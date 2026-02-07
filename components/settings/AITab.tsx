@@ -70,7 +70,7 @@ export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
           </p>
       </div>
 
-      <div className="p-4 bg-gray-800 rounded border border-gray-700">
+      <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
           <Select
              label="AI Provider"
              value={settings.aiProvider || 'remote'}
@@ -92,7 +92,7 @@ export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
                     className="mb-4"
                 />
 
-                <div className="p-3 bg-blue-900/20 border border-blue-800 rounded text-sm text-blue-200 flex gap-2">
+                <div className="p-3 bg-blue-900/20 border border-blue-800 rounded-lg text-sm text-blue-200 flex gap-2">
                     <CpuChipIcon className="w-5 h-5 flex-shrink-0" />
                     <div>
                         <p className="font-bold mb-1">Local Processing</p>
