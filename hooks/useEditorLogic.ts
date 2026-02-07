@@ -5,6 +5,7 @@ import { getTextFromHtml } from '../utils/nostr';
 import { parseProperties, replacePropertyInString } from '../utils/parsing';
 import { useDebouncedSave } from './useDebouncedSave';
 import { useView } from './useViewContext';
+import { useToast } from '../components/contexts/ToastContext';
 import { useSettings } from './useSettingsContext';
 import { useAutoTagging } from './useAutoTagging';
 import { useGardener } from './useGardener';
@@ -16,7 +17,8 @@ interface UseEditorLogicProps {
 
 export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
   const { publishNote, isPublishing } = usePublish();
-  const { setActiveView, setMatchingNoteId, showToast } = useView();
+  const { setActiveView, setMatchingNoteId } = useView();
+  const { addToast } = useToast();
   const { settings, setSettings } = useSettings();
   const { evolveOntology, alignToOntology } = useGardener();
 
@@ -26,11 +28,11 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       evolveOntology([n]).then(attrs => {
         if (attrs.length > 0) {
           const keys = attrs.map(a => a.key).join(', ');
-          showToast(`Ontology evolved! You introduced: ${keys}`);
+          addToast(`Ontology evolved! You introduced: ${keys}`, 'info');
         }
       });
     }
-  }, [onSave, settings.developerMode, evolveOntology, showToast]);
+  }, [onSave, settings.developerMode, evolveOntology, addToast]);
 
   const { dirtyNote, setDirtyNote } = useDebouncedSave(note, handlePersist);
 
@@ -93,11 +95,12 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
         };
         setDirtyNote(updatedNote);
         onSave(updatedNote);
-        alert('Note published successfully!');
+        addToast('Note published successfully!', 'success');
       } catch (e) {
-        alert(
+        addToast(
           'Failed to publish note: ' +
-            (e instanceof Error ? e.message : String(e))
+            (e instanceof Error ? e.message : String(e)),
+          'error'
         );
       }
     }
@@ -160,11 +163,11 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
       if (suggestions.length > 0) {
           const newContent = dirtyNote.content + '\n\n' + suggestions.map(t => `<p>${t}</p>`).join('');
           handleContentSave(newContent);
-          alert(`Magic Align: Added ${suggestions.length} semantic properties.`);
+          addToast(`Magic Align: Added ${suggestions.length} semantic properties.`, 'success');
       } else {
-          alert('Magic Align: No semantic properties found.');
+          addToast('Magic Align: No semantic properties found.', 'warning');
       }
-  }, [dirtyNote.content, alignToOntology, settings.ontology, handleContentSave]);
+  }, [dirtyNote.content, alignToOntology, settings.ontology, handleContentSave, addToast]);
 
   const handleSaveTemplate = useCallback((name: string) => {
       const template = {
@@ -179,8 +182,8 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
           customTemplates: [...prev.customTemplates, template]
       }));
 
-      showToast(`Saved as template: ${name}`);
-  }, [dirtyNote.content, setSettings, showToast]);
+      addToast(`Saved as template: ${name}`, 'success');
+  }, [dirtyNote.content, setSettings, addToast]);
 
   return {
     dirtyNote,

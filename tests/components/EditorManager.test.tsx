@@ -41,6 +41,14 @@ vi.mock('../../hooks/useNotes', () => ({
   }),
 }));
 
+// Mock useToast
+const mockAddToast = vi.fn();
+vi.mock('../../components/contexts/ToastContext', () => ({
+  useToast: () => ({
+    addToast: mockAddToast,
+  }),
+}));
+
 describe('EditorManager', () => {
   const mockOnSave = vi.fn();
   const initialNote: Note = {
@@ -58,6 +66,7 @@ describe('EditorManager', () => {
     mockOnSave.mockClear();
     mockPublishNote.mockClear();
     mockHandleAutoTag.mockClear();
+    mockAddToast.mockClear();
     // Mock window.confirm and alert
     vi.spyOn(window, 'confirm').mockImplementation(() => true);
     vi.spyOn(window, 'alert').mockImplementation(() => {});
@@ -92,7 +101,6 @@ describe('EditorManager', () => {
           matchingNoteId: null,
           setMatchingNoteId: vi.fn(),
           showToast: vi.fn(),
-          toast: null,
           notificationCount: 0,
           matches: [],
           addMatch: vi.fn(),

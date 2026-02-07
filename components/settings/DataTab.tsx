@@ -2,11 +2,13 @@ import React, { useRef } from 'react';
 import { TrashIcon, DocumentDuplicateIcon } from '../icons';
 import { useNotes } from '../../hooks/useNotes';
 import { useSettings } from '../../hooks/useSettingsContext';
+import { useToast } from '../contexts/ToastContext';
 import localforage from 'localforage';
 
 export const DataTab: React.FC = () => {
   const { notes } = useNotes(); // We need raw data access, useNotes gives notes from state which is synced with localforage on load.
   const { settings } = useSettings();
+  const { addToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExport = async () => {
@@ -28,6 +30,7 @@ export const DataTab: React.FC = () => {
       a.download = `notention-backup-${new Date().toISOString().slice(0,10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
+      addToast('Data exported successfully', 'success');
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,8 +48,8 @@ export const DataTab: React.FC = () => {
                   if (confirm(`Found backup with ${data.notes.length} notes. This will OVERWRITE your current data. Continue?`)) {
                       await localforage.setItem('notention-notes', data.notes);
                       await localforage.setItem('notention-settings', data.settings);
-                      alert("Import successful! Reloading...");
-                      window.location.reload();
+                      addToast("Import successful! Reloading...", "success");
+                      setTimeout(() => window.location.reload(), 1500);
                   }
                   return;
               }
@@ -64,15 +67,15 @@ export const DataTab: React.FC = () => {
                   }
 
                   await localforage.setItem('notention-notes', currentNotes);
-                  alert(`Imported note: ${data.title}`);
-                  window.location.reload(); // Reload to refresh state
+                  addToast(`Imported note: ${data.title}`, "success");
+                  setTimeout(() => window.location.reload(), 1000); // Reload to refresh state
                   return;
               }
 
               throw new Error("Unknown file format. Expected a backup or a note.");
           } catch (err: unknown) {
               const message = err instanceof Error ? err.message : String(err);
-              alert("Import failed: " + message);
+              addToast("Import failed: " + message, 'error', 5000);
           }
       };
       reader.readAsText(file);

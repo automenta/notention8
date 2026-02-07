@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ClipboardIcon } from '../icons';
+import { useToast } from '../contexts/ToastContext';
 
 interface CopyableFieldProps {
   label: string;
@@ -12,13 +13,12 @@ export const CopyableField: React.FC<CopyableFieldProps> = ({
   value,
   isSecret = false,
 }) => {
-  const [copied, setCopied] = useState(false);
+  const { addToast } = useToast();
   const [visible, setVisible] = useState(!isSecret);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(value);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    addToast('Copied to clipboard', 'success');
   };
 
   return (
@@ -50,9 +50,6 @@ export const CopyableField: React.FC<CopyableFieldProps> = ({
           <ClipboardIcon className="h-4 w-4" />
         </button>
       </div>
-      {copied && (
-        <p className="text-xs text-green-400 mt-1">Copied to clipboard!</p>
-      )}
     </div>
   );
 };

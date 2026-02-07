@@ -5,6 +5,7 @@ import { KeyIcon, UserPlusIcon, NetworkIcon, PlusIcon, TrashIcon } from '../icon
 import type { AppSettings } from '@/types';
 import { CopyableField } from '../common/CopyableField';
 import { usePublish } from '@/hooks/usePublish';
+import { useToast } from '../contexts/ToastContext';
 
 interface NostrTabProps {
   settings: AppSettings;
@@ -16,6 +17,7 @@ export const NostrTab: React.FC<NostrTabProps> = ({
   setSettings,
 }) => {
   const { publishProfile, isPublishing } = usePublish();
+  const { addToast } = useToast();
 
   // Local state for profile form
   const [name, setName] = useState('');
@@ -34,6 +36,7 @@ export const NostrTab: React.FC<NostrTabProps> = ({
   const handleGenerateKeys = () => {
     const newPrivKeyHex = bytesToHex(generateSecretKey());
     setSettings((prev) => ({ ...prev, nostr: { ...prev.nostr, privkey: newPrivKeyHex } }));
+    addToast('New keys generated', 'success');
   };
 
   const handleImportKey = () => {
@@ -59,6 +62,7 @@ export const NostrTab: React.FC<NostrTabProps> = ({
               setSettings((prev) => ({ ...prev, nostr: { ...prev.nostr, privkey: key.toLowerCase() } }));
           }
           setImportKey('');
+          addToast('Key imported successfully', 'success');
       } catch (e) {
           setImportError('Invalid key format.');
           console.error(e);
@@ -72,15 +76,16 @@ export const NostrTab: React.FC<NostrTabProps> = ({
       )
     ) {
       setSettings((prev) => ({ ...prev, nostr: { ...prev.nostr, privkey: null } }));
+        addToast('Logged out', 'info');
     }
   };
 
   const handleSaveProfile = async () => {
       try {
           await publishProfile({ name, about, picture });
-          alert('Profile published to network!');
+          addToast('Profile published to network!', 'success');
       } catch (e: any) {
-          alert('Failed to publish profile: ' + e.message);
+          addToast('Failed to publish profile: ' + e.message, 'error');
       }
   };
 
@@ -92,7 +97,7 @@ export const NostrTab: React.FC<NostrTabProps> = ({
       }
 
       if (currentRelays.includes(url)) {
-          alert('Relay already exists.');
+          addToast('Relay already exists.', 'warning');
           return;
       }
 
@@ -104,6 +109,7 @@ export const NostrTab: React.FC<NostrTabProps> = ({
           }
       }));
       setNewRelay('');
+      addToast('Relay added', 'success');
   };
 
   const handleRemoveRelay = (url: string) => {
@@ -115,6 +121,7 @@ export const NostrTab: React.FC<NostrTabProps> = ({
                   relays: (prev.nostr.relays || DEFAULT_RELAYS).filter(r => r !== url)
               }
           }));
+          addToast('Relay removed', 'info');
       }
   };
 

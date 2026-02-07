@@ -5,6 +5,7 @@ import App from './App';
 import { SettingsProvider } from './components/contexts/SettingsContext';
 import { NotesProvider } from './components/contexts/NotesContext';
 import { ViewProvider } from './components/contexts/ViewContext';
+import { ToastProvider } from './components/contexts/ToastContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -16,9 +17,11 @@ root.render(
   <React.StrictMode>
     <SettingsProvider>
       <NotesProvider>
-        <ViewProvider>
-          <App />
-        </ViewProvider>
+        <ToastProvider>
+          <ViewProvider>
+            <App />
+          </ViewProvider>
+        </ToastProvider>
       </NotesProvider>
     </SettingsProvider>
   </React.StrictMode>

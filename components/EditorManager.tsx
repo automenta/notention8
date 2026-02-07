@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import { useEditorLogic } from '../hooks/useEditorLogic';
 import { useView } from '../hooks/useViewContext';
+import { useToast } from './contexts/ToastContext';
 import { useNotes } from '../hooks/useNotes';
 import type { Note } from '../types';
 import { EditorHeader } from './EditorHeader';
@@ -42,7 +43,8 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     saveImmediately,
   } = useEditorLogic({ note, onSave });
 
-  const { setSelectedNoteId, showToast } = useView();
+  const { setSelectedNoteId } = useView();
+  const { addToast } = useToast();
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
 
@@ -70,6 +72,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
       document.body.appendChild(downloadAnchorNode); // required for firefox
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
+      addToast('Note exported as JSON', 'success');
   };
 
   useEffect(() => {
@@ -77,7 +80,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
         saveImmediately();
-        showToast('Saved');
+        addToast('Saved', 'success');
       }
 
       if (e.altKey && e.key === 'ArrowUp') {
@@ -97,7 +100,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dirtyNote, onSave, showToast, handlePrevious, handleNext, setSelectedNoteId]);
+  }, [dirtyNote, onSave, addToast, handlePrevious, handleNext, setSelectedNoteId, saveImmediately]);
   const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);

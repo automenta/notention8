@@ -46,6 +46,26 @@ export const NoteIcon = (props: IconProps) => (
   </OutlineIcon>
 );
 
+export const PinIcon = (props: IconProps) => (
+  <OutlineIcon {...props}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
+    />
+  </OutlineIcon>
+);
+
+export const LockIcon = (props: IconProps) => (
+  <OutlineIcon {...props}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+    />
+  </OutlineIcon>
+);
+
 export const ChevronUpIcon = (props: IconProps) => (
   <OutlineIcon {...props}>
     <path
@@ -312,6 +332,46 @@ export const XCircleIcon = (props: IconProps) => (
       strokeLinecap="round"
       strokeLinejoin="round"
       d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  </OutlineIcon>
+);
+
+export const CheckCircleIcon = (props: IconProps) => (
+  <OutlineIcon {...props}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  </OutlineIcon>
+);
+
+export const InformationCircleIcon = (props: IconProps) => (
+  <OutlineIcon {...props}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zM12 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
+    />
+  </OutlineIcon>
+);
+
+export const ExclamationTriangleIcon = (props: IconProps) => (
+  <OutlineIcon {...props}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+    />
+  </OutlineIcon>
+);
+
+export const XMarkIcon = (props: IconProps) => (
+  <OutlineIcon {...props}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M6 18L18 6M6 6l12 12"
     />
   </OutlineIcon>
 );

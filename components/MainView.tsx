@@ -21,7 +21,7 @@ interface MainViewProps {
 }
 
 export function MainView({ sortedNotes }: MainViewProps) {
-  const { activeView, matchingNoteId, toast } = useView();
+  const { activeView, matchingNoteId } = useView();
   const { settingsLoading } = useSettings();
   const { notes, notesLoading } = useNotes();
 
@@ -66,14 +66,6 @@ export function MainView({ sortedNotes }: MainViewProps) {
   return (
     <div className="relative h-full">
       {renderView()}
-      {toast && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg border border-blue-500/50 z-50 animate-fade-in-up">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">✨</span>
-            <span className="text-sm font-medium">{toast}</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

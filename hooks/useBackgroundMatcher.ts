@@ -2,13 +2,15 @@ import { useEffect, useRef } from 'react';
 import { useSettings } from './useSettingsContext';
 import { useNotes } from './useNotes';
 import { useView } from './useViewContext';
+import { useToast } from '../components/contexts/ToastContext';
 import { DEFAULT_RELAYS, pool, convertEventToNote } from '../utils/nostr';
 import { matchNotes } from '../utils/matching';
 
 export const useBackgroundMatcher = () => {
   const { settings } = useSettings();
   const { notes } = useNotes(); // Local notes
-  const { addMatch, showToast } = useView();
+  const { addMatch } = useView();
+  const { addToast } = useToast();
 
   // Use a ref to track seen events to avoid re-notifying
   const seenEvents = useRef(new Set<string>());
@@ -47,7 +49,7 @@ export const useBackgroundMatcher = () => {
                  // Optional: Toast for high relevance
                  if (score > 0.8) {
                     // Only toast if it's REALLY good, and the throttle in ViewContext handles spam
-                    showToast(`New match found for "${localNote.title || 'Note'}"!`);
+                    addToast(`New match found for "${localNote.title || 'Note'}"!`, 'info');
                  }
              }
           });
@@ -58,5 +60,5 @@ export const useBackgroundMatcher = () => {
     return () => {
       sub.close();
     };
-  }, [notes, settings.nostr.relays, addMatch, showToast]);
+  }, [notes, settings.nostr.relays, addMatch, addToast]);
 };

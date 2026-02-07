@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SparklesIcon, CheckIcon } from '../icons';
 import { isGeminiApiKeyAvailable } from '@/services/ai/RemoteProvider';
 import type { AppSettings } from '@/types';
+import { useToast } from '../contexts/ToastContext';
 import { Toggle } from '../common/Toggle';
 
 interface AITabProps {
@@ -10,6 +11,7 @@ interface AITabProps {
 }
 
 export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
+  const { addToast } = useToast();
   const [keyInput, setKeyInput] = useState(settings.googleGeminiApiKey || '');
 
   const apiKeyAvailable = isGeminiApiKeyAvailable(settings.googleGeminiApiKey);
@@ -21,6 +23,7 @@ export const AITab: React.FC<AITabProps> = ({ settings, setSettings }) => {
 
   const saveKey = () => {
       setSettings(prev => ({ ...prev, googleGeminiApiKey: keyInput }));
+      addToast('Gemini API key saved', 'success');
   };
 
   return (

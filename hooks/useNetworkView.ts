@@ -5,6 +5,7 @@ import { DEFAULT_RELAYS, hexToBytes, pool, extractPropertiesFromTags, convertEve
 import { matchNotes } from '../utils/matching';
 import { useNostrProfile } from './useNostrProfile';
 import { useView } from './useViewContext';
+import { useToast } from '../components/contexts/ToastContext';
 import { useSettings } from './useSettingsContext';
 import { useGardener } from './useGardener';
 import { useNotes } from './useNotes';
@@ -15,7 +16,8 @@ interface UseNetworkViewProps {
 
 export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
   const { settings } = useSettings();
-  const { setActiveView, setMatchingNoteId, setSelectedNoteId, showToast } = useView();
+  const { setActiveView, setMatchingNoteId, setSelectedNoteId } = useView();
+  const { addToast } = useToast();
   const { learnFromProperties } = useGardener();
   const { addNote, updateNote } = useNotes();
 
@@ -130,7 +132,7 @@ export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
 
       const props = extractPropertiesFromTags(event.tags);
       if (props.length === 0) {
-          showToast("No semantic properties found in this note.");
+          addToast("No semantic properties found in this note.", 'warning');
           return;
       }
 
@@ -146,7 +148,7 @@ export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
           content: newContent,
       });
 
-      showToast(`Applied ${props.length} properties from match!`);
+      addToast(`Applied ${props.length} properties from match!`, 'success');
   };
 
   const forkNote = (event: NostrEvent) => {
@@ -164,7 +166,7 @@ export const useNetworkView = ({ matchAgainst }: UseNetworkViewProps = {}) => {
       updateNote(updatedNote);
       setSelectedNoteId(newNote.id);
       setActiveView('notes');
-      showToast('Note forked successfully!');
+      addToast('Note forked successfully!', 'success');
   };
 
   return {

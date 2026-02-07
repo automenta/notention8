@@ -1,18 +1,24 @@
 import React, { useRef } from 'react';
 import type { Note } from '../../types';
-import { TrashIcon, WorldIcon, DownloadIcon, MapPinIcon, ClockIcon } from '../icons';
+import { TrashIcon, WorldIcon, DownloadIcon, MapPinIcon, ClockIcon, PinIcon, DocumentDuplicateIcon } from '../icons';
 import { getTextFromHtml } from '../../utils/nostr';
 
 export const NoteListItem = React.memo(({
   note,
   isSelected,
   onSelect,
-  onDelete
+  onDelete,
+  onPin,
+  isTrash = false,
+  onRestore
 }: {
   note: Note;
   isSelected: boolean;
   onSelect: () => void;
   onDelete: () => void;
+  onPin?: () => void;
+  isTrash?: boolean;
+  onRestore?: () => void;
 }) => {
   const itemRef = useRef<HTMLDivElement>(null);
 
@@ -67,6 +73,9 @@ export const NoteListItem = React.memo(({
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
           e.preventDefault();
           onDelete();
+      } else if (e.key.toLowerCase() === 'p' && onPin) {
+          e.preventDefault();
+          onPin();
       }
   };
 
@@ -83,6 +92,11 @@ export const NoteListItem = React.memo(({
     >
       <div className="flex-1 overflow-hidden flex items-center gap-3 pointer-events-none">
         <div className="flex flex-col gap-1">
+            {note.pinned && (
+                <span title="Pinned Note">
+                    <PinIcon className="h-4 w-4 text-blue-400 flex-shrink-0" />
+                </span>
+            )}
             {note.nostrEventId && note.publishedAt && (
             <span
                 title={`Published on Nostr at ${new Date(note.publishedAt).toLocaleString()}`}
@@ -111,14 +125,42 @@ export const NoteListItem = React.memo(({
         </div>
       </div>
       <div className="flex items-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity focus-within:opacity-100">
-        <button
-            onClick={handleExport}
-            tabIndex={-1}
-            className="p-1 text-gray-500 rounded-full hover:bg-gray-700 hover:text-white"
-            title="Export Note"
-        >
-            <DownloadIcon className="h-4 w-4" />
-        </button>
+        {isTrash && onRestore && (
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onRestore();
+                }}
+                tabIndex={-1}
+                className="p-1 text-gray-500 rounded-full hover:bg-green-900/50 hover:text-green-400"
+                title="Restore Note"
+            >
+                <DocumentDuplicateIcon className="h-4 w-4 transform rotate-180" />
+            </button>
+        )}
+        {onPin && !isTrash && (
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onPin();
+                }}
+                tabIndex={-1}
+                className="p-1 text-gray-500 rounded-full hover:bg-gray-700 hover:text-white"
+                title={note.pinned ? "Unpin Note" : "Pin Note"}
+            >
+                <PinIcon className={`h-4 w-4 ${note.pinned ? 'text-blue-400' : ''}`} />
+            </button>
+        )}
+        {!isTrash && (
+            <button
+                onClick={handleExport}
+                tabIndex={-1}
+                className="p-1 text-gray-500 rounded-full hover:bg-gray-700 hover:text-white"
+                title="Export Note"
+            >
+                <DownloadIcon className="h-4 w-4" />
+            </button>
+        )}
         <button
             onClick={(e) => {
             e.stopPropagation();
@@ -126,7 +168,7 @@ export const NoteListItem = React.memo(({
             }}
             tabIndex={-1} // Prevent tabbing into delete button for simpler nav
             className="ml-1 p-1 text-gray-500 rounded-full hover:bg-red-900/50 hover:text-red-400"
-            title="Delete Note"
+            title={isTrash ? "Delete Permanently" : "Move to Trash"}
         >
             <TrashIcon className="h-4 w-4" />
         </button>

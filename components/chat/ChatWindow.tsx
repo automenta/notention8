@@ -3,7 +3,7 @@ import { finalizeEvent, nip04, nip19 } from 'nostr-tools';
 
 import { useNostrProfile } from '../../hooks/useNostrProfile';
 import { useNotes } from '../../hooks/useNotes';
-import { useView } from '../../hooks/useViewContext';
+import { useToast } from '../contexts/ToastContext';
 import type { Contact, NostrEvent } from '../../types';
 import { DEFAULT_RELAYS, formatNpub, hexToBytes, pool } from '../../utils/nostr';
 import { parseProperties } from '../../utils/parsing';
@@ -33,7 +33,7 @@ export function ChatWindow({
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { addNote } = useNotes();
-  const { showToast } = useView();
+  const { addToast } = useToast();
 
   const contactPubkey = useMemo(
     () => (selectedContact ? [selectedContact.pubkey] : []),
@@ -153,7 +153,7 @@ export function ChatWindow({
                                     tags: [],
                                     properties
                                 });
-                                showToast('Forked to Notes');
+                                addToast('Forked to Notes', 'success');
                             }}
                             className="opacity-0 group-hover:opacity-100 p-1 text-gray-500 hover:text-white transition-opacity"
                             title="Fork to Notes"
