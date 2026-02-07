@@ -1,17 +1,18 @@
 import React from 'react';
+
+import { useNotes } from '../hooks/useNotes';
 import { useSettings } from '../hooks/useSettingsContext';
 import { useView } from '../hooks/useViewContext';
-import { useNotes } from '../hooks/useNotes';
 import { LoadingSpinner } from './icons';
-import { NotesView } from './views/NotesView';
-import { OntologyView } from './views/OntologyView';
+import { SimulatorView } from './simulator/SimulatorView';
+import { ChatView } from './views/ChatView';
 import { MapView } from './views/MapView';
 import { NetworkView } from './views/NetworkView';
-import { ChatView } from './views/ChatView';
+import { NotesView } from './views/NotesView';
+import { OntologyView } from './views/OntologyView';
 import { SettingsView } from './views/SettingsView';
-import { SimulatorView } from './simulator/SimulatorView';
 
-export const MainView: React.FC = () => {
+export function MainView() {
   const { activeView, matchingNoteId } = useView();
   const { settingsLoading } = useSettings();
   const { notes, notesLoading } = useNotes();
@@ -32,7 +33,9 @@ export const MainView: React.FC = () => {
     case 'map':
       return <MapView />;
     case 'network':
-        const matchNote = matchingNoteId ? notes.find(n => n.id === matchingNoteId) : null;
+      const matchNote = matchingNoteId
+        ? notes.find((n) => n.id === matchingNoteId)
+        : null;
       return <NetworkView matchAgainst={matchNote} />;
     case 'chat':
       return <ChatView />;
@@ -43,4 +46,4 @@ export const MainView: React.FC = () => {
     default:
       return null;
   }
-};
+}

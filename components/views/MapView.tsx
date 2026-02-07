@@ -1,7 +1,8 @@
 import React from 'react';
+
 import { useMapView } from '../../hooks/useMapView';
 
-export const MapView: React.FC = () => {
+export function MapView() {
   const { mapContainerRef } = useMapView();
 
   return (
@@ -9,4 +10,4 @@ export const MapView: React.FC = () => {
       <div ref={mapContainerRef} className="flex-grow w-full" />
     </div>
   );
-};
+}

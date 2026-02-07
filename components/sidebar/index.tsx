@@ -1,11 +1,12 @@
 import React from 'react';
-import { Search } from './sidebar/Search';
-import { NoteListItem } from './sidebar/NoteListItem';
-import { SortSelector } from './sidebar/SortSelector';
-import { TemplateList } from './sidebar/TemplateList';
-import { useSidebarLogic } from '../hooks/useSidebarLogic';
 
-export const Sidebar: React.FC = () => {
+import { useSidebarLogic } from '../../hooks/useSidebarLogic';
+import { NoteListItem } from './NoteListItem';
+import { Search } from './Search';
+import { SortSelector } from './SortSelector';
+import { TemplateList } from './TemplateList';
+
+export function Sidebar() {
   const {
     searchTerm,
     setSearchTerm,
@@ -48,4 +49,4 @@ export const Sidebar: React.FC = () => {
       </div>
     </div>
   );
-};
+}

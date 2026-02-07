@@ -1,9 +1,10 @@
 import React from 'react';
-import { ContactList } from '../chat/ContactList';
-import { ChatWindow } from '../chat/ChatWindow';
-import { useChatView } from '../../hooks/useChatView';
 
-export const ChatView: React.FC = () => {
+import { useChatView } from '../../hooks/useChatView';
+import { ChatWindow } from '../chat/ChatWindow';
+import { ContactList } from '../chat/ContactList';
+
+export function ChatView() {
   const {
     privkey,
     pubkey,
@@ -13,7 +14,7 @@ export const ChatView: React.FC = () => {
     messages,
     isLoading,
     addMessage,
-    handleSelectContact
+    handleSelectContact,
   } = useChatView();
 
   if (!privkey || !pubkey) {
@@ -54,7 +55,9 @@ export const ChatView: React.FC = () => {
           selectedContact={localSelectedContact}
           onBack={() => handleSelectContact(null)}
           messages={
-            localSelectedContact ? messages[localSelectedContact.pubkey] || [] : []
+            localSelectedContact
+              ? messages[localSelectedContact.pubkey] || []
+              : []
           }
           onSendMessage={(peerPubkey, event, decryptedContent) =>
             addMessage(peerPubkey, event, decryptedContent)
@@ -63,4 +66,4 @@ export const ChatView: React.FC = () => {
       </div>
     </div>
   );
-};
+}

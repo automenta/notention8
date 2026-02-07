@@ -1,7 +1,8 @@
 import React from 'react';
+
+import { useNotesView } from '../../hooks/useNotesView';
 import { EditorManager } from '../EditorManager';
 import { CubeTransparentIcon } from '../icons';
-import { useNotesView } from '../../hooks/useNotesView';
 
 interface PlaceholderViewProps {
   icon: React.ReactElement<{ className?: string }>;
@@ -9,21 +10,19 @@ interface PlaceholderViewProps {
   message: string;
 }
 
-const PlaceholderView: React.FC<PlaceholderViewProps> = ({
-  icon,
-  title,
-  message,
-}) => (
-  <div className="flex flex-col items-center justify-center h-full text-center bg-gray-800/50 rounded-lg p-8 text-gray-400">
-    <div className="text-blue-500 mb-6">
-      {React.cloneElement(icon, { className: 'h-24 w-24' })}
+function PlaceholderView({ icon, title, message }: PlaceholderViewProps) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full text-center bg-gray-800/50 rounded-lg p-8 text-gray-400">
+      <div className="text-blue-500 mb-6">
+        {React.cloneElement(icon, { className: 'h-24 w-24' })}
+      </div>
+      <h2 className="text-4xl font-bold text-white mb-3">{title}</h2>
+      <p className="max-w-md">{message}</p>
     </div>
-    <h2 className="text-4xl font-bold text-white mb-3">{title}</h2>
-    <p className="max-w-md">{message}</p>
-  </div>
-);
+  );
+}
 
-export const NotesView: React.FC = () => {
+export function NotesView() {
   const { selectedNote, updateNote } = useNotesView();
 
   if (!selectedNote) {
@@ -43,4 +42,4 @@ export const NotesView: React.FC = () => {
       onSave={updateNote}
     />
   );
-};
+}
