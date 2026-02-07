@@ -4,12 +4,12 @@ export function useEditorModals(
     handleUpdateProperty: (key: string, value: string) => void,
     handleUpdateLocation: (latlng: string) => void
 ) {
-    const [isInspectorOpen, setIsInspectorOpen] = useState(false);
-    const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
-    const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
-    const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
+    const [isInspectorOpen, setIsInspectorOpen] = useState<boolean>(false);
+    const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState<boolean>(false);
+    const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState<boolean>(false);
+    const [isMapPickerOpen, setIsMapPickerOpen] = useState<boolean>(false);
     const [locationPickerCallback, setLocationPickerCallback] = useState<((loc: string) => void) | null>(null);
-    const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+    const [isTimePickerOpen, setIsTimePickerOpen] = useState<boolean>(false);
     const [pickingTimeKey, setPickingTimeKey] = useState<string>('');
 
     const handlePickTime = (key: string) => {

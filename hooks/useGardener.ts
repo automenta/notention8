@@ -5,10 +5,10 @@ import { Gardener } from '../services/gardener';
 import { LocalAIProvider } from '../services/ai/LocalProvider';
 import { RemoteAIProvider } from '../services/ai/RemoteProvider';
 import { WebLLMProvider } from '../services/ai/WebLLMProvider';
-import type { Note, Property, OntologyNode } from '../types';
+import type { Note, Property, OntologyNode, OntologyAttribute } from '../types';
 
 // Helper to merge attributes into the "Emergent" node
-const mergeAttributesToEmergent = (ontology: OntologyNode[], newAttributes: Record<string, any>): OntologyNode[] => {
+const mergeAttributesToEmergent = (ontology: OntologyNode[], newAttributes: Record<string, OntologyAttribute>): OntologyNode[] => {
     const updatedOntology = [...ontology];
     let emergentNode = updatedOntology.find(n => n.id === 'emergent');
 
@@ -59,7 +59,7 @@ export const useGardener = () => {
 
     setSettings(prev => {
         const currentOntology = [...prev.ontology];
-        const newAttrsMap: Record<string, any> = {};
+        const newAttrsMap: Record<string, OntologyAttribute> = {};
 
         newAttributes.forEach(attr => {
             newAttrsMap[attr.key] = {
@@ -92,7 +92,7 @@ export const useGardener = () => {
 
       setSettings(prev => {
           const currentOntology = [...prev.ontology];
-          const newAttrsMap: Record<string, any> = {};
+          const newAttrsMap: Record<string, OntologyAttribute> = {};
           let hasChanges = false;
 
           properties.forEach(prop => {
@@ -130,7 +130,7 @@ export const useGardener = () => {
       });
   }, [setSettings, addToast]);
 
-  const alignToOntology = useCallback(async (text: string, ontology: any[]) => {
+  const alignToOntology = useCallback(async (text: string, ontology: OntologyNode[]) => {
       return await gardener.alignToOntology(text, ontology);
   }, [gardener]);
 

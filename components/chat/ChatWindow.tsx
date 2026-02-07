@@ -56,7 +56,16 @@ export function ChatWindow({
          // Bypass Nostr encryption for local agents
          // We pass a dummy event object, as the handler in ChatView will call sendMessageToAgent
          // which constructs its own event.
-         onSendMessage(selectedContact.pubkey, {} as any, newMessage.trim());
+         const dummyEvent = {
+             id: 'local-' + Date.now(),
+             pubkey: pubkey,
+             created_at: Math.floor(Date.now() / 1000),
+             kind: 1,
+             tags: [],
+             content: newMessage.trim(),
+             sig: ''
+         };
+         onSendMessage(selectedContact.pubkey, dummyEvent, newMessage.trim());
          setNewMessage('');
          return;
     }

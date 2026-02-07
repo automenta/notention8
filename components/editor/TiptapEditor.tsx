@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
+import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'react';
 import { EditorContent } from '@tiptap/react';
 import type { Note, OntologyNode, Template } from '../../types';
 import { TiptapToolbar } from './TiptapToolbar';
@@ -146,3 +146,5 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(({
     </div>
   );
 });
+
+TiptapEditor.displayName = 'TiptapEditor';

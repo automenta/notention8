@@ -7,7 +7,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useNotes } from '../../hooks/useNotes';
 import { useEditorActions } from '../../hooks/useEditorActions';
 import { useEditorShortcuts } from '../../hooks/useEditorShortcuts';
-import type { Note, OntologyAttribute, OntologyNode } from '../../types';
+import type { Note, OntologyNode } from '../../types';
 import { EditorHeader } from './EditorHeader';
 import { TiptapEditor, TiptapEditorRef } from './TiptapEditor';
 import { PropertyInspector } from './PropertyInspector';
