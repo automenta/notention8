@@ -19,9 +19,10 @@ export const NavButton: React.FC<NavButtonProps> = ({
     <button
       onClick={onClick}
       title={label}
-      className={`relative p-2 rounded-md transition-colors ${
+      aria-pressed={isActive}
+      className={`relative p-2 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
         isActive
-          ? 'bg-blue-600/30 text-white'
+          ? 'bg-blue-600/30 text-white shadow-sm'
           : 'text-gray-400 hover:bg-gray-700/50 hover:text-gray-200'
       }`}
     >

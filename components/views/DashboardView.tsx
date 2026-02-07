@@ -12,6 +12,12 @@ import { TemplatesWidget } from '../dashboard/TemplatesWidget';
 import { NetworkPulseWidget } from '../dashboard/NetworkPulseWidget';
 import { DashboardStats } from '../dashboard/DashboardStats';
 
+interface Widget {
+  id: string;
+  component: React.ComponentType<any>;
+  props: any;
+}
+
 export function DashboardView() {
   const { notes, addNote, updateNote } = useNotes();
   const { setActiveView, setSelectedNoteId } = useView();
@@ -49,6 +55,52 @@ export function DashboardView() {
     setActiveView('notes');
   };
 
+  const leftWidgets: Widget[] = [
+    {
+        id: 'daily-prompt',
+        component: DailyPromptWidget,
+        props: { onCreateNote: handleCreateNote }
+    },
+    {
+        id: 'quick-actions',
+        component: QuickActionsWidget,
+        props: { onCreateNote: handleCreateNote, onNavigate: setActiveView }
+    },
+    {
+        id: 'recent-notes',
+        component: RecentNotesWidget,
+        props: {
+            notes: recentNotes,
+            onSelectNote: (id: string) => {
+                setSelectedNoteId(id);
+                setActiveView('notes');
+            },
+            onViewAll: () => setActiveView('notes'),
+            onCreateNote: handleCreateNote
+        }
+    },
+  ];
+
+  const rightWidgets: Widget[] = [
+    {
+        id: 'templates',
+        component: TemplatesWidget,
+        props: {
+            onUseTemplate: handleUseTemplate,
+            onViewAll: () => setActiveView('notes')
+        }
+    },
+    {
+        id: 'network-pulse',
+        component: NetworkPulseWidget,
+        props: {
+            logs,
+            simulatorActive,
+            onStartSimulator: () => setActiveView('simulator')
+        }
+    },
+  ];
+
   return (
     <div className="h-full overflow-y-auto p-4 md:p-8 bg-gray-900 text-white custom-scrollbar pb-24 md:pb-8">
       <div className="max-w-6xl mx-auto space-y-8">
@@ -67,36 +119,16 @@ export function DashboardView() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column (2/3) */}
             <div className="lg:col-span-2 space-y-8">
-                <DailyPromptWidget onCreateNote={handleCreateNote} />
-
-                <QuickActionsWidget
-                    onCreateNote={handleCreateNote}
-                    onNavigate={setActiveView}
-                />
-
-                <RecentNotesWidget
-                    notes={recentNotes}
-                    onSelectNote={(id) => {
-                        setSelectedNoteId(id);
-                        setActiveView('notes');
-                    }}
-                    onViewAll={() => setActiveView('notes')}
-                    onCreateNote={handleCreateNote}
-                />
+                {leftWidgets.map(widget => (
+                    <widget.component key={widget.id} {...widget.props} />
+                ))}
             </div>
 
             {/* Right Column (1/3) */}
             <div className="space-y-8">
-                 <TemplatesWidget
-                    onUseTemplate={handleUseTemplate}
-                    onViewAll={() => setActiveView('notes')}
-                 />
-
-                 <NetworkPulseWidget
-                    logs={logs}
-                    simulatorActive={simulatorActive}
-                    onStartSimulator={() => setActiveView('simulator')}
-                 />
+                {rightWidgets.map(widget => (
+                    <widget.component key={widget.id} {...widget.props} />
+                ))}
             </div>
         </div>
       </div>

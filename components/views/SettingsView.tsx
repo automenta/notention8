@@ -2,32 +2,11 @@ import React from 'react';
 
 import { useSettingsView } from '../../hooks/useSettingsView';
 import { Toggle } from '../common/Toggle';
+import { Tabs } from '../common/Tabs';
 import { AITab } from '../settings/AITab';
 import { DataTab } from '../settings/DataTab';
 import { NostrTab } from '../settings/NostrTab';
 import { OntologyTab } from '../settings/OntologyTab';
-// SimulatorView removed from Settings tabs to be a top-level view
-
-interface TabButtonProps {
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-}
-
-function TabButton({ label, isActive, onClick }: TabButtonProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
-        isActive
-          ? 'bg-blue-600 text-white shadow-sm'
-          : 'text-gray-400 hover:text-white hover:bg-gray-800'
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
 
 export function SettingsView() {
   const {
@@ -37,6 +16,16 @@ export function SettingsView() {
     setActiveTab,
     toggleDeveloperMode,
   } = useSettingsView();
+
+  const tabs = [
+    { id: 'ai', label: '🤖 AI Assistant' },
+    { id: 'nostr', label: '🔑 Network & Keys' },
+    { id: 'data', label: '📦 Data Management' },
+  ];
+
+  if (settings.developerMode) {
+    tabs.push({ id: 'ontology', label: '🧬 Ontology Graph' });
+  }
 
   return (
     <div className="p-4 md:p-8 h-full overflow-y-auto bg-gray-800/50 rounded-lg flex flex-col">
@@ -61,32 +50,12 @@ export function SettingsView() {
       </div>
 
       <div className="flex-shrink-0 mb-6 overflow-x-auto">
-        <nav className="flex space-x-1 bg-gray-900/50 p-1 rounded-lg inline-flex min-w-max" aria-label="Tabs">
-          <TabButton
-            label="🤖 AI Assistant"
-            isActive={activeTab === 'ai'}
-            onClick={() => setActiveTab('ai')}
-          />
-          <TabButton
-            label="🔑 Network & Keys"
-            isActive={activeTab === 'nostr'}
-            onClick={() => setActiveTab('nostr')}
-          />
-          <TabButton
-            label="📦 Data Management"
-            isActive={activeTab === 'data'}
-            onClick={() => setActiveTab('data')}
-          />
-          {settings.developerMode && (
-            <>
-              <TabButton
-                label="🧬 Ontology Graph"
-                isActive={activeTab === 'ontology'}
-                onClick={() => setActiveTab('ontology')}
-              />
-            </>
-          )}
-        </nav>
+        <Tabs
+            tabs={tabs}
+            activeTab={activeTab}
+            onChange={(id) => setActiveTab(id as any)}
+            className="bg-gray-900/50 p-1 inline-flex min-w-max"
+        />
       </div>
 
       <div className="flex-grow">

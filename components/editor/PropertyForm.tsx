@@ -9,6 +9,10 @@ import {
 import type { OntologyNode } from '../../types';
 import { getCurrentPosition } from '../../utils/geolocation';
 import { useToast } from '../contexts/ToastContext';
+import { Input } from '../common/Input';
+import { Button } from '../common/Button';
+import { IconButton } from '../common/IconButton';
+import { Select } from '../common/Select';
 
 interface PropertyFormProps {
   initialKey: string;
@@ -86,50 +90,56 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
         <div className="flex gap-1">
           {onPickLocation && (isAdding || ['location', 'geo', 'place'].includes(key)) && (
               <div className="flex gap-1">
-                  <button
+                  <Button
                       onClick={handleUseCurrentLocation}
-                      className='text-xs text-blue-300 hover:text-white flex items-center gap-1 bg-blue-900/30 px-2 py-0.5 rounded transition-colors'
+                      variant="secondary"
+                      size="xs"
+                      icon={MapPinIcon}
                       title="Use current location"
                   >
-                      <MapPinIcon className="w-3 h-3" /> GPS
-                  </button>
-                  <button
+                      GPS
+                  </Button>
+                  <Button
                       onClick={() => {
                           if (isAdding && !key) setKey('location');
                           onPickLocation();
                       }}
-                      className='text-xs text-blue-300 hover:text-white flex items-center gap-1 bg-blue-900/30 px-2 py-0.5 rounded transition-colors'
+                      variant="secondary"
+                      size="xs"
+                      icon={MapPinIcon}
                       title="Pick location on map"
                   >
-                      <MapPinIcon className="w-3 h-3" /> Map
-                  </button>
+                      Map
+                  </Button>
               </div>
           )}
           {onPickTime && (isAdding || isTemporal) && (
-               <button
+               <Button
                   onClick={() => {
                       const defaultKey = 'startDateTime';
                       if (isAdding && !key) setKey(defaultKey);
                       onPickTime(key || defaultKey);
                   }}
-                  className='text-xs text-green-300 hover:text-white flex items-center gap-1 bg-green-900/30 px-2 py-0.5 rounded transition-colors'
+                  variant="secondary"
+                  size="xs"
+                  className="text-green-300 bg-green-900/30 hover:bg-green-900/50 border-green-900/50"
+                  icon={ClockIcon}
                   title="Pick date/time"
               >
-                  <ClockIcon className="w-3 h-3" /> Time
-              </button>
+                  Time
+              </Button>
           )}
         </div>
       </div>
       <div className="relative">
-          <input
-          className="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:border-blue-500 outline-none transition-colors"
-          placeholder="Key (e.g. price)"
-          value={key}
-          onChange={(e) => setKey(e.target.value)}
-          autoFocus
+          <Input
+            placeholder="Key (e.g. price)"
+            value={key}
+            onChange={(e) => setKey(e.target.value)}
+            autoFocus
           />
           {type && (
-              <span className="absolute right-2 top-1.5 text-[10px] uppercase bg-gray-700 text-gray-300 px-1 rounded">
+              <span className="absolute right-2 top-3 text-[10px] uppercase bg-gray-700 text-gray-300 px-1 rounded">
                   {type}
               </span>
           )}
@@ -140,19 +150,18 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
               {description}
           </div>
       )}
-      <select
-        className="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-sm text-gray-300 focus:border-blue-500 outline-none transition-colors"
+      <Select
         value={op}
         onChange={(e) => setOp(e.target.value)}
-      >
-        <option value="is">is (=)</option>
-        <option value="is not">is not (!=)</option>
-        <option value="greater than">greater than (&gt;)</option>
-        <option value="less than">less than (&lt;)</option>
-        <option value="contains">contains</option>
-      </select>
-      <input
-        className="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-white placeholder-gray-500 focus:border-blue-500 outline-none transition-colors"
+        options={[
+            { value: 'is', label: 'is (=)' },
+            { value: 'is not', label: 'is not (!=)' },
+            { value: 'greater than', label: 'greater than (>)' },
+            { value: 'less than', label: 'less than (<)' },
+            { value: 'contains', label: 'contains' },
+        ]}
+      />
+      <Input
         placeholder="Value (comma separated)"
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -162,20 +171,19 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
         }}
       />
       <div className="flex justify-end gap-2 pt-1">
-        <button
+        <IconButton
           onClick={onCancel}
-          className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          variant="secondary"
+          icon={XIcon}
           title="Cancel"
-        >
-          <XIcon className="w-4 h-4" />
-        </button>
-        <button
+        />
+        <IconButton
           onClick={handleSave}
-          className="p-1 text-green-500 hover:text-green-400 hover:bg-gray-700 rounded transition-colors"
+          variant="ghost"
+          className="text-green-500 hover:text-green-400 hover:bg-gray-700"
+          icon={CheckIcon}
           title="Save"
-        >
-          <CheckIcon className="w-4 h-4" />
-        </button>
+        />
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Modal } from '../common/Modal';
+import { Input } from '../common/Input';
+import { Button } from '../common/Button';
 
 interface SaveTemplateModalProps {
   isOpen: boolean;
@@ -26,14 +28,11 @@ export const SaveTemplateModal: React.FC<SaveTemplateModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} title="Save as Template">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-400 mb-1">
-            Template Name
-          </label>
-          <input
+          <Input
+            label="Template Name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
             placeholder="e.g., Daily Standup"
             autoFocus
             onKeyDown={(e) => {
@@ -42,19 +41,19 @@ export const SaveTemplateModal: React.FC<SaveTemplateModalProps> = ({
           />
         </div>
         <div className="flex justify-end gap-2">
-          <button
+          <Button
             onClick={onClose}
-            className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+            variant="ghost"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleSave}
             disabled={!name.trim()}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded disabled:opacity-50 transition-colors"
+            variant="primary"
           >
             Save Template
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>

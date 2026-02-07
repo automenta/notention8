@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import { Modal } from '../common/Modal';
+import { Button } from '../common/Button';
 
 interface MapPickerModalProps {
   isOpen: boolean;
@@ -104,21 +105,19 @@ export const MapPickerModal: React.FC<MapPickerModalProps> = ({
               {selectedCoords.lat.toFixed(4)}, {selectedCoords.lng.toFixed(4)}
             </p>
           )}
-          <button
-            type="button"
+          <Button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition-colors"
+            variant="ghost"
           >
             Cancel
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             disabled={!selectedCoords}
             onClick={handleSave}
-            className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors"
+            variant="primary"
           >
             Save Location
-          </button>
+          </Button>
         </div>
     </Modal>
   );
