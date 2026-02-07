@@ -4,7 +4,8 @@ import {
   XIcon,
   MapPinIcon,
   ClockIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  SearchSparkleIcon
 } from '../layout/icons';
 import type { OntologyNode } from '../../types';
 import { getCurrentPosition } from '../../utils/geolocation';
@@ -13,6 +14,8 @@ import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { IconButton } from '../common/IconButton';
 import { Select } from '../common/Select';
+import { useGardener } from '../../hooks/useGardener';
+import { parseProperties } from '../../utils/parsing';
 
 interface PropertyFormProps {
   initialKey: string;
@@ -74,6 +77,36 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
       }
   };
 
+  const { alignToOntology } = useGardener();
+
+  const handleMagicFill = async () => {
+      const text = window.prompt("Describe the property naturally (e.g. 'budget under 200', 'looking for designer')");
+      if (!text) return;
+
+      try {
+          const results = await alignToOntology(text, ontology);
+
+          if (results.length > 0) {
+              // Take the first one for now
+              const parsed = parseProperties(results[0]);
+              if (parsed.length > 0) {
+                  const p = parsed[0];
+                  setKey(p.key);
+                  setOp(p.operator);
+                  setValue(p.values.join(','));
+                  addToast('Property extracted!', 'success');
+              } else {
+                  addToast('Could not parse extracted property.', 'error');
+              }
+          } else {
+              addToast('No properties found in text.', 'info');
+          }
+      } catch (e) {
+          console.error(e);
+          addToast('Extraction failed.', 'error');
+      }
+  };
+
   const currentAttr = key ? getAttributeDetails(key, ontology) : undefined;
   const type = currentAttr?.type;
   const description = currentAttr?.description;
@@ -94,6 +127,18 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
       <div className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1 flex justify-between items-center flex-wrap gap-1">
         <span>{isAdding ? 'New Property' : 'Edit Property'}</span>
         <div className="flex gap-1">
+          {isAdding && (
+              <Button
+                  onClick={handleMagicFill}
+                  variant="secondary"
+                  size="xs"
+                  icon={SearchSparkleIcon}
+                  className="text-purple-300 border-purple-900/50 bg-purple-900/20 hover:bg-purple-900/40"
+                  title="Extract properties from text"
+              >
+                  Extract
+              </Button>
+          )}
           {onPickLocation && (isAdding || ['location', 'geo', 'place'].includes(key)) && (
               <div className="flex gap-1">
                   <Button
@@ -165,6 +210,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
             { value: 'greater than', label: 'greater than (>)' },
             { value: 'less than', label: 'less than (<)' },
             { value: 'contains', label: 'contains' },
+            { value: 'between', label: 'between (range)' },
         ]}
       />
       <Input

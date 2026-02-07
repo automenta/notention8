@@ -146,7 +146,7 @@ export function ChatView() {
             if (peerPubkey === SELF_AGENT_ID) {
                 const lower = decryptedContent.toLowerCase();
                 // Check for commands
-                if (lower.includes('analyze') || lower.includes('evolve') || lower.includes('optimize') || lower.includes('help')) {
+                if (lower.includes('analyze') || lower.includes('evolve') || lower.includes('scan') || lower.includes('optimize') || lower.includes('update ontology') || lower.includes('help')) {
                     // 1. Add User Message Locally
                     if (pubkey) {
                         setSystemMessages(prev => [...prev, createLocalMessage(decryptedContent, pubkey)]);
@@ -155,16 +155,16 @@ export function ChatView() {
                     // 2. Process Command
                     if (lower.includes('help')) {
                          setTimeout(() => {
-                             setSystemMessages(prev => [...prev, createLocalMessage("I can help you organize your notes. Try 'analyze my notes' or 'optimize ontology'.", SELF_AGENT_ID)]);
+                             setSystemMessages(prev => [...prev, createLocalMessage("I can help you organize your notes. Try 'Scan notes' or 'Update ontology'.", SELF_AGENT_ID)]);
                          }, 500);
-                    } else if (lower.includes('analyze') || lower.includes('evolve')) {
-                         setSystemMessages(prev => [...prev, createLocalMessage("Analyzing your notes...", SELF_AGENT_ID)]);
+                    } else if (lower.includes('analyze') || lower.includes('evolve') || lower.includes('scan')) {
+                         setSystemMessages(prev => [...prev, createLocalMessage("Scanning your notes...", SELF_AGENT_ID)]);
                          const newAttrs = await evolveOntology(notes);
                          const response = newAttrs.length > 0
                             ? `I found ${newAttrs.length} new properties: ${newAttrs.map(a => a.key).join(', ')}.`
                             : "Your notes look consistent. I didn't find any new patterns.";
                          setSystemMessages(prev => [...prev, createLocalMessage(response, SELF_AGENT_ID)]);
-                    } else if (lower.includes('optimize')) {
+                    } else if (lower.includes('optimize') || lower.includes('update ontology')) {
                          setSystemMessages(prev => [...prev, createLocalMessage("Optimizing ontology...", SELF_AGENT_ID)]);
                          const res = await optimizeOntology();
                          const response = `Optimization complete. ${res.merged.length} merges proposed.`;

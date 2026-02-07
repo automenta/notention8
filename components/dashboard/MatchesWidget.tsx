@@ -1,13 +1,14 @@
 import React, { useMemo } from 'react';
-import { SearchSparkleIcon, ArrowRightIcon } from '../layout/icons';
+import { SearchSparkleIcon, ArrowRightIcon, ChatIcon } from '../layout/icons';
 import { useView } from '../../hooks/useViewContext';
 import { useNotes } from '../../hooks/useNotes';
 import { IconButton } from '../common/IconButton';
 import { DashboardCard } from './DashboardCard';
+import { inferNoteIntent } from '../../utils/semantics';
 import type { MatchResult } from '../../components/contexts/ViewContext';
 
 export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => void }) => {
-    const { matches } = useView();
+    const { matches, setActiveView, setSelectedChatPubkey } = useView();
     const { notes } = useNotes();
 
     // Group matches by localNoteId
@@ -39,7 +40,7 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
                         <div>
                             <p className="text-gray-300 text-sm font-medium mb-1">No active opportunities.</p>
                             <p className="text-xs text-gray-500 max-w-[250px] mx-auto leading-relaxed">
-                                Express your intent clearly. Try adding constraints like <code className="bg-gray-800 px-1 py-0.5 rounded text-purple-300">[price &lt; 100]</code> or <code className="bg-gray-800 px-1 py-0.5 rounded text-blue-300">[skill:coding]</code>.
+                                Use the <b>Extract</b> button in your notes to create properties like <code className="bg-gray-800 px-1 py-0.5 rounded text-purple-300">[price &lt; 100]</code>. The Semantic Engine will find matches.
                             </p>
                         </div>
                     </div>
@@ -48,10 +49,11 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
                         const note = notes.find(n => n.id === noteId);
                         const noteTitle = note?.title || 'Untitled Note';
 
-                        // Infer category from note content or tags
-                        // Simple heuristic for now: check for intent tag
-                        const isRequest = note?.content.includes('[intent:is:request]');
-                        const isOffer = note?.content.includes('[intent:is:offer]');
+                        // Infer category using Semantics
+                        const intent = note ? inferNoteIntent(note) : 'Ambiguous';
+                        const isRequest = intent === 'Imaginary';
+                        const isOffer = intent === 'Real';
+
                         const categoryLabel = isRequest ? 'Your Request' : isOffer ? 'Your Offer' : 'Your Note';
                         const categoryColor = isRequest ? 'bg-purple-500' : isOffer ? 'bg-green-500' : 'bg-blue-500';
 
@@ -92,10 +94,22 @@ export const MatchesWidget = ({ onSelectNote }: { onSelectNote: (id: string) => 
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm text-gray-300 line-clamp-2">{match.event.content}</p>
-                                                <div className="flex items-center gap-2 mt-1">
+                                                <div className="flex items-center justify-between mt-1">
                                                     <span className="text-[10px] text-gray-600 font-mono truncate max-w-[100px]">
                                                         {match.event.pubkey.slice(0, 8)}...
                                                     </span>
+                                                    <IconButton
+                                                        icon={ChatIcon}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedChatPubkey(match.event.pubkey);
+                                                            setActiveView('chat');
+                                                        }}
+                                                        size="xs"
+                                                        variant="ghost"
+                                                        title="Chat with author"
+                                                        className="hover:bg-gray-700 text-gray-400 hover:text-white"
+                                                    />
                                                 </div>
                                                 {match.satisfied && match.satisfied.length > 0 && (
                                                     <div className="mt-1 flex flex-wrap gap-1">

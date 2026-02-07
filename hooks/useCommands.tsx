@@ -136,13 +136,7 @@ export function useCommands({ setIsHelpOpen }: UseCommandsProps) {
       });
   }
 
-  if (settings.developerMode) {
-      commands.push({
-          label: 'Go to Simulator',
-          icon: <CubeIcon className="h-5 w-5" />,
-          action: () => setActiveView('simulator')
-      });
-  }
+  // Simulator view is removed, functionality moved to Chat
 
   return { commands, handleNewNote };
 }
