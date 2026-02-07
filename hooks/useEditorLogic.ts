@@ -89,6 +89,7 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
   );
 
   const { handleMagic, handleAutoTag, isAutoTagging, isApiKeyAvailable } = useEditorMagic({
+      noteId: dirtyNote.id,
       content: dirtyNote.content,
       tags: dirtyNote.tags,
       onTagsChange: handleTagsChange,

@@ -94,24 +94,37 @@ ${propertySummary}`;
   async alignToOntology(text: string, ontology: OntologyNode[]): Promise<string[]> {
       if (!this.client) throw new Error('AI Provider not configured');
 
-      // Flatten ontology for prompt
-      const knownKeys = new Set<string>();
+      // Build definitions list with types
+      const definitions: string[] = [];
       const traverse = (nodes: OntologyNode[]) => {
           nodes.forEach(n => {
-              if (n.attributes) Object.keys(n.attributes).forEach(k => knownKeys.add(k));
+              if (n.attributes) {
+                  Object.entries(n.attributes).forEach(([k, attr]) => {
+                      definitions.push(`- ${k} (${attr.type}): ${attr.description || 'No description'}`);
+                  });
+              }
               if (n.children) traverse(n.children);
           });
       };
       traverse(ontology);
-      const knownKeysStr = Array.from(knownKeys).join(', ');
+      const definitionsStr = definitions.join('\n');
 
       const prompt = `Analyze the text below and extract semantic properties in the format "[key:operator:value]".
-Use the following known keys if applicable to encourage schema reuse: ${knownKeysStr}.
-If a new key is needed, create one that is concise and descriptive.
 
-Valid operators: "is", "is not", "contains", "greater than", "less than".
+Use the following known attributes (RESPECT THEIR TYPES):
+${definitionsStr}
 
-IMPORTANT: For "location" or other "geo" type fields, try to output latitude and longitude in the format "lat,lng" if possible to infer from the text.
+Guidelines:
+1. If a known attribute is used, ensure the value matches its type.
+   - For 'date', use YYYY-MM-DD.
+   - For 'number', use plain numbers (e.g., 100, not "100 USD").
+   - For 'geo', use "lat,lng".
+2. If a new key is needed, create one that is concise and descriptive.
+3. Valid operators: "is", "is not", "contains", "greater than", "less than".
+   - Use "greater than" / "less than" for numbers/dates.
+   - Use "contains" for text search or lists.
+4. For "location" or other "geo" type fields, try to output latitude and longitude in the format "lat,lng" if possible.
+
 Example output:
 - ["[skill:is:React]", "[location:is:40.7128,-74.0060]", "[experience:greater than:5]"]
 

@@ -3,10 +3,12 @@ import type { OntologyNode } from '../types';
 import { useGardener } from './useGardener';
 import { useAutoTagging } from './useAutoTagging';
 import { useToast } from './useToast';
+import { useSuggestions } from '../components/contexts/SuggestionContext';
 import { parseProperties, replacePropertyInString, getTextFromHtml } from '../utils/parsing';
 import { parseNaturalDate } from '../utils/dateParsing';
 
 interface UseEditorMagicProps {
+    noteId: string;
     content: string;
     tags: string[];
     onTagsChange: (tags: string[]) => void;
@@ -14,9 +16,10 @@ interface UseEditorMagicProps {
     ontology: OntologyNode[];
 }
 
-export function useEditorMagic({ content, tags, onTagsChange, onContentSave, ontology }: UseEditorMagicProps) {
+export function useEditorMagic({ noteId, content, tags, onTagsChange, onContentSave, ontology }: UseEditorMagicProps) {
     const { alignToOntology } = useGardener();
     const { addToast } = useToast();
+    const { addSuggestions } = useSuggestions();
 
     const { isAutoTagging, handleAutoTag, isApiKeyAvailable } = useAutoTagging({
         content,
@@ -47,22 +50,23 @@ export function useEditorMagic({ content, tags, onTagsChange, onContentSave, ont
             }
         });
 
-        if (suggestions.length > 0 || convertedCount > 0) {
-            if (suggestions.length > 0) {
-                 newContent = newContent + '\n\n' + suggestions.map(t => `<p>${t}</p>`).join('');
-            }
+        if (convertedCount > 0) {
             onContentSave(newContent);
-
-            // Also trigger auto-tagging
-            handleAutoTag();
-
-            addToast(`Magic: Added ${suggestions.length} properties, converted ${convertedCount} dates.`, 'success');
-        } else {
-            // Even if no properties, try auto-tagging
-            handleAutoTag();
-            addToast('Magic: Checked tags and properties.', 'info');
+            addToast(`Magic: Converted ${convertedCount} dates.`, 'success');
         }
-    }, [content, alignToOntology, ontology, onContentSave, addToast, handleAutoTag]);
+
+        if (suggestions.length > 0) {
+            // Instead of modifying content directly, queue suggestions
+            addSuggestions(noteId, suggestions);
+            addToast(`Magic: ${suggestions.length} suggestions found. Review them below.`, 'info');
+        } else if (convertedCount === 0) {
+            addToast('Magic: No new properties or dates found.', 'info');
+        }
+
+        // Always trigger auto-tagging
+        handleAutoTag();
+
+    }, [content, alignToOntology, ontology, onContentSave, addToast, handleAutoTag, noteId, addSuggestions]);
 
     return {
         handleMagic,
