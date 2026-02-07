@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Note } from '../../types';
 
 import { useNotesView } from '../../hooks/useNotesView';
 import { EditorManager } from '../EditorManager';
@@ -22,7 +23,11 @@ function PlaceholderView({ icon, title, message }: PlaceholderViewProps) {
   );
 }
 
-export function NotesView() {
+interface NotesViewProps {
+  sortedNotes?: Note[];
+}
+
+export function NotesView({ sortedNotes }: NotesViewProps) {
   const { selectedNote, updateNote } = useNotesView();
 
   if (!selectedNote) {
@@ -40,6 +45,7 @@ export function NotesView() {
       key={selectedNote.id}
       note={selectedNote}
       onSave={updateNote}
+      sortedNotes={sortedNotes}
     />
   );
 }

@@ -46,6 +46,16 @@ export const NoteIcon = (props: IconProps) => (
   </OutlineIcon>
 );
 
+export const ChevronUpIcon = (props: IconProps) => (
+  <OutlineIcon {...props}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M4.5 15.75l7.5-7.5 7.5 7.5"
+    />
+  </OutlineIcon>
+);
+
 export const OntologyIcon = (props: IconProps) => (
   <OutlineIcon {...props}>
     <path
@@ -439,4 +449,24 @@ export const SearchSparkleIcon = (props: IconProps) => (
         <path d="M9 9a2 2 0 114 0 2 2 0 01-4 0z" />
         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a4 4 0 00-3.446 6.032l-2.261 2.26a1 1 0 101.414 1.415l2.261-2.261A4 4 0 1011 5z" clipRule="evenodd" />
     </SolidIcon>
+);
+
+export const SidebarIcon = (props: IconProps) => (
+  <OutlineIcon {...props}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"
+    />
+  </OutlineIcon>
+);
+
+export const DownloadIcon = (props: IconProps) => (
+  <OutlineIcon {...props}>
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+    />
+  </OutlineIcon>
 );

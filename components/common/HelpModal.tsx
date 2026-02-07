@@ -85,6 +85,14 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                             <span className="text-gray-400">Save Note</span>
                             <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Ctrl+S</code>
                         </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Previous Note</span>
+                            <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Alt+Up</code>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Next Note</span>
+                            <code className="text-gray-300 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700 font-mono text-xs">Alt+Down</code>
+                        </div>
                     </div>
                 </div>
             </div>

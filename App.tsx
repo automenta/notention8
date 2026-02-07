@@ -5,9 +5,9 @@ import { MainView } from './components/MainView';
 import { Sidebar } from './components/sidebar';
 import { useAutoSelectNote } from './hooks/useAutoSelectNote';
 import { useNotes } from './hooks/useNotes';
+import { useSortedFilteredNotes } from './hooks/useSortedFilteredNotes';
 import { useView } from './hooks/useViewContext';
 import { useSettings } from './hooks/useSettingsContext';
-import { sortNotesByDate } from './utils/notes';
 import { CommandPalette } from './components/common/CommandPalette';
 import { HelpModal } from './components/common/HelpModal';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
@@ -25,14 +25,21 @@ import {
 
 function App() {
   const { notes, addNote, notesLoading } = useNotes();
-  const { activeView, setActiveView, selectedNoteId, setSelectedNoteId } =
-    useView();
+  const {
+    activeView,
+    setActiveView,
+    selectedNoteId,
+    setSelectedNoteId,
+    searchTerm,
+    sortOrder,
+    isSidebarOpen,
+  } = useView();
   const { settings, setSettings } = useSettings();
 
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
-  const sortedNotes = useMemo(() => sortNotesByDate(notes), [notes]);
+  const sortedNotes = useSortedFilteredNotes(notes, searchTerm, sortOrder);
 
   useAutoSelectNote({
     activeView,
@@ -125,11 +132,12 @@ function App() {
         {activeView === 'notes' && (
           <div
             className={`
-                w-full md:w-[320px] flex-shrink-0 bg-gray-900 border-r border-gray-700/50
-                ${selectedNoteId ? 'hidden md:block' : 'block'}
+                flex-shrink-0 bg-gray-900 border-r border-gray-700/50 transition-all duration-300 ease-in-out
+                ${selectedNoteId ? 'hidden md:block' : 'w-full block'}
+                ${isSidebarOpen ? 'md:w-[320px]' : 'md:w-0 md:border-r-0 overflow-hidden'}
             `}
           >
-            <Sidebar />
+            <Sidebar sortedNotes={sortedNotes} />
           </div>
         )}
 
@@ -139,7 +147,7 @@ function App() {
                 ${activeView === 'notes' && !selectedNoteId ? 'hidden md:block' : 'block'}
             `}
         >
-          <MainView />
+          <MainView sortedNotes={sortedNotes} />
         </main>
       </div>
       <CommandPalette

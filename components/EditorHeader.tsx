@@ -6,7 +6,10 @@ import {
   CubeTransparentIcon,
   PlusCircleIcon,
   HelpIcon,
-  SearchSparkleIcon
+  SearchSparkleIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+  DownloadIcon
 } from './icons';
 import { TagInput } from './TagInput';
 import { HelpModal } from './common/HelpModal';
@@ -27,6 +30,11 @@ interface EditorHeaderProps {
   isInspectorOpen?: boolean;
   onToggleInspector?: () => void;
   onSaveTemplate?: () => void;
+  onNext?: () => void;
+  onPrevious?: () => void;
+  hasNext?: boolean;
+  hasPrevious?: boolean;
+  onExport?: () => void;
 }
 
 export const EditorHeader: React.FC<EditorHeaderProps> = ({
@@ -45,6 +53,11 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   isInspectorOpen,
   onToggleInspector,
   onSaveTemplate,
+  onNext,
+  onPrevious,
+  hasNext,
+  hasPrevious,
+  onExport,
 }) => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
@@ -59,6 +72,28 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
             >
                 <ArrowLeftIcon className="h-5 w-5" />
             </button>
+        )}
+
+        {/* Navigation Buttons */}
+        {(onPrevious || onNext) && (
+             <div className="flex items-center gap-1 mr-2 border-r border-gray-700/50 pr-2">
+                 <button
+                     onClick={onPrevious}
+                     disabled={!hasPrevious}
+                     className="p-1 text-gray-400 hover:text-white disabled:opacity-30 disabled:hover:text-gray-400 transition-colors rounded hover:bg-gray-800"
+                     title="Previous Note (Alt+Up)"
+                 >
+                     <ChevronUpIcon className="h-5 w-5" />
+                 </button>
+                 <button
+                     onClick={onNext}
+                     disabled={!hasNext}
+                     className="p-1 text-gray-400 hover:text-white disabled:opacity-30 disabled:hover:text-gray-400 transition-colors rounded hover:bg-gray-800"
+                     title="Next Note (Alt+Down)"
+                 >
+                     <ChevronDownIcon className="h-5 w-5" />
+                 </button>
+             </div>
         )}
 
         <input
@@ -76,9 +111,20 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
             <button
                 onClick={onSaveTemplate}
                 title="Save as Template"
-                className="p-2 text-gray-400 hover:text-white transition-colors"
+                className="hidden md:block p-2 text-gray-400 hover:text-white transition-colors"
             >
                 <PlusCircleIcon className="h-5 w-5" />
+            </button>
+        )}
+
+        {/* Export Button */}
+        {onExport && (
+            <button
+                onClick={onExport}
+                title="Export JSON"
+                className="hidden md:block p-2 text-gray-400 hover:text-white transition-colors"
+            >
+                <DownloadIcon className="h-5 w-5" />
             </button>
         )}
 
@@ -87,7 +133,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
             onClick={() => setIsHelpOpen(true)}
             title="Help & Syntax"
             aria-label="Help & Syntax"
-            className="p-2 text-gray-400 hover:text-white transition-colors"
+            className="hidden md:block p-2 text-gray-400 hover:text-white transition-colors"
         >
             <HelpIcon className="h-5 w-5" />
         </button>

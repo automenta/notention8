@@ -74,7 +74,7 @@ export function NostrEventCard({
         {event.content}
       </p>
 
-      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity mt-2 md:mt-0">
         {onApplyMatch && hasProperties && (
             <button
               onClick={() => onApplyMatch(event)}

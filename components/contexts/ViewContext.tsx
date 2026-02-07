@@ -1,7 +1,10 @@
 import React, { createContext, ReactNode, useState } from 'react';
-import type { View } from '../../types';
+import { useLocalForage } from '../../hooks/useLocalForage';
+import type { View, SortOrder } from '../../types';
 
 interface ViewContextType {
+  sortOrder: SortOrder;
+  setSortOrder: (order: SortOrder) => void;
   activeView: View;
   setActiveView: (view: View) => void;
   selectedNoteId: string | null;
@@ -18,6 +21,8 @@ interface ViewContextType {
   clearNotifications: () => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (isOpen: boolean) => void;
 }
 
 export interface MatchResult {
@@ -32,6 +37,11 @@ const ViewContext = createContext<ViewContextType | undefined>(undefined);
 export const ViewProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  const [sortOrder, setSortOrder] = useLocalForage<SortOrder>(
+    'notention-sort-order',
+    'updatedAt_desc'
+  );
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeView, setActiveView] = useState<View>('notes');
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [matchingNoteId, setMatchingNoteId] = useState<string | null>(null);
@@ -92,7 +102,11 @@ export const ViewProvider: React.FC<{ children: ReactNode }> = ({
         addMatch,
         clearNotifications,
         searchTerm,
-        setSearchTerm
+        setSearchTerm,
+        sortOrder,
+        setSortOrder,
+        isSidebarOpen,
+        setIsSidebarOpen
       }}
     >
       {children}
