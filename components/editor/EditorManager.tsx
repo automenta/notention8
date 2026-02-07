@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 
 import { useEditorLogic } from '../../hooks/useEditorLogic';
 import { useView } from '../../hooks/useViewContext';
 import { useToast } from '../contexts/ToastContext';
 import { useNotes } from '../../hooks/useNotes';
-import type { Note } from '../../types';
+import { useEditorActions } from '../../hooks/useEditorActions';
+import { useEditorShortcuts } from '../../hooks/useEditorShortcuts';
+import type { Note, OntologyAttribute, OntologyNode } from '../../types';
 import { EditorHeader } from './EditorHeader';
 import { TiptapEditor, TiptapEditorRef } from './TiptapEditor';
 import { PropertyInspector } from './PropertyInspector';
@@ -12,28 +14,12 @@ import { TemplateSelector } from './TemplateSelector';
 import { SaveTemplateModal } from './SaveTemplateModal';
 import { MapPickerModal } from '../map/MapPickerModal';
 import { TimePickerModal } from '../common/TimePickerModal';
-import { InsertPropertyModal } from './InsertPropertyModal';
-import { OntologyNode, OntologyAttribute } from '../../types';
-import { escapeAttribute } from '../../utils/sanitize';
 
 interface EditorManagerProps {
   note: Note;
   onSave: (note: Note) => void;
   sortedNotes?: Note[];
 }
-
-const findAttributeDef = (key: string, nodes: OntologyNode[]): OntologyAttribute | undefined => {
-  for (const node of nodes) {
-    if (node.attributes && node.attributes[key]) {
-      return node.attributes[key];
-    }
-    if (node.children) {
-      const found = findAttributeDef(key, node.children);
-      if (found) return found;
-    }
-  }
-  return undefined;
-};
 
 export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps) {
   const { notes } = useNotes();
@@ -58,7 +44,6 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     saveImmediately,
     actionLabel,
     missingProperties,
-    matchingOntologyNode
   } = useEditorLogic({ note, onSave });
 
   const { setSelectedNoteId } = useView();
@@ -84,60 +69,25 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     }
   }, [hasNext, sortedNotes, currentIndex, setSelectedNoteId]);
 
-  const handleExport = () => {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dirtyNote, null, 2));
-      const downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", `${dirtyNote.title || 'untitled'}.json`);
-      document.body.appendChild(downloadAnchorNode); // required for firefox
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
-      addToast('Note exported as JSON', 'success');
-  };
+  const { handleExport, handleCopyContent } = useEditorActions(dirtyNote);
 
-  const handleCopyContent = () => {
-      navigator.clipboard.writeText(dirtyNote.content);
-      addToast('Content copied to clipboard', 'success');
-  };
+  useEditorShortcuts({
+      dirtyNote,
+      onSave: saveImmediately,
+      addToast,
+      handlePrevious,
+      handleNext,
+      setSelectedNoteId
+  });
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault();
-        saveImmediately();
-        addToast('Saved', 'success');
-      }
-
-      if (e.altKey && e.key === 'ArrowUp') {
-        e.preventDefault();
-        handlePrevious();
-      }
-
-      if (e.altKey && e.key === 'ArrowDown') {
-        e.preventDefault();
-        handleNext();
-      }
-
-      if (e.altKey && e.key === 'ArrowLeft') {
-        e.preventDefault();
-        setSelectedNoteId(null);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dirtyNote, onSave, addToast, handlePrevious, handleNext, setSelectedNoteId, saveImmediately]);
   const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
   const [locationPickerCallback, setLocationPickerCallback] = useState<((loc: string) => void) | null>(null);
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
   const [pickingTimeKey, setPickingTimeKey] = useState<string>('');
-  const [isInsertPropertyModalOpen, setIsInsertPropertyModalOpen] = useState(false);
-  const [prefilledPropertyKey, setPrefilledPropertyKey] = useState('');
-  const [prefilledAttributeDef, setPrefilledAttributeDef] = useState<OntologyAttribute | undefined>(undefined);
 
   const allTemplates = [
       ...settings.customTemplates,
-      // We could add default templates here too if we want them in slash commands
   ];
 
   const handleInsertTemplate = (template: OntologyNode) => {
