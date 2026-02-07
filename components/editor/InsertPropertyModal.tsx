@@ -6,25 +6,27 @@ interface InsertPropertyModalProps {
   isOpen: boolean;
   onClose: () => void;
   onInsert: (key: string, operator: string, value: string) => void;
+  initialKey?: string;
 }
 
 export const InsertPropertyModal: React.FC<InsertPropertyModalProps> = ({
   isOpen,
   onClose,
   onInsert,
+  initialKey = ''
 }) => {
-  const [key, setKey] = useState('');
+  const [key, setKey] = useState(initialKey);
   const [operator, setOperator] = useState('is');
   const [value, setValue] = useState('');
 
   // Reset state when opening
   useEffect(() => {
     if (isOpen) {
-      setKey('');
+      setKey(initialKey || '');
       setOperator('is');
       setValue('');
     }
-  }, [isOpen]);
+  }, [isOpen, initialKey]);
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();

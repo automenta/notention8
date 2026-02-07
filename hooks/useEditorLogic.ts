@@ -10,6 +10,7 @@ import { useSettings } from './useSettingsContext';
 import { useAutoTagging } from './useAutoTagging';
 import { useGardener } from './useGardener';
 import { parseNaturalDate } from '../utils/dateParsing';
+import type { OntologyNode } from '../types';
 
 interface UseEditorLogicProps {
   note: Note;
@@ -41,6 +42,70 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
   const saveImmediately = useCallback(() => {
       handlePersist(dirtyNote);
   }, [handlePersist, dirtyNote]);
+
+  // Find matching ontology node based on tags
+  const matchingOntologyNode = (() => {
+      const findNode = (nodes: OntologyNode[]): OntologyNode | null => {
+          for (const node of nodes) {
+              const label = node.label.toLowerCase();
+              const noteTags = dirtyNote.tags.map(t => t.toLowerCase());
+
+              // Check children first (more specific matches)
+              if (node.children) {
+                  const found = findNode(node.children);
+                  if (found) return found;
+              }
+
+              // Hyperslicing check (Extends): if node extends other concepts, check if all extended concepts are present
+              if (node.extends && node.extends.length > 0) {
+                  const allExtendedPresent = node.extends.every(ext =>
+                      noteTags.some(tag => tag.includes(ext.toLowerCase()))
+                  );
+                  if (allExtendedPresent) {
+                      return node;
+                  }
+              }
+
+              // Fallback: Check if tags contain the full label (normalized)
+              // This supports monolithic tags like "Job Request" if slices fail or aren't defined
+              if (noteTags.some(t => t.includes(label))) {
+                  return node;
+              }
+          }
+          return null;
+      };
+
+      return findNode(settings.ontology);
+  })();
+
+  const actionLabel = matchingOntologyNode?.actionLabel || 'Publish';
+
+  const validationErrors = (() => {
+      const errors: string[] = [];
+      if (!matchingOntologyNode || !matchingOntologyNode.requiredAttributes) return errors;
+
+      matchingOntologyNode.requiredAttributes.forEach(req => {
+          const hasProp = dirtyNote.properties.some(p => p.key.toLowerCase() === req.toLowerCase());
+          if (!hasProp) {
+              errors.push(`Missing required property: [${req}:...]`);
+          }
+      });
+
+      return errors;
+  })();
+
+  const missingProperties = (() => {
+      const missing: string[] = [];
+      if (!matchingOntologyNode || !matchingOntologyNode.requiredAttributes) return missing;
+
+      matchingOntologyNode.requiredAttributes.forEach(req => {
+          const hasProp = dirtyNote.properties.some(p => p.key.toLowerCase() === req.toLowerCase());
+          if (!hasProp) {
+              missing.push(req);
+          }
+      });
+      return missing;
+  })();
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -84,9 +149,15 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
 
   const handlePublish = async () => {
     if (!dirtyNote.content) return;
+
+    if (validationErrors.length > 0) {
+        alert(`Cannot ${actionLabel}:\n- ${validationErrors.join('\n- ')}`);
+        return;
+    }
+
     if (
       confirm(
-        'Are you sure you want to publish this note to the public Nostr network?'
+        `Are you sure you want to ${actionLabel.toLowerCase()} to the public Nostr network?`
       )
     ) {
       try {
@@ -102,10 +173,10 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
         };
         setDirtyNote(updatedNote);
         onSave(updatedNote);
-        addToast('Note published successfully!', 'success');
+        addToast(`${actionLabel} successful!`, 'success');
       } catch (e) {
         addToast(
-          'Failed to publish note: ' +
+          'Failed to publish: ' +
             (e instanceof Error ? e.message : String(e)),
           'error'
         );
@@ -237,6 +308,9 @@ export const useEditorLogic = ({ note, onSave }: UseEditorLogicProps) => {
     isAutoTagging,
     isApiKeyAvailable,
     settings, // needed for ontology
-    isPublished: !!dirtyNote.nostrEventId
+    isPublished: !!dirtyNote.nostrEventId,
+    actionLabel,
+    validationErrors,
+    missingProperties
   };
 };

@@ -12,6 +12,7 @@ import { TemplateSelector } from './editor/TemplateSelector';
 import { SaveTemplateModal } from './editor/SaveTemplateModal';
 import { MapPickerModal } from './map/MapPickerModal';
 import { TimePickerModal } from './common/TimePickerModal';
+import { InsertPropertyModal } from './editor/InsertPropertyModal';
 import { OntologyNode } from '../types';
 
 interface EditorManagerProps {
@@ -41,6 +42,8 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
     settings,
     isPublished,
     saveImmediately,
+    actionLabel,
+    missingProperties
   } = useEditorLogic({ note, onSave });
 
   const { setSelectedNoteId } = useView();
@@ -111,6 +114,8 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
   const [pickingTimeKey, setPickingTimeKey] = useState<string>('');
+  const [isInsertPropertyModalOpen, setIsInsertPropertyModalOpen] = useState(false);
+  const [prefilledPropertyKey, setPrefilledPropertyKey] = useState('');
 
   const allTemplates = [
       ...settings.customTemplates,
@@ -142,6 +147,16 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
       setIsTimePickerOpen(false);
   };
 
+  const handleAddPropertyHint = (key: string) => {
+      setPrefilledPropertyKey(key);
+      setIsInsertPropertyModalOpen(true);
+  };
+
+  const handleInsertProperty = (key: string, operator: string, value: string) => {
+      const newContent = dirtyNote.content + (dirtyNote.content ? '\n' : '') + `[${key}:${operator}:${value}]`;
+      handleContentSave(newContent);
+  };
+
   return (
     <div className="flex flex-col h-full relative">
       <EditorHeader
@@ -169,6 +184,9 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         onCopyContent={handleCopyContent}
         isToolbarVisible={isToolbarVisible}
         onToggleToolbar={() => setIsToolbarVisible(!isToolbarVisible)}
+        actionLabel={actionLabel}
+        missingProperties={missingProperties}
+        onAddProperty={handleAddPropertyHint}
       />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col relative">
@@ -227,6 +245,12 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         onClose={() => setIsTimePickerOpen(false)}
         onTimeSelect={handleTimeSelected}
         title={`Pick Time for ${pickingTimeKey}`}
+      />
+      <InsertPropertyModal
+          isOpen={isInsertPropertyModalOpen}
+          onClose={() => setIsInsertPropertyModalOpen(false)}
+          onInsert={handleInsertProperty}
+          initialKey={prefilledPropertyKey}
       />
     </div>
   );

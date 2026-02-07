@@ -34,6 +34,9 @@ export interface OntologyNode {
     [key: string]: OntologyAttribute;
   };
   children?: OntologyNode[];
+  actionLabel?: string;
+  requiredAttributes?: string[];
+  extends?: string[];
 }
 
 export interface Note {
@@ -100,4 +103,5 @@ export type View =
   | 'map'
   | 'time'
   | 'trash'
-  | 'simulator';
+  | 'simulator'
+  | 'dashboard';

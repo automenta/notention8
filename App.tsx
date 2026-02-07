@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { Header } from './components/Header';
 import { MainView } from './components/MainView';
+import { MobileNavigation } from './components/MobileNavigation';
 import { Sidebar } from './components/sidebar';
 import { useNotes } from './hooks/useNotes';
 import { useSortedFilteredNotes } from './hooks/useSortedFilteredNotes';
@@ -25,7 +26,8 @@ import {
     SidebarIcon,
     TrashIcon,
     DocumentDuplicateIcon,
-    DownloadIcon
+    DownloadIcon,
+    HomeIcon
 } from './components/icons';
 
 function App() {
@@ -77,6 +79,11 @@ function App() {
           label: isSidebarOpen ? 'Hide Sidebar' : 'Show Sidebar',
           icon: <SidebarIcon className="h-5 w-5" />,
           action: () => setIsSidebarOpen(!isSidebarOpen)
+      },
+      {
+          label: 'Go to Dashboard',
+          icon: <HomeIcon className="h-5 w-5" />,
+          action: () => setActiveView('dashboard')
       },
       {
           label: 'Go to Notes',
@@ -193,13 +200,14 @@ function App() {
 
         <main
           className={`
-                flex-1 p-3 overflow-hidden
+                flex-1 p-3 overflow-hidden pb-20 md:pb-3
                 ${activeView === 'notes' && !selectedNoteId ? 'hidden md:block' : 'block'}
             `}
         >
           <MainView sortedNotes={sortedNotes} />
         </main>
       </div>
+      <MobileNavigation onOpenPalette={() => setIsPaletteOpen(true)} />
       <CommandPalette
           isOpen={isPaletteOpen}
           onClose={() => setIsPaletteOpen(false)}

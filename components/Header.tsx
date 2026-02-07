@@ -81,7 +81,7 @@ export function Header({ onNewNote, onOpenPalette }: HeaderProps) {
   const navItems: {
     view: View;
     label: string;
-    icon: React.ReactElement;
+    icon: React.ReactElement<{ className?: string }>;
     badgeCount?: number;
   }[] = [
     { view: 'notes', label: 'Notes', icon: <NoteIcon /> },
