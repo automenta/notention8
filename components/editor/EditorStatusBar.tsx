@@ -12,8 +12,10 @@ export const EditorStatusBar: React.FC<EditorStatusBarProps> = ({ editor }) => {
   const wordCount = text.split(/\s+/).filter((w) => w.length > 0).length;
   const charCount = text.length;
 
+  if (charCount === 0) return null;
+
   return (
-    <div className="flex-shrink-0 px-4 py-1 bg-gray-900 border-t border-gray-700/50 text-xs text-gray-500 flex items-center justify-end gap-4 font-mono">
+    <div className="flex-shrink-0 px-4 py-1 bg-gray-900 border-t border-gray-700/50 text-xs text-gray-500 flex items-center justify-end gap-4 font-mono animate-fade-in">
       <span>{wordCount} words</span>
       <span>{charCount} characters</span>
     </div>

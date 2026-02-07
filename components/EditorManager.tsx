@@ -47,6 +47,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
   const { addToast } = useToast();
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
+  const [isToolbarVisible, setIsToolbarVisible] = useState(true);
 
   const currentIndex = (sortedNotes || []).findIndex((n) => n.id === note.id);
   const hasPrevious = currentIndex > 0;
@@ -144,6 +145,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
   return (
     <div className="flex flex-col h-full relative">
       <EditorHeader
+        key={note.id}
         title={dirtyNote.title}
         onTitleChange={handleTitleChange}
         onPublish={handlePublish}
@@ -165,6 +167,8 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
         hasPrevious={hasPrevious}
         onExport={handleExport}
         onCopyContent={handleCopyContent}
+        isToolbarVisible={isToolbarVisible}
+        onToggleToolbar={() => setIsToolbarVisible(!isToolbarVisible)}
       />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col relative">
@@ -174,6 +178,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
             onSave={handleContentSave}
             ontology={settings.ontology}
             templates={allTemplates}
+            showToolbar={isToolbarVisible}
             onMagic={() => {
                 if (settings.aiProvider === 'webllm' && settings.aiEnabled) {
                     addToast('Loading local model... this may take a while.', 'info');
@@ -203,6 +208,7 @@ export function EditorManager({ note, onSave, sortedNotes }: EditorManagerProps)
             onPickLocation={() => setIsMapPickerOpen(true)}
             onPickTime={handlePickTime}
             ontology={settings.ontology}
+            onClose={() => setIsInspectorOpen(false)}
           />
         )}
       </div>

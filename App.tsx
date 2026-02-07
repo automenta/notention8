@@ -8,6 +8,7 @@ import { useSortedFilteredNotes } from './hooks/useSortedFilteredNotes';
 import { useView } from './hooks/useViewContext';
 import { useSettings } from './hooks/useSettingsContext';
 import { useUrlRouting } from './hooks/useUrlRouting';
+import { useToast } from './components/contexts/ToastContext';
 import { CommandPalette } from './components/common/CommandPalette';
 import { HelpModal } from './components/common/HelpModal';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
@@ -22,7 +23,9 @@ import {
     CodeBracketsIcon,
     HelpIcon,
     SidebarIcon,
-    TrashIcon
+    TrashIcon,
+    DocumentDuplicateIcon,
+    DownloadIcon
 } from './components/icons';
 
 function App() {
@@ -38,6 +41,7 @@ function App() {
     setIsSidebarOpen,
   } = useView();
   const { settings, setSettings } = useSettings();
+  const { addToast } = useToast();
 
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -120,6 +124,36 @@ function App() {
           action: () => setSettings((s) => ({ ...s, developerMode: !s.developerMode }))
       },
   ];
+
+  if (activeView === 'notes' && selectedNoteId) {
+      commands.push({
+          label: 'Copy Note ID',
+          icon: <DocumentDuplicateIcon className="h-5 w-5" />,
+          action: () => {
+              navigator.clipboard.writeText(selectedNoteId);
+              addToast('Note ID copied to clipboard', 'success');
+          }
+      });
+      commands.push({
+          label: 'Download Note JSON',
+          icon: <DownloadIcon className="h-5 w-5" />,
+          action: () => {
+              const note = notes.find(n => n.id === selectedNoteId);
+              if (note) {
+                  const blob = new Blob([JSON.stringify(note, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `note-${note.title || 'untitled'}-${note.id.slice(0, 8)}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                  addToast('Note downloaded', 'success');
+              }
+          }
+      });
+  }
 
   if (settings.developerMode) {
       commands.push({

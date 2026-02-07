@@ -11,7 +11,9 @@ import {
   ChevronDownIcon,
   DownloadIcon,
   LockIcon,
-  ClipboardIcon
+  ClipboardIcon,
+  TagIcon,
+  PencilIcon
 } from './icons';
 import { TagInput } from './TagInput';
 import { HelpModal } from './common/HelpModal';
@@ -39,6 +41,8 @@ interface EditorHeaderProps {
   onExport?: () => void;
   onCopyContent?: () => void;
   readOnly?: boolean;
+  isToolbarVisible?: boolean;
+  onToggleToolbar?: () => void;
 }
 
 export const EditorHeader: React.FC<EditorHeaderProps> = ({
@@ -64,8 +68,15 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
   onExport,
   onCopyContent,
   readOnly = false,
+  isToolbarVisible = true,
+  onToggleToolbar,
 }) => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isTagInputVisible, setIsTagInputVisible] = useState(tags.length > 0);
+
+  const handleToggleTags = () => {
+      setIsTagInputVisible(prev => !prev);
+  };
 
   return (
     <div className="flex-shrink-0 bg-gray-900 border-b border-gray-700/50">
@@ -130,6 +141,24 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
                         <PlusCircleIcon className="h-5 w-5" />
                     </button>
                 )}
+
+                {onToggleToolbar && (
+                    <button
+                        onClick={onToggleToolbar}
+                        title={isToolbarVisible ? "Hide Toolbar" : "Show Formatting Toolbar"}
+                        className={`p-1.5 transition-colors rounded-md hover:bg-gray-700/50 ${isToolbarVisible ? 'text-blue-400 bg-blue-900/10' : 'text-gray-400 hover:text-white'}`}
+                    >
+                        <PencilIcon className="h-5 w-5" />
+                    </button>
+                )}
+
+                <button
+                    onClick={handleToggleTags}
+                    title={isTagInputVisible ? "Hide Tags" : "Add/Edit Tags"}
+                    className={`p-1.5 transition-colors rounded-md hover:bg-gray-700/50 ${isTagInputVisible ? 'text-blue-400 bg-blue-900/10' : 'text-gray-400 hover:text-white'}`}
+                >
+                    <TagIcon className="h-5 w-5" />
+                </button>
 
                 {onExport && (
                     <button
@@ -198,14 +227,18 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
         </div>
       </div>
 
-      <div className="px-3 pb-3">
-        <TagInput
-          tags={tags}
-          onChange={onTagsChange}
-          onAutoTag={isApiKeyAvailable ? onAutoTag : undefined}
-          isAutoTagging={isAutoTagging}
-        />
-      </div>
+      {isTagInputVisible && (
+          <div className="px-3 pb-3 animate-fade-in">
+            <TagInput
+              tags={tags}
+              onChange={onTagsChange}
+              onAutoTag={isApiKeyAvailable ? onAutoTag : undefined}
+              isAutoTagging={isAutoTagging}
+              autoFocus={true}
+              className="p-1.5 bg-gray-900/50 rounded-md border border-gray-700/30"
+            />
+          </div>
+      )}
 
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
     </div>
