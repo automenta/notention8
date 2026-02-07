@@ -9,6 +9,7 @@ import {
   XIcon,
 } from '../layout/icons';
 import { PropertyForm } from './PropertyForm';
+import { IconButton } from '../common/IconButton';
 
 interface PropertyInspectorProps {
   properties: Property[];
@@ -106,21 +107,22 @@ export function PropertyInspector({
           Properties
         </span>
         <div className="flex items-center gap-1">
-            <button
+            <IconButton
               onClick={startAdd}
-              className="p-1.5 hover:bg-blue-900/50 rounded-md text-blue-400 transition-colors"
+              icon={PlusIcon}
+              size="md"
+              variant="ghost"
+              className="text-blue-400 hover:bg-blue-900/50"
               title="Add Property"
-            >
-              <PlusIcon className="w-4 h-4" />
-            </button>
+            />
             {onClose && (
-                <button
+                <IconButton
                   onClick={onClose}
-                  className="p-1.5 hover:bg-red-900/30 rounded-md text-gray-400 hover:text-red-400 transition-colors"
+                  icon={XIcon}
+                  size="md"
+                  variant="danger"
                   title="Close Inspector"
-                >
-                  <XIcon className="w-4 h-4" />
-                </button>
+                />
             )}
         </div>
       </div>
@@ -160,18 +162,19 @@ export function PropertyInspector({
                 )}
               </div>
               <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 rounded">
-                <button
+                <IconButton
                   onClick={() => startEdit(prop, properties.indexOf(prop))}
-                  className="p-1 hover:text-yellow-400 text-gray-400 transition-colors"
-                >
-                  <PencilIcon className="w-3 h-3" />
-                </button>
-                <button
+                  icon={PencilIcon}
+                  size="xs"
+                  variant="ghost"
+                  className="hover:text-yellow-400"
+                />
+                <IconButton
                   onClick={() => handleDelete(prop)}
-                  className="p-1 hover:text-red-400 text-gray-400 transition-colors"
-                >
-                  <TrashIcon className="w-3 h-3" />
-                </button>
+                  icon={TrashIcon}
+                  size="xs"
+                  variant="danger"
+                />
               </div>
             </div>
 

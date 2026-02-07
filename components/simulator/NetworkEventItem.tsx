@@ -2,6 +2,7 @@ import React from 'react';
 import type { Note } from '../../types';
 import type { MatchResult } from '../../hooks/useNetworkMatching';
 import { DownloadIcon } from '../layout/icons';
+import { IconButton } from '../common/IconButton';
 
 interface NetworkEventItemProps {
     note: Note;
@@ -27,13 +28,14 @@ export const NetworkEventItem: React.FC<NetworkEventItemProps> = ({ note, relate
                  {isMatch && <span className="text-[8px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1 rounded animate-pulse font-bold">MATCH</span>}
 
                  {onSaveNote && (
-                     <button
+                     <IconButton
                         onClick={() => onSaveNote(note)}
                         title="Save to My Notes"
-                        className="ml-auto text-gray-600 hover:text-green-400 transition-colors opacity-0 group-hover:opacity-100"
-                     >
-                         <DownloadIcon className="w-3 h-3" />
-                     </button>
+                        icon={DownloadIcon}
+                        size="xs"
+                        variant="ghost"
+                        className="ml-auto opacity-0 group-hover:opacity-100 hover:text-green-400"
+                     />
                  )}
             </div>
 

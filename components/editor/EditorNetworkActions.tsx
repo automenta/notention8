@@ -1,5 +1,7 @@
 import React from 'react';
-import { SearchSparkleIcon, SendIcon, LoadingSpinner } from '../layout/icons';
+import { SearchSparkleIcon, SendIcon } from '../layout/icons';
+import { Button } from '../common/Button';
+import { IconButton } from '../common/IconButton';
 
 interface EditorNetworkActionsProps {
     missingProperties: string[];
@@ -40,32 +42,26 @@ export const EditorNetworkActions: React.FC<EditorNetworkActionsProps> = ({
             )}
 
             {onFindMatches && (
-                <button
+                <IconButton
                   onClick={onFindMatches}
                   title="Find matches in network"
-                  className="p-2 text-purple-400 hover:text-white hover:bg-purple-600 rounded-lg transition-all"
-                >
-                  <SearchSparkleIcon className="h-5 w-5" />
-                </button>
+                  icon={SearchSparkleIcon}
+                  className="text-purple-400 hover:bg-purple-600 hover:text-white"
+                  size="lg"
+                />
             )}
 
-            <button
+            <Button
               onClick={onPublish}
-              disabled={isPublishing}
+              isLoading={isPublishing}
               title={isPublished ? 'Update on Nostr' : actionLabel}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm
-                ${actionLabel !== 'Publish'
-                    ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20'
-                    : 'text-blue-400 hover:text-white hover:bg-blue-600'
-                }`}
+              icon={SendIcon}
+              variant={actionLabel !== 'Publish' ? 'primary' : 'ghost'}
+              className={actionLabel === 'Publish' ? 'text-blue-400 hover:text-white hover:bg-blue-600' : ''}
+              size="sm"
             >
-              {isPublishing ? (
-                <LoadingSpinner className="h-4 w-4" />
-              ) : (
-                <SendIcon className="h-4 w-4" />
-              )}
-              {actionLabel !== 'Publish' && <span>{actionLabel}</span>}
-            </button>
+              {actionLabel !== 'Publish' && actionLabel}
+            </Button>
         </div>
     );
 };
